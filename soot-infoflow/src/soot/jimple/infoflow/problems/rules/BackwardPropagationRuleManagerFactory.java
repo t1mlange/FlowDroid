@@ -8,9 +8,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Default implementation of the {@link IPropagationRuleManagerFactory} class
+ * Backward implementation of the {@link IPropagationRuleManagerFactory} class
  * 
- * @author Steven Arzt
+ * @author Tim Lange
  *
  */
 public class BackwardPropagationRuleManagerFactory implements IPropagationRuleManagerFactory {
