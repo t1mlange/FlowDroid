@@ -22,6 +22,7 @@ public class InfoflowManager {
 
 	private final InfoflowConfiguration config;
 	private IInfoflowSolver forwardSolver;
+	private IInfoflowSolver backwardSolver;
 	private final IInfoflowCFG icfg;
 	private final ISourceSinkManager sourceSinkManager;
 	private final ITaintPropagationWrapper taintWrapper;

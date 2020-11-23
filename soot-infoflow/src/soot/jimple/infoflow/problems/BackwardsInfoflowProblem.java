@@ -618,4 +618,8 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
             }
         };
     }
+
+    public TaintPropagationResults getResults() {
+        return this.results;
+    }
 }
