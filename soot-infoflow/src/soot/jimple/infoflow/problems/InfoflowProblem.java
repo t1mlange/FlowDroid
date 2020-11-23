@@ -122,7 +122,7 @@ public class InfoflowProblem extends AbstractInfoflowProblem {
 				final Value rightValue = assignStmt.getRightOp();
 
 				// Do not taint static fields unless the option is enabled
-				if (leftValue instanceof StaticFieldRef
+				if (rightValue instanceof StaticFieldRef
 						&& manager.getConfig().getStaticFieldTrackingMode() == StaticFieldTrackingMode.None)
 					return;
 
@@ -785,7 +785,7 @@ public class InfoflowProblem extends AbstractInfoflowProblem {
 
 						// Do not propagate zero abstractions
 						if (source == getZeroValue())
-							return res == null || res.isEmpty() ? Collections.<Abstraction>emptySet() : res;
+							return (res == null || res.isEmpty()) ? Collections.<Abstraction>emptySet() : res;
 
 						// Initialize the result set
 						if (res == null)
