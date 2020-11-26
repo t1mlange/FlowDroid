@@ -12,31 +12,31 @@ import soot.jimple.infoflow.test.android.TelephonyManager;
  *
  */
 public class BasicTestCode {
-	
+
 	public void overwriteInCalleeTest1() {
 		Location loc = new Location();
 		calleeOverwrite(loc);
-		
+
 		ConnectionManager cm = new ConnectionManager();
 		cm.publish(loc.getLatitude());
 	}
 
 	private void calleeOverwrite(Location loc) {
-		System.out.println(loc);
+//		System.out.println(loc);
 		loc = LocationManager.getLastKnownLocation();
-		System.out.println(loc);
+//		System.out.println(loc);
 	}
 
 	public void overwriteInCalleeTest2() {
 		Location loc = LocationManager.getLastKnownLocation();
 		calleeOverwriteNull(loc);
-		
+
 		ConnectionManager cm = new ConnectionManager();
 		cm.publish(loc.getLatitude());
 	}
 
 	private void calleeOverwriteNull(Location loc) {
-		System.out.println(loc);
+//		System.out.println(loc);
 		loc = null;
 	}
 	

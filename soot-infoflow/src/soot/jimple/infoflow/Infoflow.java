@@ -96,7 +96,9 @@ import soot.jimple.infoflow.threading.IExecutorFactory;
 import soot.jimple.infoflow.util.SootMethodRepresentationParser;
 import soot.jimple.infoflow.util.SystemClassHandler;
 import soot.jimple.toolkits.callgraph.ReachableMethods;
+import soot.jimple.toolkits.ide.icfg.dotexport.ICFGDotVisualizer;
 import soot.options.Options;
+import soot.tools.CFGViewer;
 
 /**
  * main infoflow class which triggers the analysis and offers method to
@@ -353,7 +355,8 @@ public class Infoflow extends AbstractInfoflow {
 				GlobalTaintManager globalTaintManager = new GlobalTaintManager(solvers);
 
 				// Initialize the data flow manager
-				manager = new InfoflowManager(config, null, new BackwardsInfoflowCFG(iCfg), sourcesSinks,
+				BackwardsInfoflowCFG cfg = new BackwardsInfoflowCFG(iCfg);
+				manager = new InfoflowManager(config, null, cfg, sourcesSinks,
 						taintWrapper, hierarchy, new AccessPathFactory(config), globalTaintManager);
 
 				// Create the solver peer group
@@ -380,6 +383,31 @@ public class Infoflow extends AbstractInfoflow {
 				BackwardsInfoflowProblem forwardProblem = new BackwardsInfoflowProblem(manager, zeroValue, ruleManagerFactory);
 				// We need to create the right data flow solver
 				IInfoflowSolver forwardSolver = createForwardSolver(executor, forwardProblem);
+
+				//TEST
+				manager = new InfoflowManager(config, null, new BackwardsInfoflowCFG(iCfg), sourcesSinks,
+						taintWrapper, hierarchy, manager.getAccessPathFactory(), manager.getGlobalTaintManager());
+				forwardProblem = new BackwardsInfoflowProblem(manager, zeroValue, ruleManagerFactory);
+
+				// We need to create the right data flow solver
+				SolverConfiguration solverConfig = config.getSolverConfiguration();
+				forwardSolver = createDataFlowSolver(executor, forwardProblem, solverConfig);
+
+				forwardSolver.setMemoryManager(memoryManager);
+				forwardSolver.setPredecessorShorteningMode(
+						pathConfigToShorteningMode(manager.getConfig().getPathConfiguration()));
+				// backSolver.setEnableMergePointChecking(true);
+				forwardSolver.setMaxJoinPointAbstractions(solverConfig.getMaxJoinPointAbstractions());
+				forwardSolver.setMaxCalleesPerCallSite(solverConfig.getMaxCalleesPerCallSite());
+				forwardSolver.setMaxAbstractionPathLength(solverConfig.getMaxAbstractionPathLength());
+				forwardSolver.setSolverId(false);
+				forwardProblem.setTaintPropagationHandler(backwardsPropagationHandler);
+				forwardProblem.setTaintWrapper(taintWrapper);
+				if (nativeCallHandler != null)
+					forwardProblem.setNativeCallHandler(nativeCallHandler);
+
+				memoryWatcher.addSolver((IMemoryBoundedSolver) forwardSolver);
+
 
 				// Set the options
 				manager.setForwardSolver(forwardSolver);
@@ -1254,8 +1282,7 @@ public class Infoflow extends AbstractInfoflow {
 		if (m.hasActiveBody()) {
 			// Check whether this is a system class we need to ignore
 			if (!isValidSeedMethod(m))
-				return sourceCount;
-
+				return sinkCount;
 			// Look for a source in the method. Also look for sinks. If we
 			// have no sink in the program, we don't need to perform any
 			// analysis
@@ -1263,23 +1290,25 @@ public class Infoflow extends AbstractInfoflow {
 			for (Unit u : units) {
 				Stmt s = (Stmt) u;
 				if (sourcesSinks.getSourceInfo(s, manager) != null) {
-//					forwardProblem.addInitialSeeds(u, Collections.singleton(forwardProblem.zeroValue()));
-					sourceCount++;
+					forwardProblem.addInitialSeeds(u, Collections.singleton(forwardProblem.zeroValue()));
+//					sourceCount++;
 					if (getConfig().getLogSourcesAndSinks())
 						collectedSources.add(s);
-					logger.debug("Source found: {} in {}", u, m.getSignature());
+					logger.info("Source found: {} in {}", u, m.getSignature());
+					ICFGDotVisualizer dv = new ICFGDotVisualizer("testg", u, manager.getICFG());
+					dv.exportToDot();
 				}
 				if (sourcesSinks.getSinkInfo(s, manager, null) != null) {
-					forwardProblem.addInitialSeeds(u, Collections.singleton(forwardProblem.zeroValue()));
-//					sinkCount++;
+//					forwardProblem.addInitialSeeds(u, Collections.singleton(forwardProblem.zeroValue()));
+					sinkCount++;
 					if (getConfig().getLogSourcesAndSinks())
 						collectedSinks.add(s);
-					logger.debug("Sink found: {} in {}", u, m.getSignature());
+					logger.info("Sink found: {} in {}", u, m.getSignature());
 				}
 			}
 
 		}
-		return sourceCount;
+		return sinkCount;
 	}
 
 	@Override

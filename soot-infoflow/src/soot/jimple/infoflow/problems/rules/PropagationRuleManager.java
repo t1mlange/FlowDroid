@@ -93,9 +93,8 @@ public class PropagationRuleManager {
 		if ((killAll == null || !killAll.value) && !killSource.value) {
 			if (res == null) {
 				res = new HashSet<>();
-				res.add(source);
-			} else
-				res.add(source);
+			}
+			res.add(source);
 		}
 		return res;
 	}

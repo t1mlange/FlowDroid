@@ -23,13 +23,7 @@ import soot.Scene;
 import soot.SootClass;
 import soot.SootMethod;
 import soot.Value;
-import soot.jimple.DefinitionStmt;
-import soot.jimple.IdentityStmt;
-import soot.jimple.InstanceInvokeExpr;
-import soot.jimple.InvokeExpr;
-import soot.jimple.ParameterRef;
-import soot.jimple.ReturnStmt;
-import soot.jimple.Stmt;
+import soot.jimple.*;
 import soot.jimple.infoflow.InfoflowManager;
 import soot.jimple.infoflow.data.AccessPath;
 import soot.jimple.infoflow.data.SootMethodAndClass;
@@ -151,36 +145,50 @@ public class DefaultSourceSinkManager implements ISourceSinkManager {
 	public SourceInfo getSourceInfo(Stmt sCallSite, InfoflowManager manager) {
 		SootMethod callee = sCallSite.containsInvokeExpr() ? sCallSite.getInvokeExpr().getMethod() : null;
 
-		AccessPath targetAP = null;
+		Set<AccessPath> aps = new HashSet<>();
+
 		if (isSourceMethod(manager, sCallSite)) {
-			if (callee.getReturnType() != null && sCallSite instanceof DefinitionStmt) {
-				// Taint the return value
-				Value leftOp = ((DefinitionStmt) sCallSite).getLeftOp();
-				targetAP = manager.getAccessPathFactory().createAccessPath(leftOp, true);
-			} else if (sCallSite.getInvokeExpr() instanceof InstanceInvokeExpr) {
-				// Taint the base object
-				Value base = ((InstanceInvokeExpr) sCallSite.getInvokeExpr()).getBase();
-				targetAP = manager.getAccessPathFactory().createAccessPath(base, true);
+			InvokeExpr ie = sCallSite.getInvokeExpr();
+
+			// Taint the parameters
+			for (Value arg : ie.getArgs()) {
+				aps.add(manager.getAccessPathFactory().createAccessPath(arg, true));
 			}
+
+			// TODO: Uncomment
+//			if (ie instanceof InstanceInvokeExpr) {
+//				Value base = ((InstanceInvokeExpr) sCallSite.getInvokeExpr()).getBase();
+//				aps.add(manager.getAccessPathFactory().createAccessPath(base, true));
+//			}
+
+//			if (callee.getReturnType() != null && sCallSite instanceof DefinitionStmt) {
+//				// Taint the return value
+//				Value leftOp = ((DefinitionStmt) sCallSite).getLeftOp();
+//				targetAP = manager.getAccessPathFactory().createAccessPath(leftOp, true);
+//			} else if (sCallSite.getInvokeExpr() instanceof InstanceInvokeExpr) {
+//				// Taint the base object
+//				Value base = ((InstanceInvokeExpr) sCallSite.getInvokeExpr()).getBase();
+//				targetAP = manager.getAccessPathFactory().createAccessPath(base, true);
+//			}
 		}
 		// Check whether we need to taint parameters
-		else if (sCallSite instanceof IdentityStmt) {
-			IdentityStmt istmt = (IdentityStmt) sCallSite;
-			if (istmt.getRightOp() instanceof ParameterRef) {
-				ParameterRef pref = (ParameterRef) istmt.getRightOp();
-				SootMethod currentMethod = manager.getICFG().getMethodOf(istmt);
-				if (parameterTaintMethods != null && parameterTaintMethods.contains(currentMethod))
-					targetAP = manager.getAccessPathFactory()
-							.createAccessPath(currentMethod.getActiveBody().getParameterLocal(pref.getIndex()), true);
-			}
-		}
+//		else if (sCallSite instanceof IdentityStmt) {
+//			IdentityStmt istmt = (IdentityStmt) sCallSite;
+//			if (istmt.getRightOp() instanceof ParameterRef) {
+//				ParameterRef pref = (ParameterRef) istmt.getRightOp();
+//				SootMethod currentMethod = manager.getICFG().getMethodOf(istmt);
+//				if (parameterTaintMethods != null && parameterTaintMethods.contains(currentMethod))
+//					targetAP = manager.getAccessPathFactory()
+//							.createAccessPath(currentMethod.getActiveBody().getParameterLocal(pref.getIndex()), true);
+//			}
+//		}
 
-		if (targetAP == null)
+		if (aps.isEmpty())
 			return null;
 
 		// Create the source information data structure
 		return new SourceInfo(callee == null ? null : new MethodSourceSinkDefinition(new SootMethodAndClass(callee)),
-				targetAP);
+				aps);
 	}
 
 	/**
@@ -246,14 +254,20 @@ public class DefaultSourceSinkManager implements ISourceSinkManager {
 					// The given access path must at least be referenced
 					// somewhere in the sink
 					if (!ap.isStaticFieldRef()) {
-						for (int i = 0; i < iexpr.getArgCount(); i++)
+						for (int i = 0; i < iexpr.getArgCount(); i++) {
 							if (iexpr.getArg(i) == ap.getPlainValue()) {
 								if (ap.getTaintSubFields() || ap.isLocal())
 									return new SinkInfo(new MethodSourceSinkDefinition(smac));
 							}
-						if (iexpr instanceof InstanceInvokeExpr)
+						}
+						if (iexpr instanceof InstanceInvokeExpr) {
 							if (((InstanceInvokeExpr) iexpr).getBase() == ap.getPlainValue())
 								return new SinkInfo(new MethodSourceSinkDefinition(smac));
+						}
+						if (sCallSite instanceof AssignStmt) {
+							if (((AssignStmt) sCallSite).getLeftOp() == ap.getPlainValue())
+								return new SinkInfo(new MethodSourceSinkDefinition(smac));
+						}
 					}
 				}
 			}
@@ -274,6 +288,7 @@ public class DefaultSourceSinkManager implements ISourceSinkManager {
 	protected SootMethodAndClass isSinkMethod(InfoflowManager manager, Stmt sCallSite) {
 		// Is the method directly in the sink set?
 		SootMethod callee = sCallSite.getInvokeExpr().getMethod();
+		boolean test = this.sinks.contains(callee);
 		if (this.sinks.contains(callee))
 			return new SootMethodAndClass(callee);
 

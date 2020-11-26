@@ -20,7 +20,7 @@ public class BasicTests extends JUnitTests {
 		IInfoflow infoflow = initInfoflow();
 		List<String> epoints = new ArrayList<String>();
 		epoints.add("<soot.jimple.infoflow.test.BasicTestCode: void overwriteInCalleeTest1()>");
-		infoflow.computeInfoflow(appPath, libPath, epoints, sources, sinks);
+		infoflow.computeInfoflow(appPath, libPath, epoints, sinks, sources);
 		negativeCheckInfoflow(infoflow);
 	}
 
@@ -29,7 +29,7 @@ public class BasicTests extends JUnitTests {
 		IInfoflow infoflow = initInfoflow();
 		List<String> epoints = new ArrayList<String>();
 		epoints.add("<soot.jimple.infoflow.test.BasicTestCode: void overwriteInCalleeTest2()>");
-		infoflow.computeInfoflow(appPath, libPath, epoints, sources, sinks);
+		infoflow.computeInfoflow(appPath, libPath, epoints, sinks, sources);
 		checkInfoflow(infoflow, 1);
 	}
 
@@ -38,7 +38,7 @@ public class BasicTests extends JUnitTests {
 		IInfoflow infoflow = initInfoflow();
 		List<String> epoints = new ArrayList<String>();
 		epoints.add("<soot.jimple.infoflow.test.BasicTestCode: void overwriteBaseObjectTest1()>");
-		infoflow.computeInfoflow(appPath, libPath, epoints, sources, sinks);
+		infoflow.computeInfoflow(appPath, libPath, epoints, sinks, sources);
 		negativeCheckInfoflow(infoflow);
 	}
 
@@ -47,7 +47,7 @@ public class BasicTests extends JUnitTests {
 		IInfoflow infoflow = initInfoflow();
 		List<String> epoints = new ArrayList<String>();
 		epoints.add("<soot.jimple.infoflow.test.BasicTestCode: void overwriteBaseObjectTest2()>");
-		infoflow.computeInfoflow(appPath, libPath, epoints, sources, sinks);
+		infoflow.computeInfoflow(appPath, libPath, epoints, sinks, sources);
 		negativeCheckInfoflow(infoflow);
 	}
 
@@ -56,7 +56,7 @@ public class BasicTests extends JUnitTests {
 		IInfoflow infoflow = initInfoflow();
 		List<String> epoints = new ArrayList<String>();
 		epoints.add("<soot.jimple.infoflow.test.BasicTestCode: void simpleArithmeticTest1()>");
-		infoflow.computeInfoflow(appPath, libPath, epoints, sources, sinks);
+		infoflow.computeInfoflow(appPath, libPath, epoints, sinks, sources);
 		checkInfoflow(infoflow, 1);
 	}
 
@@ -65,7 +65,7 @@ public class BasicTests extends JUnitTests {
 		IInfoflow infoflow = initInfoflow();
 		List<String> epoints = new ArrayList<String>();
 		epoints.add("<soot.jimple.infoflow.test.BasicTestCode: void arithmeticLoopTest1()>");
-		infoflow.computeInfoflow(appPath, libPath, epoints, sources, sinks);
+		infoflow.computeInfoflow(appPath, libPath, epoints, sinks, sources);
 		checkInfoflow(infoflow, 1);
 	}
 
@@ -74,7 +74,7 @@ public class BasicTests extends JUnitTests {
 		IInfoflow infoflow = initInfoflow();
 		List<String> epoints = new ArrayList<String>();
 		epoints.add("<soot.jimple.infoflow.test.BasicTestCode: void arithmeticLoopTest2()>");
-		infoflow.computeInfoflow(appPath, libPath, epoints, sources, sinks);
+		infoflow.computeInfoflow(appPath, libPath, epoints, sinks, sources);
 		checkInfoflow(infoflow, 1);
 	}
 

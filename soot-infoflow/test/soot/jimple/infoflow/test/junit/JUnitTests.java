@@ -55,6 +55,7 @@ public abstract class JUnitTests {
 	protected static final String sourceBundleGet = "<soot.jimple.infoflow.test.android.Bundle: java.lang.Object get(java.lang.String)>";
 	protected static final String sourceLongitude = "<soot.jimple.infoflow.test.android.LocationManager: double getLongitude()>";
 	protected static final String sourceLocation = "<soot.jimple.infoflow.test.android.LocationManager: soot.jimple.infoflow.test.android.Location getLastKnownLocation()>";
+	protected static final String sourceTest = "<soot.jimple.infoflow.test.android.Location: double getLongitude()>";
 
 	@BeforeClass
 	public static void setUp() throws IOException {
@@ -80,8 +81,21 @@ public abstract class JUnitTests {
 		sources.add(sourceBundleGet);
 		sources.add(sourceLongitude);
 		sources.add(sourceLocation);
+//		sources.add(sink);
+//		sources.add(sinkInt);
+//		sources.add(sinkBoolean);
+//		sources.add(sinkDouble);
 
 		sinks = new ArrayList<String>();
+//		sinks.add(sourcePwd);
+//		sinks.add(sourceUserData);
+//		sinks.add(sourceDeviceId);
+//		sinks.add(sourceIMEI);
+//		sinks.add(sourceIMSI);
+//		sinks.add(sourceBundleGet);
+//		sinks.add(sourceLongitude);
+//		sinks.add(sourceLocation);
+
 		sinks.add(sink);
 		sinks.add(sinkInt);
 		sinks.add(sinkBoolean);
@@ -99,6 +113,8 @@ public abstract class JUnitTests {
 		if (infoflow.isResultAvailable()) {
 			InfoflowResults map = infoflow.getResults();
 			assertEquals(resultCount, map.size());
+			boolean b4 = map.containsSinkMethod(sourceLocation);
+			boolean b5 = map.isPathBetweenMethods(sourceLocation, sinkDouble);
 			assertTrue(map.containsSinkMethod(sink) || map.containsSinkMethod(sinkInt)
 					|| map.containsSinkMethod(sinkBoolean) || map.containsSinkMethod(sinkDouble));
 			assertTrue(map.isPathBetweenMethods(sink, sourceDeviceId) || map.isPathBetweenMethods(sink, sourceIMEI) // implicit

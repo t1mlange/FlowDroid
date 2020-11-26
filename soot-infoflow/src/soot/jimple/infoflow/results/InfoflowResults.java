@@ -189,12 +189,11 @@ public class InfoflowResults {
 	public Pair<ResultSourceInfo, ResultSinkInfo> addResult(ISourceSinkDefinition sinkDefinition, AccessPath sink,
 			Stmt sinkStmt, ISourceSinkDefinition sourceDefinition, AccessPath source, Stmt sourceStmt, Object userData,
 			List<Stmt> propagationPath, List<AccessPath> propagationAccessPath) {
-		ResultSourceInfo sourceObj = new ResultSourceInfo(sourceDefinition, source, sourceStmt, userData,
-				propagationPath, propagationAccessPath);
-		ResultSinkInfo sinkObj = new ResultSinkInfo(sinkDefinition, sink, sinkStmt);
+		ResultSinkInfo sourceObj = new ResultSinkInfo(sourceDefinition, source, sourceStmt);
+		ResultSourceInfo sinkObj = new ResultSourceInfo(sinkDefinition, sink, sinkStmt, userData, propagationPath, propagationAccessPath);
 
-		this.addResult(sinkObj, sourceObj);
-		return new Pair<>(sourceObj, sinkObj);
+		this.addResult(sourceObj, sinkObj);
+		return new Pair<>(sinkObj, sourceObj);
 	}
 
 	/**
