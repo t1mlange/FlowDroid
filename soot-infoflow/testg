@@ -1,20 +1,15 @@
 digraph "" {
-    "virtualinvoke cm.<soot.jimple.infoflow.test.android.ConnectionManager: void publish(int)>(i#1)"
+    "virtualinvoke cm.<soot.jimple.infoflow.test.android.ConnectionManager: void publish(int)>(i#2)"
     "cm = $stack4"
-    "virtualinvoke cm.<soot.jimple.infoflow.test.android.ConnectionManager: void publish(int)>(i#1)"->"cm = $stack4";
+    "virtualinvoke cm.<soot.jimple.infoflow.test.android.ConnectionManager: void publish(int)>(i#2)"->"cm = $stack4";
     "specialinvoke $stack4.<soot.jimple.infoflow.test.android.ConnectionManager: void <init>()>()"
     "cm = $stack4"->"specialinvoke $stack4.<soot.jimple.infoflow.test.android.ConnectionManager: void <init>()>()";
     "$stack4 = new soot.jimple.infoflow.test.android.ConnectionManager"
     "specialinvoke $stack4.<soot.jimple.infoflow.test.android.ConnectionManager: void <init>()>()"->"$stack4 = new soot.jimple.infoflow.test.android.ConnectionManager";
-    "if i#1 >= 100 goto $stack4 = new soot.jimple.infoflow.test.android.ConnectionManager"
-    "$stack4 = new soot.jimple.infoflow.test.android.ConnectionManager"->"if i#1 >= 100 goto $stack4 = new soot.jimple.infoflow.test.android.ConnectionManager";
-    "i#1 = 123"
-    "if i#1 >= 100 goto $stack4 = new soot.jimple.infoflow.test.android.ConnectionManager"->"i#1 = 123";
+    "i#2 = i#1 + 1"
+    "$stack4 = new soot.jimple.infoflow.test.android.ConnectionManager"->"i#2 = i#1 + 1";
+    "i#1 = staticinvoke <soot.jimple.infoflow.test.android.TelephonyManager: int getIMEI()>()"
+    "i#2 = i#1 + 1"->"i#1 = staticinvoke <soot.jimple.infoflow.test.android.TelephonyManager: int getIMEI()>()";
     "this := @this: soot.jimple.infoflow.test.BasicTestCode"
-    "i#1 = 123"->"this := @this: soot.jimple.infoflow.test.BasicTestCode";
-    "goto [?= (branch)]"
-    "if i#1 >= 100 goto $stack4 = new soot.jimple.infoflow.test.android.ConnectionManager"->"goto [?= (branch)]";
-    "i#1 = specialinvoke this.<soot.jimple.infoflow.test.BasicTestCode: int increment(int)>(i#1)"
-    "goto [?= (branch)]"->"i#1 = specialinvoke this.<soot.jimple.infoflow.test.BasicTestCode: int increment(int)>(i#1)";
-    "i#1 = specialinvoke this.<soot.jimple.infoflow.test.BasicTestCode: int increment(int)>(i#1)"->"if i#1 >= 100 goto $stack4 = new soot.jimple.infoflow.test.android.ConnectionManager";
+    "i#1 = staticinvoke <soot.jimple.infoflow.test.android.TelephonyManager: int getIMEI()>()"->"this := @this: soot.jimple.infoflow.test.BasicTestCode";
 }

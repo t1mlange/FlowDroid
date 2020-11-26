@@ -290,11 +290,11 @@ public class Infoflow extends AbstractInfoflow {
 				sourcesSinks.initialize();
 
 			// Perform constant propagation and remove dead code
-			if (config.getCodeEliminationMode() != CodeEliminationMode.NoCodeElimination) {
-				long currentMillis = System.nanoTime();
-				eliminateDeadCode(sourcesSinks);
-				logger.info("Dead code elimination took " + (System.nanoTime() - currentMillis) / 1E9 + " seconds");
-			}
+//			if (config.getCodeEliminationMode() != CodeEliminationMode.NoCodeElimination) {
+//				long currentMillis = System.nanoTime();
+//				eliminateDeadCode(sourcesSinks);
+//				logger.info("Dead code elimination took " + (System.nanoTime() - currentMillis) / 1E9 + " seconds");
+//			}
 
 			// After constant value propagation, we might find more call edges
 			// for reflective method calls

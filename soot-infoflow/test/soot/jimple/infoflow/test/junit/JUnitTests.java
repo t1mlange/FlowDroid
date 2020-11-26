@@ -55,7 +55,6 @@ public abstract class JUnitTests {
 	protected static final String sourceBundleGet = "<soot.jimple.infoflow.test.android.Bundle: java.lang.Object get(java.lang.String)>";
 	protected static final String sourceLongitude = "<soot.jimple.infoflow.test.android.LocationManager: double getLongitude()>";
 	protected static final String sourceLocation = "<soot.jimple.infoflow.test.android.LocationManager: soot.jimple.infoflow.test.android.Location getLastKnownLocation()>";
-	protected static final String sourceTest = "<soot.jimple.infoflow.test.android.Location: double getLongitude()>";
 
 	@BeforeClass
 	public static void setUp() throws IOException {

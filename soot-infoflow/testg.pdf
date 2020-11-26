@@ -178,135 +178,338 @@ def
 %%EndSetup
 setupLatin1
 %%Page: 1 1
-%%PageBoundingBox: 36 36 760 368
+%%PageBoundingBox: 36 36 959 872
 %%PageOrientation: Portrait
 0 0 1 beginpage
 gsave
-36 36 724 332 boxprim clip newpath
+36 36 923 836 boxprim clip newpath
 1 1 set_scale 0 rotate 40 40 translate
-% virtualinvoke cm.<soot.jimple.infoflow.test.android.ConnectionManager: void publish(int)>(124)
+% virtualinvoke cm.<soot.jimple.infoflow.test.android.ConnectionManager: void publish(java.lang.Double)>($stack8)
 gsave
 1 setlinewidth
 0 0 0 nodecolor
-358.1182 306 358.2365 18 ellipse_path stroke
+457.5594 810 422.425 18 ellipse_path stroke
 0 0 0 nodecolor
 14 /Times-Roman set_font
-90.6182 302.3 moveto 535 (virtualinvoke cm.<soot.jimple.infoflow.test.android.ConnectionManager: void publish\(int\)>\(124\)) alignedtext
+140.5594 806.3 moveto 634 (virtualinvoke cm.<soot.jimple.infoflow.test.android.ConnectionManager: void publish\(java.lang.Double\)>\($stack8\)) alignedtext
 grestore
-% cm = $stack4
+% $stack8 = staticinvoke <java.lang.Double: java.lang.Double valueOf(double)>($stack7)
 gsave
 1 setlinewidth
 0 0 0 nodecolor
-358.1182 234 59.2899 18 ellipse_path stroke
+457.5594 738 322.2428 18 ellipse_path stroke
 0 0 0 nodecolor
 14 /Times-Roman set_font
-320.6182 230.3 moveto 75 (cm = $stack4) alignedtext
+217.5594 734.3 moveto 480 ($stack8 = staticinvoke <java.lang.Double: java.lang.Double valueOf\(double\)>\($stack7\)) alignedtext
 grestore
-% virtualinvoke cm.<soot.jimple.infoflow.test.android.ConnectionManager: void publish(int)>(124)->cm = $stack4
+% virtualinvoke cm.<soot.jimple.infoflow.test.android.ConnectionManager: void publish(java.lang.Double)>($stack8)->$stack8 = staticinvoke <java.lang.Double: java.lang.Double valueOf(double)>($stack7)
 gsave
 1 setlinewidth
 0 0 0 edgecolor
-newpath 358.1182 287.6966 moveto
-358.1182 279.9827 358.1182 270.7125 358.1182 262.1124 curveto
+newpath 457.5594 791.6966 moveto
+457.5594 783.9827 457.5594 774.7125 457.5594 766.1124 curveto
 stroke
 0 0 0 edgecolor
-newpath 361.6183 262.1043 moveto
-358.1182 252.1043 lineto
-354.6183 262.1044 lineto
+newpath 461.0595 766.1043 moveto
+457.5594 756.1043 lineto
+454.0595 766.1044 lineto
 closepath fill
 1 setlinewidth
 solid
 0 0 0 edgecolor
-newpath 361.6183 262.1043 moveto
-358.1182 252.1043 lineto
-354.6183 262.1044 lineto
+newpath 461.0595 766.1043 moveto
+457.5594 756.1043 lineto
+454.0595 766.1044 lineto
 closepath stroke
 grestore
-% specialinvoke $stack4.<soot.jimple.infoflow.test.android.ConnectionManager: void <init>()>()
+% $stack7 = virtualinvoke loc#2.<soot.jimple.infoflow.test.android.Location: double getLongitude()>()
 gsave
 1 setlinewidth
 0 0 0 nodecolor
-358.1182 162 349.0381 18 ellipse_path stroke
+457.5594 666 369.3346 18 ellipse_path stroke
 0 0 0 nodecolor
 14 /Times-Roman set_font
-97.6182 158.3 moveto 521 (specialinvoke $stack4.<soot.jimple.infoflow.test.android.ConnectionManager: void <init>\(\)>\(\)) alignedtext
+181.5594 662.3 moveto 552 ($stack7 = virtualinvoke loc#2.<soot.jimple.infoflow.test.android.Location: double getLongitude\(\)>\(\)) alignedtext
 grestore
-% cm = $stack4->specialinvoke $stack4.<soot.jimple.infoflow.test.android.ConnectionManager: void <init>()>()
+% $stack8 = staticinvoke <java.lang.Double: java.lang.Double valueOf(double)>($stack7)->$stack7 = virtualinvoke loc#2.<soot.jimple.infoflow.test.android.Location: double getLongitude()>()
 gsave
 1 setlinewidth
 0 0 0 edgecolor
-newpath 358.1182 215.6966 moveto
-358.1182 207.9827 358.1182 198.7125 358.1182 190.1124 curveto
+newpath 457.5594 719.6966 moveto
+457.5594 711.9827 457.5594 702.7125 457.5594 694.1124 curveto
 stroke
 0 0 0 edgecolor
-newpath 361.6183 190.1043 moveto
-358.1182 180.1043 lineto
-354.6183 190.1044 lineto
+newpath 461.0595 694.1043 moveto
+457.5594 684.1043 lineto
+454.0595 694.1044 lineto
 closepath fill
 1 setlinewidth
 solid
 0 0 0 edgecolor
-newpath 361.6183 190.1043 moveto
-358.1182 180.1043 lineto
-354.6183 190.1044 lineto
+newpath 461.0595 694.1043 moveto
+457.5594 684.1043 lineto
+454.0595 694.1044 lineto
 closepath stroke
 grestore
-% $stack4 = new soot.jimple.infoflow.test.android.ConnectionManager
+% cm = $stack6
 gsave
 1 setlinewidth
 0 0 0 nodecolor
-358.1182 90 255.3547 18 ellipse_path stroke
+457.5594 594 59.2899 18 ellipse_path stroke
 0 0 0 nodecolor
 14 /Times-Roman set_font
-169.6182 86.3 moveto 377 ($stack4 = new soot.jimple.infoflow.test.android.ConnectionManager) alignedtext
+420.0594 590.3 moveto 75 (cm = $stack6) alignedtext
 grestore
-% specialinvoke $stack4.<soot.jimple.infoflow.test.android.ConnectionManager: void <init>()>()->$stack4 = new soot.jimple.infoflow.test.android.ConnectionManager
+% $stack7 = virtualinvoke loc#2.<soot.jimple.infoflow.test.android.Location: double getLongitude()>()->cm = $stack6
 gsave
 1 setlinewidth
 0 0 0 edgecolor
-newpath 358.1182 143.6966 moveto
-358.1182 135.9827 358.1182 126.7125 358.1182 118.1124 curveto
+newpath 457.5594 647.6966 moveto
+457.5594 639.9827 457.5594 630.7125 457.5594 622.1124 curveto
 stroke
 0 0 0 edgecolor
-newpath 361.6183 118.1043 moveto
-358.1182 108.1043 lineto
-354.6183 118.1044 lineto
+newpath 461.0595 622.1043 moveto
+457.5594 612.1043 lineto
+454.0595 622.1044 lineto
 closepath fill
 1 setlinewidth
 solid
 0 0 0 edgecolor
-newpath 361.6183 118.1043 moveto
-358.1182 108.1043 lineto
-354.6183 118.1044 lineto
+newpath 461.0595 622.1043 moveto
+457.5594 612.1043 lineto
+454.0595 622.1044 lineto
+closepath stroke
+grestore
+% specialinvoke $stack6.<soot.jimple.infoflow.test.android.ConnectionManager: void <init>()>()
+gsave
+1 setlinewidth
+0 0 0 nodecolor
+457.5594 522 349.0381 18 ellipse_path stroke
+0 0 0 nodecolor
+14 /Times-Roman set_font
+197.0594 518.3 moveto 521 (specialinvoke $stack6.<soot.jimple.infoflow.test.android.ConnectionManager: void <init>\(\)>\(\)) alignedtext
+grestore
+% cm = $stack6->specialinvoke $stack6.<soot.jimple.infoflow.test.android.ConnectionManager: void <init>()>()
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 457.5594 575.6966 moveto
+457.5594 567.9827 457.5594 558.7125 457.5594 550.1124 curveto
+stroke
+0 0 0 edgecolor
+newpath 461.0595 550.1043 moveto
+457.5594 540.1043 lineto
+454.0595 550.1044 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 461.0595 550.1043 moveto
+457.5594 540.1043 lineto
+454.0595 550.1044 lineto
+closepath stroke
+grestore
+% $stack6 = new soot.jimple.infoflow.test.android.ConnectionManager
+gsave
+1 setlinewidth
+0 0 0 nodecolor
+457.5594 450 255.3547 18 ellipse_path stroke
+0 0 0 nodecolor
+14 /Times-Roman set_font
+269.0594 446.3 moveto 377 ($stack6 = new soot.jimple.infoflow.test.android.ConnectionManager) alignedtext
+grestore
+% specialinvoke $stack6.<soot.jimple.infoflow.test.android.ConnectionManager: void <init>()>()->$stack6 = new soot.jimple.infoflow.test.android.ConnectionManager
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 457.5594 503.6966 moveto
+457.5594 495.9827 457.5594 486.7125 457.5594 478.1124 curveto
+stroke
+0 0 0 edgecolor
+newpath 461.0595 478.1043 moveto
+457.5594 468.1043 lineto
+454.0595 478.1044 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 461.0595 478.1043 moveto
+457.5594 468.1043 lineto
+454.0595 478.1044 lineto
+closepath stroke
+grestore
+% loc#2 = virtualinvoke loc#1.<soot.jimple.infoflow.test.android.Location: soot.jimple.infoflow.test.android.Location clear()>()
+gsave
+1 setlinewidth
+0 0 0 nodecolor
+457.5594 378 457.6188 18 ellipse_path stroke
+0 0 0 nodecolor
+14 /Times-Roman set_font
+113.5594 374.3 moveto 688 (loc#2 = virtualinvoke loc#1.<soot.jimple.infoflow.test.android.Location: soot.jimple.infoflow.test.android.Location clear\(\)>\(\)) alignedtext
+grestore
+% $stack6 = new soot.jimple.infoflow.test.android.ConnectionManager->loc#2 = virtualinvoke loc#1.<soot.jimple.infoflow.test.android.Location: soot.jimple.infoflow.test.android.Location clear()>()
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 457.5594 431.6966 moveto
+457.5594 423.9827 457.5594 414.7125 457.5594 406.1124 curveto
+stroke
+0 0 0 edgecolor
+newpath 461.0595 406.1043 moveto
+457.5594 396.1043 lineto
+454.0595 406.1044 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 461.0595 406.1043 moveto
+457.5594 396.1043 lineto
+454.0595 406.1044 lineto
+closepath stroke
+grestore
+% loc#1 = $stack3
+gsave
+1 setlinewidth
+0 0 0 nodecolor
+457.5594 306 67.6881 18 ellipse_path stroke
+0 0 0 nodecolor
+14 /Times-Roman set_font
+413.5594 302.3 moveto 88 (loc#1 = $stack3) alignedtext
+grestore
+% loc#2 = virtualinvoke loc#1.<soot.jimple.infoflow.test.android.Location: soot.jimple.infoflow.test.android.Location clear()>()->loc#1 = $stack3
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 457.5594 359.6966 moveto
+457.5594 351.9827 457.5594 342.7125 457.5594 334.1124 curveto
+stroke
+0 0 0 edgecolor
+newpath 461.0595 334.1043 moveto
+457.5594 324.1043 lineto
+454.0595 334.1044 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 461.0595 334.1043 moveto
+457.5594 324.1043 lineto
+454.0595 334.1044 lineto
+closepath stroke
+grestore
+% specialinvoke $stack3.<soot.jimple.infoflow.test.android.Location: void <init>(double,double)>($stack4, 0.0)
+gsave
+1 setlinewidth
+0 0 0 nodecolor
+457.5594 234 401.0288 18 ellipse_path stroke
+0 0 0 nodecolor
+14 /Times-Roman set_font
+157.0594 230.3 moveto 601 (specialinvoke $stack3.<soot.jimple.infoflow.test.android.Location: void <init>\(double,double\)>\($stack4, 0.0\)) alignedtext
+grestore
+% loc#1 = $stack3->specialinvoke $stack3.<soot.jimple.infoflow.test.android.Location: void <init>(double,double)>($stack4, 0.0)
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 457.5594 287.6966 moveto
+457.5594 279.9827 457.5594 270.7125 457.5594 262.1124 curveto
+stroke
+0 0 0 edgecolor
+newpath 461.0595 262.1043 moveto
+457.5594 252.1043 lineto
+454.0595 262.1044 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 461.0595 262.1043 moveto
+457.5594 252.1043 lineto
+454.0595 262.1044 lineto
+closepath stroke
+grestore
+% $stack4 = staticinvoke <soot.jimple.infoflow.test.android.LocationManager: double getLongitude()>()
+gsave
+1 setlinewidth
+0 0 0 nodecolor
+457.5594 162 374.2336 18 ellipse_path stroke
+0 0 0 nodecolor
+14 /Times-Roman set_font
+177.5594 158.3 moveto 560 ($stack4 = staticinvoke <soot.jimple.infoflow.test.android.LocationManager: double getLongitude\(\)>\(\)) alignedtext
+grestore
+% specialinvoke $stack3.<soot.jimple.infoflow.test.android.Location: void <init>(double,double)>($stack4, 0.0)->$stack4 = staticinvoke <soot.jimple.infoflow.test.android.LocationManager: double getLongitude()>()
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 457.5594 215.6966 moveto
+457.5594 207.9827 457.5594 198.7125 457.5594 190.1124 curveto
+stroke
+0 0 0 edgecolor
+newpath 461.0595 190.1043 moveto
+457.5594 180.1043 lineto
+454.0595 190.1044 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 461.0595 190.1043 moveto
+457.5594 180.1043 lineto
+454.0595 190.1044 lineto
+closepath stroke
+grestore
+% $stack3 = new soot.jimple.infoflow.test.android.Location
+gsave
+1 setlinewidth
+0 0 0 nodecolor
+457.5594 90 214.4619 18 ellipse_path stroke
+0 0 0 nodecolor
+14 /Times-Roman set_font
+300.5594 86.3 moveto 314 ($stack3 = new soot.jimple.infoflow.test.android.Location) alignedtext
+grestore
+% $stack4 = staticinvoke <soot.jimple.infoflow.test.android.LocationManager: double getLongitude()>()->$stack3 = new soot.jimple.infoflow.test.android.Location
+gsave
+1 setlinewidth
+0 0 0 edgecolor
+newpath 457.5594 143.6966 moveto
+457.5594 135.9827 457.5594 126.7125 457.5594 118.1124 curveto
+stroke
+0 0 0 edgecolor
+newpath 461.0595 118.1043 moveto
+457.5594 108.1043 lineto
+454.0595 118.1044 lineto
+closepath fill
+1 setlinewidth
+solid
+0 0 0 edgecolor
+newpath 461.0595 118.1043 moveto
+457.5594 108.1043 lineto
+454.0595 118.1044 lineto
 closepath stroke
 grestore
 % this := @this: soot.jimple.infoflow.test.BasicTestCode
 gsave
 1 setlinewidth
 0 0 0 nodecolor
-358.1182 18 204.1638 18 ellipse_path stroke
+457.5594 18 204.1638 18 ellipse_path stroke
 0 0 0 nodecolor
 14 /Times-Roman set_font
-209.1182 14.3 moveto 298 (this := @this: soot.jimple.infoflow.test.BasicTestCode) alignedtext
+308.5594 14.3 moveto 298 (this := @this: soot.jimple.infoflow.test.BasicTestCode) alignedtext
 grestore
-% $stack4 = new soot.jimple.infoflow.test.android.ConnectionManager->this := @this: soot.jimple.infoflow.test.BasicTestCode
+% $stack3 = new soot.jimple.infoflow.test.android.Location->this := @this: soot.jimple.infoflow.test.BasicTestCode
 gsave
 1 setlinewidth
 0 0 0 edgecolor
-newpath 358.1182 71.6966 moveto
-358.1182 63.9827 358.1182 54.7125 358.1182 46.1124 curveto
+newpath 457.5594 71.6966 moveto
+457.5594 63.9827 457.5594 54.7125 457.5594 46.1124 curveto
 stroke
 0 0 0 edgecolor
-newpath 361.6183 46.1043 moveto
-358.1182 36.1043 lineto
-354.6183 46.1044 lineto
+newpath 461.0595 46.1043 moveto
+457.5594 36.1043 lineto
+454.0595 46.1044 lineto
 closepath fill
 1 setlinewidth
 solid
 0 0 0 edgecolor
-newpath 361.6183 46.1043 moveto
-358.1182 36.1043 lineto
-354.6183 46.1044 lineto
+newpath 461.0595 46.1043 moveto
+457.5594 36.1043 lineto
+454.0595 46.1044 lineto
 closepath stroke
 grestore
 endpage
@@ -316,7 +519,7 @@ grestore
 %%EndPage: 1
 %%Trailer
 %%Pages: 1
-%%BoundingBox: 36 36 760 368
+%%BoundingBox: 36 36 959 872
 end
 restore
 %%EOF

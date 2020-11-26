@@ -121,6 +121,11 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
 //                            return res;
 //                        }
 
+                        // We are done if left side is not tainted
+                        if (left.getType() instanceof RefType && !Aliasing.baseMatches(left, source)) {
+                            return res;
+                        }
+
                         // Handled in the ArrayPropagationRule (TODO: really?)
                         // As we are backwards, our source is thrown thrown away
                         // because it was overwritten with the rightValue
@@ -135,14 +140,19 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                         // We do not know which right value is responsible for the taint.
                         // Being conservative, we taint all rhs variables
                         for (Value rightVal : rightVals) {
+                            if (assignStmt.toString().contains("this.<soot.jimple.infoflow.test.android.Location: double longitude> = 0.0")
+                            && source.toString().contains("this(soot.jimple.infoflow.test.android.Location) <soot.jimple.infoflow.test.android.Location: double longitude>"))
+                                rightVal = rightVal;
+
                             // null refrences kill the taint
                             if (rightVal instanceof InstanceFieldRef && ((InstanceFieldRef) rightVal).getBase().getType() instanceof NullType)
                                 return Collections.emptySet();
 
                             // We do not track constants
-                            if (rightVal instanceof Constant)
-                                continue;
-
+                            if (rightVal instanceof Constant) {
+                                res.remove(source);
+                                return res;
+                            }
 
                             // TODO: cutFirstField?
                             Abstraction newAbs;
