@@ -22,9 +22,9 @@ public class BasicTestCode {
 	}
 
 	private void calleeOverwrite(Location loc) {
-//		System.out.println(loc);
+		System.out.println(loc);
 		loc = LocationManager.getLastKnownLocation();
-//		System.out.println(loc);
+		System.out.println(loc);
 	}
 
 	public void overwriteInCalleeTest2() {
@@ -36,7 +36,7 @@ public class BasicTestCode {
 	}
 
 	private void calleeOverwriteNull(Location loc) {
-//		System.out.println(loc);
+		System.out.println(loc);
 		loc = null;
 	}
 	
