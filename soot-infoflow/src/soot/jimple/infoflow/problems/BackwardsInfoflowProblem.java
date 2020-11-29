@@ -1,5 +1,6 @@
 package soot.jimple.infoflow.problems;
 
+import com.sun.xml.bind.v2.runtime.reflect.opt.Const;
 import heros.FlowFunction;
 import heros.FlowFunctions;
 import heros.flowfunc.KillAll;
@@ -112,21 +113,29 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
 
                         // If left side is not tainted, no normal flow rules apply
                         // and we propagate the taint over the statement
-                        if (left.getType() instanceof RefType && !Aliasing.baseMatches(left, source)) {
+                        if (left.getType() instanceof RefType && !Aliasing.baseMatches(left, source))
                             return res;
-                        }
 
                         // At this point we know that the assigment
                         // will overwrite the tainted left side
                         res.remove(source);
 
+                        // RHS can not produce any new taint
+                        // therefore we can stop here
+                        if (right instanceof NewExpr)
+                            return res;
+
                         // We do not know which right value is responsible for the taint.
                         // Being conservative, we taint all rhs variables
                         for (Value rightVal : rightVals) {
-                            // TODO: Needed?
+//                             TODO: Needed?
                             // null base kill the taint
-//                            if (rightVal instanceof InstanceFieldRef && ((InstanceFieldRef) rightVal).getBase().getType() instanceof NullType)
-//                                return Collections.emptySet();
+                            if (rightVal instanceof InstanceFieldRef && ((InstanceFieldRef) rightVal).getBase().getType() instanceof NullType)
+                                return Collections.emptySet();
+
+                            // We can skip constant
+                            if (rightVal instanceof Constant)
+                                continue;
 
                             // TODO: cutFirstField?
                             Abstraction newAbs;
