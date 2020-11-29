@@ -7,6 +7,7 @@ import java.util.concurrent.TimeUnit;
 import soot.jimple.infoflow.InfoflowConfiguration.PathBuildingAlgorithm;
 import soot.jimple.infoflow.InfoflowConfiguration.PathConfiguration;
 import soot.jimple.infoflow.InfoflowManager;
+import soot.jimple.infoflow.results.InfoflowResults;
 import soot.jimple.infoflow.solver.executors.InterruptableExecutor;
 
 /**
@@ -52,21 +53,21 @@ public class DefaultPathBuilderFactory implements IPathBuilderFactory {
 	}
 
 	@Override
-	public IAbstractionPathBuilder createPathBuilder(InfoflowManager manager, int maxThreadNum) {
-		return createPathBuilder(manager, createExecutor(maxThreadNum));
+	public IAbstractionPathBuilder createPathBuilder(InfoflowManager manager, int maxThreadNum, InfoflowResults results) {
+		return createPathBuilder(manager, createExecutor(maxThreadNum), results);
 	}
 
 	@Override
-	public IAbstractionPathBuilder createPathBuilder(InfoflowManager manager, InterruptableExecutor executor) {
+	public IAbstractionPathBuilder createPathBuilder(InfoflowManager manager, InterruptableExecutor executor, InfoflowResults results) {
 		switch (pathConfiguration.getPathBuildingAlgorithm()) {
 		case Recursive:
 			return new RecursivePathBuilder(manager, executor);
 		case ContextSensitive:
-			return new ContextSensitivePathBuilder(manager, executor);
+			return new ContextSensitivePathBuilder(manager, executor, results);
 		case ContextInsensitive:
-			return new ContextInsensitivePathBuilder(manager, executor);
+			return new ContextInsensitivePathBuilder(manager, executor, results);
 		case ContextInsensitiveSourceFinder:
-			return new ContextInsensitiveSourceFinder(manager, executor);
+			return new ContextInsensitiveSourceFinder(manager, executor, results);
 		case None:
 			return new EmptyPathBuilder();
 		}

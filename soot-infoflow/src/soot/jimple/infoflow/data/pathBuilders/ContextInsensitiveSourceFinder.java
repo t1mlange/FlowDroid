@@ -7,6 +7,7 @@ import java.util.Set;
 import soot.jimple.infoflow.InfoflowManager;
 import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.data.AbstractionAtSink;
+import soot.jimple.infoflow.results.InfoflowResults;
 import soot.jimple.infoflow.solver.executors.InterruptableExecutor;
 
 /**
@@ -31,8 +32,8 @@ public class ContextInsensitiveSourceFinder extends ConcurrentAbstractionPathBui
 	 * @param maxThreadNum
 	 *            The maximum number of threads to use
 	 */
-	public ContextInsensitiveSourceFinder(InfoflowManager manager, InterruptableExecutor executor) {
-		this(manager, executor, -1);
+	public ContextInsensitiveSourceFinder(InfoflowManager manager, InterruptableExecutor executor, InfoflowResults results) {
+		this(manager, executor, -1, results);
 	}
 
 	/**
@@ -50,8 +51,8 @@ public class ContextInsensitiveSourceFinder extends ConcurrentAbstractionPathBui
 	 *            The maximum number of abstractions for which a path
 	 *            reconstruction will be performed
 	 */
-	public ContextInsensitiveSourceFinder(InfoflowManager manager, InterruptableExecutor executor, int numTasks) {
-		super(manager, executor);
+	public ContextInsensitiveSourceFinder(InfoflowManager manager, InterruptableExecutor executor, int numTasks, InfoflowResults results) {
+		super(manager, executor, results);
 		this.numTasks = numTasks;
 	}
 

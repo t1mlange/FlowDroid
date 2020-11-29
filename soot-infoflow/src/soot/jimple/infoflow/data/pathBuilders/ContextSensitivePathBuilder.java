@@ -34,8 +34,8 @@ public class ContextSensitivePathBuilder extends ConcurrentAbstractionPathBuilde
 	 *                 objects
 	 * @param executor The executor in which to run the path reconstruction tasks
 	 */
-	public ContextSensitivePathBuilder(InfoflowManager manager, InterruptableExecutor executor) {
-		super(manager, executor);
+	public ContextSensitivePathBuilder(InfoflowManager manager, InterruptableExecutor executor, InfoflowResults results) {
+		super(manager, executor, results);
 	}
 
 	/**

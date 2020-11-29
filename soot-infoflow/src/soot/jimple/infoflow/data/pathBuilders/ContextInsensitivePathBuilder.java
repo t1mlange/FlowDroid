@@ -9,6 +9,7 @@ import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.data.AbstractionAtSink;
 import soot.jimple.infoflow.data.SourceContext;
 import soot.jimple.infoflow.data.SourceContextAndPath;
+import soot.jimple.infoflow.results.InfoflowResults;
 import soot.jimple.infoflow.solver.executors.InterruptableExecutor;
 
 /**
@@ -31,8 +32,8 @@ public class ContextInsensitivePathBuilder extends ConcurrentAbstractionPathBuil
 	 * @param executor
 	 *            The executor in which to run the path reconstruction tasks
 	 */
-	public ContextInsensitivePathBuilder(InfoflowManager manager, InterruptableExecutor executor) {
-		super(manager, executor);
+	public ContextInsensitivePathBuilder(InfoflowManager manager, InterruptableExecutor executor, InfoflowResults results) {
+		super(manager, executor, results);
 	}
 
 	/**

@@ -12,15 +12,16 @@ import soot.jimple.infoflow.solver.executors.InterruptableExecutor;
 
 public abstract class ConcurrentAbstractionPathBuilder extends AbstractAbstractionPathBuilder {
 
-	protected final InfoflowResults results = new InfoflowResults();
+	protected final InfoflowResults results;
 
 	private final InterruptableExecutor executor;
 	private Set<IMemoryBoundedSolverStatusNotification> notificationListeners = new HashSet<>();
 	private ISolverTerminationReason killFlag = null;
 
-	public ConcurrentAbstractionPathBuilder(InfoflowManager manager, InterruptableExecutor executor) {
+	public ConcurrentAbstractionPathBuilder(InfoflowManager manager, InterruptableExecutor executor, InfoflowResults results) {
 		super(manager);
 		this.executor = executor;
+		this.results = results;
 	}
 
 	/**

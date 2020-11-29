@@ -1,6 +1,7 @@
 package soot.jimple.infoflow.data.pathBuilders;
 
 import soot.jimple.infoflow.InfoflowManager;
+import soot.jimple.infoflow.results.InfoflowResults;
 import soot.jimple.infoflow.solver.executors.InterruptableExecutor;
 
 /**
@@ -21,7 +22,7 @@ public interface IPathBuilderFactory {
 	 *            The maximum number of threads to use * @return The newly
 	 *            created path builder
 	 */
-	public IAbstractionPathBuilder createPathBuilder(InfoflowManager manager, int maxThreadNum);
+	public IAbstractionPathBuilder createPathBuilder(InfoflowManager manager, int maxThreadNum, InfoflowResults results);
 
 	/**
 	 * Creates a new path builder. Use this overload if you want the path
@@ -34,7 +35,7 @@ public interface IPathBuilderFactory {
 	 *            The executor in which to run the path reconstruction tasks.
 	 *            * @return The newly created path builder
 	 */
-	public IAbstractionPathBuilder createPathBuilder(InfoflowManager manager, InterruptableExecutor executor);
+	public IAbstractionPathBuilder createPathBuilder(InfoflowManager manager, InterruptableExecutor executor, InfoflowResults results);
 
 	/**
 	 * Gets whether the {@link IAbstractionPathBuilder} object created by this

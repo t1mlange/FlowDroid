@@ -563,20 +563,21 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                 && interproceduralCFG().isStaticFieldUsed(callee, source.getAccessPath().getFirstField()))
                             return res;
 
-                        // TODO: Why does this break on println?
+                        // TODO: This breaks println. Shouldn't CallFlow map this into the function
                         // Do not pass on parameters
 //                        if(Arrays.stream(callArgs).anyMatch(arg -> arg == source.getAccessPath().getPlainValue()))
 //                             return res;
 
-                        if (callee.isNative()) {
-                            for (Value arg : callArgs) {
-                                if (arg == source.getAccessPath().getPlainValue()) {
-                                    Set<Abstraction> nativeAbs = ncHandler.getTaintedValues(callStmt, source, callArgs);
-                                    if (nativeAbs != null)
-                                        res.addAll(nativeAbs);
-                                }
-                                break;
-                            }
+                        // TODO: ncHandler is forward only atm
+                        if (callee.isNative() && ncHandler != null) {
+//                            for (Value arg : callArgs) {
+//                                if (arg == source.getAccessPath().getPlainValue()) {
+//                                    Set<Abstraction> nativeAbs = ncHandler.getTaintedValues(callStmt, source, callArgs);
+//                                    if (nativeAbs != null)
+//                                        res.addAll(nativeAbs);
+//                                }
+//                                break;
+//                            }
                         }
 
                         if (!killSource.value)
