@@ -114,15 +114,22 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
 
                         // If left side is not tainted, no normal flow rules apply
                         // and we propagate the taint over the statement
-                        if (source.getAccessPath().isStaticFieldRef() && left instanceof StaticFieldRef) {
-                            if (!source.getAccessPath().firstFieldMatches(((StaticFieldRef) left).getField()))
-                                return res;
-                        } else {
-                            Value base = left;
-                            if (left instanceof InstanceFieldRef)
-                                base = ((InstanceFieldRef) left).getBase();
-                            if (base != source.getAccessPath().getPlainValue())
-                                return res;
+                        {
+                            AccessPath ap = source.getAccessPath();
+                            if (ap.isStaticFieldRef() && left instanceof StaticFieldRef) {
+                                if (!ap.firstFieldMatches(((StaticFieldRef) left).getField()))
+                                    return res;
+                            } else {
+                                if (left instanceof Local && left != ap.getPlainValue())
+                                    return res;
+                                else if (left instanceof InstanceFieldRef) {
+                                    InstanceFieldRef inst = ((InstanceFieldRef) left);
+                                    if (inst.getBase() != ap.getPlainValue())
+                                        return res;
+                                    if (ap.getFirstField() != null && !ap.firstFieldMatches(inst.getField()))
+                                        return res;
+                                }
+                            }
                         }
 
                         // RHS can not produce any new taint
