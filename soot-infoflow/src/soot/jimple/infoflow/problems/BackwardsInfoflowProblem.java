@@ -4,8 +4,10 @@ import com.sun.xml.bind.v2.runtime.reflect.opt.Const;
 import heros.FlowFunction;
 import heros.FlowFunctions;
 import heros.flowfunc.KillAll;
+import polyglot.ast.Assert;
 import soot.*;
 import soot.jimple.*;
+import soot.jimple.infoflow.AbstractInfoflow;
 import soot.jimple.infoflow.InfoflowConfiguration;
 import soot.jimple.infoflow.InfoflowManager;
 import soot.jimple.infoflow.aliasing.Aliasing;
@@ -20,6 +22,7 @@ import soot.jimple.infoflow.solver.functions.SolverNormalFlowFunction;
 import soot.jimple.infoflow.solver.functions.SolverReturnFlowFunction;
 import soot.jimple.infoflow.util.BaseSelector;
 import soot.jimple.infoflow.util.ByReferenceBoolean;
+import soot.jimple.infoflow.util.SystemClassHandler;
 import soot.jimple.infoflow.util.TypeUtils;
 
 import java.util.*;
@@ -68,8 +71,6 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                     TaintPropagationHandler.FlowFunctionType.NormalFlowFunction);
 
                         Set<Abstraction> res = computeTargetsInternal(d1, source);
-//                        Set<Abstraction> res = new HashSet<>();
-//                        res.add(source);
                         System.out.println("Normal" + "\n" + "In: " + source.toString() + "\n" + "Stmt: " + srcStmt.toString() + "\n" + "Out: " + res.toString() + "\n" + "---------------------------------------");
 
                         return notifyOutFlowHandlers(srcStmt, d1, source, res,
@@ -77,8 +78,8 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                     }
 
                     private Set<Abstraction> computeTargetsInternal(Abstraction d1, Abstraction source) {
-                        // TODO: activation needed?
-
+                        if (srcStmt.toString().contains("<soot.jimple.infoflow.test.TypeTestCode: soot.jimple.infoflow.test.TypeTestCode$A a> = b"))
+                            d1=d1;
                         Set<Abstraction> res = null;
                         ByReferenceBoolean killSource = new ByReferenceBoolean();
                         ByReferenceBoolean killAll = new ByReferenceBoolean();
@@ -113,39 +114,47 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
 
                         // If left side is not tainted, no normal flow rules apply
                         // and we propagate the taint over the statement
-                        if (left.getType() instanceof RefType && !Aliasing.baseMatches(left, source))
-                            return res;
-
-                        // At this point we know that the assigment
-                        // will overwrite the tainted left side
-                        res.remove(source);
+                        if (source.getAccessPath().isStaticFieldRef() && left instanceof StaticFieldRef) {
+                            if (!source.getAccessPath().firstFieldMatches(((StaticFieldRef) left).getField()))
+                                return res;
+                        } else {
+                            Value base = left;
+                            if (left instanceof InstanceFieldRef)
+                                base = ((InstanceFieldRef) left).getBase();
+                            if (base != source.getAccessPath().getPlainValue())
+                                return res;
+                        }
 
                         // RHS can not produce any new taint
                         // therefore we can stop here
                         if (right instanceof NewExpr)
                             return res;
 
+                        // At this point we know that the assigment
+                        // will overwrite the tainted left side
+                        res.remove(source);
+
                         // We do not know which right value is responsible for the taint.
                         // Being conservative, we taint all rhs variables
                         for (Value rightVal : rightVals) {
-//                             TODO: Needed?
                             // null base kill the taint
                             if (rightVal instanceof InstanceFieldRef && ((InstanceFieldRef) rightVal).getBase().getType() instanceof NullType)
                                 return Collections.emptySet();
 
-                            // We can skip constant
+                            // We can skip constants
                             if (rightVal instanceof Constant)
                                 continue;
 
                             // TODO: cutFirstField?
                             Abstraction newAbs;
-                            if (rightVal instanceof Local || source.getAccessPath().isEmpty()) {
+                            if (source.getAccessPath().isEmpty()) {
                                 newAbs = source.deriveNewAbstraction(manager.getAccessPathFactory()
                                         .createAccessPath(rightVal, true), assignStmt);
                             }
                             else {
                                 AccessPath ap = manager.getAccessPathFactory().copyWithNewValue(source.getAccessPath(),
-                                        rightVal);
+                                            rightVal, rightVal.getType(),
+                                        left instanceof InstanceFieldRef && right instanceof Local);
                                 newAbs = source.deriveNewAbstraction(ap, assignStmt);
                             }
 
@@ -477,11 +486,6 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                         .checkCast(source.getAccessPath(), originalCallArg.getType()))
                                     continue;
 
-                                // If param is overwritten in the method, the parameter taint is killed
-                                // and the argument will not be tainted
-                                if (interproceduralCFG().methodWritesValue(callee, paramLocals[i]))
-                                    continue;
-
                                 AccessPath ap = manager.getAccessPathFactory().copyWithNewValue(
                                         source.getAccessPath(), originalCallArg,
                                         isReflectiveCallSite ? null : source.getAccessPath().getBaseType(),
@@ -527,7 +531,6 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                         if (taintPropagationHandler != null)
                             taintPropagationHandler.notifyFlowIn(callSite, source, manager,
                                     TaintPropagationHandler.FlowFunctionType.CallToReturnFlowFunction);
-
                         Set<Abstraction> res = computeTargetsInternal(d1, source);
                         System.out.println("CallToReturn" + "\n" + "In: " + source.toString() + "\n" + "Stmt: " + callStmt.toString() + "\n" + "Out: " + res.toString() + "\n" + "---------------------------------------");
 
@@ -559,10 +562,10 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                             return res;
                         }
 
-                        // TODO: Why?
+                        // TODO: How can this happen and why?
                         // If we do not know the callees, we can not do anything
-                        if (interproceduralCFG().getCalleesOfCallAt(callSite).isEmpty())
-                           return res;
+//                        if (interproceduralCFG().getCalleesOfCallAt(callSite).isEmpty())
+//                           return res;
 
                         // Static values can be propagated over methods if
                         // the value isn't used inside the method.
@@ -572,21 +575,21 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                 && interproceduralCFG().isStaticFieldUsed(callee, source.getAccessPath().getFirstField()))
                             return res;
 
-                        // TODO: This breaks println. Shouldn't CallFlow map this into the function
-                        // Do not pass on parameters
-//                        if(Arrays.stream(callArgs).anyMatch(arg -> arg == source.getAccessPath().getPlainValue()))
-//                             return res;
+                        // Do not pass over reference parameters
+                        if(Arrays.stream(callArgs).anyMatch(arg -> !isPrimtiveOrString(source) && arg == source.getAccessPath().getPlainValue()))
+                             return res;
 
                         // TODO: ncHandler is forward only atm
+                        //  ncHandler will always be null for now
                         if (callee.isNative() && ncHandler != null) {
-//                            for (Value arg : callArgs) {
-//                                if (arg == source.getAccessPath().getPlainValue()) {
-//                                    Set<Abstraction> nativeAbs = ncHandler.getTaintedValues(callStmt, source, callArgs);
-//                                    if (nativeAbs != null)
-//                                        res.addAll(nativeAbs);
-//                                }
-//                                break;
-//                            }
+                            for (Value arg : callArgs) {
+                                if (arg == source.getAccessPath().getPlainValue()) {
+                                    Set<Abstraction> nativeAbs = ncHandler.getTaintedValues(callStmt, source, callArgs);
+                                    if (nativeAbs != null)
+                                        res.addAll(nativeAbs);
+                                }
+                                break;
+                            }
                         }
 
                         if (!killSource.value)
@@ -597,6 +600,11 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                 };
             }
         };
+    }
+
+    private boolean isPrimtiveOrString(Abstraction abs) {
+        Type t = abs.getAccessPath().getLastFieldType();
+        return t instanceof PrimType || TypeUtils.isStringType(t);
     }
 
     public TaintPropagationResults getResults() {

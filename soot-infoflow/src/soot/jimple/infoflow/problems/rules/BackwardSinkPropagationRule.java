@@ -18,7 +18,10 @@ import java.util.Set;
 
 /**
  * Rule to introduce unconditional taints at sinks
- * 
+ * Caution: As in backwards analysis sinks and sources are
+ * swapped internally this works with sources
+ *
+ * @author Steven Arzt
  * @author Tim Lange
  */
 public class BackwardSinkPropagationRule extends AbstractTaintPropagationRule {

@@ -20,7 +20,8 @@ import java.util.Collection;
  * Rule for recording abstractions that arrive at sources
  * The sources are swapped for the sinks, thats why all the other methods call for sink
  * even though they work on the sources
- * 
+ *
+ * @author Steven Arzt
  * @author Tim Lange
  */
 public class BackwardSourcePropagationRule extends AbstractTaintPropagationRule {
@@ -84,20 +85,6 @@ public class BackwardSourcePropagationRule extends AbstractTaintPropagationRule 
 	@Override
 	public Collection<Abstraction> propagateCallFlow(Abstraction d1, Abstraction source, Stmt stmt, SootMethod dest,
 			ByReferenceBoolean killAll) {
-		// Check whether this return is treated as a sink
-		if (stmt instanceof ReturnStmt) {
-			final ReturnStmt returnStmt = (ReturnStmt) stmt;
-			boolean matches = source.getAccessPath().isLocal() || source.getAccessPath().getTaintSubFields();
-			if (matches && source.isAbstractionActive() && getManager().getSourceSinkManager() != null
-					&& source.getAccessPath().getPlainValue() == returnStmt.getOp()) {
-				SinkInfo sinkInfo = getManager().getSourceSinkManager().getSinkInfo(returnStmt, getManager(),
-						source.getAccessPath());
-				if (sinkInfo != null
-						&& !getResults().addResult(new AbstractionAtSink(sinkInfo.getDefinition(), source, returnStmt)))
-					killState = true;
-			}
-		}
-
 		// If we are in the kill state, we stop the analysis
 		if (killAll != null)
 			killAll.value |= killState;
@@ -120,11 +107,6 @@ public class BackwardSourcePropagationRule extends AbstractTaintPropagationRule 
 	 * @return True if the callee has access to the tainted value, false otherwise
 	 */
 	protected boolean isTaintVisibleInCallee(Stmt stmt, Abstraction source) {
-		// If we don't have an alias analysis anymore, we probably in the shutdown phase
-		// anyway
-//		if (getAliasing() == null)
-//			return false;
-
 		InvokeExpr iexpr = stmt.getInvokeExpr();
 
 		// Is an argument tainted?
@@ -184,25 +166,6 @@ public class BackwardSourcePropagationRule extends AbstractTaintPropagationRule 
 	@Override
 	public Collection<Abstraction> propagateReturnFlow(Collection<Abstraction> callerD1s, Abstraction source, Stmt stmt,
 			Stmt retSite, Stmt callSite, ByReferenceBoolean killAll) {
-//		// Check whether this return is treated as a sink
-//		if (stmt instanceof ReturnStmt) {
-//			final ReturnStmt returnStmt = (ReturnStmt) stmt;
-//			boolean matches = source.getAccessPath().isLocal() || source.getAccessPath().getTaintSubFields();
-//			if (matches && source.isAbstractionActive() && getManager().getSourceSinkManager() != null
-//					&& source.getAccessPath().getPlainValue() == returnStmt.getOp()) {
-//				SinkInfo sinkInfo = getManager().getSourceSinkManager().getSinkInfo(returnStmt, getManager(),
-//						source.getAccessPath());
-//				if (sinkInfo != null
-//						&& !getResults().addResult(new AbstractionAtSink(sinkInfo.getDefinition(), source, returnStmt)))
-//					killState = true;
-//			}
-//		}
-//
-//		// If we are in the kill state, we stop the analysis
-//		if (killAll != null)
-//			killAll.value |= killState;
-//
-//		return null;
 		// If we are in the kill state, we stop the analysis
 		if (killAll != null)
 			killAll.value |= killState;
