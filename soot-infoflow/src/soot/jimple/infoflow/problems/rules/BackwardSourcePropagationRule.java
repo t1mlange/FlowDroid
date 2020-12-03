@@ -90,12 +90,6 @@ public class BackwardSourcePropagationRule extends AbstractTaintPropagationRule 
 			killAll.value |= killState;
 
 		return null;
-
-//		// If we are in the kill state, we stop the analysis
-//		if (killAll != null)
-//			killAll.value |= killState;
-//
-//		return null;
 	}
 
 	/**

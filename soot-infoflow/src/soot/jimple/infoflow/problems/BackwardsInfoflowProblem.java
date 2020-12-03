@@ -106,9 +106,8 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                         final Value right = assignStmt.getRightOp();
                         final Value[] rightVals = BaseSelector.selectBaseList(right, true);
 
-                        // Handled in the ArrayPropagationRule (TODO: really?)
-                        // As we are backwards, our source is thrown thrown away
-                        // because it was overwritten with the rightValue
+                        // Handled in the ArrayPropagationRule
+                        // TODO: actually write the rule
                         if (right instanceof LengthExpr)
                             return res;
 
@@ -249,8 +248,8 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
 
                         // Can we use the taintWrapper results?
                         // If yes, this is done in CallToReturnFlowFunction
-                        if (taintWrapper != null && taintWrapper.isExclusive(stmt, source))
-                            return Collections.emptySet();
+//                        if (taintWrapper != null && taintWrapper.isExclusive(stmt, source))
+//                            return Collections.emptySet();
 
 
                         // not used static fields do not need to be propagated
@@ -364,6 +363,7 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                             }
                         }
 
+                        setCallSite(source, res, (Stmt) callStmt);
                         return res;
                     }
                 };
@@ -431,6 +431,9 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                     }
 
                     private Set<Abstraction> computeTargetsInternal(Abstraction source, Abstraction calleeD1, Collection<Abstraction> callerD1s) {
+                        if (manager.getConfig().getStopAfterFirstFlow() && !results.isEmpty())
+                            return Collections.emptySet();
+
                         Set<Abstraction> res = null;
                         ByReferenceBoolean killAll = new ByReferenceBoolean();
                         if (propagationRules != null)
@@ -504,7 +507,6 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                 }
                             }
                         }
-
                         return res;
                     }
                 };
@@ -546,6 +548,9 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                     }
 
                     private Set<Abstraction> computeTargetsInternal(Abstraction d1, Abstraction source) {
+                        if (manager.getConfig().getStopAfterFirstFlow() && !results.isEmpty())
+                            return Collections.emptySet();
+
                         Set<Abstraction> res = null;
                         ByReferenceBoolean killSource = new ByReferenceBoolean();
                         ByReferenceBoolean killAll = new ByReferenceBoolean();
@@ -583,7 +588,7 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                             return res;
 
                         // Do not pass over reference parameters
-                        if(Arrays.stream(callArgs).anyMatch(arg -> !isPrimtiveOrString(source) && arg == source.getAccessPath().getPlainValue()))
+                        if(Arrays.stream(callArgs).anyMatch(arg -> !isPrimtiveOrStringBase(source) && arg == source.getAccessPath().getPlainValue()))
                              return res;
 
                         // TODO: ncHandler is forward only atm
@@ -602,17 +607,26 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                         if (!killSource.value)
                             res.add(source);
 
+                        setCallSite(source, res, callStmt);
                         return res;
                     }
                 };
             }
+
+            private void setCallSite(Abstraction source, Set<Abstraction> set, Stmt callSite) {
+                for (Abstraction abs : set) {
+                    if (abs != source)
+                        abs.setCorrespondingCallSite(callSite);
+                }
+            }
+
+            private boolean isPrimtiveOrStringBase(Abstraction abs) {
+                Type t = abs.getAccessPath().getBaseType();
+                return t instanceof PrimType || TypeUtils.isStringType(t);
+            }
         };
     }
 
-    private boolean isPrimtiveOrString(Abstraction abs) {
-        Type t = abs.getAccessPath().getLastFieldType();
-        return t instanceof PrimType || TypeUtils.isStringType(t);
-    }
 
     public TaintPropagationResults getResults() {
         return this.results;

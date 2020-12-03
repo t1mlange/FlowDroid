@@ -22,12 +22,17 @@ public class BackwardPropagationRuleManagerFactory implements IPropagationRuleMa
 
 		ruleList.add(new BackwardSinkPropagationRule(manager, zeroValue, results));
 		ruleList.add(new BackwardSourcePropagationRule(manager, zeroValue, results));
-//		ruleList.add(new StaticPropagationRule(manager, zeroValue, results));
+		ruleList.add(new SkipSystemClassRule(manager, zeroValue, results));
 
+		if (manager.getConfig().getEnableExceptionTracking())
+			ruleList.add(new BackwardExceptionPropagationRule(manager, zeroValue, results));
+		if (manager.getConfig().getStopAfterFirstKFlows() > 0)
+			ruleList.add(new StopAfterFirstKFlowsPropagationRule(manager, zeroValue, results));
+
+
+//		ruleList.add(new StaticPropagationRule(manager, zeroValue, results));
 //		if (manager.getConfig().getEnableArrayTracking())
 //			ruleList.add(new ArrayPropagationRule(manager, zeroValue, results));
-//		if (manager.getConfig().getEnableExceptionTracking())
-//			ruleList.add(new ExceptionPropagationRule(manager, zeroValue, results));
 //		if (manager.getTaintWrapper() != null)
 //			ruleList.add(new WrapperPropagationRule(manager, zeroValue, results));
 //		if (manager.getConfig().getImplicitFlowMode().trackControlFlowDependencies())
@@ -35,9 +40,6 @@ public class BackwardPropagationRuleManagerFactory implements IPropagationRuleMa
 //		ruleList.add(new StrongUpdatePropagationRule(manager, zeroValue, results));
 //		if (manager.getConfig().getEnableTypeChecking())
 //			ruleList.add(new TypingPropagationRule(manager, zeroValue, results));
-//		ruleList.add(new SkipSystemClassRule(manager, zeroValue, results));
-//		if (manager.getConfig().getStopAfterFirstKFlows() > 0)
-//			ruleList.add(new StopAfterFirstKFlowsPropagationRule(manager, zeroValue, results));
 
 		return new PropagationRuleManager(manager, zeroValue, results,
 				ruleList.toArray(new ITaintPropagationRule[0]));

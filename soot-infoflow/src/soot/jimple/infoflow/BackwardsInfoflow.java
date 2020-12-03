@@ -39,6 +39,7 @@ import soot.jimple.infoflow.solver.PredecessorShorteningMode;
 import soot.jimple.infoflow.solver.SolverPeerGroup;
 import soot.jimple.infoflow.solver.cfg.BackwardsInfoflowCFG;
 import soot.jimple.infoflow.solver.cfg.IInfoflowCFG;
+import soot.jimple.infoflow.solver.cfg.InfoflowCFG;
 import soot.jimple.infoflow.solver.executors.InterruptableExecutor;
 import soot.jimple.infoflow.solver.gcSolver.GCSolverPeerGroup;
 import soot.jimple.infoflow.solver.memory.DefaultMemoryManagerFactory;
@@ -53,7 +54,9 @@ import soot.jimple.infoflow.threading.IExecutorFactory;
 import soot.jimple.infoflow.util.SootMethodRepresentationParser;
 import soot.jimple.infoflow.util.SystemClassHandler;
 import soot.jimple.toolkits.callgraph.ReachableMethods;
+import soot.jimple.toolkits.ide.icfg.dotexport.ICFGDotVisualizer;
 import soot.options.Options;
+import soot.util.IterableNumberer;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -728,7 +731,6 @@ public class BackwardsInfoflow extends AbstractInfoflow {
                     // Create the path builder
                     final IAbstractionPathBuilder builder = new BatchPathBuilder(manager,
                             pathBuilderFactory.createPathBuilder(manager, resultExecutor, new BackwardsInfoflowResults()));
-//					final IAbstractionPathBuilder builder = new DebuggingPathBuilder(pathBuilderFactory, manager);
 
                     // If we want incremental result reporting, we have to
                     // initialize it before we start the taint tracking
