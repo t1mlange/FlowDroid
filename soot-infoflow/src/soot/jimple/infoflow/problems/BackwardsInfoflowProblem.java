@@ -5,6 +5,7 @@ import heros.FlowFunction;
 import heros.FlowFunctions;
 import heros.flowfunc.KillAll;
 import polyglot.ast.Assert;
+import polyglot.ast.NewArray;
 import soot.*;
 import soot.jimple.*;
 import soot.jimple.infoflow.AbstractInfoflow;
@@ -108,7 +109,7 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
 
                         // Handled in the ArrayPropagationRule
                         // TODO: actually write the rule
-                        if (right instanceof LengthExpr)
+                        if (right instanceof LengthExpr || right instanceof ArrayRef || right instanceof NewArrayExpr)
                             return res;
 
                         // If left side is not tainted, no normal flow rules apply
@@ -363,7 +364,6 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                             }
                         }
 
-                        setCallSite(source, res, (Stmt) callStmt);
                         return res;
                     }
                 };
@@ -423,8 +423,6 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                     TaintPropagationHandler.FlowFunctionType.ReturnFlowFunction);
 
                         Set<Abstraction> res = computeTargetsInternal(source, calleeD1, callerD1s);
-//                        Set<Abstraction> res = new HashSet<>();
-//                        res.add(source);
                         System.out.println("Return" + "\n" + "In: " + source.toString() + "\n" + "Stmt: " + stmt.toString() + "\n" + "Out: " + res.toString() + "\n" + "---------------------------------------");
                         return notifyOutFlowHandlers(exitStmt, calleeD1, source, res,
                                 TaintPropagationHandler.FlowFunctionType.ReturnFlowFunction);
@@ -507,6 +505,8 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                 }
                             }
                         }
+
+                        setCallSite(source, res, (Stmt) callSite);
                         return res;
                     }
                 };
@@ -540,6 +540,9 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                         if (taintPropagationHandler != null)
                             taintPropagationHandler.notifyFlowIn(callSite, source, manager,
                                     TaintPropagationHandler.FlowFunctionType.CallToReturnFlowFunction);
+                        if (callSite.toString().contains("arraycopy"))
+                            d1=d1;
+
                         Set<Abstraction> res = computeTargetsInternal(d1, source);
                         System.out.println("CallToReturn" + "\n" + "In: " + source.toString() + "\n" + "Stmt: " + callStmt.toString() + "\n" + "Out: " + res.toString() + "\n" + "---------------------------------------");
 
@@ -570,14 +573,15 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                         // If left side is tainted, the return value overwrites the taint
                         // CallFlow takes care of tainting the return value
                         if (callStmt instanceof AssignStmt
-                                && ((AssignStmt) callStmt).getLeftOp() == source.getAccessPath().getPlainValue()) {
+                                && ((AssignStmt) callStmt).getLeftOp() == source.getAccessPath().getPlainValue())
+                            return res;
+
+                        // If we do not know the callees, we can not reason
+                        if (interproceduralCFG().getCalleesOfCallAt(callSite).isEmpty()) {
+                            if (source != zeroValue)
+                                res.add(source);
                             return res;
                         }
-
-                        // TODO: How can this happen and why?
-                        // If we do not know the callees, we can not do anything
-//                        if (interproceduralCFG().getCalleesOfCallAt(callSite).isEmpty())
-//                           return res;
 
                         // Static values can be propagated over methods if
                         // the value isn't used inside the method.
@@ -587,10 +591,6 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                 && interproceduralCFG().isStaticFieldUsed(callee, source.getAccessPath().getFirstField()))
                             return res;
 
-                        // Do not pass over reference parameters
-                        if(Arrays.stream(callArgs).anyMatch(arg -> !isPrimtiveOrStringBase(source) && arg == source.getAccessPath().getPlainValue()))
-                             return res;
-
                         // TODO: ncHandler is forward only atm
                         //  ncHandler will always be null for now
                         if (callee.isNative() && ncHandler != null) {
@@ -599,10 +599,22 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                     Set<Abstraction> nativeAbs = ncHandler.getTaintedValues(callStmt, source, callArgs);
                                     if (nativeAbs != null)
                                         res.addAll(nativeAbs);
+
+                                    break;
                                 }
-                                break;
                             }
                         }
+
+                        // Do not pass base if tainted
+                        // CallFlow passes this into the callee
+                        if (invExpr instanceof InstanceInvokeExpr
+                                && ((InstanceInvokeExpr) invExpr).getBase() == source.getAccessPath().getPlainValue())
+                            return res;
+
+                        // Do not pass over reference parameters
+                        // CallFlow passes this into the callee
+                        if(Arrays.stream(callArgs).anyMatch(arg -> !isPrimtiveOrStringBase(source) && arg == source.getAccessPath().getPlainValue()))
+                             return res;
 
                         if (!killSource.value)
                             res.add(source);

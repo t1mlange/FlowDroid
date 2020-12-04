@@ -8,6 +8,8 @@ import soot.jimple.infoflow.InfoflowConfiguration.*;
 import soot.jimple.infoflow.aliasing.Aliasing;
 import soot.jimple.infoflow.aliasing.IAliasingStrategy;
 import soot.jimple.infoflow.cfg.BiDirICFGFactory;
+import soot.jimple.infoflow.codeOptimization.DeadCodeEliminator;
+import soot.jimple.infoflow.codeOptimization.ICodeOptimizer;
 import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.data.AbstractionAtSink;
 import soot.jimple.infoflow.data.AccessPathFactory;
@@ -28,6 +30,8 @@ import soot.jimple.infoflow.memory.IMemoryBoundedSolver;
 import soot.jimple.infoflow.memory.ISolverTerminationReason;
 import soot.jimple.infoflow.memory.reasons.OutOfMemoryReason;
 import soot.jimple.infoflow.memory.reasons.TimeoutReason;
+import soot.jimple.infoflow.nativeCallHandler.BackwardNativeCallHandler;
+import soot.jimple.infoflow.nativeCallHandler.DefaultNativeCallHandler;
 import soot.jimple.infoflow.problems.AbstractInfoflowProblem;
 import soot.jimple.infoflow.problems.BackwardsInfoflowProblem;
 import soot.jimple.infoflow.problems.TaintPropagationResults;
@@ -96,6 +100,7 @@ public class BackwardsInfoflow extends AbstractInfoflow {
      */
     public BackwardsInfoflow() {
         super();
+        setNativeCallHandler(new BackwardNativeCallHandler());
     }
 
     /**
@@ -111,6 +116,7 @@ public class BackwardsInfoflow extends AbstractInfoflow {
      */
     public BackwardsInfoflow(String androidPath, boolean forceAndroidJar) {
         super(null, androidPath, forceAndroidJar);
+        setNativeCallHandler(new BackwardNativeCallHandler());
     }
 
     /**
@@ -128,6 +134,7 @@ public class BackwardsInfoflow extends AbstractInfoflow {
      */
     public BackwardsInfoflow(String androidPath, boolean forceAndroidJar, BiDirICFGFactory icfgFactory) {
         super(icfgFactory, androidPath, forceAndroidJar);
+        setNativeCallHandler(new BackwardNativeCallHandler());
     }
 
     /**
@@ -435,13 +442,22 @@ public class BackwardsInfoflow extends AbstractInfoflow {
             // have no sink in the program, we don't need to perform any
             // analysis
             PatchingChain<Unit> units = m.getActiveBody().getUnits();
+            int i = 0;
             for (Unit u : units) {
+//                if (m.toString().contains("append")) {
+//                    ICFGDotVisualizer visualizer = new ICFGDotVisualizer("append.dot", u, manager.getICFG());
+//                    visualizer.exportToDot();
+//                }
                 Stmt s = (Stmt) u;
                 if (sourcesSinks.getSourceInfo(s, manager) != null) {
                     forwardProblem.addInitialSeeds(u, Collections.singleton(forwardProblem.zeroValue()));
                     if (getConfig().getLogSourcesAndSinks())
                         collectedSinks.add(s);
                     logger.info("Sink found: {} in {}", u, m.getSignature());
+
+//                    ICFGDotVisualizer visualizer = new ICFGDotVisualizer(i+".dot", u, manager.getICFG());
+//                    visualizer.exportToDot();
+//                    i++;
                 }
                 if (sourcesSinks.getSinkInfo(s, manager, null) != null) {
                     sourceCount++;
@@ -529,6 +545,27 @@ public class BackwardsInfoflow extends AbstractInfoflow {
         return (int) Math.round((runtime.totalMemory() - runtime.freeMemory()) / 1E6);
     }
 
+    /**
+     * Runs all code optimizers
+     *
+     * @param sourcesSinks The SourceSinkManager
+     */
+    protected void eliminateDeadCode(ISourceSinkManager sourcesSinks) {
+        InfoflowManager dceManager = new InfoflowManager(config, null,
+                icfgFactory.buildBiDirICFG(config.getCallgraphAlgorithm(), config.getEnableExceptionTracking()), null,
+                null, null, new AccessPathFactory(config), null);
+
+        // We need to exclude the dummy main method and all other artificial methods
+        // that the entry point creator may have generated as well
+        Set<SootMethod> excludedMethods = new HashSet<>();
+        if (additionalEntryPointMethods != null)
+            excludedMethods.addAll(additionalEntryPointMethods);
+        excludedMethods.addAll(Scene.v().getEntryPoints());
+
+        ICodeOptimizer dce = new DeadCodeEliminator();
+        dce.initialize(config);
+        dce.run(dceManager, excludedMethods, ((BackwardsSourceSinkManager) sourcesSinks).getDefaultSourceSinkManager(), taintWrapper);
+    }
 
     /**
      * Conducts a taint analysis on an already initialized callgraph
@@ -571,11 +608,11 @@ public class BackwardsInfoflow extends AbstractInfoflow {
 
             // TODO: Breaks tests
             // Perform constant propagation and remove dead code
-//			if (config.getCodeEliminationMode() != CodeEliminationMode.NoCodeElimination) {
-//				long currentMillis = System.nanoTime();
-//				eliminateDeadCode(sourcesSinks);
-//				logger.info("Dead code elimination took " + (System.nanoTime() - currentMillis) / 1E9 + " seconds");
-//			}
+			if (config.getCodeEliminationMode() != CodeEliminationMode.NoCodeElimination) {
+				long currentMillis = System.nanoTime();
+				eliminateDeadCode(sourcesSinks);
+				logger.info("Dead code elimination took " + (System.nanoTime() - currentMillis) / 1E9 + " seconds");
+			}
 
             // After constant value propagation, we might find more call edges
             // for reflective method calls
@@ -646,6 +683,7 @@ public class BackwardsInfoflow extends AbstractInfoflow {
 
                 // Initialize the data flow problem
                 BackwardsInfoflowProblem infoflowProblem = new BackwardsInfoflowProblem(manager, zeroValue, ruleManagerFactory);
+                infoflowProblem.setNativeCallHandler(this.nativeCallHandler);
                 // We need to create the right data flow solver
                 IInfoflowSolver solver = createSolver(executor, infoflowProblem);
 

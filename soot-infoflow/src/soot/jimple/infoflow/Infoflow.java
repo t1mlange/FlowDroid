@@ -70,6 +70,7 @@ import soot.jimple.infoflow.memory.ISolverTerminationReason;
 import soot.jimple.infoflow.memory.reasons.AbortRequestedReason;
 import soot.jimple.infoflow.memory.reasons.OutOfMemoryReason;
 import soot.jimple.infoflow.memory.reasons.TimeoutReason;
+import soot.jimple.infoflow.nativeCallHandler.DefaultNativeCallHandler;
 import soot.jimple.infoflow.problems.*;
 import soot.jimple.infoflow.problems.TaintPropagationResults.OnTaintPropagationResultAdded;
 import soot.jimple.infoflow.problems.rules.DefaultPropagationRuleManagerFactory;
@@ -135,6 +136,7 @@ public class Infoflow extends AbstractInfoflow {
 	 */
 	public Infoflow() {
 		super();
+		setNativeCallHandler(new DefaultNativeCallHandler());
 	}
 
 	/**

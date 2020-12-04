@@ -40,6 +40,8 @@ public class BackwardsSourceSinkManager implements ISourceSinkManager {
 	protected Collection<String> sourceDefs;
 	protected Collection<String> sinkDefs;
 
+	private DefaultSourceSinkManager defSourcesSinks;
+
 	private Collection<SootMethod> sources;
 	private Collection<SootMethod> sinks;
 
@@ -68,6 +70,7 @@ public class BackwardsSourceSinkManager implements ISourceSinkManager {
 	 * @param sinks   The list of methods to be treated as sins
 	 */
 	public BackwardsSourceSinkManager(Collection<String> sources, Collection<String> sinks) {
+		this.defSourcesSinks = new DefaultSourceSinkManager(sources, sinks);
 		this.sourceDefs = sources;
 		this.sinkDefs = sinks;
 	}
@@ -78,6 +81,7 @@ public class BackwardsSourceSinkManager implements ISourceSinkManager {
 	 * @param sourceSinkProvider The provider that defines source and sink methods
 	 */
 	public BackwardsSourceSinkManager(ISourceSinkDefinitionProvider sourceSinkProvider) {
+		this.defSourcesSinks = new DefaultSourceSinkManager(sourceSinkProvider);
 		this.sourceDefs = new HashSet<>();
 		this.sinkDefs = new HashSet<>();
 
@@ -99,11 +103,21 @@ public class BackwardsSourceSinkManager implements ISourceSinkManager {
 	}
 
 	/**
+	 * InterproceduralConstantValuePropagator doesn't like the swapping
+	 *
+	 * @return DefaultSourceSinkManager instance
+	 */
+	public DefaultSourceSinkManager getDefaultSourceSinkManager() {
+		return defSourcesSinks;
+	}
+
+	/**
 	 * Sets the list of methods to be treated as sources
 	 *
 	 * @param sources The list of methods to be treated as sources
 	 */
 	public void setSources(List<String> sources) {
+		defSourcesSinks.setSources(sources);
 		this.sourceDefs = sources;
 	}
 
@@ -113,6 +127,7 @@ public class BackwardsSourceSinkManager implements ISourceSinkManager {
 	 * @param sinks The list of methods to be treated as sinks
 	 */
 	public void setSinks(List<String> sinks) {
+		defSourcesSinks.setSinks(sinks);
 		this.sinkDefs = sinks;
 	}
 
@@ -213,6 +228,9 @@ public class BackwardsSourceSinkManager implements ISourceSinkManager {
 		if (aps.isEmpty())
 			return null;
 
+		// Removes possible null ap's
+		aps.remove(null);
+
 		// Create the source information data structure
 		return new SourceInfo(callee == null ? null : new MethodSourceSinkDefinition(new SootMethodAndClass(callee)),
 				aps);
@@ -276,6 +294,8 @@ public class BackwardsSourceSinkManager implements ISourceSinkManager {
 	 * Call before get(Source|Sink)Info or is(Source|Sink)
 	 */
 	public void initialize() {
+		this.defSourcesSinks.initialize();
+
 		if (sourceDefs != null) {
 			sources = new HashSet<>();
 			initSootMethodSet(sourceDefs, sources);

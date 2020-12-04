@@ -28,11 +28,11 @@ public class BackwardPropagationRuleManagerFactory implements IPropagationRuleMa
 			ruleList.add(new BackwardExceptionPropagationRule(manager, zeroValue, results));
 		if (manager.getConfig().getStopAfterFirstKFlows() > 0)
 			ruleList.add(new StopAfterFirstKFlowsPropagationRule(manager, zeroValue, results));
+		if (manager.getConfig().getEnableArrayTracking())
+			ruleList.add(new BackwardArrayPropagationRule(manager, zeroValue, results));
 
 
 //		ruleList.add(new StaticPropagationRule(manager, zeroValue, results));
-//		if (manager.getConfig().getEnableArrayTracking())
-//			ruleList.add(new ArrayPropagationRule(manager, zeroValue, results));
 //		if (manager.getTaintWrapper() != null)
 //			ruleList.add(new WrapperPropagationRule(manager, zeroValue, results));
 //		if (manager.getConfig().getImplicitFlowMode().trackControlFlowDependencies())
