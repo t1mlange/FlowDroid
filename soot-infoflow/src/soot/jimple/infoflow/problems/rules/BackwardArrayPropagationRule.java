@@ -38,17 +38,17 @@ public class BackwardArrayPropagationRule extends AbstractTaintPropagationRule {
 		final Value leftVal = assignStmt.getLeftOp();
 		final Value rightVal = assignStmt.getRightOp();
 
+		// x = a.length -> a length tainted
 		if (rightVal instanceof LengthExpr) {
 			LengthExpr lengthExpr = (LengthExpr) rightVal;
-			if (source.getAccessPath().getPlainValue() == leftVal) {
+			if (leftVal == source.getAccessPath().getPlainValue()) {
 				// Is the length tainted? If only the contents are tainted,
 				// the incoming abstraction does not match
 				if (source.getAccessPath().getArrayTaintType() == ArrayTaintType.Contents)
 					return null;
 
 				// Taint the array length
-				AccessPath ap = getManager().getAccessPathFactory().createAccessPath(lengthExpr.getOp(), null, IntType.v(),
-						(Type[]) null, true, false, true, ArrayTaintType.ContentsAndLength);
+				AccessPath ap = getManager().getAccessPathFactory().createAccessPath(lengthExpr.getOp(), lengthExpr.getOp().getType(), true, ArrayTaintType.Length);
 				newAbs = source.deriveNewAbstraction(ap, assignStmt);
 			}
 		}
@@ -62,9 +62,8 @@ public class BackwardArrayPropagationRule extends AbstractTaintPropagationRule {
 				AccessPath ap;
 				// track index
 				if (getManager().getConfig().getImplicitFlowMode().trackArrayAccesses()) {
-					ArrayTaintType arrayTaintType = ArrayTaintType.ContentsAndLength;
 					ap = getManager().getAccessPathFactory().copyWithNewValue(source.getAccessPath(), rightIndex,
-							null, false, true, arrayTaintType);
+							null, false, true, ArrayTaintType.Contents);
 				}
 				// taint whole array
 				else {
@@ -73,17 +72,17 @@ public class BackwardArrayPropagationRule extends AbstractTaintPropagationRule {
 					Type targetType = TypeUtils.buildArrayOrAddDimension(baseType, baseType.getArrayType());
 
 					// Create the new taint abstraction
-					ArrayTaintType arrayTaintType = source.getAccessPath().getArrayTaintType();
 					ap = getManager().getAccessPathFactory().copyWithNewValue(source.getAccessPath(), rightBase,
-							targetType, false, true, arrayTaintType);
+							targetType, false, true, ArrayTaintType.Contents);
 				}
 				newAbs = source.deriveNewAbstraction(ap, assignStmt);
 			}
 		}
-		// y = new A[i] with i tainted
+		// y = new A[i], y +length tainted
 		else if (rightVal instanceof NewArrayExpr && getManager().getConfig().getEnableArraySizeTainting()) {
 			NewArrayExpr newArrayExpr = (NewArrayExpr) rightVal;
-			if (!(newArrayExpr.getSize() instanceof Constant) && source.getAccessPath().getPlainValue() == leftVal) {
+			if (!(newArrayExpr.getSize() instanceof Constant) && source.getAccessPath().getArrayTaintType() != ArrayTaintType.Contents
+					&& source.getAccessPath().getPlainValue() == leftVal) {
 				// Create the new taint abstraction
 				AccessPath ap = getManager().getAccessPathFactory().copyWithNewValue(source.getAccessPath(), newArrayExpr.getSize(),
 						null, false, true, ArrayTaintType.Length);

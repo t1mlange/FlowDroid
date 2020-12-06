@@ -108,7 +108,6 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                         final Value[] rightVals = BaseSelector.selectBaseList(right, true);
 
                         // Handled in the ArrayPropagationRule
-                        // TODO: actually write the rule
                         if (right instanceof LengthExpr || right instanceof ArrayRef || right instanceof NewArrayExpr)
                             return res;
 
@@ -120,26 +119,31 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                 if (!ap.firstFieldMatches(((StaticFieldRef) left).getField()))
                                     return res;
                             } else {
-                                if (left instanceof Local && left != ap.getPlainValue())
-                                    return res;
-                                else if (left instanceof InstanceFieldRef) {
+                                if (left instanceof InstanceFieldRef) {
                                     InstanceFieldRef inst = ((InstanceFieldRef) left);
                                     if (inst.getBase() != ap.getPlainValue())
                                         return res;
                                     if (ap.getFirstField() != null && !ap.firstFieldMatches(inst.getField()))
                                         return res;
+                                } else if (left instanceof Local && left != ap.getPlainValue()) {
+                                    return res;
+                                }
+                                else if (left instanceof ArrayRef && ((ArrayRef) left).getBase() != ap.getPlainValue()) {
+                                    return res;
                                 }
                             }
                         }
+//                        if (!Aliasing.baseMatches(left, source))
+//                            return res;
 
                         // RHS can not produce any new taint
                         // therefore we can stop here
                         if (right instanceof NewExpr)
                             return res;
 
-                        // At this point we know that the assigment
-                        // will overwrite the tainted left side
-                        res.remove(source);
+                        // TODO: Better way for this
+                        if (!(left instanceof ArrayRef))
+                            res.remove(source);
 
                         // We do not know which right value is responsible for the taint.
                         // Being conservative, we taint all rhs variables
