@@ -79,7 +79,7 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                     }
 
                     private Set<Abstraction> computeTargetsInternal(Abstraction d1, Abstraction source) {
-                        if (srcStmt.toString().contains("<soot.jimple.infoflow.test.TypeTestCode: soot.jimple.infoflow.test.TypeTestCode$A a> = b"))
+                        if (srcStmt.toString().contains("$stack2 ="))
                             d1=d1;
                         Set<Abstraction> res = null;
                         ByReferenceBoolean killSource = new ByReferenceBoolean();
@@ -107,82 +107,125 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                         final Value right = assignStmt.getRightOp();
                         final Value[] rightVals = BaseSelector.selectBaseList(right, true);
 
-                        // Handled in the ArrayPropagationRule
-                        if (right instanceof LengthExpr || right instanceof ArrayRef || right instanceof NewArrayExpr)
-                            return res;
-
-                        // If left side is not tainted, no normal flow rules apply
-                        // and we propagate the taint over the statement
-                        {
-                            AccessPath ap = source.getAccessPath();
-                            if (ap.isStaticFieldRef() && left instanceof StaticFieldRef) {
-                                if (!ap.firstFieldMatches(((StaticFieldRef) left).getField()))
-                                    return res;
-                            } else {
-                                if (left instanceof InstanceFieldRef) {
-                                    InstanceFieldRef inst = ((InstanceFieldRef) left);
-                                    if (inst.getBase() != ap.getPlainValue())
-                                        return res;
-                                    if (ap.getFirstField() != null && !ap.firstFieldMatches(inst.getField()))
-                                        return res;
-                                } else if (left instanceof Local && left != ap.getPlainValue()) {
-                                    return res;
-                                }
-                                else if (left instanceof ArrayRef && ((ArrayRef) left).getBase() != ap.getPlainValue()) {
-                                    return res;
-                                }
-                            }
-                        }
-//                        if (!Aliasing.baseMatches(left, source))
-//                            return res;
-
-                        // RHS can not produce any new taint
-                        // therefore we can stop here
+                        // NewExpr can not produce new taints
                         if (right instanceof NewExpr)
                             return res;
 
-                        // TODO: Better way for this
-                        if (!(left instanceof ArrayRef))
-                            res.remove(source);
+                        // We throw the source away only if we
+                        // created a new taint on the right side
+                        boolean keepSource = true;
 
-                        // We do not know which right value is responsible for the taint.
-                        // Being conservative, we taint all rhs variables
+                        // We only need to find one taint for tainting the
+                        // left side so we can have those vars out of the loop
+                        boolean addLeftValue = false;
+                        boolean cutLeftField = false;
+                        Type leftType = null;
                         for (Value rightVal : rightVals) {
-                            // null base kill the taint
-                            if (rightVal instanceof InstanceFieldRef && ((InstanceFieldRef) rightVal).getBase().getType() instanceof NullType)
-                                return Collections.emptySet();
+                            AccessPath ap = source.getAccessPath();
 
-                            // We can skip constants
-                            if (rightVal instanceof Constant)
-                                continue;
-
-                            // TODO: cutFirstField?
-                            Abstraction newAbs;
-                            if (source.getAccessPath().isEmpty()) {
-                                newAbs = source.deriveNewAbstraction(manager.getAccessPathFactory()
-                                        .createAccessPath(rightVal, true), assignStmt);
+                            // If we do not overwrite the left side, we also do not
+                            // create a new taint out of the right side
+                            // If addLeftValue is already true, we found a taint
+                            // in a previous iteration
+                            if (!addLeftValue) {
+                                if (rightVal instanceof InstanceFieldRef) {
+                                    InstanceFieldRef inst = ((InstanceFieldRef) rightVal);
+                                    // base object matches
+                                    if (inst.getBase() == ap.getPlainValue()) {
+                                        // object is tainted
+                                        if (ap.getFirstField() == null) {
+                                            // If o.* or o1 =
+                                            if (ap.getTaintSubFields() || rightVal == ap.getPlainValue()) {
+                                                addLeftValue = true;
+                                            }
+                                        } else if (ap.firstFieldMatches(inst.getField())) {
+                                            addLeftValue = true;
+                                            cutLeftField = true;
+                                        }
+                                    }
+                                } else if (rightVal == ap.getPlainValue()) {
+                                    addLeftValue = true;
+                                }
                             }
-                            else {
-                                AccessPath ap = manager.getAccessPathFactory().copyWithNewValue(source.getAccessPath(),
-                                            rightVal, rightVal.getType(),
-                                        left instanceof InstanceFieldRef && right instanceof Local);
-                                newAbs = source.deriveNewAbstraction(ap, assignStmt);
+
+                            // Handled in the ArrayPropagationRule
+                            // Those expressions guarantee |rightVals| = 1, so we can break here
+                            if (right instanceof LengthExpr || right instanceof ArrayRef || right instanceof NewArrayExpr)
+                                break;
+
+                            boolean addRightValue = false;
+                            boolean cutRightField = false;
+                            Type rightType = null;
+                            if (ap.isStaticFieldRef() && left instanceof StaticFieldRef
+                                    && getManager().getConfig().getStaticFieldTrackingMode() != InfoflowConfiguration.StaticFieldTrackingMode.None) {
+                                if (ap.firstFieldMatches(((StaticFieldRef) left).getField())) {
+                                    addRightValue = true;
+                                    rightType = rightVal.getType();
+                                }
+                            } else if (left instanceof InstanceFieldRef) {
+                                InstanceFieldRef inst = ((InstanceFieldRef) left);
+                                // base object matches
+                                if (inst.getBase() == ap.getPlainValue()) {
+                                    // object is tainted
+                                    if (ap.getFirstField() == null) {
+                                        // If o.* or o1 =
+                                        if (ap.getTaintSubFields() || left == ap.getPlainValue()) {
+                                            addRightValue = true;
+                                        }
+                                    } else if (ap.firstFieldMatches(inst.getField())) {
+                                        addRightValue = true;
+                                        cutRightField = true;
+                                    }
+                                }
+                            } else if (left instanceof Local && left == ap.getPlainValue()) {
+                                addRightValue = true;
+                            }
+                            // A[i] = x with A tainted -> taint x. A stays tainted because of keepSource
+                            else if (left instanceof ArrayRef && ((ArrayRef) left).getBase() == ap.getPlainValue()) {
+                                addRightValue = true;
+                                rightType = right.getType();
                             }
 
-                            // Special cases for static taint tracking options
-                            if (rightVal instanceof StaticFieldRef && manager.getConfig().getStaticFieldTrackingMode()
-                                    == InfoflowConfiguration.StaticFieldTrackingMode.ContextFlowInsensitive)
-                                manager.getGlobalTaintManager().addToGlobalTaintState(newAbs);
-                            else if (rightVal instanceof StaticFieldRef && manager.getConfig()
-                                    .getStaticFieldTrackingMode() == InfoflowConfiguration.StaticFieldTrackingMode.None)
-                                return res;
-                            else if (newAbs != null)
-                                res.add(newAbs);
+                            if (addRightValue) {
+                                // Taint was overwritten
+                                keepSource = false;
+
+                                AccessPath newAp = manager.getAccessPathFactory().copyWithNewValue(source.getAccessPath(),
+                                        rightVal, rightType, cutRightField);
+                                Abstraction newAbs = source.deriveNewAbstraction(newAp, assignStmt);
+                                addAbstractionIfPossible(res, newAbs, rightVal);
+                            }
+                        }
+
+                        // If we don't track array indices, we do not overwrite the
+                        // taint if we just overwrite one value inside the array.
+                        // So we should keep the source alive
+                        if (left instanceof ArrayRef && !getManager().getConfig().getImplicitFlowMode().trackArrayAccesses())
+                            keepSource = true;
+
+                        if (!keepSource)
+                            res.remove(source);
+                        if (addLeftValue) {
+                            AccessPath newAp = manager.getAccessPathFactory().copyWithNewValue(source.getAccessPath(),
+                                    left, leftType, cutLeftField);
+                            Abstraction newAbs = source.deriveNewAbstraction(newAp, assignStmt);
+                            addAbstractionIfPossible(res, newAbs, left);
                         }
 
                         return res;
                     }
                 };
+            }
+
+            private void addAbstractionIfPossible(Set<Abstraction> res, Abstraction abs, Value val) {
+                if (abs == null)
+                    return;
+
+                if (val instanceof StaticFieldRef && manager.getConfig().getStaticFieldTrackingMode()
+                        == InfoflowConfiguration.StaticFieldTrackingMode.ContextFlowInsensitive) {
+                    manager.getGlobalTaintManager().addToGlobalTaintState(abs);
+                } else
+                    res.add(abs);
             }
 
             /**
