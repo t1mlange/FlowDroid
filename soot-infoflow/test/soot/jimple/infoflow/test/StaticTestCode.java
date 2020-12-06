@@ -49,6 +49,7 @@ public class StaticTestCode {
 	}
 	
 	public static void static2Test(){
+		System.out.println("Test");
 		String tainted = TelephonyManager.getDeviceId();
 		ClassWithStatic static1 = new ClassWithStatic();
 		static1.setTitle(tainted);

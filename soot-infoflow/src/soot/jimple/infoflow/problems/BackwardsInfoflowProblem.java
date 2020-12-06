@@ -79,8 +79,6 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                     }
 
                     private Set<Abstraction> computeTargetsInternal(Abstraction d1, Abstraction source) {
-                        if (srcStmt.toString().contains("$stack2 ="))
-                            d1=d1;
                         Set<Abstraction> res = null;
                         ByReferenceBoolean killSource = new ByReferenceBoolean();
                         ByReferenceBoolean killAll = new ByReferenceBoolean();
@@ -166,24 +164,25 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                 InstanceFieldRef inst = ((InstanceFieldRef) left);
                                 // base object matches
                                 if (inst.getBase() == ap.getPlainValue()) {
-                                    // object is tainted
-                                    if (ap.getFirstField() == null) {
-                                        // If o.* or o1 =
-                                        if (ap.getTaintSubFields() || left == ap.getPlainValue()) {
+                                    // whole object is tainted
+                                    if (ap.getFirstField() == null && ap.getTaintSubFields()) {
                                             addRightValue = true;
-                                        }
-                                    } else if (ap.firstFieldMatches(inst.getField())) {
+                                    }
+                                    // fields need ot match
+                                    else if (ap.firstFieldMatches(inst.getField())) {
                                         addRightValue = true;
                                         cutRightField = true;
+                                        rightType = rightVal.getType();
                                     }
                                 }
-                            } else if (left instanceof Local && left == ap.getPlainValue()) {
-                                addRightValue = true;
                             }
                             // A[i] = x with A tainted -> taint x. A stays tainted because of keepSource
                             else if (left instanceof ArrayRef && ((ArrayRef) left).getBase() == ap.getPlainValue()) {
                                 addRightValue = true;
                                 rightType = right.getType();
+                            } else if (left == ap.getPlainValue()) {
+                                addRightValue = true;
+                                rightType = rightVal.getType();
                             }
 
                             if (addRightValue) {
@@ -270,6 +269,9 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                             taintPropagationHandler.notifyFlowIn(stmt, source, manager,
                                     TaintPropagationHandler.FlowFunctionType.CallFlowFunction);
 
+                        if (callStmt.toString().contains("tainted ="))
+                            d1=d1;
+
                         Set<Abstraction> res = computeTargetsInternal(d1,source);
                         System.out.println("Call" + "\n" + "In: " + source.toString() + "\n" + "Stmt: " + stmt.toString() + "\n" + "Out: " + res.toString() + "\n" + "---------------------------------------");
 
@@ -299,11 +301,12 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
 //                        if (taintWrapper != null && taintWrapper.isExclusive(stmt, source))
 //                            return Collections.emptySet();
 
-
                         // not used static fields do not need to be propagated
                         if (manager.getConfig().getStaticFieldTrackingMode()
                                 != InfoflowConfiguration.StaticFieldTrackingMode.None
                                 && source.getAccessPath().isStaticFieldRef()) {
+                            // static fields first get pushed onto the stack before used,
+                            // so we check for a read on the base class
                             if (!interproceduralCFG().isStaticFieldUsed(dest, source.getAccessPath().getFirstField()))
                                 return Collections.emptySet();
                         }
@@ -587,8 +590,6 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                         if (taintPropagationHandler != null)
                             taintPropagationHandler.notifyFlowIn(callSite, source, manager,
                                     TaintPropagationHandler.FlowFunctionType.CallToReturnFlowFunction);
-                        if (callSite.toString().contains("arraycopy"))
-                            d1=d1;
 
                         Set<Abstraction> res = computeTargetsInternal(d1, source);
                         System.out.println("CallToReturn" + "\n" + "In: " + source.toString() + "\n" + "Stmt: " + callStmt.toString() + "\n" + "Out: " + res.toString() + "\n" + "---------------------------------------");
@@ -616,6 +617,11 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                         // Instanciate res if RuleManager did return null
                         if (res == null)
                             res = new HashSet<>();
+
+                        if (isExcluded(callee)) {
+                            res.add(source);
+                            return res;
+                        }
 
                         // If left side is tainted, the return value overwrites the taint
                         // CallFlow takes care of tainting the return value
