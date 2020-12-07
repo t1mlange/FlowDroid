@@ -39,7 +39,7 @@ public class BackwardPropagationRuleManagerFactory implements IPropagationRuleMa
 //			ruleList.add(new ImplicitPropagtionRule(manager, zeroValue, results));
 //		ruleList.add(new StrongUpdatePropagationRule(manager, zeroValue, results));
 //		if (manager.getConfig().getEnableTypeChecking())
-//			ruleList.add(new TypingPropagationRule(manager, zeroValue, results));
+//			ruleList.add(new BackwardTypingPropagationRule(manager, zeroValue, results));
 
 		return new PropagationRuleManager(manager, zeroValue, results,
 				ruleList.toArray(new ITaintPropagationRule[0]));

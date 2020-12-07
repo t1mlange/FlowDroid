@@ -1,7 +1,5 @@
 package soot.jimple.infoflow.problems.rules;
 
-import java.util.Collection;
-
 import soot.SootMethod;
 import soot.Value;
 import soot.jimple.CastExpr;
@@ -11,7 +9,8 @@ import soot.jimple.infoflow.InfoflowManager;
 import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.problems.TaintPropagationResults;
 import soot.jimple.infoflow.util.ByReferenceBoolean;
-import soot.jimple.infoflow.util.TypeUtils;
+
+import java.util.Collection;
 
 /**
  * Rule that implements type checs
@@ -19,9 +18,9 @@ import soot.jimple.infoflow.util.TypeUtils;
  * @author Steven Arzt
  *
  */
-public class TypingPropagationRule extends AbstractTaintPropagationRule {
+public class BackwardTypingPropagationRule extends AbstractTaintPropagationRule {
 
-	public TypingPropagationRule(InfoflowManager manager, Abstraction zeroValue, TaintPropagationResults results) {
+	public BackwardTypingPropagationRule(InfoflowManager manager, Abstraction zeroValue, TaintPropagationResults results) {
 		super(manager, zeroValue, results);
 	}
 
@@ -33,7 +32,8 @@ public class TypingPropagationRule extends AbstractTaintPropagationRule {
 			DefinitionStmt defStmt = (DefinitionStmt) stmt;
 			if (defStmt.getRightOp() instanceof CastExpr) {
 				CastExpr ce = (CastExpr) defStmt.getRightOp();
-				if (ce.getOp() == source.getAccessPath().getPlainValue()) {
+				Value left = defStmt.getLeftOp();
+				if (left == source.getAccessPath().getPlainValue()) {
 					// If the typecast is not compatible with the current type, we
 					// have to kill the taint
 					if (!getManager().getTypeUtils().checkCast(source.getAccessPath(), ce.getCastType())) {

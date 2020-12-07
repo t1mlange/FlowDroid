@@ -152,6 +152,7 @@ public class Infoflow extends AbstractInfoflow {
 	 */
 	public Infoflow(String androidPath, boolean forceAndroidJar) {
 		super(null, androidPath, forceAndroidJar);
+		setNativeCallHandler(new DefaultNativeCallHandler());
 	}
 
 	/**
@@ -169,6 +170,7 @@ public class Infoflow extends AbstractInfoflow {
 	 */
 	public Infoflow(String androidPath, boolean forceAndroidJar, BiDirICFGFactory icfgFactory) {
 		super(icfgFactory, androidPath, forceAndroidJar);
+		setNativeCallHandler(new DefaultNativeCallHandler());
 	}
 
 	@Override
