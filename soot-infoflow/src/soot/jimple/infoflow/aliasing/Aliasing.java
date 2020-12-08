@@ -331,6 +331,35 @@ public class Aliasing {
 		return val instanceof FieldRef || (val instanceof Local && ((Local) val).getType() instanceof ArrayType);
 	}
 
+	public boolean canHaveAliasesBW(Stmt stmt, Value val, Abstraction source) {
+		if (stmt instanceof DefinitionStmt) {
+			DefinitionStmt defStmt = (DefinitionStmt) stmt;
+			// If the left side is overwritten completely, we do not need to
+			// look for aliases. This also covers strings.
+			if (defStmt.getRightOp() instanceof Local && defStmt.getRightOp() == source.getAccessPath().getPlainValue())
+				return false;
+
+			// Arrays are heap objects
+			if (val instanceof ArrayRef)
+				return true;
+			if (val instanceof FieldRef)
+				return true;
+		}
+
+		// Primitive types or constants do not have aliases
+		if (val.getType() instanceof PrimType)
+			return false;
+		if (val instanceof Constant)
+			return false;
+
+		// String cannot have aliases, unless we process a delayed constructor call
+		if (TypeUtils.isStringType(val.getType()) && !isStringConstructorCall(stmt)
+				&& !source.getAccessPath().getCanHaveImmutableAliases())
+			return false;
+
+		return val instanceof FieldRef || (val instanceof Local && ((Local) val).getType() instanceof ArrayType);
+	}
+
 	/**
 	 * Checks whether the given statement is a call to a String constructor
 	 * 

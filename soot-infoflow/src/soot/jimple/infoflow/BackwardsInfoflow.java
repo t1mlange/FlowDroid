@@ -5,8 +5,7 @@ import org.slf4j.LoggerFactory;
 import soot.*;
 import soot.jimple.Stmt;
 import soot.jimple.infoflow.InfoflowConfiguration.*;
-import soot.jimple.infoflow.aliasing.Aliasing;
-import soot.jimple.infoflow.aliasing.IAliasingStrategy;
+import soot.jimple.infoflow.aliasing.*;
 import soot.jimple.infoflow.cfg.BiDirICFGFactory;
 import soot.jimple.infoflow.codeOptimization.DeadCodeEliminator;
 import soot.jimple.infoflow.codeOptimization.ICodeOptimizer;
@@ -32,9 +31,7 @@ import soot.jimple.infoflow.memory.reasons.OutOfMemoryReason;
 import soot.jimple.infoflow.memory.reasons.TimeoutReason;
 import soot.jimple.infoflow.nativeCallHandler.BackwardNativeCallHandler;
 import soot.jimple.infoflow.nativeCallHandler.DefaultNativeCallHandler;
-import soot.jimple.infoflow.problems.AbstractInfoflowProblem;
-import soot.jimple.infoflow.problems.BackwardsInfoflowProblem;
-import soot.jimple.infoflow.problems.TaintPropagationResults;
+import soot.jimple.infoflow.problems.*;
 import soot.jimple.infoflow.problems.rules.BackwardPropagationRuleManagerFactory;
 import soot.jimple.infoflow.problems.rules.IPropagationRuleManagerFactory;
 import soot.jimple.infoflow.results.*;
@@ -76,6 +73,7 @@ public class BackwardsInfoflow extends AbstractInfoflow {
 
     protected Set<ResultsAvailableHandler> onResultsAvailable = new HashSet<>();
     protected TaintPropagationHandler taintPropagationHandler = null;
+    protected TaintPropagationHandler backwardsPropagationHandler = null;
 
     protected IMemoryManagerFactory memoryManagerFactory = new DefaultMemoryManagerFactory();
     protected IExecutorFactory executorFactory = new DefaultExecutorFactory();
@@ -568,6 +566,80 @@ public class BackwardsInfoflow extends AbstractInfoflow {
     }
 
     /**
+     * Initializes the alias analysis
+     *
+     * @param sourcesSinks  The set of sources and sinks
+     * @param iCfg          The interprocedural control flow graph
+     * @param executor      The executor in which to run concurrent tasks
+     * @param memoryManager The memory manager for rducing the memory load during
+     *                      IFDS propagation
+     * @return The alias analysis implementation to use for the data flow analysis
+     */
+    private IAliasingStrategy createAliasAnalysis(final ISourceSinkManager sourcesSinks, IInfoflowCFG iCfg,
+                                                  InterruptableExecutor executor, IMemoryManager<Abstraction, Unit> memoryManager) {
+        IAliasingStrategy aliasingStrategy;
+        IInfoflowSolver aliasSolver = null;
+        ForwardsAliasProblem aliasProblem = null;
+        InfoflowManager aliasManager = null;
+        switch (getConfig().getAliasingAlgorithm()) {
+            case FlowSensitive:
+                aliasManager = new InfoflowManager(config, null, new InfoflowCFG(iCfg), sourcesSinks,
+                        taintWrapper, hierarchy, manager.getAccessPathFactory(), manager.getGlobalTaintManager());
+                aliasProblem = new ForwardsAliasProblem(aliasManager);
+
+                // We need to create the right data flow solver
+                SolverConfiguration solverConfig = config.getSolverConfiguration();
+                aliasSolver = createDataFlowSolver(executor, aliasProblem, solverConfig);
+
+                aliasSolver.setMemoryManager(memoryManager);
+                aliasSolver.setPredecessorShorteningMode(
+                        pathConfigToShorteningMode(manager.getConfig().getPathConfiguration()));
+                // aliasSolver.setEnableMergePointChecking(true);
+                aliasSolver.setMaxJoinPointAbstractions(solverConfig.getMaxJoinPointAbstractions());
+                aliasSolver.setMaxCalleesPerCallSite(solverConfig.getMaxCalleesPerCallSite());
+                aliasSolver.setMaxAbstractionPathLength(solverConfig.getMaxAbstractionPathLength());
+                aliasSolver.setSolverId(false);
+                aliasProblem.setTaintPropagationHandler(backwardsPropagationHandler);
+                aliasProblem.setTaintWrapper(taintWrapper);
+                if (nativeCallHandler != null)
+                    aliasProblem.setNativeCallHandler(nativeCallHandler);
+
+                memoryWatcher.addSolver((IMemoryBoundedSolver) aliasSolver);
+
+                aliasingStrategy = new FlowSensitiveAliasStrategy(manager, aliasSolver);
+                break;
+            case PtsBased:
+                aliasProblem = null;
+                aliasSolver = null;
+                aliasingStrategy = new PtsBasedAliasStrategy(manager);
+                break;
+            case None:
+                aliasProblem = null;
+                aliasSolver = null;
+                aliasingStrategy = new NullAliasStrategy();
+                break;
+            case Lazy:
+                aliasProblem = null;
+                aliasSolver = null;
+                aliasingStrategy = new LazyAliasingStrategy(manager);
+                break;
+            default:
+                throw new RuntimeException("Unsupported aliasing algorithm");
+        }
+        return aliasingStrategy;
+    }
+    /**
+     * Creates the controller object that handles aliasing operations. Derived
+     * classes can override this method to supply custom aliasing implementations.
+     *
+     * @param aliasingStrategy The aliasing strategy to use
+     * @return The new alias controller object
+     */
+    protected Aliasing createAliasController(IAliasingStrategy aliasingStrategy) {
+        return new Aliasing(aliasingStrategy, manager);
+    }
+
+    /**
      * Conducts a taint analysis on an already initialized callgraph
      *
      * @param sourcesSinks    The sources and sinks to be used
@@ -679,7 +751,20 @@ public class BackwardsInfoflow extends AbstractInfoflow {
                 solverPeerGroup = new GCSolverPeerGroup();
 
                 // Initialize the alias analysis
-                Abstraction zeroValue = Abstraction.getZeroAbstraction(manager.getConfig().getFlowSensitiveAliasing());;
+//                Abstraction zeroValue = Abstraction.getZeroAbstraction(manager.getConfig().getFlowSensitiveAliasing());;
+                Abstraction zeroValue = null;
+                IAliasingStrategy aliasingStrategy = createAliasAnalysis(sourcesSinks, iCfg, executor, memoryManager);
+                IInfoflowSolver backwardSolver = aliasingStrategy.getSolver();
+                if (backwardSolver != null) {
+                    zeroValue = backwardSolver.getTabulationProblem().createZeroValue();
+                    solvers.add(backwardSolver);
+                }
+
+                // Initialize the aliasing infrastructure
+                Aliasing aliasing = createAliasController(aliasingStrategy);
+                if (dummyMainMethod != null)
+                    aliasing.excludeMethodFromMustAlias(dummyMainMethod);
+                manager.setAliasing(aliasing);
 
                 // Initialize the data flow problem
                 BackwardsInfoflowProblem infoflowProblem = new BackwardsInfoflowProblem(manager, zeroValue, ruleManagerFactory);
@@ -689,6 +774,8 @@ public class BackwardsInfoflow extends AbstractInfoflow {
 
                 memoryWatcher.addSolver((IMemoryBoundedSolver) solver);
                 manager.setForwardSolver(solver);
+                if (aliasingStrategy.getSolver() != null)
+                    aliasingStrategy.getSolver().getTabulationProblem().getManager().setForwardSolver(solver);
                 solvers.add(solver);
                 
 
@@ -832,8 +919,9 @@ public class BackwardsInfoflow extends AbstractInfoflow {
                         nativeCallHandler.shutdown();
 
                     logger.info(
-                            "IFDS problem with {} edges solved in {} seconds, processing {} results...",
+                            "IFDS problem with {} infoflow edges and {} alias edges solved in {} seconds, processing {} results...",
                             solver.getPropagationCount(),
+                            backwardSolver.getPropagationCount(),
                             taintPropagationSeconds, res == null ? 0 : res.size());
 
                     // Update the statistics

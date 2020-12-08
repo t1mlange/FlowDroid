@@ -84,4 +84,16 @@ public class BasicTestCode {
 		return i+1;
 	}
 
+	class IntegerRef {
+		int value;
+	}
+
+	public void basicAliasTest() {
+		IntegerRef i = new IntegerRef();
+		IntegerRef j = i;
+		j.value = TelephonyManager.getIMEI();
+
+		ConnectionManager cm = new ConnectionManager();
+		cm.publish(i.value);
+	}
 }
