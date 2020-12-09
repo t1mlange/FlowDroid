@@ -921,7 +921,7 @@ public class BackwardsInfoflow extends AbstractInfoflow {
                     logger.info(
                             "IFDS problem with {} infoflow edges and {} alias edges solved in {} seconds, processing {} results...",
                             solver.getPropagationCount(),
-                            backwardSolver.getPropagationCount(),
+                            backwardSolver == null ? 0 : backwardSolver.getPropagationCount(),
                             taintPropagationSeconds, res == null ? 0 : res.size());
 
                     // Update the statistics
