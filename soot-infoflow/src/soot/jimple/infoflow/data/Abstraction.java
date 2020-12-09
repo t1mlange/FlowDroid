@@ -54,6 +54,11 @@ public class Abstraction implements Cloneable, FastSolverLinkedNode<Abstraction,
 	 */
 	protected Unit activationUnit = null;
 	/**
+	 * Unit/Stmt which kills the taint when the abstraction passes it
+	 *
+	 */
+	protected Unit deactivationUnit = null;
+	/**
 	 * taint is thrown by an exception (is set to false when it reaches the
 	 * catch-Stmt)
 	 */
@@ -213,6 +218,20 @@ public class Abstraction implements Cloneable, FastSolverLinkedNode<Abstraction,
 		return a;
 	}
 
+	public Abstraction deriveActiveAbstraction(Stmt deactivationUnit) {
+		if (!flowSensitiveAliasing || this.deactivationUnit != null)
+			return this;
+
+		Abstraction a = deriveNewAbstractionMutable(accessPath, null);
+		if (a == null)
+			return null;
+
+		a.postdominators = null;
+		a.deactivationUnit = activationUnit;
+		a.dependsOnCutAP |= a.getAccessPath().isCutOffApproximation();
+		return a;
+	}
+
 	public Abstraction deriveNewAbstraction(AccessPath p, Stmt currentStmt) {
 		return deriveNewAbstraction(p, currentStmt, isImplicit);
 	}
@@ -309,6 +328,10 @@ public class Abstraction implements Cloneable, FastSolverLinkedNode<Abstraction,
 
 	public Unit getActivationUnit() {
 		return this.activationUnit;
+	}
+
+	public Unit getDeactivationUnit() {
+		return this.deactivationUnit;
 	}
 
 	public Abstraction getActiveCopy() {

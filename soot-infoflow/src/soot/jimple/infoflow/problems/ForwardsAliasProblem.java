@@ -2,6 +2,7 @@ package soot.jimple.infoflow.problems;
 
 import com.sun.xml.bind.v2.runtime.reflect.opt.Const;
 import fj.Hash;
+import fj.P;
 import heros.FlowFunction;
 import heros.FlowFunctions;
 import heros.flowfunc.KillAll;
@@ -36,6 +37,8 @@ import java.util.*;
  * @author Tim Lange
  */
 public class ForwardsAliasProblem extends AbstractInfoflowProblem {
+    private final static boolean DEBUG_PRINT = true;
+
     public ForwardsAliasProblem(InfoflowManager manager) {
         super(manager);
     }
@@ -68,7 +71,8 @@ public class ForwardsAliasProblem extends AbstractInfoflowProblem {
                                     TaintPropagationHandler.FlowFunctionType.NormalFlowFunction);
 
                         Set<Abstraction> res = computeTargetsInternal(d1, source);
-                        // System.out.println("Normal" + "\n" + "In: " + source.toString() + "\n" + "Stmt: " + srcStmt.toString() + "\n" + "Out: " + (res == null ? "[]" : res.toString()) + "\n" + "---------------------------------------");
+                        if (DEBUG_PRINT)
+                            System.out.println("Alias Normal" + "\n" + "In: " + source.toString() + "\n" + "Stmt: " + srcStmt.toString() + "\n" + "Out: " + (res == null ? "[]" : res.toString()) + "\n" + "---------------------------------------");
 
                         return notifyOutFlowHandlers(srcStmt, d1, source, res,
                                 TaintPropagationHandler.FlowFunctionType.NormalFlowFunction);
@@ -88,100 +92,165 @@ public class ForwardsAliasProblem extends AbstractInfoflowProblem {
                         final AssignStmt assignStmt = (AssignStmt) srcStmt;
                         final Value left = assignStmt.getLeftOp();
                         final Value right = assignStmt.getRightOp();
-                        final Value rightVal = BaseSelector.selectBase(right, false);
 
                         // BinopExpr can only contain PrimTypes
                         // and PrimTypes aren't tracked
                         if (right instanceof BinopExpr)
                             return res;
 
+                        final Value rightVal = BaseSelector.selectBase(right, false);
+
                         // If right side is not tainted
                         // we do not produce new taints
-                        if (!Aliasing.baseMatches(left, source))
-                            res.add(source);
-                        else {
-                            for (Unit u : interproceduralCFG().getSuccsOf(assignStmt))
-                                manager.getForwardSolver().processEdge(new PathEdge<Unit, Abstraction>(d1, u, source));
-                        }
+                        boolean rightMatches = Aliasing.baseMatches(rightVal, source);
 
-                        // If left side won't be tracked anyways
-                        // we can already stop here
-                        if (!(left instanceof Local || left instanceof FieldRef))
-                            return res;
+//                        boolean aliasOverwritten = Aliasing.baseMatchesStrict(rightVal, source)
+//                                && rightVal.getType() instanceof RefType && !source.dependsOnCutAP();
 
-                        boolean aliasOverwritten = Aliasing.baseMatchesStrict(rightVal, source)
-                                && rightVal.getType() instanceof RefType && !source.dependsOnCutAP();
+                        AccessPath ap = source.getAccessPath();
 
-                        Abstraction newAbs = null;
-                        if (!aliasOverwritten) {
-                            if (rightVal instanceof InstanceFieldRef) {
-                                InstanceFieldRef ref = (InstanceFieldRef) rightVal;
-                                if (source.getAccessPath().isInstanceFieldRef()
-                                        && ref.getBase() == source.getAccessPath().getPlainValue()
-                                        && source.getAccessPath().firstFieldMatches(ref.getField())) {
-                                    AccessPath ap = manager.getAccessPathFactory().copyWithNewValue(source.getAccessPath(),
-                                            left, source.getAccessPath().getFirstFieldType(), true);
-                                    newAbs = checkAbstraction(source.deriveNewAbstraction(ap, assignStmt));
-                                }
-                            } else if (manager.getConfig().getStaticFieldTrackingMode() != InfoflowConfiguration.StaticFieldTrackingMode.None
-                                    && rightVal instanceof StaticFieldRef) {
-                                StaticFieldRef ref = (StaticFieldRef) rightVal;
-                                if (source.getAccessPath().isStaticFieldRef()
-                                        && source.getAccessPath().firstFieldMatches(ref.getField())) {
-                                    AccessPath ap = manager.getAccessPathFactory().copyWithNewValue(source.getAccessPath(),
-                                            left, source.getAccessPath().getBaseType(), true);
-                                    newAbs = checkAbstraction(source.deriveNewAbstraction(ap, assignStmt));
-                                }
-                            } else if (rightVal == source.getAccessPath().getPlainValue()) {
-                                Type newType = source.getAccessPath().getBaseType();
-                                if (left instanceof ArrayRef) {
-                                    ArrayRef arrayRef = (ArrayRef) left;
-                                    newType = TypeUtils.buildArrayOrAddDimension(newType, arrayRef.getType().getArrayType());
-                                } else if (right instanceof ArrayRef) {
-                                    newType = ((ArrayType) newType).getElementType();
-                                } else {
-                                    // Type check
-                                    if (!manager.getTypeUtils().checkCast(source.getAccessPath(), left.getType()))
-                                        return null;
-                                }
+                        if ((rightVal instanceof Local || rightVal instanceof FieldRef) && !(left.getType() instanceof PrimType)) {
+                            boolean addRightValue = false;
+                            boolean cutFirstFieldRight = false;
+                            Type rightType = null;
+                            if (left instanceof FieldRef) {
+                                FieldRef ref = (FieldRef) left;
 
-                                // If the cast was realizable, we can assume that we had
-                                // the type to which we cast. Do not loosen types,
-                                // though.
-                                if (assignStmt.getRightOp() instanceof CastExpr) {
-                                    CastExpr ce = (CastExpr) assignStmt.getRightOp();
-                                    if (!manager.getHierarchy().canStoreType(newType, ce.getCastType()))
-                                        newType = ce.getCastType();
+                                // If our base is null, we can stop here
+                                if (ref instanceof InstanceFieldRef
+                                        && ((InstanceFieldRef) ref).getBase().getType() instanceof NullType)
+                                    return null;
+
+                                // S.x
+                                if (left instanceof StaticFieldRef
+                                        && getManager().getConfig().getStaticFieldTrackingMode() != InfoflowConfiguration.StaticFieldTrackingMode.None) {
+                                    if (ap.firstFieldMatches(((StaticFieldRef) left).getField())) {
+                                        addRightValue = true;
+                                    }
                                 }
-                                // Special type handling for certain operations
-                                else if (assignStmt.getRightOp() instanceof LengthExpr) {
-                                    // ignore. The length of an array is a primitive and
-                                    // thus cannot have aliases
+                                // o.x
+                                else if (left instanceof InstanceFieldRef) {
+                                    InstanceFieldRef inst = ((InstanceFieldRef) left);
+
+                                    // base object matches
+                                    if (inst.getBase() == ap.getPlainValue()) {
+                                        // field match
+                                        if (ap.firstFieldMatches(inst.getField())) {
+                                            addRightValue = true;
+                                            cutFirstFieldRight = true;
+                                        }
+                                        // whole object is tainted
+                                        else if (ap.getFieldCount() == 0 && ap.getTaintSubFields()) {
+                                            addRightValue = true;
+                                        }
+                                    }
+                                }
+                            }
+                            else if (left == ap.getPlainValue()) {
+                                if (!manager.getTypeUtils().checkCast(source.getAccessPath(), right.getType()))
                                     return res;
-                                } else if (assignStmt.getRightOp() instanceof InstanceOfExpr) {
-                                    // ignore. The type check of an array returns a
-                                    // boolean which is a primitive and thus cannot
-                                    // have aliases
-                                    return res;
-                                }
 
-                                AccessPath ap = manager.getAccessPathFactory().copyWithNewValue(source.getAccessPath(),
-                                        left, newType, false);
-                                newAbs = checkAbstraction(source.deriveNewAbstraction(ap, assignStmt));
+                                addRightValue = true;
+                            }
+
+                            if (addRightValue) {
+                                AccessPath newAp = manager.getAccessPathFactory().copyWithNewValue(source.getAccessPath(),
+                                        rightVal, rightType, cutFirstFieldRight);
+
+                                if (newAp.getLastFieldType() instanceof PrimType)
+                                    return res;
+
+                                Abstraction newAbs = source.deriveNewAbstraction(newAp, assignStmt);
+                                if (newAbs != source) {
+                                    res.add(newAbs);
+
+                                    // Inject the new alias into the forward solver
+                                    for (Unit u : interproceduralCFG().getPredsOf(assignStmt))
+                                        manager.getForwardSolver()
+                                                .processEdge(new PathEdge<Unit, Abstraction>(d1, u, newAbs));
+                                }
                             }
                         }
 
-                        if (newAbs != null) {
-                            if (newAbs.getAccessPath().getLastFieldType() instanceof PrimType)
-                                return res;
 
-                            if (newAbs != source) {
-                                res.add(newAbs);
+                        // Don't care about PrimTypes
+                        if ((left instanceof Local || left instanceof FieldRef) && !(rightVal.getType() instanceof PrimType)) {
+                            boolean addLeftValue = false;
+                            boolean cutFirstFieldLeft = false;
+                            Type leftType = null;
+                            if (rightVal instanceof FieldRef) {
+                                FieldRef ref = (FieldRef) rightVal;
 
-                                // Inject the new alias into the forward solver
-                                for (Unit u : interproceduralCFG().getSuccsOf(assignStmt))
-                                    manager.getForwardSolver()
-                                            .processEdge(new PathEdge<Unit, Abstraction>(d1, u, newAbs));
+                                // S.x
+                                if (rightVal instanceof StaticFieldRef
+                                        && getManager().getConfig().getStaticFieldTrackingMode() != InfoflowConfiguration.StaticFieldTrackingMode.None) {
+                                    if (ap.firstFieldMatches(((StaticFieldRef) rightVal).getField())) {
+                                        addLeftValue = true;
+                                    }
+                                }
+                                // o.x
+                                else if (rightVal instanceof InstanceFieldRef) {
+                                    InstanceFieldRef inst = ((InstanceFieldRef) rightVal);
+
+                                    // If our base is null, we can stop here
+                                    if (inst.getBase().getType() instanceof NullType)
+                                        return res;
+
+                                    // base object matches
+                                    if (inst.getBase() == ap.getPlainValue()) {
+                                        // field match
+                                        if (ap.firstFieldMatches(inst.getField())) {
+                                            addLeftValue = true;
+                                            cutFirstFieldLeft = true;
+                                        }
+                                        // whole object is tainted
+                                        else if (ap.getFieldCount() == 0 && ap.getTaintSubFields()) {
+                                            addLeftValue = true;
+                                        }
+                                    }
+                                }
+                            }
+                            // A[i] = x with A's content tainted -> taint x. A stays tainted because of keepSource
+                            else if (rightVal instanceof ArrayRef && source.getAccessPath().getArrayTaintType()
+                                    != AccessPath.ArrayTaintType.Length) {
+                                ArrayRef arrayRef = (ArrayRef) rightVal;
+                                // If we track indices, the indice must be tainted
+                                if (getManager().getConfig().getImplicitFlowMode().trackArrayAccesses()
+                                        && arrayRef.getIndex() == source.getAccessPath().getPlainValue()) {
+                                    addLeftValue = true;
+                                    leftType = ((ArrayType) arrayRef.getBase().getType()).getElementType();
+                                }
+                                // else just look for the base
+                                else if (arrayRef.getBase() == ap.getPlainValue()) {
+                                    addLeftValue = true;
+                                    leftType = ((ArrayType) arrayRef.getBase().getType()).getElementType();
+                                }
+                            }
+                            // Default case, e.g. $stack1 = o.get() or o = o2;
+                            else if (rightVal == ap.getPlainValue()) {
+                                if (!manager.getTypeUtils().checkCast(source.getAccessPath(), right.getType()))
+                                    return null;
+
+                                addLeftValue = true;
+                            }
+
+
+                            if (addLeftValue) {
+                                AccessPath newAp = manager.getAccessPathFactory().copyWithNewValue(source.getAccessPath(),
+                                        left, leftType, cutFirstFieldLeft);
+
+                                if (newAp.getLastFieldType() instanceof PrimType)
+                                    return res;
+
+                                Abstraction newAbs = source.deriveNewAbstraction(newAp, assignStmt);
+                                if (newAbs != source) {
+                                    res.add(newAbs);
+
+                                    // Inject the new alias into the forward solver
+                                    for (Unit u : interproceduralCFG().getPredsOf(assignStmt))
+                                        manager.getForwardSolver()
+                                                .processEdge(new PathEdge<Unit, Abstraction>(d1, u, newAbs));
+                                }
                             }
                         }
 
@@ -233,7 +302,8 @@ public class ForwardsAliasProblem extends AbstractInfoflowProblem {
                                     TaintPropagationHandler.FlowFunctionType.CallFlowFunction);
 
                         Set<Abstraction> res = computeTargetsInternal(d1,source);
-//                        System.out.println("Call" + "\n" + "In: " + source.toString() + "\n" + "Stmt: " + stmt.toString() + "\n" + "Out: " + (res == null ? "[]" : res.toString()) + "\n" + "---------------------------------------");
+                        if (DEBUG_PRINT)
+                            System.out.println("Alias Call" + "\n" + "In: " + source.toString() + "\n" + "Stmt: " + stmt.toString() + "\n" + "Out: " + (res == null ? "[]" : res.toString()) + "\n" + "---------------------------------------");
 
                         return notifyOutFlowHandlers(stmt, d1, source, res,
                                 TaintPropagationHandler.FlowFunctionType.CallFlowFunction);
@@ -380,7 +450,8 @@ public class ForwardsAliasProblem extends AbstractInfoflowProblem {
                                     TaintPropagationHandler.FlowFunctionType.ReturnFlowFunction);
 
                         Set<Abstraction> res = computeTargetsInternal(source, calleeD1, callerD1s);
-//                        System.out.println("Return" + "\n" + "In: " + source.toString() + "\n" + "Stmt: " + stmt.toString() + "\n" + "Out: " + (res == null ? "[]" : res.toString()) + "\n" + "---------------------------------------");
+                        if (DEBUG_PRINT)
+                            System.out.println("Alias Return" + "\n" + "In: " + source.toString() + "\n" + "Stmt: " + callSite.toString() + "\n" + "Out: " + (res == null ? "[]" : res.toString()) + "\n" + "---------------------------------------");
 
                         return notifyOutFlowHandlers(exitStmt, calleeD1, source, res,
                                 TaintPropagationHandler.FlowFunctionType.ReturnFlowFunction);
@@ -513,7 +584,8 @@ public class ForwardsAliasProblem extends AbstractInfoflowProblem {
                                     TaintPropagationHandler.FlowFunctionType.CallToReturnFlowFunction);
 
                         Set<Abstraction> res = computeTargetsInternal(d1, source);
-//                        System.out.println("CallToReturn" + "\n" + "In: " + source.toString() + "\n" + "Stmt: " + callStmt.toString() + "\n" + "Out: " + (res == null ? "[]" : res.toString()) + "\n" + "---------------------------------------");
+                        if (DEBUG_PRINT)
+                            System.out.println("Alias CallToReturn" + "\n" + "In: " + source.toString() + "\n" + "Stmt: " + callStmt.toString() + "\n" + "Out: " + (res == null ? "[]" : res.toString()) + "\n" + "---------------------------------------");
 
                         return notifyOutFlowHandlers(callSite, d1, source, res,
                                 TaintPropagationHandler.FlowFunctionType.CallToReturnFlowFunction);

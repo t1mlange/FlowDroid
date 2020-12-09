@@ -453,8 +453,8 @@ public class BackwardsInfoflow extends AbstractInfoflow {
                         collectedSinks.add(s);
                     logger.info("Sink found: {} in {}", u, m.getSignature());
 
-//                    ICFGDotVisualizer visualizer = new ICFGDotVisualizer(i+".dot", u, manager.getICFG());
-//                    visualizer.exportToDot();
+                    ICFGDotVisualizer visualizer = new ICFGDotVisualizer(i+".dot", u, manager.getICFG());
+                    visualizer.exportToDot();
 //                    i++;
                 }
                 if (sourcesSinks.getSinkInfo(s, manager, null) != null) {
@@ -606,7 +606,7 @@ public class BackwardsInfoflow extends AbstractInfoflow {
 
                 memoryWatcher.addSolver((IMemoryBoundedSolver) aliasSolver);
 
-                aliasingStrategy = new FlowSensitiveAliasStrategy(manager, aliasSolver);
+                aliasingStrategy = new BackwardsFlowSensitiveAliasStrategy(manager, aliasSolver);
                 break;
             case PtsBased:
                 aliasProblem = null;

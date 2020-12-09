@@ -1,0 +1,25 @@
+digraph "" {
+    "virtualinvoke cm.<soot.jimple.infoflow.test.android.ConnectionManager: void publish(int)>($stack7)"
+    "$stack7 = b.<soot.jimple.infoflow.test.HeapTestCode$A: int i>"
+    "virtualinvoke cm.<soot.jimple.infoflow.test.android.ConnectionManager: void publish(int)>($stack7)"->"$stack7 = b.<soot.jimple.infoflow.test.HeapTestCode$A: int i>";
+    "cm = $stack6"
+    "$stack7 = b.<soot.jimple.infoflow.test.HeapTestCode$A: int i>"->"cm = $stack6";
+    "specialinvoke $stack6.<soot.jimple.infoflow.test.android.ConnectionManager: void <init>()>()"
+    "cm = $stack6"->"specialinvoke $stack6.<soot.jimple.infoflow.test.android.ConnectionManager: void <init>()>()";
+    "$stack6 = new soot.jimple.infoflow.test.android.ConnectionManager"
+    "specialinvoke $stack6.<soot.jimple.infoflow.test.android.ConnectionManager: void <init>()>()"->"$stack6 = new soot.jimple.infoflow.test.android.ConnectionManager";
+    "a.<soot.jimple.infoflow.test.HeapTestCode$A: int i> = $stack5"
+    "$stack6 = new soot.jimple.infoflow.test.android.ConnectionManager"->"a.<soot.jimple.infoflow.test.HeapTestCode$A: int i> = $stack5";
+    "$stack5 = staticinvoke <soot.jimple.infoflow.test.android.TelephonyManager: int getIMEI()>()"
+    "a.<soot.jimple.infoflow.test.HeapTestCode$A: int i> = $stack5"->"$stack5 = staticinvoke <soot.jimple.infoflow.test.android.TelephonyManager: int getIMEI()>()";
+    "b = a"
+    "$stack5 = staticinvoke <soot.jimple.infoflow.test.android.TelephonyManager: int getIMEI()>()"->"b = a";
+    "a = $stack4"
+    "b = a"->"a = $stack4";
+    "specialinvoke $stack4.<soot.jimple.infoflow.test.HeapTestCode$A: void <init>(soot.jimple.infoflow.test.HeapTestCode)>(this)"
+    "a = $stack4"->"specialinvoke $stack4.<soot.jimple.infoflow.test.HeapTestCode$A: void <init>(soot.jimple.infoflow.test.HeapTestCode)>(this)";
+    "$stack4 = new soot.jimple.infoflow.test.HeapTestCode$A"
+    "specialinvoke $stack4.<soot.jimple.infoflow.test.HeapTestCode$A: void <init>(soot.jimple.infoflow.test.HeapTestCode)>(this)"->"$stack4 = new soot.jimple.infoflow.test.HeapTestCode$A";
+    "this := @this: soot.jimple.infoflow.test.HeapTestCode"
+    "$stack4 = new soot.jimple.infoflow.test.HeapTestCode$A"->"this := @this: soot.jimple.infoflow.test.HeapTestCode";
+}

@@ -96,6 +96,7 @@ import soot.jimple.infoflow.threading.IExecutorFactory;
 import soot.jimple.infoflow.util.SootMethodRepresentationParser;
 import soot.jimple.infoflow.util.SystemClassHandler;
 import soot.jimple.toolkits.callgraph.ReachableMethods;
+import soot.jimple.toolkits.ide.icfg.dotexport.ICFGDotVisualizer;
 import soot.options.Options;
 
 /**
