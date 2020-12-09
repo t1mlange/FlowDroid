@@ -25,6 +25,7 @@ import soot.jimple.infoflow.util.BaseSelector;
 import soot.jimple.infoflow.util.ByReferenceBoolean;
 import soot.jimple.infoflow.util.SystemClassHandler;
 import soot.jimple.infoflow.util.TypeUtils;
+import sun.security.util.Length;
 
 import java.util.*;
 
@@ -35,6 +36,8 @@ import java.util.*;
  * @author Tim Lange
  */
 public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
+    private final static boolean DEBUG_PRINT = false;
+
     private final PropagationRuleManager propagationRules;
     protected final TaintPropagationResults results;
 
@@ -78,7 +81,8 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                         final Abstraction newSource = !source.isAbstractionActive() && srcStmt == source.getActivationUnit()
                                 ? source.getActiveCopy() : source;
                         Set<Abstraction> res = computeTargetsInternal(d1, newSource);
-                        System.out.println("Normal" + "\n" + "In: " + source.toString() + "\n" + "Stmt: " + srcStmt.toString() + "\n" + "Out: " + (res == null ? "[]" : res.toString()) + "\n" + "---------------------------------------");
+                        if (DEBUG_PRINT)
+                            System.out.println("Normal" + "\n" + "In: " + source.toString() + "\n" + "Stmt: " + srcStmt.toString() + "\n" + "Out: " + (res == null ? "[]" : res.toString()) + "\n" + "---------------------------------------");
 
                         return notifyOutFlowHandlers(srcStmt, d1, source, res,
                                 TaintPropagationHandler.FlowFunctionType.NormalFlowFunction);
@@ -129,7 +133,8 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                         // We only need to find one taint for tainting the
                         // left side so we can have those vars out of the loop
                         boolean addLeftValue = false;
-                        boolean cutLeftField = false;
+                        boolean cutFirstFieldLeft = false;
+                        boolean createNewApLeft = false;
                         Type leftType = null;
                         for (Value rightVal : rightVals) {
                             AccessPath ap = source.getAccessPath();
@@ -139,25 +144,50 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                             // If addLeftValue is already true, we found a taint
                             // in a previous iteration
                             if (!addLeftValue) {
-                                if (rightVal instanceof InstanceFieldRef) {
-                                    InstanceFieldRef inst = ((InstanceFieldRef) rightVal);
-                                    // base object matches
-                                    if (inst.getBase() == ap.getPlainValue()) {
-                                        // object is tainted
-                                        if (ap.getFirstField() == null) {
-                                            // If o.* or o1 =
-                                            if (ap.getTaintSubFields() || rightVal == ap.getPlainValue()) {
+                                if (rightVal instanceof FieldRef) {
+                                    FieldRef ref = (FieldRef) rightVal;
+
+                                    // If our base is null, we can stop here
+                                    if (ref instanceof InstanceFieldRef
+                                            && ((InstanceFieldRef) ref).getBase().getType() instanceof NullType)
+                                        return null;
+
+                                    // S.x
+                                    if (rightVal instanceof StaticFieldRef
+                                            && getManager().getConfig().getStaticFieldTrackingMode() != InfoflowConfiguration.StaticFieldTrackingMode.None) {
+                                        if (ap.firstFieldMatches(((StaticFieldRef) rightVal).getField())) {
+                                            addLeftValue = true;
+                                        }
+                                    }
+                                    // o.x
+                                    else if (rightVal instanceof InstanceFieldRef) {
+                                        InstanceFieldRef inst = ((InstanceFieldRef) rightVal);
+
+                                        // base object matches
+                                        if (aliasing.mayAlias(inst.getBase(), ap.getPlainValue())) {
+                                            // field match
+                                            if (ap.firstFieldMatches(inst.getField())) {
+                                                addLeftValue = true;
+                                                cutFirstFieldLeft = true;
+                                            }
+                                            // whole object is tainted
+                                            else if (ap.getFieldCount() == 0 && ap.getTaintSubFields()) {
                                                 addLeftValue = true;
                                             }
-                                        } else if (ap.firstFieldMatches(inst.getField())) {
-                                            addLeftValue = true;
-                                            cutLeftField = true;
                                         }
                                     }
                                 } else if (aliasing.mayAlias(rightVal, ap.getPlainValue())) {
+                                    if (right instanceof InstanceOfExpr) {
+                                        createNewApLeft = true;
+                                        leftType = BooleanType.v();
+                                    } else if (right instanceof LengthExpr) {
+                                        createNewApLeft = true;
+                                        leftType = IntType.v();
+                                    }
                                     addLeftValue = true;
                                 }
                             }
+
 
                             // Handled in the ArrayPropagationRule
                             if (right instanceof LengthExpr || right instanceof ArrayRef || right instanceof NewArrayExpr)
@@ -174,42 +204,29 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                         && ((InstanceFieldRef) ref).getBase().getType() instanceof NullType)
                                     return null;
 
-                                ap = aliasing.mayAlias(source.getAccessPath(), ref);
-                                // S.x =
+                                // S.x
                                 if (left instanceof StaticFieldRef
                                         && getManager().getConfig().getStaticFieldTrackingMode() != InfoflowConfiguration.StaticFieldTrackingMode.None) {
-                                    if (ap != null) {
+                                    if (ap.firstFieldMatches(((StaticFieldRef) left).getField())) {
                                         addRightValue = true;
-                                        rightType = rightVal.getType();
                                     }
                                 }
-                                // o.x =
+                                // o.x
                                 else if (left instanceof InstanceFieldRef) {
                                     InstanceFieldRef inst = ((InstanceFieldRef) left);
-                                    // base object matches
-                                    if (ap != null) {
-                                        addRightValue = true;
-                                        cutRightField = (ap.getFieldCount() > 0
-                                                && ap.firstFieldMatches(inst.getField()));
-                                    } else if (aliasing.mayAlias(inst.getBase(), source.getAccessPath().getPlainValue())
-                                            && source.getAccessPath().getFieldCount() == 0
-                                            && source.getAccessPath().getTaintSubFields()) {
-                                        addRightValue = true;
-                                        ap = manager.getAccessPathFactory().createAccessPath(inst.getBase(), true);
-                                    }
 
-//                                    if (inst.getBase() == ap.getPlainValue()) {
-//                                        // whole object is tainted
-//                                        if (ap.getFirstField() == null && ap.getTaintSubFields()) {
-//                                            addRightValue = true;
-//                                        }
-//                                        // fields need ot match
-//                                        else if (ap.firstFieldMatches(inst.getField())) {
-//                                            addRightValue = true;
-//                                            cutRightField = true;
-//                                            rightType = rightVal.getType();
-//                                        }
-//                                    }
+                                    // base object matches
+                                    if (aliasing.mayAlias(inst.getBase(), ap.getPlainValue())) {
+                                        // field match
+                                        if (ap.firstFieldMatches(inst.getField())) {
+                                            addRightValue = true;
+                                            cutRightField = true;
+                                        }
+                                        // whole object is tainted
+                                        else if (ap.getFieldCount() == 0 && ap.getTaintSubFields()) {
+                                            addRightValue = true;
+                                        }
+                                    }
                                 }
                             }
                             // A[i] = x with A's content tainted -> taint x. A stays tainted because of keepSource
@@ -258,8 +275,14 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                         if (!keepSource)
                             res.remove(source);
                         if (addLeftValue) {
-                            AccessPath newAp = manager.getAccessPathFactory().copyWithNewValue(source.getAccessPath(),
-                                    left, leftType, cutLeftField);
+                            AccessPath newAp;
+                            if (createNewApLeft) {
+                                newAp = manager.getAccessPathFactory().createAccessPath(left, leftType, true,
+                                        AccessPath.ArrayTaintType.ContentsAndLength);
+                            } else {
+                                newAp = manager.getAccessPathFactory().copyWithNewValue(source.getAccessPath(),
+                                        left, leftType, cutFirstFieldLeft);
+                            }
                             Abstraction newAbs = source.deriveNewAbstraction(newAp, assignStmt);
                             addAbstractionIfPossible(res, newAbs, left);
                             if (res.contains(newAbs) && Aliasing.canHaveAliases(newAp))
@@ -268,7 +291,9 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
 
                         return res;
                     }
-                };
+                }
+
+                        ;
             }
 
             private void addAbstractionIfPossible(Set<Abstraction> res, Abstraction abs, Value val) {
@@ -291,7 +316,8 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
              * @param dest
              */
             @Override
-            public FlowFunction<Abstraction> getCallFlowFunction(final Unit callStmt, final SootMethod dest) {
+            public FlowFunction<Abstraction> getCallFlowFunction(final Unit callStmt,
+                                                                 final SootMethod dest) {
                 if (!dest.isConcrete()) {
                     logger.debug("Call skipped because target has no body: {} -> {}", callStmt, dest);
                     return KillAll.v();
@@ -329,9 +355,6 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                             taintPropagationHandler.notifyFlowIn(stmt, source, manager,
                                     TaintPropagationHandler.FlowFunctionType.CallFlowFunction);
 
-                        if (callStmt.toString().contains("calleeOverwriteNull"))
-                            d1=d1;
-
                         final Abstraction newSource = !source.isAbstractionActive() && callStmt == source.getActivationUnit()
                                 ? source.getActiveCopy() : source;
                         Set<Abstraction> res = computeTargetsInternal(d1, newSource);
@@ -339,11 +362,13 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                             for (Abstraction abs : res)
                                 aliasing.getAliasingStrategy().injectCallingContext(abs, solver, dest, callStmt, source, d1);
                         }
-                        System.out.println("Call" + "\n" + "In: " + source.toString() + "\n" + "Stmt: " + stmt.toString() + "\n" + "Out: " + (res == null ? "[]" : res.toString()) + "\n" + "---------------------------------------");
+                        if (DEBUG_PRINT)
+                            System.out.println("Call" + "\n" + "In: " + source.toString() + "\n" + "Stmt: " + stmt.toString() + "\n" + "Out: " + (res == null ? "[]" : res.toString()) + "\n" + "---------------------------------------");
 
                         return notifyOutFlowHandlers(stmt, d1, source, res,
                                 TaintPropagationHandler.FlowFunctionType.CallFlowFunction);
                     }
+
                     private Set<Abstraction> computeTargetsInternal(Abstraction d1, Abstraction source) {
                         // Respect user settings
                         if (manager.getConfig().getStopAfterFirstFlow() && !results.isEmpty())
@@ -379,7 +404,7 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                         Set<Abstraction> res = null;
                         ByReferenceBoolean killAll = new ByReferenceBoolean();
                         if (propagationRules != null)
-                             res = propagationRules.applyCallFlowFunction(d1, source, stmt, dest, killAll);
+                            res = propagationRules.applyCallFlowFunction(d1, source, stmt, dest, killAll);
                         if (killAll.value)
                             return null;
 
@@ -420,7 +445,7 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                         // static fields access path stay the same
                         if (manager.getConfig().getStaticFieldTrackingMode() !=
                                 InfoflowConfiguration.StaticFieldTrackingMode.None
-                            && source.getAccessPath().isStaticFieldRef()) {
+                                && source.getAccessPath().isStaticFieldRef()) {
                             Abstraction abs = source.deriveNewAbstraction(source.getAccessPath(), stmt);
                             if (abs != null)
                                 res.add(abs);
@@ -469,7 +494,7 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                         if (abs != null)
                                             res.add(abs);
                                     }
-                                // taint just the tainted parameter
+                                    // taint just the tainted parameter
                                 } else {
                                     AccessPath ap = manager.getAccessPathFactory().copyWithNewValue(
                                             source.getAccessPath(), paramLocals[i]);
@@ -510,7 +535,8 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
              * @return
              */
             @Override
-            public FlowFunction<Abstraction> getReturnFlowFunction(Unit callSite, SootMethod callee, Unit exitStmt, Unit returnSite) {
+            public FlowFunction<Abstraction> getReturnFlowFunction(Unit callSite, SootMethod callee, Unit
+                    exitStmt, Unit returnSite) {
                 if (callSite != null && !(callSite instanceof Stmt))
                     return KillAll.v();
 
@@ -545,7 +571,8 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                         final Abstraction newSource = !source.isAbstractionActive() && callSite == source.getActivationUnit()
                                 ? source.getActiveCopy() : source;
                         Set<Abstraction> res = computeTargetsInternal(newSource, calleeD1, callerD1s);
-                        System.out.println("Return" + "\n" + "In: " + source.toString() + "\n" + "Stmt: " + stmt.toString() + "\n" + "Out: " + (res == null ? "[]" : res.toString()) + "\n" + "---------------------------------------");
+                        if (DEBUG_PRINT)
+                            System.out.println("Return" + "\n" + "In: " + source.toString() + "\n" + "Stmt: " + stmt.toString() + "\n" + "Out: " + (res == null ? "[]" : res.toString()) + "\n" + "---------------------------------------");
                         return notifyOutFlowHandlers(exitStmt, calleeD1, source, res,
                                 TaintPropagationHandler.FlowFunctionType.ReturnFlowFunction);
                     }
@@ -558,7 +585,7 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                         ByReferenceBoolean killAll = new ByReferenceBoolean();
                         if (propagationRules != null)
                             res = propagationRules.applyReturnFlowFunction(callerD1s, source,
-                                (Stmt) exitStmt, (Stmt) returnSite, (Stmt) callSite, killAll);
+                                    (Stmt) exitStmt, (Stmt) returnSite, (Stmt) callSite, killAll);
                         if (killAll.value)
                             return null;
 
@@ -567,7 +594,7 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
 
                         // Static fields get propagated unchaged
                         if (manager.getConfig().getStaticFieldTrackingMode()
-                                    != InfoflowConfiguration.StaticFieldTrackingMode.None
+                                != InfoflowConfiguration.StaticFieldTrackingMode.None
                                 && source.getAccessPath().isStaticFieldRef()) {
                             res.add(source);
                         }
@@ -587,7 +614,7 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                         instanceInvokeExpr.getArgs().stream().noneMatch(arg -> aliasing.mayAlias(arg, sourceBase))) {
                                     AccessPath ap = manager.getAccessPathFactory()
                                             .copyWithNewValue(source.getAccessPath(), callBase, isReflectiveCallSite ? null
-                                                            : source.getAccessPath().getBaseType(),false);
+                                                    : source.getAccessPath().getBaseType(), false);
                                     Abstraction abs = source.deriveNewAbstraction(ap, (Stmt) exitStmt);
                                     if (abs != null) {
                                         res.add(abs);
@@ -665,7 +692,8 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                         final Abstraction newSource = !source.isAbstractionActive() && callSite == source.getActivationUnit()
                                 ? source.getActiveCopy() : source;
                         Set<Abstraction> res = computeTargetsInternal(d1, newSource);
-                        System.out.println("CallToReturn" + "\n" + "In: " + source.toString() + "\n" + "Stmt: " + callStmt.toString() + "\n" + "Out: " + (res == null ? "[]" : res.toString()) + "\n" + "---------------------------------------");
+                        if (DEBUG_PRINT)
+                            System.out.println("CallToReturn" + "\n" + "In: " + source.toString() + "\n" + "Stmt: " + callStmt.toString() + "\n" + "Out: " + (res == null ? "[]" : res.toString()) + "\n" + "---------------------------------------");
 
                         return notifyOutFlowHandlers(callSite, d1, source, res,
                                 TaintPropagationHandler.FlowFunctionType.CallToReturnFlowFunction);
@@ -738,7 +766,7 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                         // Do not pass over reference parameters
                         // CallFlow passes this into the callee
                         if (Arrays.stream(callArgs).anyMatch(arg -> !isPrimtiveOrStringBase(source) && aliasing.mayAlias(arg, source.getAccessPath().getPlainValue())))
-                             return res;
+                            return res;
 
                         if (!killSource.value)
                             res.add(source);
@@ -760,7 +788,9 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                 Type t = abs.getAccessPath().getBaseType();
                 return t instanceof PrimType || TypeUtils.isStringType(t);
             }
-        };
+        }
+
+                ;
     }
 
 
