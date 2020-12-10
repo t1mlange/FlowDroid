@@ -37,7 +37,7 @@ import java.util.*;
  * @author Tim Lange
  */
 public class ForwardsAliasProblem extends AbstractInfoflowProblem {
-    private final static boolean DEBUG_PRINT = true;
+    private final static boolean DEBUG_PRINT = false;
 
     public ForwardsAliasProblem(InfoflowManager manager) {
         super(manager);
@@ -59,6 +59,9 @@ public class ForwardsAliasProblem extends AbstractInfoflowProblem {
             public FlowFunction<Abstraction> getNormalFlowFunction(Unit srcStmt, Unit destStmt) {
                 if (!(srcStmt instanceof Stmt))
                     return KillAll.v();
+                final DefinitionStmt destDefStmt = destStmt instanceof DefinitionStmt ? (DefinitionStmt) destStmt : null;
+                final Value destLeftValue = destDefStmt == null ? null
+                        : BaseSelector.selectBase(destDefStmt.getLeftOp(), true);
 
                 return new SolverNormalFlowFunction() {
                     @Override
@@ -100,16 +103,22 @@ public class ForwardsAliasProblem extends AbstractInfoflowProblem {
 
                         final Value rightVal = BaseSelector.selectBase(right, false);
 
-                        // If right side is not tainted
-                        // we do not produce new taints
-                        boolean rightMatches = Aliasing.baseMatches(rightVal, source);
+                        // If left side is tainted, we overwrite it here
+                        boolean leftSideMatches = Aliasing.baseMatches(left, source);
+                        if (leftSideMatches) {
+                            for (Unit u : manager.getICFG().getPredsOf(assignStmt))
+                                manager.getForwardSolver()
+                                        .processEdge(new PathEdge<Unit, Abstraction>(d1, u, source));
+                        } else {
+                            res.add(source);
+                        }
 
 //                        boolean aliasOverwritten = Aliasing.baseMatchesStrict(rightVal, source)
 //                                && rightVal.getType() instanceof RefType && !source.dependsOnCutAP();
 
                         AccessPath ap = source.getAccessPath();
 
-                        if ((rightVal instanceof Local || rightVal instanceof FieldRef) && !(left.getType() instanceof PrimType)) {
+                        if ((rightVal instanceof Local || rightVal instanceof FieldRef)) {
                             boolean addRightValue = false;
                             boolean cutFirstFieldRight = false;
                             Type rightType = null;
@@ -157,15 +166,15 @@ public class ForwardsAliasProblem extends AbstractInfoflowProblem {
                                 AccessPath newAp = manager.getAccessPathFactory().copyWithNewValue(source.getAccessPath(),
                                         rightVal, rightType, cutFirstFieldRight);
 
-                                if (newAp.getLastFieldType() instanceof PrimType)
-                                    return res;
+//                                if (newAp.getLastFieldType() instanceof PrimType)
+//                                    return res;
 
                                 Abstraction newAbs = source.deriveNewAbstraction(newAp, assignStmt);
                                 if (newAbs != source) {
                                     res.add(newAbs);
 
                                     // Inject the new alias into the forward solver
-                                    for (Unit u : interproceduralCFG().getPredsOf(assignStmt))
+                                    for (Unit u : manager.getICFG().getPredsOf(assignStmt))
                                         manager.getForwardSolver()
                                                 .processEdge(new PathEdge<Unit, Abstraction>(d1, u, newAbs));
                                 }
@@ -174,7 +183,7 @@ public class ForwardsAliasProblem extends AbstractInfoflowProblem {
 
 
                         // Don't care about PrimTypes
-                        if ((left instanceof Local || left instanceof FieldRef) && !(rightVal.getType() instanceof PrimType)) {
+                        if ((left instanceof Local || left instanceof FieldRef)) {
                             boolean addLeftValue = false;
                             boolean cutFirstFieldLeft = false;
                             Type leftType = null;
@@ -239,15 +248,15 @@ public class ForwardsAliasProblem extends AbstractInfoflowProblem {
                                 AccessPath newAp = manager.getAccessPathFactory().copyWithNewValue(source.getAccessPath(),
                                         left, leftType, cutFirstFieldLeft);
 
-                                if (newAp.getLastFieldType() instanceof PrimType)
-                                    return res;
+//                                if (newAp.getLastFieldType() instanceof PrimType)
+//                                    return res;
 
                                 Abstraction newAbs = source.deriveNewAbstraction(newAp, assignStmt);
                                 if (newAbs != source) {
                                     res.add(newAbs);
 
                                     // Inject the new alias into the forward solver
-                                    for (Unit u : interproceduralCFG().getPredsOf(assignStmt))
+                                    for (Unit u : manager.getICFG().getPredsOf(assignStmt))
                                         manager.getForwardSolver()
                                                 .processEdge(new PathEdge<Unit, Abstraction>(d1, u, newAbs));
                                 }

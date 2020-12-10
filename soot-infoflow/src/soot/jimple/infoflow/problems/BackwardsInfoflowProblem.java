@@ -30,7 +30,7 @@ import java.util.*;
  * @author Tim Lange
  */
 public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
-    private final static boolean DEBUG_PRINT = true;
+    private final static boolean DEBUG_PRINT = false;
 
     private final PropagationRuleManager propagationRules;
     protected final TaintPropagationResults results;
@@ -116,7 +116,54 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
 //                            return res;
 
                         AccessPath ap = source.getAccessPath();
+                        boolean addLeftValue = false;
+                        boolean cutFirstFieldLeft = false;
+                        Type leftType = null;
                         for (Value rightVal : rightVals) {
+                            if (!addLeftValue) {
+                                if (rightVal instanceof FieldRef) {
+                                    FieldRef ref = (FieldRef) rightVal;
+
+                                    // If our base is null, we can stop here
+                                    if (ref instanceof InstanceFieldRef
+                                            && ((InstanceFieldRef) ref).getBase().getType() instanceof NullType)
+                                        return null;
+
+                                    // S.x
+                                    if (rightVal instanceof StaticFieldRef
+                                            && getManager().getConfig().getStaticFieldTrackingMode() != InfoflowConfiguration.StaticFieldTrackingMode.None) {
+                                        if (ap.firstFieldMatches(((StaticFieldRef) rightVal).getField())) {
+                                            addLeftValue = true;
+                                        }
+                                    }
+                                    // o.x
+                                    else if (rightVal instanceof InstanceFieldRef) {
+                                        InstanceFieldRef inst = ((InstanceFieldRef) rightVal);
+
+                                        // base object matches
+                                        if (aliasing.mayAlias(inst.getBase(), ap.getPlainValue())) {
+                                            // field match
+                                            if (ap.firstFieldMatches(inst.getField())) {
+                                                addLeftValue = true;
+                                                cutFirstFieldLeft = true;
+                                            }
+                                            // whole object is tainted
+                                            else if (ap.getFieldCount() == 0 && ap.getTaintSubFields()) {
+                                                addLeftValue = true;
+                                            }
+                                        }
+                                    }
+                                } else if (aliasing.mayAlias(rightVal, ap.getPlainValue())) {
+                                    if (right instanceof InstanceOfExpr) {
+//                                        createNewApLeft = true;
+//                                        leftType = BooleanType.v();
+                                    } else if (right instanceof LengthExpr) {
+//                                        createNewApLeft = true;
+//                                        leftType = IntType.v();
+                                    }
+                                    addLeftValue = true;
+                                }
+                            }
                             // Handled in the ArrayPropagationRule
                             if (right instanceof LengthExpr || right instanceof ArrayRef || right instanceof NewArrayExpr)
                                 break;
@@ -197,6 +244,22 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                 if (addAbstractionIfPossible(res, newAbs, rightVal) && Aliasing.canHaveAliases(newAp))
                                     aliasing.computeAliases(d1, assignStmt, rightVal, res, interproceduralCFG().getMethodOf(assignStmt), newAbs);
                             }
+                        }
+
+                        if (addLeftValue) {
+                            AccessPath newAp;
+                            boolean createNewApLeft = false;
+                            if (createNewApLeft) {
+                                newAp = manager.getAccessPathFactory().createAccessPath(left, leftType, true,
+                                        AccessPath.ArrayTaintType.ContentsAndLength);
+                            } else {
+                                newAp = manager.getAccessPathFactory().copyWithNewValue(source.getAccessPath(),
+                                        left, leftType, cutFirstFieldLeft);
+                            }
+                            Abstraction newAbs = source.deriveNewAbstraction(newAp, assignStmt);
+                            addAbstractionIfPossible(res, newAbs, left);
+                            if (res.contains(newAbs) && Aliasing.canHaveAliases(newAp))
+                                aliasing.computeAliases(d1, assignStmt, left, res, interproceduralCFG().getMethodOf(assignStmt), newAbs);
                         }
 
                         return res;
