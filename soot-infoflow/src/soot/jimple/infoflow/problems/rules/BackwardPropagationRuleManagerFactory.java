@@ -23,6 +23,7 @@ public class BackwardPropagationRuleManagerFactory implements IPropagationRuleMa
 		ruleList.add(new BackwardSinkPropagationRule(manager, zeroValue, results));
 		ruleList.add(new BackwardSourcePropagationRule(manager, zeroValue, results));
 		ruleList.add(new SkipSystemClassRule(manager, zeroValue, results));
+//		ruleList.add(new BackwardStrongUpdatePropagationRule(manager, zeroValue, results));
 
 		if (manager.getConfig().getEnableExceptionTracking())
 			ruleList.add(new BackwardExceptionPropagationRule(manager, zeroValue, results));
@@ -37,7 +38,6 @@ public class BackwardPropagationRuleManagerFactory implements IPropagationRuleMa
 //			ruleList.add(new WrapperPropagationRule(manager, zeroValue, results));
 //		if (manager.getConfig().getImplicitFlowMode().trackControlFlowDependencies())
 //			ruleList.add(new ImplicitPropagtionRule(manager, zeroValue, results));
-//		ruleList.add(new StrongUpdatePropagationRule(manager, zeroValue, results));
 //		if (manager.getConfig().getEnableTypeChecking())
 //			ruleList.add(new BackwardTypingPropagationRule(manager, zeroValue, results));
 

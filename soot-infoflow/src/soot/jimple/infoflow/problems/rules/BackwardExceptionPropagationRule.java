@@ -5,6 +5,7 @@ import soot.Unit;
 import soot.Value;
 import soot.jimple.*;
 import soot.jimple.infoflow.InfoflowManager;
+import soot.jimple.infoflow.aliasing.Aliasing;
 import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.data.AccessPath;
 import soot.jimple.infoflow.problems.TaintPropagationResults;
@@ -16,7 +17,7 @@ import java.util.HashSet;
 
 /**
  * Rule for propagating exceptional data flows
- * 
+ *
  * @author Steven Arzt
  *
  */
@@ -29,25 +30,30 @@ public class BackwardExceptionPropagationRule extends AbstractTaintPropagationRu
 	@Override
 	public Collection<Abstraction> propagateNormalFlow(Abstraction d1, Abstraction source, Stmt stmt, Stmt destStmt,
 			ByReferenceBoolean killSource, ByReferenceBoolean killAll) {
+	    final Aliasing aliasing = getAliasing();
+	    if (aliasing == null)
+	        return null;
+
 		// Do we catch an exception here?
 		// $stack := @caughtexception
 		if (stmt instanceof IdentityStmt) {
 			IdentityStmt id = (IdentityStmt) stmt;
-			if (id.getRightOp() instanceof CaughtExceptionRef && id.getLeftOp() == source.getAccessPath().getPlainValue()) {
+			if (id.getRightOp() instanceof CaughtExceptionRef &&
+                    aliasing.mayAlias(id.getLeftOp(), source.getAccessPath().getPlainValue())) {
 				killSource.value = true;
 
-				// If the exception is from another method, we leave the job for the
-				// CallFlow function by setting the exceptionThrown field in abstraction
-				if (destStmt instanceof InvokeStmt) {
-					return Collections.singleton(source.deriveNewAbstractionOnThrow(id));
-				// If the exception is from the same method, the next statement is the throw
-				// statement we need to taint
-				} else if (destStmt instanceof ThrowStmt) {
-					AccessPath ap = manager.getAccessPathFactory().copyWithNewValue(source.getAccessPath(),
-							((ThrowStmt) destStmt).getOp());
-					return Collections.singleton(source.deriveNewAbstraction(ap, destStmt));
-				}
+				// We leave it to another propagation of normal flow or the call flow function
+                // to find the responsible throw stmt
+                return Collections.singleton(source.deriveNewAbstractionOnThrow(id));
 			}
+		}
+
+        // If the exception is from the same method,
+        // the next statement is a throw statement
+		if (source.getExceptionThrown() && stmt instanceof ThrowStmt) {
+			AccessPath ap = manager.getAccessPathFactory().copyWithNewValue(source.getAccessPath(),
+					((ThrowStmt) stmt).getOp());
+			return Collections.singleton(source.deriveNewAbstractionOnCatch(ap));
 		}
 
 		return null;
@@ -73,13 +79,13 @@ public class BackwardExceptionPropagationRule extends AbstractTaintPropagationRu
 	@Override
 	public Collection<Abstraction> propagateCallFlow(Abstraction d1, Abstraction source, Stmt stmt, SootMethod dest,
 			ByReferenceBoolean killAll) {
-		HashSet<Abstraction> res = new HashSet<>();
-
 		// If source.getExceptionThrown() is true we know the taint was catched
 		// from an thrown exception. Now we need to propagate this taint into
 		// the method containing the throw statement
 		if (source.getExceptionThrown()) {
-			// We have to find the throw statement responsible for this taint
+            HashSet<Abstraction> res = new HashSet<>();
+
+            // We have to find the throw statement responsible for this taint
 			for (Unit unit : dest.getActiveBody().getUnits()) {
 				if (unit instanceof ThrowStmt) {
 					Value op = ((ThrowStmt) unit).getOp();
@@ -92,8 +98,10 @@ public class BackwardExceptionPropagationRule extends AbstractTaintPropagationRu
 					res.add(source.deriveNewAbstractionOnCatch(ap));
 				}
 			}
+
+			return res.isEmpty() ? null : res;
 		}
 
-		return res.isEmpty() ? null : res;
+		return null;
 	}
 }

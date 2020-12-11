@@ -69,10 +69,11 @@ public class BackwardSourcePropagationRule extends AbstractTaintPropagationRule 
 		// every simple value contained within it.
 		final AccessPath ap = source.getAccessPath();
 		final ISourceSinkManager sourceSinkManager = getManager().getSourceSinkManager();
+		final Aliasing aliasing = getAliasing();
 
-		if (ap != null && sourceSinkManager != null && source.isAbstractionActive()) {
+		if (ap != null && sourceSinkManager != null && aliasing != null && source.isAbstractionActive()) {
 			for (Value val : BaseSelector.selectBaseList(retVal, false)) {
-				if (val == ap.getPlainValue()) {
+				if (aliasing.mayAlias(val, ap.getPlainValue())) {
 					SinkInfo sinkInfo = sourceSinkManager.getSinkInfo(stmt, getManager(), source.getAccessPath());
 					if (sinkInfo != null
 							&& !getResults().addResult(new AbstractionAtSink(sinkInfo.getDefinition(), source, stmt)))
@@ -102,12 +103,13 @@ public class BackwardSourcePropagationRule extends AbstractTaintPropagationRule 
 	 */
 	protected boolean isTaintVisibleInCallee(Stmt stmt, Abstraction source) {
 		InvokeExpr iexpr = stmt.getInvokeExpr();
+		final Aliasing aliasing = getAliasing();
 
 		// Is an argument tainted?
 		final Value apBaseValue = source.getAccessPath().getPlainValue();
-		if (apBaseValue != null) {
+		if (apBaseValue != null && aliasing != null) {
 			for (int i = 0; i < iexpr.getArgCount(); i++) {
-				if (iexpr.getArg(i) == apBaseValue) {
+				if (aliasing.mayAlias(iexpr.getArg(i), apBaseValue)) {
 					if (source.getAccessPath().getTaintSubFields() || source.getAccessPath().isLocal())
 						return true;
 				}
@@ -121,7 +123,8 @@ public class BackwardSourcePropagationRule extends AbstractTaintPropagationRule 
 		}
 
 		// Is return tainted?
-		if (stmt instanceof AssignStmt && apBaseValue == ((AssignStmt) stmt).getLeftOp())
+		if (stmt instanceof AssignStmt && aliasing != null
+				&& aliasing.mayAlias(apBaseValue, ((AssignStmt) stmt).getLeftOp()))
 			return true;
 
 		return false;
