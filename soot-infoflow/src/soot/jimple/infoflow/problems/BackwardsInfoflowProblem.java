@@ -161,6 +161,9 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                     } else if (right instanceof LengthExpr) {
                                         createNewApLeft = true;
                                         leftType = IntType.v();
+                                    } else if (right instanceof CastExpr) {
+                                        CastExpr cast = (CastExpr) assignStmt.getRightOp();
+                                        leftType = cast.getType();
                                     }
                                     addLeftValue = true;
                                 }
@@ -242,8 +245,9 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                 AccessPath newAp = manager.getAccessPathFactory().copyWithNewValue(source.getAccessPath(),
                                         rightVal, rightType, cutRightField);
                                 Abstraction newAbs = source.deriveNewAbstraction(newAp, assignStmt);
-                                if (addAbstractionIfPossible(res, newAbs, rightVal) && Aliasing.canHaveAliases(newAp))
-                                    aliasing.computeAliases(d1, assignStmt, rightVal, res, interproceduralCFG().getMethodOf(assignStmt), newAbs);
+                                if (addAbstractionIfPossible(res, newAbs, rightVal) && Aliasing.canHaveAliases(newAp)) {
+//                                    aliasing.computeAliases(d1, assignStmt, rightVal, res, interproceduralCFG().getMethodOf(assignStmt), newAbs);
+                                }
                             }
                         }
 
@@ -257,8 +261,9 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                         left, leftType, cutFirstFieldLeft);
                             }
                             Abstraction newAbs = source.deriveNewAbstraction(newAp, assignStmt);
-                            if (addAbstractionIfPossible(res, newAbs, left) && Aliasing.canHaveAliases(newAp))
-                                aliasing.computeAliases(d1, assignStmt, left, res, interproceduralCFG().getMethodOf(assignStmt), newAbs);
+                            if (addAbstractionIfPossible(res, newAbs, left) && Aliasing.canHaveAliases(newAp)) {
+//                                aliasing.computeAliases(d1, assignStmt, left, res, interproceduralCFG().getMethodOf(assignStmt), newAbs);
+                            }
                         }
 
                         return res;

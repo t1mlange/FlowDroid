@@ -1,0 +1,88 @@
+digraph "" {
+    "virtualinvoke cm.<soot.jimple.infoflow.test.android.ConnectionManager: void publish(java.lang.String)>($stack7)"
+    "return"
+    "virtualinvoke cm.<soot.jimple.infoflow.test.android.ConnectionManager: void publish(java.lang.String)>($stack7)"->"return";
+    "virtualinvoke $stack2.<java.io.PrintStream: void println(java.lang.String)>(str)"
+    "return"->"virtualinvoke $stack2.<java.io.PrintStream: void println(java.lang.String)>(str)";
+    "$stack2 = <java.lang.System: java.io.PrintStream out>"
+    "virtualinvoke $stack2.<java.io.PrintStream: void println(java.lang.String)>(str)"->"$stack2 = <java.lang.System: java.io.PrintStream out>";
+    "str := @parameter0: java.lang.String"
+    "$stack2 = <java.lang.System: java.io.PrintStream out>"->"str := @parameter0: java.lang.String";
+    "this := @this: soot.jimple.infoflow.test.android.ConnectionManager"
+    "str := @parameter0: java.lang.String"->"this := @this: soot.jimple.infoflow.test.android.ConnectionManager";
+    "$stack7 = $stack6.<soot.jimple.infoflow.test.StaticTestCode$StaticDataClass2: java.lang.String data>"
+    "virtualinvoke cm.<soot.jimple.infoflow.test.android.ConnectionManager: void publish(java.lang.String)>($stack7)"->"$stack7 = $stack6.<soot.jimple.infoflow.test.StaticTestCode$StaticDataClass2: java.lang.String data>";
+    "$stack6 = $stack5.<soot.jimple.infoflow.test.StaticTestCode$StaticDataClass: soot.jimple.infoflow.test.StaticTestCode$StaticDataClass2 data>"
+    "$stack7 = $stack6.<soot.jimple.infoflow.test.StaticTestCode$StaticDataClass2: java.lang.String data>"->"$stack6 = $stack5.<soot.jimple.infoflow.test.StaticTestCode$StaticDataClass: soot.jimple.infoflow.test.StaticTestCode$StaticDataClass2 data>";
+    "$stack5 = <soot.jimple.infoflow.test.StaticTestCode: soot.jimple.infoflow.test.StaticTestCode$StaticDataClass staticDataClass>"
+    "$stack6 = $stack5.<soot.jimple.infoflow.test.StaticTestCode$StaticDataClass: soot.jimple.infoflow.test.StaticTestCode$StaticDataClass2 data>"->"$stack5 = <soot.jimple.infoflow.test.StaticTestCode: soot.jimple.infoflow.test.StaticTestCode$StaticDataClass staticDataClass>";
+    "cm = $stack4"
+    "$stack5 = <soot.jimple.infoflow.test.StaticTestCode: soot.jimple.infoflow.test.StaticTestCode$StaticDataClass staticDataClass>"->"cm = $stack4";
+    "specialinvoke $stack4.<soot.jimple.infoflow.test.android.ConnectionManager: void <init>()>()"
+    "cm = $stack4"->"specialinvoke $stack4.<soot.jimple.infoflow.test.android.ConnectionManager: void <init>()>()";
+    "specialinvoke $stack4.<soot.jimple.infoflow.test.android.ConnectionManager: void <init>()>()"->"return";
+    "specialinvoke this.<java.lang.Object: void <init>()>()"
+    "return"->"specialinvoke this.<java.lang.Object: void <init>()>()";
+    "specialinvoke this.<java.lang.Object: void <init>()>()"->"return";
+    "this := @this: java.lang.Object"
+    "return"->"this := @this: java.lang.Object";
+    "specialinvoke this.<java.lang.Object: void <init>()>()"->"this := @this: soot.jimple.infoflow.test.android.ConnectionManager";
+    "$stack4 = new soot.jimple.infoflow.test.android.ConnectionManager"
+    "specialinvoke $stack4.<soot.jimple.infoflow.test.android.ConnectionManager: void <init>()>()"->"$stack4 = new soot.jimple.infoflow.test.android.ConnectionManager";
+    "staticinvoke <soot.jimple.infoflow.test.StaticTestCode: void staticClassAccess(java.lang.String)>(secret)"
+    "$stack4 = new soot.jimple.infoflow.test.android.ConnectionManager"->"staticinvoke <soot.jimple.infoflow.test.StaticTestCode: void staticClassAccess(java.lang.String)>(secret)";
+    "staticinvoke <soot.jimple.infoflow.test.StaticTestCode: void staticClassAccess(java.lang.String)>(secret)"->"return";
+    "<soot.jimple.infoflow.test.StaticTestCode: soot.jimple.infoflow.test.StaticTestCode$StaticDataClass staticDataClass> = $stack0"
+    "return"->"<soot.jimple.infoflow.test.StaticTestCode: soot.jimple.infoflow.test.StaticTestCode$StaticDataClass staticDataClass> = $stack0";
+    "specialinvoke $stack0.<soot.jimple.infoflow.test.StaticTestCode$StaticDataClass: void <init>(soot.jimple.infoflow.test.StaticTestCode$1)>(null)"
+    "<soot.jimple.infoflow.test.StaticTestCode: soot.jimple.infoflow.test.StaticTestCode$StaticDataClass staticDataClass> = $stack0"->"specialinvoke $stack0.<soot.jimple.infoflow.test.StaticTestCode$StaticDataClass: void <init>(soot.jimple.infoflow.test.StaticTestCode$1)>(null)";
+    "specialinvoke $stack0.<soot.jimple.infoflow.test.StaticTestCode$StaticDataClass: void <init>(soot.jimple.infoflow.test.StaticTestCode$1)>(null)"->"return";
+    "specialinvoke this.<soot.jimple.infoflow.test.StaticTestCode$StaticDataClass: void <init>()>()"
+    "return"->"specialinvoke this.<soot.jimple.infoflow.test.StaticTestCode$StaticDataClass: void <init>()>()";
+    "specialinvoke this.<soot.jimple.infoflow.test.StaticTestCode$StaticDataClass: void <init>()>()"->"return";
+    "this.<soot.jimple.infoflow.test.StaticTestCode$StaticDataClass: soot.jimple.infoflow.test.StaticTestCode$StaticDataClass2 data> = $stack1"
+    "return"->"this.<soot.jimple.infoflow.test.StaticTestCode$StaticDataClass: soot.jimple.infoflow.test.StaticTestCode$StaticDataClass2 data> = $stack1";
+    "specialinvoke $stack1.<soot.jimple.infoflow.test.StaticTestCode$StaticDataClass2: void <init>(soot.jimple.infoflow.test.StaticTestCode$1)>(null)"
+    "this.<soot.jimple.infoflow.test.StaticTestCode$StaticDataClass: soot.jimple.infoflow.test.StaticTestCode$StaticDataClass2 data> = $stack1"->"specialinvoke $stack1.<soot.jimple.infoflow.test.StaticTestCode$StaticDataClass2: void <init>(soot.jimple.infoflow.test.StaticTestCode$1)>(null)";
+    "specialinvoke $stack1.<soot.jimple.infoflow.test.StaticTestCode$StaticDataClass2: void <init>(soot.jimple.infoflow.test.StaticTestCode$1)>(null)"->"return";
+    "specialinvoke this.<soot.jimple.infoflow.test.StaticTestCode$StaticDataClass2: void <init>()>()"
+    "return"->"specialinvoke this.<soot.jimple.infoflow.test.StaticTestCode$StaticDataClass2: void <init>()>()";
+    "specialinvoke this.<soot.jimple.infoflow.test.StaticTestCode$StaticDataClass2: void <init>()>()"->"return";
+    "return"->"specialinvoke this.<java.lang.Object: void <init>()>()";
+    "specialinvoke this.<java.lang.Object: void <init>()>()"->"return";
+    "return"->"this := @this: java.lang.Object";
+    "this := @this: soot.jimple.infoflow.test.StaticTestCode$StaticDataClass2"
+    "specialinvoke this.<java.lang.Object: void <init>()>()"->"this := @this: soot.jimple.infoflow.test.StaticTestCode$StaticDataClass2";
+    "x0 := @parameter0: soot.jimple.infoflow.test.StaticTestCode$1"
+    "specialinvoke this.<soot.jimple.infoflow.test.StaticTestCode$StaticDataClass2: void <init>()>()"->"x0 := @parameter0: soot.jimple.infoflow.test.StaticTestCode$1";
+    "x0 := @parameter0: soot.jimple.infoflow.test.StaticTestCode$1"->"this := @this: soot.jimple.infoflow.test.StaticTestCode$StaticDataClass2";
+    "$stack1 = new soot.jimple.infoflow.test.StaticTestCode$StaticDataClass2"
+    "specialinvoke $stack1.<soot.jimple.infoflow.test.StaticTestCode$StaticDataClass2: void <init>(soot.jimple.infoflow.test.StaticTestCode$1)>(null)"->"$stack1 = new soot.jimple.infoflow.test.StaticTestCode$StaticDataClass2";
+    "$stack1 = new soot.jimple.infoflow.test.StaticTestCode$StaticDataClass2"->"specialinvoke this.<java.lang.Object: void <init>()>()";
+    "specialinvoke this.<java.lang.Object: void <init>()>()"->"return";
+    "return"->"this := @this: java.lang.Object";
+    "this := @this: soot.jimple.infoflow.test.StaticTestCode$StaticDataClass"
+    "specialinvoke this.<java.lang.Object: void <init>()>()"->"this := @this: soot.jimple.infoflow.test.StaticTestCode$StaticDataClass";
+    "specialinvoke this.<soot.jimple.infoflow.test.StaticTestCode$StaticDataClass: void <init>()>()"->"x0 := @parameter0: soot.jimple.infoflow.test.StaticTestCode$1";
+    "x0 := @parameter0: soot.jimple.infoflow.test.StaticTestCode$1"->"this := @this: soot.jimple.infoflow.test.StaticTestCode$StaticDataClass";
+    "$stack0 = new soot.jimple.infoflow.test.StaticTestCode$StaticDataClass"
+    "specialinvoke $stack0.<soot.jimple.infoflow.test.StaticTestCode$StaticDataClass: void <init>(soot.jimple.infoflow.test.StaticTestCode$1)>(null)"->"$stack0 = new soot.jimple.infoflow.test.StaticTestCode$StaticDataClass";
+    "staticinvoke <soot.jimple.infoflow.test.StaticTestCode: void staticClassAccess(java.lang.String)>(secret)"->"return";
+    "staticinvoke <java.lang.Object: void registerNatives()>()"
+    "return"->"staticinvoke <java.lang.Object: void registerNatives()>()";
+    "staticinvoke <java.lang.Object: void registerNatives()>()"->"return";
+    "return"->"staticinvoke <java.lang.Object: void registerNatives()>()";
+    "staticinvoke <soot.jimple.infoflow.test.StaticTestCode: void staticClassAccess(java.lang.String)>(secret)"->"return";
+    "$stack2.<soot.jimple.infoflow.test.StaticTestCode$StaticDataClass2: java.lang.String data> = secret"
+    "return"->"$stack2.<soot.jimple.infoflow.test.StaticTestCode$StaticDataClass2: java.lang.String data> = secret";
+    "$stack2 = $stack1.<soot.jimple.infoflow.test.StaticTestCode$StaticDataClass: soot.jimple.infoflow.test.StaticTestCode$StaticDataClass2 data>"
+    "$stack2.<soot.jimple.infoflow.test.StaticTestCode$StaticDataClass2: java.lang.String data> = secret"->"$stack2 = $stack1.<soot.jimple.infoflow.test.StaticTestCode$StaticDataClass: soot.jimple.infoflow.test.StaticTestCode$StaticDataClass2 data>";
+    "$stack1 = <soot.jimple.infoflow.test.StaticTestCode: soot.jimple.infoflow.test.StaticTestCode$StaticDataClass staticDataClass>"
+    "$stack2 = $stack1.<soot.jimple.infoflow.test.StaticTestCode$StaticDataClass: soot.jimple.infoflow.test.StaticTestCode$StaticDataClass2 data>"->"$stack1 = <soot.jimple.infoflow.test.StaticTestCode: soot.jimple.infoflow.test.StaticTestCode$StaticDataClass staticDataClass>";
+    "secret := @parameter0: java.lang.String"
+    "$stack1 = <soot.jimple.infoflow.test.StaticTestCode: soot.jimple.infoflow.test.StaticTestCode$StaticDataClass staticDataClass>"->"secret := @parameter0: java.lang.String";
+    "secret = staticinvoke <soot.jimple.infoflow.test.android.TelephonyManager: java.lang.String getDeviceId()>()"
+    "staticinvoke <soot.jimple.infoflow.test.StaticTestCode: void staticClassAccess(java.lang.String)>(secret)"->"secret = staticinvoke <soot.jimple.infoflow.test.android.TelephonyManager: java.lang.String getDeviceId()>()";
+    "this := @this: soot.jimple.infoflow.test.StaticTestCode"
+    "secret = staticinvoke <soot.jimple.infoflow.test.android.TelephonyManager: java.lang.String getDeviceId()>()"->"this := @this: soot.jimple.infoflow.test.StaticTestCode";
+}

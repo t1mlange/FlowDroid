@@ -37,7 +37,7 @@ import java.util.*;
  * @author Tim Lange
  */
 public class ForwardsAliasProblem extends AbstractInfoflowProblem {
-    private final static boolean DEBUG_PRINT = true;
+    private final static boolean DEBUG_PRINT = false;
 
     public ForwardsAliasProblem(InfoflowManager manager) {
         super(manager);

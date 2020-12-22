@@ -52,6 +52,7 @@ import soot.jimple.infoflow.sourcesSinks.manager.IOneSourceAtATimeManager;
 import soot.jimple.infoflow.sourcesSinks.manager.ISourceSinkManager;
 import soot.jimple.infoflow.threading.DefaultExecutorFactory;
 import soot.jimple.infoflow.threading.IExecutorFactory;
+import soot.jimple.infoflow.util.ICFGRecusiveDotVisualizer;
 import soot.jimple.infoflow.util.SootMethodRepresentationParser;
 import soot.jimple.infoflow.util.SystemClassHandler;
 import soot.jimple.toolkits.callgraph.ReachableMethods;
@@ -441,7 +442,12 @@ public class BackwardsInfoflow extends AbstractInfoflow {
             // analysis
             PatchingChain<Unit> units = m.getActiveBody().getUnits();
             int i = 0;
+
+//            Unit lastUnit = units.getFirst();
+//            ICFGDotVisualizer visualizer = new ICFGDotVisualizer("./dotfiles/" + lastUnit.toString() + ".dot", lastUnit, manager.getICFG());
+//            visualizer.exportToDot();
             for (Unit u : units) {
+
 //                if (m.toString().contains("append")) {
 //                    ICFGDotVisualizer visualizer = new ICFGDotVisualizer("append.dot", u, manager.getICFG());
 //                    visualizer.exportToDot();
@@ -453,9 +459,9 @@ public class BackwardsInfoflow extends AbstractInfoflow {
                         collectedSinks.add(s);
                     logger.info("Sink found: {} in {}", u, m.getSignature());
 
-                    ICFGDotVisualizer visualizer = new ICFGDotVisualizer(i+".dot", u, manager.getICFG());
+                    ICFGRecusiveDotVisualizer visualizer = new ICFGRecusiveDotVisualizer("./dotfiles/" + i +".dot", u, manager.getICFG());
                     visualizer.exportToDot();
-//                    i++;
+                    i++;
                 }
                 if (sourcesSinks.getSinkInfo(s, manager, null) != null) {
                     sourceCount++;
