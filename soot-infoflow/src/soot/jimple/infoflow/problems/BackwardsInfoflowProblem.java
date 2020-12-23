@@ -64,6 +64,9 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                             taintPropagationHandler.notifyFlowIn(srcStmt, source, manager,
                                     TaintPropagationHandler.FlowFunctionType.NormalFlowFunction);
 
+                        if (srcStmt.toString().contains("d.<soot.jimple.infoflow.test.ExceptionTestCode$Data: java.lang.String imei> = s"))
+                            d1=d1;
+
                         Set<Abstraction> res = source.getDeactivationUnit() == srcStmt ? null : computeTargetsInternal(d1, source);
                         if (DEBUG_PRINT)
                             System.out.println("Normal" + "\n" + "In: " + source.toString() + "\n" + "Stmt: " + srcStmt.toString() + "\n" + "Out: " + (res == null ? "[]" : res.toString()) + "\n" + "---------------------------------------");

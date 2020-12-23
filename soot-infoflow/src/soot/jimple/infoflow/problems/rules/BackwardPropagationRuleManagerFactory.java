@@ -3,6 +3,10 @@ package soot.jimple.infoflow.problems.rules;
 import soot.jimple.infoflow.InfoflowManager;
 import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.problems.TaintPropagationResults;
+import soot.jimple.infoflow.problems.rules.backwardsRules.BackwardsSinkPropagationRule;
+import soot.jimple.infoflow.problems.rules.backwardsRules.BackwardsSourcePropagationRule;
+import soot.jimple.infoflow.problems.rules.backwardsRules.BackwardsArrayPropagationRule;
+import soot.jimple.infoflow.problems.rules.backwardsRules.BackwardsExceptionPropagationRule;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,20 +21,20 @@ public class BackwardPropagationRuleManagerFactory implements IPropagationRuleMa
 
 	@Override
 	public PropagationRuleManager createRuleManager(InfoflowManager manager, Abstraction zeroValue,
-													TaintPropagationResults results) {
+                                                    TaintPropagationResults results) {
 		List<ITaintPropagationRule> ruleList = new ArrayList<>();
 
-		ruleList.add(new BackwardSinkPropagationRule(manager, zeroValue, results));
-		ruleList.add(new BackwardSourcePropagationRule(manager, zeroValue, results));
+		ruleList.add(new BackwardsSinkPropagationRule(manager, zeroValue, results));
+		ruleList.add(new BackwardsSourcePropagationRule(manager, zeroValue, results));
 		ruleList.add(new SkipSystemClassRule(manager, zeroValue, results));
 //		ruleList.add(new BackwardStrongUpdatePropagationRule(manager, zeroValue, results));
 
 		if (manager.getConfig().getEnableExceptionTracking())
-			ruleList.add(new BackwardExceptionPropagationRule(manager, zeroValue, results));
+			ruleList.add(new BackwardsExceptionPropagationRule(manager, zeroValue, results));
 		if (manager.getConfig().getStopAfterFirstKFlows() > 0)
 			ruleList.add(new StopAfterFirstKFlowsPropagationRule(manager, zeroValue, results));
 		if (manager.getConfig().getEnableArrayTracking())
-			ruleList.add(new BackwardArrayPropagationRule(manager, zeroValue, results));
+			ruleList.add(new BackwardsArrayPropagationRule(manager, zeroValue, results));
 
 
 //		ruleList.add(new StaticPropagationRule(manager, zeroValue, results));

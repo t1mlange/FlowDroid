@@ -19,9 +19,9 @@ import java.util.Collection;
  * @author Steven Arzt
  *
  */
-public class BackwardTypingPropagationRule extends AbstractTaintPropagationRule {
+public class BackwardsTypingPropagationRule extends AbstractTaintPropagationRule {
 
-	public BackwardTypingPropagationRule(InfoflowManager manager, Abstraction zeroValue, TaintPropagationResults results) {
+	public BackwardsTypingPropagationRule(InfoflowManager manager, Abstraction zeroValue, TaintPropagationResults results) {
 		super(manager, zeroValue, results);
 	}
 

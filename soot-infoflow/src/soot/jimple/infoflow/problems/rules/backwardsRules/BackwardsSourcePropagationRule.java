@@ -1,4 +1,4 @@
-package soot.jimple.infoflow.problems.rules;
+package soot.jimple.infoflow.problems.rules.backwardsRules;
 
 import soot.SootMethod;
 import soot.Value;
@@ -9,6 +9,7 @@ import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.data.AbstractionAtSink;
 import soot.jimple.infoflow.data.AccessPath;
 import soot.jimple.infoflow.problems.TaintPropagationResults;
+import soot.jimple.infoflow.problems.rules.AbstractTaintPropagationRule;
 import soot.jimple.infoflow.sourcesSinks.manager.ISourceSinkManager;
 import soot.jimple.infoflow.sourcesSinks.manager.SinkInfo;
 import soot.jimple.infoflow.util.BaseSelector;
@@ -24,11 +25,11 @@ import java.util.Collection;
  * @author Steven Arzt
  * @author Tim Lange
  */
-public class BackwardSourcePropagationRule extends AbstractTaintPropagationRule {
+public class BackwardsSourcePropagationRule extends AbstractTaintPropagationRule {
 
 	private boolean killState = false;
 
-	public BackwardSourcePropagationRule(InfoflowManager manager, Abstraction zeroValue, TaintPropagationResults results) {
+	public BackwardsSourcePropagationRule(InfoflowManager manager, Abstraction zeroValue, TaintPropagationResults results) {
 		super(manager, zeroValue, results);
 	}
 
@@ -56,7 +57,7 @@ public class BackwardSourcePropagationRule extends AbstractTaintPropagationRule 
 	}
 
 	/**
-	 * Checks whether the given taint abstraction at the given satement triggers a
+	 * Checks whether the given taint abstraction at the given statement triggers a
 	 * sink. If so, a new result is recorded
 	 * 
 	 * @param d1     The context abstraction
@@ -145,9 +146,10 @@ public class BackwardSourcePropagationRule extends AbstractTaintPropagationRule 
 
 					// If we have already seen the same taint at the same sink, there is no need to
 					// propagate this taint any further.
-					if (sinkInfo != null
-							&& !getResults().addResult(new AbstractionAtSink(sinkInfo.getDefinition(), source, stmt))) {
-						killState = true;
+					if (sinkInfo != null) {
+						boolean result = getResults().addResult(new AbstractionAtSink(sinkInfo.getDefinition(), source, stmt));
+						if (!result)
+							killState = true;
 					}
 				}
 			}

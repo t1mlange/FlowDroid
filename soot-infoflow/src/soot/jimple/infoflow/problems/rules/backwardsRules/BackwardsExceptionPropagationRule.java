@@ -1,4 +1,4 @@
-package soot.jimple.infoflow.problems.rules;
+package soot.jimple.infoflow.problems.rules.backwardsRules;
 
 import soot.SootMethod;
 import soot.Unit;
@@ -9,6 +9,7 @@ import soot.jimple.infoflow.aliasing.Aliasing;
 import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.data.AccessPath;
 import soot.jimple.infoflow.problems.TaintPropagationResults;
+import soot.jimple.infoflow.problems.rules.AbstractTaintPropagationRule;
 import soot.jimple.infoflow.util.ByReferenceBoolean;
 
 import java.util.Collection;
@@ -21,9 +22,9 @@ import java.util.HashSet;
  * @author Steven Arzt
  *
  */
-public class BackwardExceptionPropagationRule extends AbstractTaintPropagationRule {
+public class BackwardsExceptionPropagationRule extends AbstractTaintPropagationRule {
 
-	public BackwardExceptionPropagationRule(InfoflowManager manager, Abstraction zeroValue, TaintPropagationResults results) {
+	public BackwardsExceptionPropagationRule(InfoflowManager manager, Abstraction zeroValue, TaintPropagationResults results) {
 		super(manager, zeroValue, results);
 	}
 

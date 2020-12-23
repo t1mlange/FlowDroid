@@ -1,4 +1,4 @@
-package soot.jimple.infoflow.problems.rules;
+package soot.jimple.infoflow.problems.rules.backwardsRules;
 
 import soot.*;
 import soot.jimple.*;
@@ -7,6 +7,7 @@ import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.data.AccessPath;
 import soot.jimple.infoflow.data.AccessPath.ArrayTaintType;
 import soot.jimple.infoflow.problems.TaintPropagationResults;
+import soot.jimple.infoflow.problems.rules.AbstractTaintPropagationRule;
 import soot.jimple.infoflow.util.ByReferenceBoolean;
 import soot.jimple.infoflow.util.TypeUtils;
 
@@ -20,9 +21,9 @@ import java.util.Set;
  * @author Steven Arzt
  *
  */
-public class BackwardArrayPropagationRule extends AbstractTaintPropagationRule {
+public class BackwardsArrayPropagationRule extends AbstractTaintPropagationRule {
 
-	public BackwardArrayPropagationRule(InfoflowManager manager, Abstraction zeroValue, TaintPropagationResults results) {
+	public BackwardsArrayPropagationRule(InfoflowManager manager, Abstraction zeroValue, TaintPropagationResults results) {
 		super(manager, zeroValue, results);
 	}
 

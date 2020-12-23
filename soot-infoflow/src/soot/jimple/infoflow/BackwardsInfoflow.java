@@ -7,6 +7,7 @@ import soot.jimple.Stmt;
 import soot.jimple.infoflow.InfoflowConfiguration.*;
 import soot.jimple.infoflow.aliasing.*;
 import soot.jimple.infoflow.cfg.BiDirICFGFactory;
+import soot.jimple.infoflow.codeOptimization.AddDummyStmt;
 import soot.jimple.infoflow.codeOptimization.DeadCodeEliminator;
 import soot.jimple.infoflow.codeOptimization.ICodeOptimizer;
 import soot.jimple.infoflow.data.Abstraction;
@@ -30,7 +31,6 @@ import soot.jimple.infoflow.memory.ISolverTerminationReason;
 import soot.jimple.infoflow.memory.reasons.OutOfMemoryReason;
 import soot.jimple.infoflow.memory.reasons.TimeoutReason;
 import soot.jimple.infoflow.nativeCallHandler.BackwardNativeCallHandler;
-import soot.jimple.infoflow.nativeCallHandler.DefaultNativeCallHandler;
 import soot.jimple.infoflow.problems.*;
 import soot.jimple.infoflow.problems.rules.BackwardPropagationRuleManagerFactory;
 import soot.jimple.infoflow.problems.rules.IPropagationRuleManagerFactory;
@@ -47,18 +47,15 @@ import soot.jimple.infoflow.solver.memory.DefaultMemoryManagerFactory;
 import soot.jimple.infoflow.solver.memory.IMemoryManager;
 import soot.jimple.infoflow.solver.memory.IMemoryManagerFactory;
 import soot.jimple.infoflow.sourcesSinks.manager.BackwardsSourceSinkManager;
-import soot.jimple.infoflow.sourcesSinks.manager.DefaultSourceSinkManager;
 import soot.jimple.infoflow.sourcesSinks.manager.IOneSourceAtATimeManager;
 import soot.jimple.infoflow.sourcesSinks.manager.ISourceSinkManager;
 import soot.jimple.infoflow.threading.DefaultExecutorFactory;
 import soot.jimple.infoflow.threading.IExecutorFactory;
-import soot.jimple.infoflow.util.ICFGRecusiveDotVisualizer;
 import soot.jimple.infoflow.util.SootMethodRepresentationParser;
 import soot.jimple.infoflow.util.SystemClassHandler;
 import soot.jimple.toolkits.callgraph.ReachableMethods;
 import soot.jimple.toolkits.ide.icfg.dotexport.ICFGDotVisualizer;
 import soot.options.Options;
-import soot.util.IterableNumberer;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -459,7 +456,7 @@ public class BackwardsInfoflow extends AbstractInfoflow {
                         collectedSinks.add(s);
                     logger.info("Sink found: {} in {}", u, m.getSignature());
 
-                    ICFGRecusiveDotVisualizer visualizer = new ICFGRecusiveDotVisualizer("./dotfiles/" + i +".dot", u, manager.getICFG());
+                    ICFGDotVisualizer visualizer = new ICFGDotVisualizer("./dotfiles/" + i +".dot", u, manager.getICFG());
                     visualizer.exportToDot();
                     i++;
                 }
@@ -569,6 +566,9 @@ public class BackwardsInfoflow extends AbstractInfoflow {
         ICodeOptimizer dce = new DeadCodeEliminator();
         dce.initialize(config);
         dce.run(dceManager, excludedMethods, ((BackwardsSourceSinkManager) sourcesSinks).getDefaultSourceSinkManager(), taintWrapper);
+        ICodeOptimizer dummyStmt = new AddDummyStmt();
+        dummyStmt.initialize(config);
+        dummyStmt.run(dceManager, Scene.v().getEntryPoints(), null, null);
     }
 
     /**
