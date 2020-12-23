@@ -249,7 +249,7 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                         rightVal, rightType, cutRightField);
                                 Abstraction newAbs = source.deriveNewAbstraction(newAp, assignStmt);
                                 if (addAbstractionIfPossible(res, newAbs, rightVal) && Aliasing.canHaveAliases(newAp)) {
-//                                    aliasing.computeAliases(d1, assignStmt, rightVal, res, interproceduralCFG().getMethodOf(assignStmt), newAbs);
+                                    aliasing.computeAliases(d1, assignStmt, rightVal, res, interproceduralCFG().getMethodOf(assignStmt), newAbs);
                                 }
                             }
                         }
@@ -265,7 +265,7 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                             }
                             Abstraction newAbs = source.deriveNewAbstraction(newAp, assignStmt);
                             if (addAbstractionIfPossible(res, newAbs, left) && Aliasing.canHaveAliases(newAp)) {
-//                                aliasing.computeAliases(d1, assignStmt, left, res, interproceduralCFG().getMethodOf(assignStmt), newAbs);
+                                aliasing.computeAliases(d1, assignStmt, left, res, interproceduralCFG().getMethodOf(assignStmt), newAbs);
                             }
                         }
 
