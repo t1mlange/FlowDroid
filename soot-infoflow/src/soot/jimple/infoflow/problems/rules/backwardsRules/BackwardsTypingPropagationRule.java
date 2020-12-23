@@ -1,4 +1,4 @@
-package soot.jimple.infoflow.problems.rules;
+package soot.jimple.infoflow.problems.rules.backwardsRules;
 
 import soot.SootMethod;
 import soot.Value;
@@ -8,6 +8,7 @@ import soot.jimple.Stmt;
 import soot.jimple.infoflow.InfoflowManager;
 import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.problems.TaintPropagationResults;
+import soot.jimple.infoflow.problems.rules.AbstractTaintPropagationRule;
 import soot.jimple.infoflow.util.ByReferenceBoolean;
 
 import java.util.Collection;

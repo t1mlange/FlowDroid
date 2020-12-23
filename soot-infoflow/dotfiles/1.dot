@@ -1,0 +1,28 @@
+digraph "" {
+    "virtualinvoke cm.<soot.jimple.infoflow.test.android.ConnectionManager: void publish(java.lang.String)>($stack11)"
+    "$stack11 = data#1.<soot.jimple.infoflow.test.ExceptionTestCode$Data: java.lang.String imei>"
+    "virtualinvoke cm.<soot.jimple.infoflow.test.android.ConnectionManager: void publish(java.lang.String)>($stack11)"->"$stack11 = data#1.<soot.jimple.infoflow.test.ExceptionTestCode$Data: java.lang.String imei>";
+    "cm = $stack10"
+    "$stack11 = data#1.<soot.jimple.infoflow.test.ExceptionTestCode$Data: java.lang.String imei>"->"cm = $stack10";
+    "specialinvoke $stack10.<soot.jimple.infoflow.test.android.ConnectionManager: void <init>()>()"
+    "cm = $stack10"->"specialinvoke $stack10.<soot.jimple.infoflow.test.android.ConnectionManager: void <init>()>()";
+    "$stack10 = new soot.jimple.infoflow.test.android.ConnectionManager"
+    "specialinvoke $stack10.<soot.jimple.infoflow.test.android.ConnectionManager: void <init>()>()"->"$stack10 = new soot.jimple.infoflow.test.android.ConnectionManager";
+    "l3 = $stack9"
+    "$stack10 = new soot.jimple.infoflow.test.android.ConnectionManager"->"l3 = $stack9";
+    "$stack9 := @caughtexception"
+    "l3 = $stack9"->"$stack9 := @caughtexception";
+    "data#1.<soot.jimple.infoflow.test.ExceptionTestCode$Data: java.lang.String imei> = \"\""
+    "$stack9 := @caughtexception"->"data#1.<soot.jimple.infoflow.test.ExceptionTestCode$Data: java.lang.String imei> = \"\"";
+    "data#1 = $stack5"
+    "data#1.<soot.jimple.infoflow.test.ExceptionTestCode$Data: java.lang.String imei> = \"\""->"data#1 = $stack5";
+    "specialinvoke $stack5.<soot.jimple.infoflow.test.ExceptionTestCode$Data: void <init>(soot.jimple.infoflow.test.ExceptionTestCode,soot.jimple.infoflow.test.ExceptionTestCode$1)>(this, null)"
+    "data#1 = $stack5"->"specialinvoke $stack5.<soot.jimple.infoflow.test.ExceptionTestCode$Data: void <init>(soot.jimple.infoflow.test.ExceptionTestCode,soot.jimple.infoflow.test.ExceptionTestCode$1)>(this, null)";
+    "$stack5 = new soot.jimple.infoflow.test.ExceptionTestCode$Data"
+    "specialinvoke $stack5.<soot.jimple.infoflow.test.ExceptionTestCode$Data: void <init>(soot.jimple.infoflow.test.ExceptionTestCode,soot.jimple.infoflow.test.ExceptionTestCode$1)>(this, null)"->"$stack5 = new soot.jimple.infoflow.test.ExceptionTestCode$Data";
+    "this := @this: soot.jimple.infoflow.test.ExceptionTestCode"
+    "$stack5 = new soot.jimple.infoflow.test.ExceptionTestCode$Data"->"this := @this: soot.jimple.infoflow.test.ExceptionTestCode";
+    "data#2 = specialinvoke this.<soot.jimple.infoflow.test.ExceptionTestCode: soot.jimple.infoflow.test.ExceptionTestCode$Data setAndReturn2b(soot.jimple.infoflow.test.ExceptionTestCode$Data)>(data#1)"
+    "$stack9 := @caughtexception"->"data#2 = specialinvoke this.<soot.jimple.infoflow.test.ExceptionTestCode: soot.jimple.infoflow.test.ExceptionTestCode$Data setAndReturn2b(soot.jimple.infoflow.test.ExceptionTestCode$Data)>(data#1)";
+    "data#2 = specialinvoke this.<soot.jimple.infoflow.test.ExceptionTestCode: soot.jimple.infoflow.test.ExceptionTestCode$Data setAndReturn2b(soot.jimple.infoflow.test.ExceptionTestCode$Data)>(data#1)"->"data#1.<soot.jimple.infoflow.test.ExceptionTestCode$Data: java.lang.String imei> = \"\"";
+}
