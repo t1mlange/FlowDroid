@@ -7,7 +7,7 @@ import soot.jimple.Stmt;
 import soot.jimple.infoflow.InfoflowConfiguration.*;
 import soot.jimple.infoflow.aliasing.*;
 import soot.jimple.infoflow.cfg.BiDirICFGFactory;
-import soot.jimple.infoflow.codeOptimization.AddDummyStmt;
+import soot.jimple.infoflow.codeOptimization.AddNopStmt;
 import soot.jimple.infoflow.codeOptimization.DeadCodeEliminator;
 import soot.jimple.infoflow.codeOptimization.ICodeOptimizer;
 import soot.jimple.infoflow.data.Abstraction;
@@ -558,17 +558,19 @@ public class BackwardsInfoflow extends AbstractInfoflow {
 
         // We need to exclude the dummy main method and all other artificial methods
         // that the entry point creator may have generated as well
-        Set<SootMethod> excludedMethods = new HashSet<>();
+        Set<SootMethod> entryPoints = new HashSet<>();
         if (additionalEntryPointMethods != null)
-            excludedMethods.addAll(additionalEntryPointMethods);
-        excludedMethods.addAll(Scene.v().getEntryPoints());
+            entryPoints.addAll(additionalEntryPointMethods);
+        entryPoints.addAll(Scene.v().getEntryPoints());
 
         ICodeOptimizer dce = new DeadCodeEliminator();
         dce.initialize(config);
-        dce.run(dceManager, excludedMethods, ((BackwardsSourceSinkManager) sourcesSinks).getDefaultSourceSinkManager(), taintWrapper);
-        ICodeOptimizer dummyStmt = new AddDummyStmt();
-        dummyStmt.initialize(config);
-        dummyStmt.run(dceManager, Scene.v().getEntryPoints(), null, null);
+        dce.run(dceManager, entryPoints, ((BackwardsSourceSinkManager) sourcesSinks).getDefaultSourceSinkManager(), taintWrapper);
+
+        // Fixes an edge case, see AddNopStmt
+        ICodeOptimizer nopStmt = new AddNopStmt();
+        nopStmt.initialize(config);
+        nopStmt.run(dceManager, entryPoints, null, null);
     }
 
     /**

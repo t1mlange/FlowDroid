@@ -20,7 +20,7 @@ import java.util.Collection;
  *
  * To fix this edge case, we add a NOP in static methods called from an entry point.
  */
-public class AddDummyStmt implements ICodeOptimizer {
+public class AddNopStmt implements ICodeOptimizer {
     InfoflowConfiguration config;
 
     @Override

@@ -11,26 +11,16 @@ package soot.jimple.infoflow;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import soot.G;
-import soot.MethodOrMethodContext;
-import soot.PackManager;
-import soot.PatchingChain;
-import soot.Scene;
-import soot.SootMethod;
-import soot.Unit;
+import soot.*;
+import soot.jimple.Jimple;
+import soot.jimple.JimpleBody;
 import soot.jimple.Stmt;
 import soot.jimple.infoflow.InfoflowConfiguration.AccessPathConfiguration;
 import soot.jimple.infoflow.InfoflowConfiguration.CallgraphAlgorithm;

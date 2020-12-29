@@ -104,7 +104,7 @@ public class ForwardsAliasProblem extends AbstractInfoflowProblem {
                         final Value rightVal = BaseSelector.selectBase(right, false);
 
                         // If left side is tainted, we overwrite it here
-                        boolean leftSideMatches = Aliasing.baseMatches(left, source);
+                        boolean leftSideMatches = Aliasing.baseMatchesWithArray(left, source);
                         if (leftSideMatches) {
                             for (Unit u : manager.getICFG().getPredsOf(assignStmt))
                                 manager.getForwardSolver()
@@ -154,8 +154,21 @@ public class ForwardsAliasProblem extends AbstractInfoflowProblem {
                                         }
                                     }
                                 }
-                            }
-                            else if (left == ap.getPlainValue()) {
+                            } else if (left instanceof ArrayRef && source.getAccessPath().getArrayTaintType()
+                                    != AccessPath.ArrayTaintType.Length) {
+                                ArrayRef arrayRef = (ArrayRef) left;
+                                // If we track indices, the indice must be tainted
+                                if (getManager().getConfig().getImplicitFlowMode().trackArrayAccesses()
+                                        && arrayRef.getIndex() == source.getAccessPath().getPlainValue()) {
+                                    addRightValue = true;
+                                    rightType = ((ArrayType) arrayRef.getBase().getType()).getElementType();
+                                }
+                                // else just look for the base
+                                else if (arrayRef.getBase() == ap.getPlainValue()) {
+                                    addRightValue = true;
+                                    rightType = ((ArrayType) arrayRef.getBase().getType()).getElementType();
+                                }
+                            } else if (left == ap.getPlainValue()) {
                                 if (!manager.getTypeUtils().checkCast(source.getAccessPath(), right.getType()))
                                     return res;
 

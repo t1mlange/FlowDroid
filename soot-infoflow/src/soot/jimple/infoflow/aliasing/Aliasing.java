@@ -403,7 +403,7 @@ public class Aliasing {
 	/**
 	 * Checks whether the given base value matches the base of the given taint
 	 * abstraction
-	 * 
+	 *
 	 * @param baseValue The value to check
 	 * @param source    The taint abstraction to check
 	 * @return True if the given value has the same base value as the given taint
@@ -424,6 +424,24 @@ public class Aliasing {
 				return true;
 		}
 		return false;
+	}
+
+	/**
+	 * Checks whether the given base value matches the base of the given taint
+	 * abstraction
+	 *
+	 * @param baseValue The value to check
+	 * @param source    The taint abstraction to check
+	 * @return True if the given value has the same base value as the given taint
+	 *         abstraction, otherwise false
+	 */
+	public static boolean baseMatchesWithArray(final Value baseValue, Abstraction source) {
+		if (baseValue instanceof ArrayRef) {
+			ArrayRef afr = (ArrayRef) baseValue;
+			if (source.getAccessPath().getPlainValue() == afr.getBase())
+				return true;
+		}
+		return baseMatches(baseValue, source);
 	}
 
 	/**

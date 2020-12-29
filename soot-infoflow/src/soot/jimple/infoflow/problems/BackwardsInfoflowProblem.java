@@ -633,8 +633,6 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                             taintPropagationHandler.notifyFlowIn(callSite, source, manager,
                                     TaintPropagationHandler.FlowFunctionType.CallToReturnFlowFunction);
 
-                        final Abstraction newSource = !source.isAbstractionActive() && callSite == source.getActivationUnit()
-                                ? source.getActiveCopy() : source;
                         Set<Abstraction> res = source.getDeactivationUnit() == callSite ? null : computeTargetsInternal(d1, source);
                         if (DEBUG_PRINT)
                             System.out.println("CallToReturn" + "\n" + "In: " + source.toString() + "\n" + "Stmt: " + callStmt.toString() + "\n" + "Out: " + (res == null ? "[]" : res.toString()) + "\n" + "---------------------------------------");
