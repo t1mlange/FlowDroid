@@ -1,15 +1,15 @@
 package soot.jimple.infoflow.codeOptimization;
 
-import soot.SootMethod;
-import soot.Unit;
-import soot.UnitPatchingChain;
+import soot.*;
 import soot.jimple.*;
 import soot.jimple.infoflow.InfoflowConfiguration;
 import soot.jimple.infoflow.InfoflowManager;
 import soot.jimple.infoflow.sourcesSinks.manager.ISourceSinkManager;
 import soot.jimple.infoflow.taintWrappers.ITaintPropagationWrapper;
+import soot.jimple.toolkits.callgraph.ReachableMethods;
 
 import java.util.Collection;
+import java.util.Iterator;
 
 /**
  * There is one special case: If a source stmt is a static method without any parameters, which is called from a static
@@ -57,6 +57,16 @@ public class AddNopStmt implements ICodeOptimizer {
                     if (units.getFirst() instanceof AssignStmt)
                         units.addFirst(Jimple.v().newNopStmt());
                 }
+            }
+        }
+
+        ReachableMethods rm = Scene.v().getReachableMethods();
+        for (Iterator<MethodOrMethodContext> iter = rm.listener(); iter.hasNext();) {
+            SootMethod sm = iter.next().method();
+            if (sm.hasActiveBody() && sm.getSubSignature().contains("void <clinit>()")) {
+                UnitPatchingChain units = sm.getActiveBody().getUnits();
+                if (units.getFirst() instanceof AssignStmt)
+                    units.addFirst(Jimple.v().newNopStmt());
             }
         }
     }

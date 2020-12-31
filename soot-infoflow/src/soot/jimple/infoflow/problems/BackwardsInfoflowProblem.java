@@ -64,7 +64,7 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                             taintPropagationHandler.notifyFlowIn(srcStmt, source, manager,
                                     TaintPropagationHandler.FlowFunctionType.NormalFlowFunction);
 
-                        if (srcStmt.toString().contains("d.<soot.jimple.infoflow.test.ExceptionTestCode$Data: java.lang.String imei> = s"))
+                        if (srcStmt.toString().contains("$stack3 = "))
                             d1=d1;
 
                         Set<Abstraction> res = source.getDeactivationUnit() == srcStmt ? null : computeTargetsInternal(d1, source);
@@ -589,8 +589,13 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                         isReflectiveCallSite ? null : source.getAccessPath().getBaseType(),
                                         false);
                                 Abstraction abs = source.deriveNewAbstraction(ap, (Stmt) exitStmt);
-                                if (abs != null)
+                                if (abs != null) {
                                     res.add(abs);
+
+                                    // TODO: side-effects?
+                                    for (Abstraction callerD1 : callerD1s)
+                                        aliasing.computeAliases(callerD1, (Stmt) callSite, originalCallArg, res, callee, abs);
+                                }
                             }
                         }
 

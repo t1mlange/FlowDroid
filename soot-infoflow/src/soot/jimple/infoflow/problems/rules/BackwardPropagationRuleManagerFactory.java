@@ -3,10 +3,7 @@ package soot.jimple.infoflow.problems.rules;
 import soot.jimple.infoflow.InfoflowManager;
 import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.problems.TaintPropagationResults;
-import soot.jimple.infoflow.problems.rules.backwardsRules.BackwardsSinkPropagationRule;
-import soot.jimple.infoflow.problems.rules.backwardsRules.BackwardsSourcePropagationRule;
-import soot.jimple.infoflow.problems.rules.backwardsRules.BackwardsArrayPropagationRule;
-import soot.jimple.infoflow.problems.rules.backwardsRules.BackwardsExceptionPropagationRule;
+import soot.jimple.infoflow.problems.rules.backwardsRules.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +24,7 @@ public class BackwardPropagationRuleManagerFactory implements IPropagationRuleMa
 		ruleList.add(new BackwardsSinkPropagationRule(manager, zeroValue, results));
 		ruleList.add(new BackwardsSourcePropagationRule(manager, zeroValue, results));
 		ruleList.add(new SkipSystemClassRule(manager, zeroValue, results));
+//		ruleList.add(new BackwardsClinitRule(manager, zeroValue, results));
 //		ruleList.add(new BackwardStrongUpdatePropagationRule(manager, zeroValue, results));
 
 		if (manager.getConfig().getEnableExceptionTracking())

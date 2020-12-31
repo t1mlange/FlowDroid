@@ -1,6 +1,9 @@
 package soot.jimple.infoflow.problems.rules.backwardsRules;
 
+import heros.solver.PathEdge;
+import soot.SootFieldRef;
 import soot.SootMethod;
+import soot.Unit;
 import soot.Value;
 import soot.jimple.*;
 import soot.jimple.infoflow.InfoflowManager;

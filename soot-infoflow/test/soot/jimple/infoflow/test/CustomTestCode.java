@@ -1,5 +1,6 @@
 package soot.jimple.infoflow.test;
 
+import org.junit.Test;
 import soot.jimple.infoflow.test.android.ConnectionManager;
 import soot.jimple.infoflow.test.android.Location;
 import soot.jimple.infoflow.test.android.LocationManager;
@@ -53,11 +54,29 @@ public class CustomTestCode {
 		cm.publish(tainted);
 	}
 
+	public void strongClinitTest() {
+		TestClinit tc = new TestClinit();
+		ConnectionManager cm = new ConnectionManager();
+		cm.publish(tc.get());
+	}
+
 	public void easyListTest() {
 		ArrayList<String> lst = new ArrayList<>();
 		lst.add(TelephonyManager.getDeviceId());
 
 		ConnectionManager cm = new ConnectionManager();
 		cm.publish(lst.get(0));
+	}
+}
+
+class TestClinit {
+	static String test = source();
+
+	public String get() {
+		return test;
+	}
+
+	private static String source() {
+		return TelephonyManager.getDeviceId();
 	}
 }

@@ -46,15 +46,6 @@ public class ForwardsAliasProblem extends AbstractInfoflowProblem {
     @Override
     protected FlowFunctions<Unit, Abstraction, SootMethod> createFlowFunctionsFactory() {
         return new FlowFunctions<Unit, Abstraction, SootMethod>() {
-
-            /**
-             * Returns the flow function that computes the flow for a normal statement,
-             * i.e., a statement that is neither a call nor an exit statement.
-             *
-             * @param srcStmt The current statement.
-             * @param destStmt The successor for which the flow is computed. This value can
-             *             be used to compute a branched analysis that propagates
-             */
             @Override
             public FlowFunction<Abstraction> getNormalFlowFunction(Unit srcStmt, Unit destStmt) {
                 if (!(srcStmt instanceof Stmt))
@@ -104,8 +95,10 @@ public class ForwardsAliasProblem extends AbstractInfoflowProblem {
                         final Value rightVal = BaseSelector.selectBase(right, false);
 
                         // If left side is tainted, we overwrite it here
-                        boolean leftSideMatches = Aliasing.baseMatchesWithArray(left, source);
+                        boolean leftSideMatches = Aliasing.baseMatches(left, source);
                         if (leftSideMatches) {
+                            // The left side is overwritten and no further taints can be created
+                            // so we send the taint back to the infoflow solver
                             for (Unit u : manager.getICFG().getPredsOf(assignStmt))
                                 manager.getForwardSolver()
                                         .processEdge(new PathEdge<Unit, Abstraction>(d1, u, source));
@@ -281,13 +274,6 @@ public class ForwardsAliasProblem extends AbstractInfoflowProblem {
                 };
             }
 
-            /**
-             * Returns the flow function that computes the flow for a call statement.
-             *
-             * @param callSite          The statement containing the invoke expression giving rise to
-             *                          this call.
-             * @param dest
-             */
             @Override
             public FlowFunction<Abstraction> getCallFlowFunction(final Unit callSite, final SootMethod dest) {
                 if (!dest.isConcrete()) {
@@ -418,30 +404,6 @@ public class ForwardsAliasProblem extends AbstractInfoflowProblem {
                 };
             }
 
-            /**
-             * Returns the flow function that computes the flow for a an exit from a
-             * method. An exit can be a return or an exceptional exit.
-             *
-             * @param callSite     One of all the call sites in the program that called the
-             *                     method from which the exitStmt is actually returning. This
-             *                     information can be exploited to compute a value that depends on
-             *                     information from before the call.
-             *                     <b>Note:</b> This value might be <code>null</code> if
-             *                     using a tabulation problem with {@link IFDSTabulationProblem#followReturnsPastSeeds()}
-             *                     returning <code>true</code> in a situation where the call graph
-             *                     does not contain a caller for the method that is returned from.
-             * @param calleeMethod The method from which exitStmt returns.
-             * @param exitStmt     The statement exiting the method, typically a return or throw
-             *                     statement.
-             * @param returnSite   One of the successor statements of the callSite. There may be
-             *                     multiple successors in case of possible exceptional flow. This
-             *                     method will be called for each such successor.
-             *                     <b>Note:</b> This value might be <code>null</code> if
-             *                     using a tabulation problem with {@link IFDSTabulationProblem#followReturnsPastSeeds()}
-             *                     returning <code>true</code> in a situation where the call graph
-             *                     does not contain a caller for the method that is returned from.
-             * @return
-             */
             @Override
             public FlowFunction<Abstraction> getReturnFlowFunction(Unit callSite, SootMethod callee, Unit exitStmt, Unit returnSite) {
                 if (callSite != null && !(callSite instanceof Stmt))
