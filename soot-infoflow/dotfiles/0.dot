@@ -1,19 +1,17 @@
 digraph "" {
-    "virtualinvoke cm.<soot.jimple.infoflow.test.android.ConnectionManager: void publish(java.lang.String)>($stack5)"
-    "$stack5 = virtualinvoke tc.<soot.jimple.infoflow.test.TestClinit: java.lang.String get()>()"
-    "virtualinvoke cm.<soot.jimple.infoflow.test.android.ConnectionManager: void publish(java.lang.String)>($stack5)"->"$stack5 = virtualinvoke tc.<soot.jimple.infoflow.test.TestClinit: java.lang.String get()>()";
-    "cm = $stack4"
-    "$stack5 = virtualinvoke tc.<soot.jimple.infoflow.test.TestClinit: java.lang.String get()>()"->"cm = $stack4";
-    "specialinvoke $stack4.<soot.jimple.infoflow.test.android.ConnectionManager: void <init>()>()"
-    "cm = $stack4"->"specialinvoke $stack4.<soot.jimple.infoflow.test.android.ConnectionManager: void <init>()>()";
-    "$stack4 = new soot.jimple.infoflow.test.android.ConnectionManager"
-    "specialinvoke $stack4.<soot.jimple.infoflow.test.android.ConnectionManager: void <init>()>()"->"$stack4 = new soot.jimple.infoflow.test.android.ConnectionManager";
-    "tc = $stack3"
-    "$stack4 = new soot.jimple.infoflow.test.android.ConnectionManager"->"tc = $stack3";
-    "specialinvoke $stack3.<soot.jimple.infoflow.test.TestClinit: void <init>()>()"
-    "tc = $stack3"->"specialinvoke $stack3.<soot.jimple.infoflow.test.TestClinit: void <init>()>()";
-    "$stack3 = new soot.jimple.infoflow.test.TestClinit"
-    "specialinvoke $stack3.<soot.jimple.infoflow.test.TestClinit: void <init>()>()"->"$stack3 = new soot.jimple.infoflow.test.TestClinit";
-    "this := @this: soot.jimple.infoflow.test.CustomTestCode"
-    "$stack3 = new soot.jimple.infoflow.test.TestClinit"->"this := @this: soot.jimple.infoflow.test.CustomTestCode";
+    "virtualinvoke cm.<soot.jimple.infoflow.test.android.ConnectionManager: void publish(java.lang.String)>(y)"
+    "cm = $stack8"
+    "virtualinvoke cm.<soot.jimple.infoflow.test.android.ConnectionManager: void publish(java.lang.String)>(y)"->"cm = $stack8";
+    "specialinvoke $stack8.<soot.jimple.infoflow.test.android.ConnectionManager: void <init>()>()"
+    "cm = $stack8"->"specialinvoke $stack8.<soot.jimple.infoflow.test.android.ConnectionManager: void <init>()>()";
+    "$stack8 = new soot.jimple.infoflow.test.android.ConnectionManager"
+    "specialinvoke $stack8.<soot.jimple.infoflow.test.android.ConnectionManager: void <init>()>()"->"$stack8 = new soot.jimple.infoflow.test.android.ConnectionManager";
+    "y = specialinvoke this.<soot.jimple.infoflow.test.ContextSensitivityTestCode: java.lang.String id(java.lang.String)>(x)"
+    "$stack8 = new soot.jimple.infoflow.test.android.ConnectionManager"->"y = specialinvoke this.<soot.jimple.infoflow.test.ContextSensitivityTestCode: java.lang.String id(java.lang.String)>(x)";
+    "x = specialinvoke this.<soot.jimple.infoflow.test.ContextSensitivityTestCode: java.lang.String id(java.lang.String)>(tainted)"
+    "y = specialinvoke this.<soot.jimple.infoflow.test.ContextSensitivityTestCode: java.lang.String id(java.lang.String)>(x)"->"x = specialinvoke this.<soot.jimple.infoflow.test.ContextSensitivityTestCode: java.lang.String id(java.lang.String)>(tainted)";
+    "tainted = staticinvoke <soot.jimple.infoflow.test.android.TelephonyManager: java.lang.String getDeviceId()>()"
+    "x = specialinvoke this.<soot.jimple.infoflow.test.ContextSensitivityTestCode: java.lang.String id(java.lang.String)>(tainted)"->"tainted = staticinvoke <soot.jimple.infoflow.test.android.TelephonyManager: java.lang.String getDeviceId()>()";
+    "this := @this: soot.jimple.infoflow.test.ContextSensitivityTestCode"
+    "tainted = staticinvoke <soot.jimple.infoflow.test.android.TelephonyManager: java.lang.String getDeviceId()>()"->"this := @this: soot.jimple.infoflow.test.ContextSensitivityTestCode";
 }

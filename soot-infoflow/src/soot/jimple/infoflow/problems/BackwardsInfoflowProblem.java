@@ -161,7 +161,8 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                     if (right instanceof InstanceOfExpr) {
                                         createNewApLeft = true;
                                         leftType = BooleanType.v();
-                                    } else if (right instanceof LengthExpr) {
+                                    } else if (right instanceof LengthExpr
+                                            && ap.getArrayTaintType() != AccessPath.ArrayTaintType.Contents) {
                                         createNewApLeft = true;
                                         leftType = IntType.v();
                                     } else if (right instanceof CastExpr) {
@@ -482,7 +483,7 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
 
             @Override
             public FlowFunction<Abstraction> getReturnFlowFunction(Unit callSite, SootMethod callee, Unit
-                    exitStmt, Unit returnSite) {
+                    exitSite, Unit returnSite) {
                 if (callSite != null && !(callSite instanceof Stmt))
                     return KillAll.v();
 
@@ -497,7 +498,9 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                 final Stmt stmt = (Stmt) callSite;
                 final InvokeExpr ie = (stmt != null && stmt.containsInvokeExpr()) ? stmt.getInvokeExpr() : null;
                 final boolean isReflectiveCallSite = interproceduralCFG().isReflectiveCallSite(ie);
-//                final  ReturnStmt returnStmt = (exitStmt instanceof ReturnStmt) ? (ReturnStmt) exitStmt : null;
+                final Stmt callStmt = (Stmt) callSite;
+                final Stmt exitStmt = (Stmt) exitSite;
+                final ReturnStmt returnStmt = (exitSite instanceof ReturnStmt) ? (ReturnStmt) exitSite : null;
 
                 final Local thisLocal = callee.isStatic() ? null : callee.getActiveBody().getThisLocal();
                 final boolean isExecutorExecute = interproceduralCFG().isExecutorExecute(ie, callee);
@@ -514,10 +517,13 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                             taintPropagationHandler.notifyFlowIn(stmt, source, manager,
                                     TaintPropagationHandler.FlowFunctionType.ReturnFlowFunction);
 
+                        if (callSite.toString().contains("doPrivileged"))
+                            calleeD1=calleeD1;
+
                         Set<Abstraction> res = source.getDeactivationUnit() == callSite ? null : computeTargetsInternal(source, callerD1s);
                         if (DEBUG_PRINT)
                             System.out.println("Return" + "\n" + "In: " + source.toString() + "\n" + "Stmt: " + stmt.toString() + "\n" + "Out: " + (res == null ? "[]" : res.toString()) + "\n" + "---------------------------------------");
-                        return notifyOutFlowHandlers(exitStmt, calleeD1, source, res,
+                        return notifyOutFlowHandlers(exitSite, calleeD1, source, res,
                                 TaintPropagationHandler.FlowFunctionType.ReturnFlowFunction);
                     }
 
@@ -529,7 +535,7 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                         ByReferenceBoolean killAll = new ByReferenceBoolean();
                         if (propagationRules != null)
                             res = propagationRules.applyReturnFlowFunction(callerD1s, source,
-                                    (Stmt) exitStmt, (Stmt) returnSite, (Stmt) callSite, killAll);
+                                    (Stmt) exitSite, (Stmt) returnSite, (Stmt) callSite, killAll);
                         if (killAll.value)
                             return null;
 
@@ -559,7 +565,7 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                     AccessPath ap = manager.getAccessPathFactory()
                                             .copyWithNewValue(source.getAccessPath(), callBase, isReflectiveCallSite ? null
                                                     : source.getAccessPath().getBaseType(), false);
-                                    Abstraction abs = source.deriveNewAbstraction(ap, (Stmt) exitStmt);
+                                    Abstraction abs = source.deriveNewAbstraction(ap, (Stmt) exitSite);
                                     if (abs != null) {
                                         res.add(abs);
                                     }
@@ -568,12 +574,16 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                         }
 
                         // map arguments to parameter
-                        if (isExecutorExecute && ie != null && aliasing.mayAlias(ie.getArg(0), source.getAccessPath().getPlainValue())) {
-                            AccessPath ap = manager.getAccessPathFactory().copyWithNewValue(source.getAccessPath(),
-                                    thisLocal);
-                            Abstraction abs = source.deriveNewAbstraction(ap, stmt);
-                            if (abs != null)
-                                res.add(abs);
+                        if (isExecutorExecute && ie != null) {
+                            if (aliasing.mayAlias(thisLocal, source.getAccessPath().getPlainValue())) {
+                                AccessPath ap = manager.getAccessPathFactory().copyWithNewValue(source.getAccessPath(),
+                                        ie.getArg(0));
+                                Abstraction abs = source.deriveNewAbstraction(ap, exitStmt);
+                                if (abs != null) {
+                                    abs.setCorrespondingCallSite(callStmt);
+                                    res.add(abs);
+                                }
+                            }
                         } else if (ie != null) {
                             for (int i = 0; i < callee.getParameterCount(); i++) {
                                 Value originalCallArg = ie.getArg(isReflectiveCallSite ? 1 : i);
@@ -588,13 +598,15 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                         source.getAccessPath(), originalCallArg,
                                         isReflectiveCallSite ? null : source.getAccessPath().getBaseType(),
                                         false);
-                                Abstraction abs = source.deriveNewAbstraction(ap, (Stmt) exitStmt);
+                                Abstraction abs = source.deriveNewAbstraction(ap, (Stmt) exitSite);
                                 if (abs != null) {
                                     res.add(abs);
 
                                     // TODO: side-effects?
-                                    for (Abstraction callerD1 : callerD1s)
-                                        aliasing.computeAliases(callerD1, (Stmt) callSite, originalCallArg, res, callee, abs);
+                                    if (callSite instanceof AssignStmt) {
+                                        for (Abstraction callerD1 : callerD1s)
+                                            aliasing.computeAliases(callerD1, (Stmt) callSite, originalCallArg, res, callee, abs);
+                                    }
                                 }
                             }
                         }
@@ -637,6 +649,8 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                         if (taintPropagationHandler != null)
                             taintPropagationHandler.notifyFlowIn(callSite, source, manager,
                                     TaintPropagationHandler.FlowFunctionType.CallToReturnFlowFunction);
+                        if (callSite.toString().contains("notify"))
+                            d1=d1;
 
                         Set<Abstraction> res = source.getDeactivationUnit() == callSite ? null : computeTargetsInternal(d1, source);
                         if (DEBUG_PRINT)
@@ -696,9 +710,19 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                             for (Value arg : callArgs) {
                                 if (aliasing.mayAlias(arg, source.getAccessPath().getPlainValue())) {
                                     Set<Abstraction> nativeAbs = ncHandler.getTaintedValues(callStmt, source, callArgs);
-                                    if (nativeAbs != null)
+                                    if (nativeAbs != null) {
                                         res.addAll(nativeAbs);
 
+                                        // Compute the aliases
+                                        for (Abstraction abs : nativeAbs) {
+                                            if (abs.getAccessPath().isStaticFieldRef() || aliasing.canHaveAliases(
+                                                    callStmt, abs.getAccessPath().getPlainValue(), abs)) {
+                                                aliasing.computeAliases(d1, callStmt,
+                                                        abs.getAccessPath().getPlainValue(), res,
+                                                        interproceduralCFG().getMethodOf(callSite), abs);
+                                            }
+                                        }
+                                    }
                                     break;
                                 }
                             }
@@ -706,13 +730,16 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
 
                         // Do not pass base if tainted
                         // CallFlow passes this into the callee
+                        // unless the callee is native and can not be visited
                         if (invExpr instanceof InstanceInvokeExpr
-                                && aliasing.mayAlias(((InstanceInvokeExpr) invExpr).getBase(), source.getAccessPath().getPlainValue()))
+                                && aliasing.mayAlias(((InstanceInvokeExpr) invExpr).getBase(), source.getAccessPath().getPlainValue())
+                                && !callee.isNative())
                             return res;
 
                         // Do not pass over reference parameters
                         // CallFlow passes this into the callee
-                        if (Arrays.stream(callArgs).anyMatch(arg -> !isPrimtiveOrStringBase(source) && aliasing.mayAlias(arg, source.getAccessPath().getPlainValue())))
+                        if (Arrays.stream(callArgs).anyMatch(arg -> !isPrimtiveOrStringBase(source)
+                                && aliasing.mayAlias(arg, source.getAccessPath().getPlainValue())))
                             return res;
 
                         if (!killSource.value)

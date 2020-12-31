@@ -60,6 +60,8 @@ public class AddNopStmt implements ICodeOptimizer {
             }
         }
 
+        // same for clinit methods
+        // which are scheduled manually
         ReachableMethods rm = Scene.v().getReachableMethods();
         for (Iterator<MethodOrMethodContext> iter = rm.listener(); iter.hasNext();) {
             SootMethod sm = iter.next().method();
