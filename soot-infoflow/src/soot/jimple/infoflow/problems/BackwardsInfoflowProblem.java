@@ -103,7 +103,7 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                         final Value[] rightVals = BaseSelector.selectBaseList(right, true);
 
                         // NewExpr can not produce new taints
-                        if (right instanceof NewExpr)
+                        if (right instanceof AnyNewExpr)
                             return res;
 
                         // We throw the source away only if we
@@ -157,6 +157,19 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                             }
                                         }
                                     }
+                                } else if (rightVal instanceof ArrayRef) {
+                                    ArrayRef arrayRef = (ArrayRef) rightVal;
+                                    // If we track indices, the indice must be tainted
+                                    if (getManager().getConfig().getImplicitFlowMode().trackArrayAccesses()
+                                            && arrayRef.getIndex() == source.getAccessPath().getPlainValue()) {
+                                        addLeftValue = true;
+                                        leftType = ((ArrayType) arrayRef.getBase().getType()).getElementType();
+                                    }
+                                    // else just look for the base
+                                    else if (aliasing.mayAlias(arrayRef.getBase(), ap.getPlainValue())) {
+                                        addLeftValue = true;
+                                        leftType = ((ArrayType) arrayRef.getBase().getType()).getElementType();
+                                    }
                                 } else if (aliasing.mayAlias(rightVal, ap.getPlainValue())) {
                                     if (right instanceof InstanceOfExpr) {
                                         createNewApLeft = true;
@@ -172,8 +185,10 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                     addLeftValue = true;
                                 }
                             }
+
                             // Handled in the ArrayPropagationRule
-                            if (right instanceof LengthExpr || right instanceof ArrayRef || right instanceof NewArrayExpr)
+                            // Also NewArrayExpr is inside ArrayPropagationRule
+                            if (right instanceof LengthExpr || right instanceof ArrayRef)
                                 break;
 
                             boolean addRightValue = false;
@@ -445,12 +460,14 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                         }
 
                         // map arguments to parameter
-                        if (isExecutorExecute && ie != null && aliasing.mayAlias(ie.getArg(0), source.getAccessPath().getPlainValue())) {
-                            AccessPath ap = manager.getAccessPathFactory().copyWithNewValue(source.getAccessPath(),
-                                    thisLocal);
-                            Abstraction abs = source.deriveNewAbstraction(ap, stmt);
-                            if (abs != null)
-                                res.add(abs);
+                        if (isExecutorExecute) {
+                            if (ie != null && aliasing.mayAlias(ie.getArg(0), source.getAccessPath().getPlainValue())) {
+                                AccessPath ap = manager.getAccessPathFactory().copyWithNewValue(source.getAccessPath(),
+                                        thisLocal);
+                                Abstraction abs = source.deriveNewAbstraction(ap, stmt);
+                                if (abs != null)
+                                    res.add(abs);
+                            }
                         } else if (ie != null && dest.getParameterCount() > 0) {
                             for (int i = isReflectiveCallSite ? 1 : 0; i < ie.getArgCount(); i++) {
                                 if (!aliasing.mayAlias(ie.getArg(i), source.getAccessPath().getPlainValue()))
@@ -603,10 +620,10 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                     res.add(abs);
 
                                     // TODO: side-effects?
-                                    if (callSite instanceof AssignStmt) {
+//                                    if (callSite instanceof AssignStmt) {
                                         for (Abstraction callerD1 : callerD1s)
                                             aliasing.computeAliases(callerD1, (Stmt) callSite, originalCallArg, res, callee, abs);
-                                    }
+//                                    }
                                 }
                             }
                         }
@@ -762,11 +779,8 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                 Type t = abs.getAccessPath().getBaseType();
                 return t instanceof PrimType || TypeUtils.isStringType(t);
             }
-        }
-
-                ;
+        };
     }
-
 
     public TaintPropagationResults getResults() {
         return this.results;

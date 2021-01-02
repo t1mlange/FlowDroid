@@ -66,4 +66,13 @@ public class CustomTests extends JUnitTests {
         infoflow.computeInfoflow(appPath, libPath, epoints, sources, sinks);
         checkInfoflow(infoflow, 1);
     }
+
+    @Test
+    public void aliasTypeTest() {
+        IInfoflow infoflow = initInfoflow();
+        List<String> epoints = new ArrayList<String>();
+        epoints.add("<soot.jimple.infoflow.test.CustomTestCode: void aliasTypeTest()>");
+        infoflow.computeInfoflow(appPath, libPath, epoints, sources, sinks);
+        checkInfoflow(infoflow, 1);
+    }
 }

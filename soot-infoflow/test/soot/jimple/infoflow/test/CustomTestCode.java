@@ -15,68 +15,91 @@ import java.util.ArrayList;
  *
  */
 public class CustomTestCode {
-	class IntegerRef {
-		int value;
+	class X {
+//		private Object o;
+		private Object[] arr;
 	}
+	private void doAlias(X b, X c) {
+		b.arr = c.arr;
+	}
+	public void aliasTypeTest() {
+		X b = new X();
+		b.arr = new Object[2];
+		X c = new X();
 
-	public void easyAliasTest() {
-		IntegerRef i = new IntegerRef();
-		IntegerRef j = i;
-		j.value = TelephonyManager.getIMEI();
+		doAlias(b, c);
+		b.arr[0] = TelephonyManager.getDeviceId();
 
-		ConnectionManager cm = new ConnectionManager();
-		cm.publish(i.value);
-	}
-
-	private void source(IntegerRef sourcei) {
-		sourcei.value = TelephonyManager.getIMEI();
-	}
-	private void leak(IntegerRef leaki) {
-		ConnectionManager cm = new ConnectionManager();
-		cm.publish(leaki.value);
-	}
-	public void callAliasTest() {
-		IntegerRef i = new IntegerRef();
-		IntegerRef j = i;
-		source(j);
-		leak(i);
-	}
-	public void negativeCallAliasTest() {
-		IntegerRef i = new IntegerRef();
-		IntegerRef j = i;
-		leak(i);
-		source(j);
-	}
-
-	static String tainted = TelephonyManager.getDeviceId();
-	public void clinitTest() {
-		ConnectionManager cm = new ConnectionManager();
-		cm.publish(tainted);
-	}
-
-	public void strongClinitTest() {
-		TestClinit tc = new TestClinit();
-		ConnectionManager cm = new ConnectionManager();
-		cm.publish(tc.get());
-	}
-
-	public void easyListTest() {
-		ArrayList<String> lst = new ArrayList<>();
-		lst.add(TelephonyManager.getDeviceId());
+		X d = new X();
+		doAlias(c, d);
+		b.arr[1] = new String[] { TelephonyManager.getDeviceId() };
 
 		ConnectionManager cm = new ConnectionManager();
-		cm.publish(lst.get(0));
+		cm.publish((String) d.arr[0]);
 	}
+
+//	class IntegerRef {
+//		int value;
+//	}
+//
+//	public void easyAliasTest() {
+//		IntegerRef i = new IntegerRef();
+//		IntegerRef j = i;
+//		j.value = TelephonyManager.getIMEI();
+//
+//		ConnectionManager cm = new ConnectionManager();
+//		cm.publish(i.value);
+//	}
+//
+//	private void source(IntegerRef sourcei) {
+//		sourcei.value = TelephonyManager.getIMEI();
+//	}
+//	private void leak(IntegerRef leaki) {
+//		ConnectionManager cm = new ConnectionManager();
+//		cm.publish(leaki.value);
+//	}
+//	public void callAliasTest() {
+//		IntegerRef i = new IntegerRef();
+//		IntegerRef j = i;
+//		source(j);
+//		leak(i);
+//	}
+//	public void negativeCallAliasTest() {
+//		IntegerRef i = new IntegerRef();
+//		IntegerRef j = i;
+//		leak(i);
+//		source(j);
+//	}
+//
+//	static String tainted = TelephonyManager.getDeviceId();
+//	public void clinitTest() {
+//		ConnectionManager cm = new ConnectionManager();
+//		cm.publish(tainted);
+//	}
+//
+//	public void strongClinitTest() {
+//		TestClinit tc = new TestClinit();
+//		ConnectionManager cm = new ConnectionManager();
+//		cm.publish(tc.get());
+//	}
+//
+//	public void easyListTest() {
+//		ArrayList<String> lst = new ArrayList<>();
+//		lst.add(TelephonyManager.getDeviceId());
+//
+//		ConnectionManager cm = new ConnectionManager();
+//		cm.publish(lst.get(0));
+//	}
 }
 
-class TestClinit {
-	static String test = source();
-
-	public String get() {
-		return test;
-	}
-
-	private static String source() {
-		return TelephonyManager.getDeviceId();
-	}
-}
+//class TestClinit {
+//	static String test = source();
+//
+//	public String get() {
+//		return test;
+//	}
+//
+//	private static String source() {
+//		return TelephonyManager.getDeviceId();
+//	}
+//}

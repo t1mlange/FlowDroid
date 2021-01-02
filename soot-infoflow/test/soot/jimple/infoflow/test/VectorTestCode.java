@@ -28,7 +28,7 @@ public class VectorTestCode {
 		String tainted = TelephonyManager.getDeviceId();
 		Vector<String> v = new Vector<String>();
 		v.add(tainted);
-		v.add("neutral");
+//		v.add("neutral");
 		
 		String taintedElement = v.get(0);
 		ConnectionManager cm = new ConnectionManager();
