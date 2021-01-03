@@ -5,6 +5,7 @@ import fj.Hash;
 import fj.P;
 import heros.FlowFunction;
 import heros.FlowFunctions;
+import heros.flowfunc.Identity;
 import heros.flowfunc.KillAll;
 import heros.solver.PathEdge;
 import polyglot.ast.Assert;
@@ -15,6 +16,7 @@ import soot.jimple.infoflow.AbstractInfoflow;
 import soot.jimple.infoflow.InfoflowConfiguration;
 import soot.jimple.infoflow.InfoflowManager;
 import soot.jimple.infoflow.aliasing.Aliasing;
+import soot.jimple.infoflow.collect.MutableTwoElementSet;
 import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.data.AccessPath;
 import soot.jimple.infoflow.handlers.TaintPropagationHandler;
@@ -46,11 +48,29 @@ public class ForwardsAliasProblem extends AbstractInfoflowProblem {
     @Override
     protected FlowFunctions<Unit, Abstraction, SootMethod> createFlowFunctionsFactory() {
         return new FlowFunctions<Unit, Abstraction, SootMethod>() {
+            private Abstraction checkAbstraction(Abstraction abs) {
+                if (abs == null)
+                    return null;
+
+                // Primitive types and strings cannot have aliases and thus
+                // never need to be propagated back
+                if (!abs.getAccessPath().isStaticFieldRef()) {
+                    if (abs.getAccessPath().getBaseType() instanceof PrimType)
+                        return null;
+                } else {
+                    if (abs.getAccessPath().getFirstFieldType() instanceof PrimType)
+                        return null;
+                }
+                return abs;
+            }
+
             @Override
-            public FlowFunction<Abstraction> getNormalFlowFunction(Unit srcStmt, Unit destStmt) {
-                if (!(srcStmt instanceof Stmt))
-                    return KillAll.v();
-                final DefinitionStmt destDefStmt = destStmt instanceof DefinitionStmt ? (DefinitionStmt) destStmt : null;
+            public FlowFunction<Abstraction> getNormalFlowFunction(Unit srcUnit, Unit destUnit) {
+                if (!(srcUnit instanceof DefinitionStmt))
+                    return Identity.v();
+
+                final DefinitionStmt defStmt = (DefinitionStmt) srcUnit;
+                final DefinitionStmt destDefStmt = destUnit instanceof DefinitionStmt ? (DefinitionStmt) destUnit : null;
                 final Value destLeftValue = destDefStmt == null ? null
                         : BaseSelector.selectBase(destDefStmt.getLeftOp(), true);
 
@@ -61,29 +81,245 @@ public class ForwardsAliasProblem extends AbstractInfoflowProblem {
                             return null;
 
                         if (taintPropagationHandler != null)
-                            taintPropagationHandler.notifyFlowIn(srcStmt, source, manager,
+                            taintPropagationHandler.notifyFlowIn(srcUnit, source, manager,
                                     TaintPropagationHandler.FlowFunctionType.NormalFlowFunction);
 
-                        Set<Abstraction> res = computeTargetsInternal(d1, source);
-                        if (DEBUG_PRINT)
-                            System.out.println("Alias Normal" + "\n" + "In: " + source.toString() + "\n" + "Stmt: " + srcStmt.toString() + "\n" + "Out: " + (res == null ? "[]" : res.toString()) + "\n" + "---------------------------------------");
+                        // TurnUnit is the sink. Below this stmt, the taint is not valid anymore
+                        // Therefore we turn around here.
+                        if (source.getTurnUnit() == srcUnit) {
+                            for (Unit u : interproceduralCFG().getPredsOf(srcUnit))
+                                manager.getForwardSolver()
+                                        .processEdge(new PathEdge<Unit, Abstraction>(d1, u, source));
 
-                        return notifyOutFlowHandlers(srcStmt, d1, source, res,
+
+                            return notifyOutFlowHandlers(srcUnit, d1, source, null,
+                                    TaintPropagationHandler.FlowFunctionType.NormalFlowFunction);
+                        }
+
+
+                        Set<Abstraction> res = computeAliases(defStmt, d1, source);
+                        if (DEBUG_PRINT)
+                            System.out.println("Alias Normal" + "\n" + "In: " + source.toString() + "\n" + "Stmt: " + srcUnit.toString() + "\n" + "Out: " + (res == null ? "[]" : res.toString()) + "\n" + "---------------------------------------");
+
+                        if (destDefStmt != null && res != null && !res.isEmpty()
+                                && interproceduralCFG().isExitStmt(destDefStmt)) {
+                            for (Abstraction abs : res)
+                                computeAliases(destDefStmt, d1, abs);
+                        }
+
+                        return notifyOutFlowHandlers(srcUnit, d1, source, res,
                                 TaintPropagationHandler.FlowFunctionType.NormalFlowFunction);
+                    }
+
+                    private Set<Abstraction> computeAliases(final DefinitionStmt defStmt, Abstraction d1,
+                                                            Abstraction source) {
+                        MutableTwoElementSet<Abstraction> res = new MutableTwoElementSet<>();
+                        res.add(source);
+                        final Value leftOp = defStmt.getLeftOp();
+                        final Value rightOp = defStmt.getRightOp();
+
+                        boolean leftSideMatches = Aliasing.baseMatches(leftOp, source);
+//                        if (!leftSideMatches) {
+//                            // The left side is overwritten and no further taints can be created
+//                            // so we send the taint back to the infoflow solver
+//                            for (Unit u : manager.getICFG().getPredsOf(defStmt))
+//                                manager.getForwardSolver()
+//                                        .processEdge(new PathEdge<Unit, Abstraction>(d1, u, source));
+//                        } else {
+//                            res.add(source);
+//                        }
+
+                        if (defStmt instanceof IdentityStmt) {
+                            res.add(source);
+                            return res;
+                        }
+                        if (!(defStmt instanceof AssignStmt))
+                            return res;
+
+                        final AssignStmt assignStmt = (AssignStmt) defStmt;
+
+                        // BinopExr & UnopExpr operands can not have aliases
+                        if (rightOp instanceof BinopExpr || rightOp instanceof UnopExpr)
+                            return res;
+
+                        final Value rightVal = BaseSelector.selectBase(rightOp, false);
+
+                        // If left side is tainted but right side can not have aliases anyways,
+                        // we can stop now as left is overwritten and right is not tracked.
+//                        if (leftSideMatches && !(rightVal instanceof Local || rightVal instanceof FieldRef))
+//                            return null;
+
+                        // we do not track ints
+                        if (rightOp instanceof NewArrayExpr)
+                            return res;
+
+                        AccessPath ap = source.getAccessPath();
+                        Value sourceBase = ap.getPlainValue();
+
+                        // TODO
+                        boolean aliasOverwritten = Aliasing.baseMatchesStrict(leftOp, source)
+                                && leftOp.getType() instanceof RefType && !source.dependsOnCutAP();
+
+                        if (!(leftOp.getType() instanceof PrimType)
+                                && (rightVal instanceof Local || rightVal instanceof FieldRef)) {
+                            boolean addRightValue = false;
+                            boolean cutFirstFieldRight = false;
+                            Type rightType = null;
+
+                            // S.x
+                            if (leftOp instanceof StaticFieldRef) {
+                                // If we do not track statics, just skip this rightVal
+                                if (getManager().getConfig().getStaticFieldTrackingMode()
+                                        != InfoflowConfiguration.StaticFieldTrackingMode.None
+                                        && ap.firstFieldMatches(((StaticFieldRef) leftOp).getField())) {
+                                    addRightValue = true;
+                                    cutFirstFieldRight = true;
+                                    rightType = ap.getFirstFieldType();
+                                }
+                            }
+                            // o.x
+                            else if (leftOp instanceof InstanceFieldRef) {
+                                InstanceFieldRef instRef = ((InstanceFieldRef) leftOp);
+
+                                if (ap.isInstanceFieldRef() && instRef.getBase() == sourceBase
+                                        && ap.firstFieldMatches(instRef.getField())) {
+                                    addRightValue = true;
+                                    // Without o1.x = o2.x would result in o2.x.x
+                                    cutFirstFieldRight = true;
+                                    rightType = ap.getFirstFieldType();
+                                }
+                            } else if (leftOp instanceof ArrayRef) {
+                                // If we don't track arrays or just the length is tainted we have nothing to do.
+                                if (getManager().getConfig().getEnableArrayTracking()
+                                        &&  ap.getArrayTaintType() != AccessPath.ArrayTaintType.Length) {
+
+                                    ArrayRef arrayRef = (ArrayRef) leftOp;
+                                    if (arrayRef.getBase() == sourceBase) {
+                                        addRightValue = true;
+                                        rightType = ((ArrayType) arrayRef.getBase().getType()).getElementType();
+                                        if (TypeUtils.isObjectLikeType(rightType))
+                                            rightType = rightVal.getType();
+
+                                        if (!manager.getTypeUtils().checkCast(rightVal.getType(), rightType))
+                                            addRightValue = false;
+                                    }
+                                }
+                            }
+                            // default case
+                            else if (leftOp == sourceBase) {
+                                if (!manager.getTypeUtils().checkCast(source.getAccessPath(), rightVal.getType()))
+                                    return null;
+
+                                // LengthExpr handled in ArrayPropagationRule
+                                // CastExpr only make the types more imprecise backwards
+                                // InstanceOfExpr do not produce aliases
+
+                                addRightValue = true;
+                                rightType = source.getAccessPath().getBaseType();
+                            }
+
+
+                            if (addRightValue) {
+                                AccessPath newAp = manager.getAccessPathFactory().copyWithNewValue(source.getAccessPath(),
+                                        rightVal, rightType, cutFirstFieldRight);
+                                Abstraction newAbs = checkAbstraction(source.deriveNewAbstraction(newAp, assignStmt));
+                                if (newAbs != null && newAbs != source) {
+                                    if (rightVal instanceof StaticFieldRef && manager.getConfig().getStaticFieldTrackingMode()
+                                            == InfoflowConfiguration.StaticFieldTrackingMode.ContextFlowInsensitive)
+                                        manager.getGlobalTaintManager().addToGlobalTaintState(newAbs);
+                                    else {
+                                        res.add(newAbs);
+
+                                        // Inject the new alias into the forward solver
+                                        for (Unit u : manager.getICFG().getPredsOf(defStmt))
+                                            manager.getForwardSolver()
+                                                    .processEdge(new PathEdge<Unit, Abstraction>(d1, u, newAbs));
+                                    }
+                                }
+                            }
+                        }
+
+                        if (!(rightVal.getType() instanceof PrimType)
+                                && (leftOp instanceof Local || leftOp instanceof FieldRef)) {
+                            boolean addLeftValue = false;
+                            boolean cutFirstFieldLeft = false;
+                            Type leftType = null;
+
+                            if (rightVal instanceof StaticFieldRef) {
+                                if (manager.getConfig().getStaticFieldTrackingMode() != InfoflowConfiguration.StaticFieldTrackingMode.None
+                                        && ap.firstFieldMatches(((StaticFieldRef) rightVal).getField())) {
+                                    addLeftValue = true;
+                                    leftType = source.getAccessPath().getBaseType();
+                                }
+                            } else if (rightVal instanceof InstanceFieldRef) {
+                                InstanceFieldRef instRef = (InstanceFieldRef) rightVal;
+
+                                if (ap.isInstanceFieldRef() && instRef.getBase() == sourceBase
+                                        && ap.firstFieldMatches(instRef.getField())) {
+                                    addLeftValue = true;
+                                    cutFirstFieldLeft = true;
+                                    leftType = ap.getFirstFieldType();
+                                }
+                            } else if (rightVal == sourceBase) {
+                                addLeftValue = true;
+                                leftType = ap.getBaseType();
+                                // We did not keep the ArrayRef, so rightVal is already the array base
+                                if (rightVal instanceof ArrayRef) {
+                                    leftType = ((ArrayType) leftType).getElementType();
+                                } else if (leftOp instanceof ArrayRef) {
+                                    ArrayRef arrayRef = (ArrayRef) leftOp;
+                                    leftType = TypeUtils.buildArrayOrAddDimension(leftType, arrayRef.getType().getArrayType());
+                                } else {
+                                    if (!manager.getTypeUtils().checkCast(source.getAccessPath(), leftOp.getType()))
+                                        return null;
+                                }
+
+                                // LengthExpr extends UnopExpr, not possible here
+                                if (rightVal instanceof CastExpr) {
+                                    CastExpr ce = (CastExpr) rightOp;
+                                    if (!manager.getHierarchy().canStoreType(leftType, ce.getCastType()))
+                                        leftType = ce.getCastType();
+                                } else if (rightVal instanceof InstanceOfExpr) {
+                                    // We could just produce a boolean, which won't be tracked anyways
+                                    addLeftValue = false;
+                                }
+                            }
+
+                            if (addLeftValue) {
+                                AccessPath newAp = manager.getAccessPathFactory().copyWithNewValue(source.getAccessPath(),
+                                        leftOp, leftType, cutFirstFieldLeft);
+                                Abstraction newAbs = checkAbstraction(source.deriveNewAbstraction(newAp, assignStmt));
+                                if (newAbs != null && newAbs != source) {
+                                    if (rightVal instanceof StaticFieldRef && manager.getConfig().getStaticFieldTrackingMode()
+                                            == InfoflowConfiguration.StaticFieldTrackingMode.ContextFlowInsensitive)
+                                        manager.getGlobalTaintManager().addToGlobalTaintState(newAbs);
+                                    else {
+                                        res.add(newAbs);
+
+                                        // Inject the new alias into the forward solver
+                                        for (Unit u : manager.getICFG().getPredsOf(defStmt))
+                                            manager.getForwardSolver()
+                                                    .processEdge(new PathEdge<Unit, Abstraction>(d1, u, newAbs));
+                                    }
+                                }
+                            }
+                        }
+
+                        return res;
                     }
 
                     private Set<Abstraction> computeTargetsInternal(Abstraction d1, Abstraction source) {
                         HashSet<Abstraction> res = new HashSet<>();
                         // by default the source taint is kept alive
 
-                        if (srcStmt instanceof IdentityStmt) {
+                        if (srcUnit instanceof IdentityStmt) {
                             res.add(source);
                             return res;
                         }
-                        if (!(srcStmt instanceof AssignStmt))
+                        if (!(srcUnit instanceof AssignStmt))
                             return res;
 
-                        final AssignStmt assignStmt = (AssignStmt) srcStmt;
+                        final AssignStmt assignStmt = (AssignStmt) srcUnit;
                         final Value left = assignStmt.getLeftOp();
                         final Value right = assignStmt.getRightOp();
 
@@ -309,6 +545,13 @@ public class ForwardsAliasProblem extends AbstractInfoflowProblem {
                             taintPropagationHandler.notifyFlowIn(stmt, source, manager,
                                     TaintPropagationHandler.FlowFunctionType.CallFlowFunction);
 
+                        // TurnUnit is the sink. Below this stmt, the taint is not valid anymore
+                        // Therefore we turn around here.
+                        if (source.getTurnUnit() == callSite) {
+                            return notifyOutFlowHandlers(callSite, d1, source, null,
+                                    TaintPropagationHandler.FlowFunctionType.CallFlowFunction);
+                        }
+
                         Set<Abstraction> res = computeTargetsInternal(d1,source);
                         if (DEBUG_PRINT)
                             System.out.println("Alias Call" + "\n" + "In: " + source.toString() + "\n" + "Stmt: " + stmt.toString() + "\n" + "Out: " + (res == null ? "[]" : res.toString()) + "\n" + "---------------------------------------");
@@ -432,6 +675,13 @@ public class ForwardsAliasProblem extends AbstractInfoflowProblem {
                         if (taintPropagationHandler != null)
                             taintPropagationHandler.notifyFlowIn(callStmt, source, manager,
                                     TaintPropagationHandler.FlowFunctionType.ReturnFlowFunction);
+
+                        // TurnUnit is the sink. Below this stmt, the taint is not valid anymore
+                        // Therefore we turn around here.
+                        if (source.getTurnUnit() == callSite) {
+                            return notifyOutFlowHandlers(callSite, calleeD1, source, null,
+                                    TaintPropagationHandler.FlowFunctionType.ReturnFlowFunction);
+                        }
 
                         Set<Abstraction> res = computeTargetsInternal(source, calleeD1, callerD1s);
                         if (DEBUG_PRINT)
@@ -567,6 +817,17 @@ public class ForwardsAliasProblem extends AbstractInfoflowProblem {
                             taintPropagationHandler.notifyFlowIn(callSite, source, manager,
                                     TaintPropagationHandler.FlowFunctionType.CallToReturnFlowFunction);
 
+                        // TurnUnit is the sink. Below this stmt, the taint is not valid anymore
+                        // Therefore we turn around here.
+                        if (source.getTurnUnit() == callSite) {
+                            for (Unit u : interproceduralCFG().getPredsOf(callSite))
+                                manager.getForwardSolver()
+                                        .processEdge(new PathEdge<Unit, Abstraction>(d1, u, source));
+
+                            return notifyOutFlowHandlers(callSite, d1, source, null,
+                                    TaintPropagationHandler.FlowFunctionType.CallToReturnFlowFunction);
+                        }
+
                         Set<Abstraction> res = computeTargetsInternal(d1, source);
                         if (DEBUG_PRINT)
                             System.out.println("Alias CallToReturn" + "\n" + "In: " + source.toString() + "\n" + "Stmt: " + callStmt.toString() + "\n" + "Out: " + (res == null ? "[]" : res.toString()) + "\n" + "---------------------------------------");
@@ -607,22 +868,6 @@ public class ForwardsAliasProblem extends AbstractInfoflowProblem {
                         return res;
                     }
                 };
-            }
-
-            private Abstraction checkAbstraction(Abstraction abs) {
-                if (abs == null)
-                    return null;
-
-                // Primitive types and strings cannot have aliases and thus
-                // never need to be propagated back
-                if (!abs.getAccessPath().isStaticFieldRef()) {
-                    if (abs.getAccessPath().getBaseType() instanceof PrimType)
-                        return null;
-                } else {
-                    if (abs.getAccessPath().getFirstFieldType() instanceof PrimType)
-                        return null;
-                }
-                return abs;
             }
 
             private boolean isPrimtiveOrStringBase(Abstraction abs) {

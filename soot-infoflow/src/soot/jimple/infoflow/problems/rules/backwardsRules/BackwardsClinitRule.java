@@ -34,19 +34,18 @@ public class BackwardsClinitRule extends AbstractTaintPropagationRule {
         final Aliasing aliasing = getAliasing();
 
         if (ap != null && aliasing != null) {
-            for (Value val : BaseSelector.selectBaseList(assignStmt.getRightOp(), false)) {
-                if (val instanceof StaticFieldRef) {
-                    SootFieldRef ref = ((StaticFieldRef) val).getFieldRef();
-                    for (SootMethod caller : manager.getICFG().getCalleesOfCallAt(stmt)) {
-                        if (caller.hasActiveBody() && caller.getDeclaringClass() == ref.declaringClass()
-                                && caller.getSubSignature().equals("void <clinit>()")) {
-                            Unit last = caller.getActiveBody().getUnits().getLast();
-                            AccessPath newAp = manager.getAccessPathFactory().copyWithNewValue(source.getAccessPath(),
-                                    val, val.getType(), false);
-                            Abstraction newAbs = source.deriveNewAbstraction(newAp, stmt);
-                            if (newAbs != null)
-                                manager.getForwardSolver().processEdge(new PathEdge<>(d1, last, newAbs));
-                        }
+            Value val = BaseSelector.selectBase(assignStmt.getRightOp(), false);
+            if (val instanceof StaticFieldRef) {
+                SootFieldRef ref = ((StaticFieldRef) val).getFieldRef();
+                for (SootMethod caller : manager.getICFG().getCalleesOfCallAt(stmt)) {
+                    if (caller.hasActiveBody() && caller.getDeclaringClass() == ref.declaringClass()
+                            && caller.getSubSignature().equals("void <clinit>()")) {
+                        Unit last = caller.getActiveBody().getUnits().getLast();
+                        AccessPath newAp = manager.getAccessPathFactory().copyWithNewValue(source.getAccessPath(),
+                                val, val.getType(), false);
+                        Abstraction newAbs = source.deriveNewAbstraction(newAp, stmt);
+                        if (newAbs != null)
+                            manager.getForwardSolver().processEdge(new PathEdge<>(d1, last, newAbs));
                     }
                 }
             }
@@ -67,6 +66,12 @@ public class BackwardsClinitRule extends AbstractTaintPropagationRule {
 
     @Override
     public Collection<Abstraction> propagateReturnFlow(Collection<Abstraction> callerD1s, Abstraction source, Stmt stmt, Stmt retSite, Stmt callSite, ByReferenceBoolean killAll) {
+        // Do not return taints from clinit methods as the call edge was introduced manually
+        // to find sources inside clinit.
+        if (manager.getICFG().getMethodOf(stmt).getSubSignature().equals("void <clinit>()")
+                && source.getAccessPath().isStaticFieldRef())
+            killAll.value = true;
+
         return null;
     }
 }

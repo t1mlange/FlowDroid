@@ -49,8 +49,8 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
         return new FlowFunctions<Unit, Abstraction, SootMethod>() {
 
             @Override
-            public FlowFunction<Abstraction> getNormalFlowFunction(Unit srcStmt, Unit destStmt) {
-                if (!(srcStmt instanceof Stmt))
+            public FlowFunction<Abstraction> getNormalFlowFunction(Unit srcUnit, Unit destUnit) {
+                if (!(srcUnit instanceof Stmt))
                     return KillAll.v();
 
                 final Aliasing aliasing = manager.getAliasing();
@@ -61,17 +61,14 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                     @Override
                     public Set<Abstraction> computeTargets(Abstraction d1, Abstraction source) {
                         if (taintPropagationHandler != null)
-                            taintPropagationHandler.notifyFlowIn(srcStmt, source, manager,
+                            taintPropagationHandler.notifyFlowIn(srcUnit, source, manager,
                                     TaintPropagationHandler.FlowFunctionType.NormalFlowFunction);
 
-                        if (srcStmt.toString().contains("$stack3 = "))
-                            d1=d1;
-
-                        Set<Abstraction> res = source.getDeactivationUnit() == srcStmt ? null : computeTargetsInternal(d1, source);
+                        Set<Abstraction> res = source.getDeactivationUnit() == srcUnit ? null : computeTargetsInternal(d1, source);
                         if (DEBUG_PRINT)
-                            System.out.println("Normal" + "\n" + "In: " + source.toString() + "\n" + "Stmt: " + srcStmt.toString() + "\n" + "Out: " + (res == null ? "[]" : res.toString()) + "\n" + "---------------------------------------");
+                            System.out.println("Normal" + "\n" + "In: " + source.toString() + "\n" + "Stmt: " + srcUnit.toString() + "\n" + "Out: " + (res == null ? "[]" : res.toString()) + "\n" + "---------------------------------------");
 
-                        return notifyOutFlowHandlers(srcStmt, d1, source, res,
+                        return notifyOutFlowHandlers(srcUnit, d1, source, res,
                                 TaintPropagationHandler.FlowFunctionType.NormalFlowFunction);
                     }
 
@@ -81,8 +78,8 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                         ByReferenceBoolean killAll = new ByReferenceBoolean();
                         // If we have a RuleManager, apply the rules
                         if (propagationRules != null) {
-                            res = propagationRules.applyNormalFlowFunction(d1, source, (Stmt) srcStmt,
-                                    (Stmt) destStmt, killSource, killAll);
+                            res = propagationRules.applyNormalFlowFunction(d1, source, (Stmt) srcUnit,
+                                    (Stmt) destUnit, killSource, killAll);
                         }
                         // On killAll, we do not propagate anything and can stop here
                         if (killAll.value)
@@ -92,215 +89,125 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                         if (res == null)
                             res = new HashSet<>();
 
-                        // In normal flow only assignments are relevant
-                        // We can stop here if it is no assigment
-                        if (!(srcStmt instanceof AssignStmt))
+                        if (!(srcUnit instanceof AssignStmt))
                             return res;
 
-                        final AssignStmt assignStmt = (AssignStmt) srcStmt;
-                        final Value left = assignStmt.getLeftOp();
-                        final Value right = assignStmt.getRightOp();
-                        final Value[] rightVals = BaseSelector.selectBaseList(right, true);
+                        final AssignStmt assignStmt = (AssignStmt) srcUnit;
+                        // left can not be an expr
+                        final Value leftVal = assignStmt.getLeftOp();
+                        final Value rightOp = assignStmt.getRightOp();
+                        final Value[] rightVals = BaseSelector.selectBaseList(rightOp, true);
 
-                        // NewExpr can not produce new taints
-                        if (right instanceof AnyNewExpr)
+                        // NewExpr's can not be tainted
+                        // so we can stop here
+                        if (rightOp instanceof AnyNewExpr)
                             return res;
-
-                        // We throw the source away only if we
-                        // created a new taint on the right side
-                        boolean keepSource = true;
-
-                        // TODO: think about this
-//                        boolean aliasOverwritten = !source.isAbstractionActive()
-//                                && Aliasing.baseMatchesStrict(right, source) && right.getType() instanceof RefType
-//                                && !source.dependsOnCutAP();
-//
-//                        if (aliasOverwritten)
-//                            return res;
 
                         AccessPath ap = source.getAccessPath();
-                        boolean addLeftValue = false;
-                        boolean cutFirstFieldLeft = false;
-                        boolean createNewApLeft = false;
-                        Type leftType = null;
+                        Local sourceBase = ap.getPlainValue();
+                        // Statements such as c = a + b with the taint c can produce multiple taints because we can not
+                        // decide which one originated from a source at this point.
                         for (Value rightVal : rightVals) {
-                            if (!addLeftValue) {
-                                if (rightVal instanceof FieldRef) {
-                                    FieldRef ref = (FieldRef) rightVal;
+                            boolean addRightValue = false;
+                            boolean cutFirstField = false;
+                            Type rightType = null;
 
-                                    // If our base is null, we can stop here
-                                    if (ref instanceof InstanceFieldRef
-                                            && ((InstanceFieldRef) ref).getBase().getType() instanceof NullType)
-                                        return null;
-
-                                    // S.x
-                                    if (rightVal instanceof StaticFieldRef
-                                            && getManager().getConfig().getStaticFieldTrackingMode() != InfoflowConfiguration.StaticFieldTrackingMode.None) {
-                                        if (ap.firstFieldMatches(((StaticFieldRef) rightVal).getField())) {
-                                            addLeftValue = true;
-                                        }
-                                    }
-                                    // o.x
-                                    else if (rightVal instanceof InstanceFieldRef) {
-                                        InstanceFieldRef inst = ((InstanceFieldRef) rightVal);
-
-                                        // base object matches
-                                        if (aliasing.mayAlias(inst.getBase(), ap.getPlainValue())) {
-                                            // field match
-                                            if (ap.firstFieldMatches(inst.getField())) {
-                                                addLeftValue = true;
-                                                cutFirstFieldLeft = true;
-                                            }
-                                            // whole object is tainted
-                                            else if (ap.getFieldCount() == 0 && ap.getTaintSubFields()) {
-                                                addLeftValue = true;
-                                            }
-                                        }
-                                    }
-                                } else if (rightVal instanceof ArrayRef) {
-                                    ArrayRef arrayRef = (ArrayRef) rightVal;
-                                    // If we track indices, the indice must be tainted
-                                    if (getManager().getConfig().getImplicitFlowMode().trackArrayAccesses()
-                                            && arrayRef.getIndex() == source.getAccessPath().getPlainValue()) {
-                                        addLeftValue = true;
-                                        leftType = ((ArrayType) arrayRef.getBase().getType()).getElementType();
-                                    }
-                                    // else just look for the base
-                                    else if (aliasing.mayAlias(arrayRef.getBase(), ap.getPlainValue())) {
-                                        addLeftValue = true;
-                                        leftType = ((ArrayType) arrayRef.getBase().getType()).getElementType();
-                                    }
-                                } else if (aliasing.mayAlias(rightVal, ap.getPlainValue())) {
-                                    if (right instanceof InstanceOfExpr) {
-                                        createNewApLeft = true;
-                                        leftType = BooleanType.v();
-                                    } else if (right instanceof LengthExpr
-                                            && ap.getArrayTaintType() != AccessPath.ArrayTaintType.Contents) {
-                                        createNewApLeft = true;
-                                        leftType = IntType.v();
-                                    } else if (right instanceof CastExpr) {
-                                        CastExpr cast = (CastExpr) assignStmt.getRightOp();
-                                        leftType = cast.getType();
-                                    }
-                                    addLeftValue = true;
+                            // S.x
+                            if (leftVal instanceof StaticFieldRef) {
+                                // If we do not track statics, just skip this rightVal
+                                if (getManager().getConfig().getStaticFieldTrackingMode()
+                                        != InfoflowConfiguration.StaticFieldTrackingMode.None
+                                        && ap.firstFieldMatches(((StaticFieldRef) leftVal).getField())) {
+                                    addRightValue = true;
+                                    cutFirstField = true;
+                                    rightType = ap.getFirstFieldType();
                                 }
                             }
+                            // o.x
+                            else if (leftVal instanceof InstanceFieldRef) {
+                                InstanceFieldRef instRef = ((InstanceFieldRef) leftVal);
 
-                            // Handled in the ArrayPropagationRule
-                            // Also NewArrayExpr is inside ArrayPropagationRule
-                            if (right instanceof LengthExpr || right instanceof ArrayRef)
-                                break;
-
-                            boolean addRightValue = false;
-                            boolean cutRightField = false;
-                            Type rightType = null;
-                            if (left instanceof FieldRef) {
-                                FieldRef ref = (FieldRef) left;
-
-                                // If our base is null, we can stop here
-                                if (ref instanceof InstanceFieldRef
-                                        && ((InstanceFieldRef) ref).getBase().getType() instanceof NullType)
+                                // Kill the taint if o = null
+                                if (instRef.getBase().getType() instanceof NullType)
                                     return null;
 
-                                // S.x
-                                if (left instanceof StaticFieldRef
-                                        && getManager().getConfig().getStaticFieldTrackingMode() != InfoflowConfiguration.StaticFieldTrackingMode.None) {
-                                    if (ap.firstFieldMatches(((StaticFieldRef) left).getField())) {
+                                // base object matches
+                                if (aliasing.mayAlias(instRef.getBase(), sourceBase)) {
+                                    // field also matches
+                                    if (ap.firstFieldMatches(instRef.getField())) {
                                         addRightValue = true;
+                                        // Without o1.x = o2.x would result in o2.x.x
+                                        cutFirstField = true;
+                                        rightType = ap.getFirstFieldType();
+                                    }
+                                    // whole object is tainted
+                                    else if (ap.getTaintSubFields() && ap.getFieldCount() == 0) {
+                                        addRightValue = true;
+                                        rightType = instRef.getField().getType();
                                     }
                                 }
-                                // o.x
-                                else if (left instanceof InstanceFieldRef) {
-                                    InstanceFieldRef inst = ((InstanceFieldRef) left);
+                            } else if (leftVal instanceof ArrayRef) {
+                                // If we don't track arrays or just the length is tainted we have nothing to do.
+                                if (!getManager().getConfig().getEnableArrayTracking()
+                                        || ap.getArrayTaintType() == AccessPath.ArrayTaintType.Length)
+                                    continue;
 
-                                    // base object matches
-                                    if (aliasing.mayAlias(inst.getBase(), ap.getPlainValue())) {
-                                        // field match
-                                        if (ap.firstFieldMatches(inst.getField())) {
-                                            addRightValue = true;
-                                            cutRightField = true;
-                                        }
-                                        // whole object is tainted
-                                        else if (ap.getFieldCount() == 0 && ap.getTaintSubFields()) {
-                                            addRightValue = true;
-                                        }
+                                ArrayRef arrayRef = (ArrayRef) leftVal;
+                                // do we track indices...
+                                if (getManager().getConfig().getImplicitFlowMode().trackArrayAccesses()) {
+                                    if (arrayRef.getIndex() == sourceBase) {
+                                        addRightValue = true;
+                                        rightType = ((ArrayType) arrayRef.getBase().getType()).getElementType();
                                     }
                                 }
-                            }
-                            // A[i] = x with A's content tainted -> taint x. A stays tainted because of keepSource
-                            else if (left instanceof ArrayRef && source.getAccessPath().getArrayTaintType()
-                                    != AccessPath.ArrayTaintType.Length) {
-                                ArrayRef arrayRef = (ArrayRef) left;
-                                // If we track indices, the indice must be tainted
-                                if (getManager().getConfig().getImplicitFlowMode().trackArrayAccesses()
-                                        && arrayRef.getIndex() == source.getAccessPath().getPlainValue()) {
-                                    addRightValue = true;
-                                    rightType = ((ArrayType) arrayRef.getBase().getType()).getElementType();
-                                }
-                                // else just look for the base
-                                else if (aliasing.mayAlias(arrayRef.getBase(), ap.getPlainValue())) {
+                                // ...or only the whole array?
+                                else if (aliasing.mayAlias(arrayRef.getBase(), sourceBase)) {
                                     addRightValue = true;
                                     rightType = ((ArrayType) arrayRef.getBase().getType()).getElementType();
                                 }
                             }
-                            // Default case, e.g. $stack1 = o.get() or o = o2;
-                            else if (aliasing.mayAlias(left, ap.getPlainValue())) {
-                                addRightValue = true;
+                            // default case
+                            else if (aliasing.mayAlias(leftVal, sourceBase)) {
+                                // CastExpr only make the types more imprecise backwards
+                                if (rightOp instanceof InstanceOfExpr) {
+                                    // Left side is a boolean but the resulting taint
+                                    // needs to be the object type
+                                    rightType = rightVal.getType();
+                                }
+                                // LengthExpr/RHS ArrayRef handled in ArrayPropagationRule
+                                addRightValue = !(rightOp instanceof LengthExpr || rightOp instanceof ArrayRef);
                             }
 
                             if (addRightValue) {
-                                // If we don't track array indices, we do not overwrite the
-                                // taint when we overwrite one value inside the array.
-                                // So we should keep the source alive regardless of the right side
-                                if (!(left instanceof ArrayRef) || getManager().getConfig().getImplicitFlowMode().trackArrayAccesses()) {
-                                    // Taint was overwritten
+                                // TODO: Don't kill on whole object?
+                                if (!(leftVal instanceof ArrayRef)
+                                        || getManager().getConfig().getImplicitFlowMode().trackArrayAccesses())
                                     res.remove(source);
-                                }
 
-                                // We do not track constants
                                 if (rightVal instanceof Constant)
                                     continue;
 
                                 AccessPath newAp = manager.getAccessPathFactory().copyWithNewValue(source.getAccessPath(),
-                                        rightVal, rightType, cutRightField);
+                                        rightVal, rightType, cutFirstField);
                                 Abstraction newAbs = source.deriveNewAbstraction(newAp, assignStmt);
-                                if (addAbstractionIfPossible(res, newAbs, rightVal) && Aliasing.canHaveAliases(newAp)) {
-                                    aliasing.computeAliases(d1, assignStmt, rightVal, res, interproceduralCFG().getMethodOf(assignStmt), newAbs);
+                                if (newAbs != null) {
+                                    if (rightVal instanceof StaticFieldRef && manager.getConfig().getStaticFieldTrackingMode()
+                                            == InfoflowConfiguration.StaticFieldTrackingMode.ContextFlowInsensitive)
+                                        manager.getGlobalTaintManager().addToGlobalTaintState(newAbs);
+                                    else {
+                                        res.add(newAbs);
+
+                                        if (aliasing.canHaveAliasesRightSide(assignStmt, rightVal, source)) {
+                                            aliasing.computeAliases(d1, assignStmt, rightVal, res,
+                                                    interproceduralCFG().getMethodOf(assignStmt), newAbs);
+                                        }
+                                    }
                                 }
                             }
                         }
-
-                        if (addLeftValue) {
-                            AccessPath newAp;
-                            if (createNewApLeft) {
-                                newAp = manager.getAccessPathFactory().createAccessPath(left, leftType, true,
-                                        AccessPath.ArrayTaintType.ContentsAndLength);
-                            } else {
-                                newAp = manager.getAccessPathFactory().copyWithNewValue(source.getAccessPath(),
-                                        left, leftType, cutFirstFieldLeft);
-                            }
-                            Abstraction newAbs = source.deriveNewAbstraction(newAp, assignStmt);
-                            if (addAbstractionIfPossible(res, newAbs, left) && Aliasing.canHaveAliases(newAp)) {
-                                aliasing.computeAliases(d1, assignStmt, left, res, interproceduralCFG().getMethodOf(assignStmt), newAbs);
-                            }
-                        }
-
                         return res;
                     }
                 };
-            }
-
-            private boolean addAbstractionIfPossible(Set<Abstraction> res, Abstraction abs, Value val) {
-                if (abs == null)
-                    return false;
-
-                if (val instanceof StaticFieldRef && manager.getConfig().getStaticFieldTrackingMode()
-                        == InfoflowConfiguration.StaticFieldTrackingMode.ContextFlowInsensitive) {
-                    manager.getGlobalTaintManager().addToGlobalTaintState(abs);
-                } else {
-                    res.add(abs);
-                }
-                return true;
             }
 
             @Override
@@ -620,10 +527,10 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                     res.add(abs);
 
                                     // TODO: side-effects?
-//                                    if (callSite instanceof AssignStmt) {
+                                    if (callSite instanceof AssignStmt) {
                                         for (Abstraction callerD1 : callerD1s)
                                             aliasing.computeAliases(callerD1, (Stmt) callSite, originalCallArg, res, callee, abs);
-//                                    }
+                                    }
                                 }
                             }
                         }

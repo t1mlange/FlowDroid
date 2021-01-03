@@ -74,6 +74,24 @@ public class InfoflowManager {
 	}
 
 	/**
+	 * Gets the IFDS solver that propagates edges forward
+	 *
+	 * @return The IFDS solver that propagates edges forward
+	 */
+	public IInfoflowSolver getBackwardSolver() {
+		return this.backwardSolver;
+	}
+
+	/**
+	 * Sets the IFDS solver that propagates edges forward
+	 *
+	 * @param solver The IFDS solver that propagates edges forward
+	 */
+	public void setBackwardSolver(IInfoflowSolver solver) {
+		this.backwardSolver = solver;
+	}
+
+	/**
 	 * Gets the interprocedural control flow graph
 	 * 
 	 * @return The interprocedural control flow graph

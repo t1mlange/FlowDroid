@@ -1,5 +1,6 @@
 package soot.jimple.infoflow.problems.rules.backwardsRules;
 
+import org.jf.dexlib2.base.value.BaseShortEncodedValue;
 import soot.Local;
 import soot.SootMethod;
 import soot.ValueBox;
@@ -10,6 +11,7 @@ import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.data.AccessPath;
 import soot.jimple.infoflow.problems.TaintPropagationResults;
 import soot.jimple.infoflow.problems.rules.AbstractTaintPropagationRule;
+import soot.jimple.infoflow.util.BaseSelector;
 import soot.jimple.infoflow.util.ByReferenceBoolean;
 
 import java.util.Collection;
@@ -45,12 +47,11 @@ public class BackwardsStrongUpdatePropagationRule extends AbstractTaintPropagati
 
 		// If this is a newly created alias at this statement, we don't kill it right
 		// away
-		if (!source.isAbstractionActive() && source.getCurrentStmt() == stmt)
+		if (source.getCurrentStmt() == stmt)
 			return null;
 
 		// If the statement has just been activated, we do not overwrite stuff
-		if (source.getPredecessor() != null && !source.getPredecessor().isAbstractionActive()
-				&& source.isAbstractionActive() && source.getPredecessor().getActivationUnit() == stmt
+		if (source.getPredecessor() != null && source.getPredecessor().getDeactivationUnit() == stmt
 				&& source.getAccessPath().equals(source.getPredecessor().getAccessPath()))
 			return null;
 
@@ -60,13 +61,8 @@ public class BackwardsStrongUpdatePropagationRule extends AbstractTaintPropagati
 			// otherwise it might just be the creation of yet another alias
 			if (assignStmt.getLeftOp() instanceof InstanceFieldRef) {
 				InstanceFieldRef leftRef = (InstanceFieldRef) assignStmt.getLeftOp();
-				boolean baseAliases;
-				if (source.isAbstractionActive())
-					baseAliases = getAliasing().mustAlias((Local) leftRef.getBase(),
-							source.getAccessPath().getPlainValue(), assignStmt);
-				else
-					baseAliases = leftRef.getBase() == source.getAccessPath().getPlainValue();
-				if (baseAliases) {
+				if (getAliasing().mustAlias((Local) leftRef.getBase(),
+						source.getAccessPath().getPlainValue(), assignStmt)) {
 					if (getAliasing().mustAlias(leftRef.getField(), source.getAccessPath().getFirstField())) {
 						killAll.value = true;
 						return null;
@@ -91,7 +87,6 @@ public class BackwardsStrongUpdatePropagationRule extends AbstractTaintPropagati
 				killAll.value = true;
 				return null;
 			}
-
 		}
 		// when the fields of an object are tainted, but the base object is overwritten
 		// then the fields should not be tainted any more
@@ -102,11 +97,12 @@ public class BackwardsStrongUpdatePropagationRule extends AbstractTaintPropagati
 			// must only kill the source, but give the other rules the possibility to
 			// re-create the taint
 			boolean found = false;
-			for (ValueBox vb : assignStmt.getRightOp().getUseBoxes())
+			for (ValueBox vb : assignStmt.getRightOp().getUseBoxes()) {
 				if (vb.getValue() == source.getAccessPath().getPlainValue()) {
 					found = true;
 					break;
 				}
+			}
 
 			killAll.value = !found;
 			killSource.value = true;

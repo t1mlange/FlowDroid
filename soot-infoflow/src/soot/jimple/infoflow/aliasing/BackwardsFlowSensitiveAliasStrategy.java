@@ -30,8 +30,8 @@ public class BackwardsFlowSensitiveAliasStrategy extends AbstractBulkAliasStrate
 			Set<Abstraction> taintSet, SootMethod method, Abstraction newAbs) {
 		// Start the backwards solver
 		Abstraction bwAbs = newAbs.deriveActiveAbstraction(src);
-		for (Unit predUnit : manager.getICFG().getPredsOf(src))
-			bSolver.processEdge(new PathEdge<Unit, Abstraction>(d1, predUnit, bwAbs));
+		for (Unit succUnit : manager.getICFG().getSuccsOf(src))
+			bSolver.processEdge(new PathEdge<Unit, Abstraction>(d1, succUnit, bwAbs));
 	}
 
 	@Override

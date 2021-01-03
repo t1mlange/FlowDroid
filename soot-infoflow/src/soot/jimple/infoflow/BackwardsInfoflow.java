@@ -781,6 +781,7 @@ public class BackwardsInfoflow extends AbstractInfoflow {
 
                 memoryWatcher.addSolver((IMemoryBoundedSolver) solver);
                 manager.setForwardSolver(solver);
+                manager.setBackwardSolver(backwardSolver);
                 if (aliasingStrategy.getSolver() != null)
                     aliasingStrategy.getSolver().getTabulationProblem().getManager().setForwardSolver(solver);
                 solvers.add(solver);

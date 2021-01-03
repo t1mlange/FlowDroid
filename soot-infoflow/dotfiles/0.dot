@@ -1,31 +1,17 @@
 digraph "" {
-    "virtualinvoke cm.<soot.jimple.infoflow.test.android.ConnectionManager: void publish(java.lang.String)>(taintedElement2)"
-    "cm = $stack13"
-    "virtualinvoke cm.<soot.jimple.infoflow.test.android.ConnectionManager: void publish(java.lang.String)>(taintedElement2)"->"cm = $stack13";
-    "specialinvoke $stack13.<soot.jimple.infoflow.test.android.ConnectionManager: void <init>()>()"
-    "cm = $stack13"->"specialinvoke $stack13.<soot.jimple.infoflow.test.android.ConnectionManager: void <init>()>()";
-    "$stack13 = new soot.jimple.infoflow.test.android.ConnectionManager"
-    "specialinvoke $stack13.<soot.jimple.infoflow.test.android.ConnectionManager: void <init>()>()"->"$stack13 = new soot.jimple.infoflow.test.android.ConnectionManager";
-    "taintedElement2 = (java.lang.String) $stack12"
-    "$stack13 = new soot.jimple.infoflow.test.android.ConnectionManager"->"taintedElement2 = (java.lang.String) $stack12";
-    "$stack12 = interfaceinvoke it.<java.util.Iterator: java.lang.Object next()>()"
-    "taintedElement2 = (java.lang.String) $stack12"->"$stack12 = interfaceinvoke it.<java.util.Iterator: java.lang.Object next()>()";
-    "interfaceinvoke it.<java.util.Iterator: java.lang.Object next()>()"
-    "$stack12 = interfaceinvoke it.<java.util.Iterator: java.lang.Object next()>()"->"interfaceinvoke it.<java.util.Iterator: java.lang.Object next()>()";
-    "it = virtualinvoke set.<java.util.HashSet: java.util.Iterator iterator()>()"
-    "interfaceinvoke it.<java.util.Iterator: java.lang.Object next()>()"->"it = virtualinvoke set.<java.util.HashSet: java.util.Iterator iterator()>()";
-    "virtualinvoke set.<java.util.HashSet: boolean add(java.lang.Object)>(tainted)"
-    "it = virtualinvoke set.<java.util.HashSet: java.util.Iterator iterator()>()"->"virtualinvoke set.<java.util.HashSet: boolean add(java.lang.Object)>(tainted)";
-    "virtualinvoke set.<java.util.HashSet: boolean add(java.lang.Object)>(\"neutral\")"
-    "virtualinvoke set.<java.util.HashSet: boolean add(java.lang.Object)>(tainted)"->"virtualinvoke set.<java.util.HashSet: boolean add(java.lang.Object)>(\"neutral\")";
-    "set = $stack7"
-    "virtualinvoke set.<java.util.HashSet: boolean add(java.lang.Object)>(\"neutral\")"->"set = $stack7";
-    "specialinvoke $stack7.<java.util.HashSet: void <init>()>()"
-    "set = $stack7"->"specialinvoke $stack7.<java.util.HashSet: void <init>()>()";
-    "$stack7 = new java.util.HashSet"
-    "specialinvoke $stack7.<java.util.HashSet: void <init>()>()"->"$stack7 = new java.util.HashSet";
+    "virtualinvoke cm.<soot.jimple.infoflow.test.android.ConnectionManager: void publish(java.lang.String)>(y)"
+    "cm = $stack8"
+    "virtualinvoke cm.<soot.jimple.infoflow.test.android.ConnectionManager: void publish(java.lang.String)>(y)"->"cm = $stack8";
+    "specialinvoke $stack8.<soot.jimple.infoflow.test.android.ConnectionManager: void <init>()>()"
+    "cm = $stack8"->"specialinvoke $stack8.<soot.jimple.infoflow.test.android.ConnectionManager: void <init>()>()";
+    "$stack8 = new soot.jimple.infoflow.test.android.ConnectionManager"
+    "specialinvoke $stack8.<soot.jimple.infoflow.test.android.ConnectionManager: void <init>()>()"->"$stack8 = new soot.jimple.infoflow.test.android.ConnectionManager";
+    "y = specialinvoke this.<soot.jimple.infoflow.test.ContextSensitivityTestCode: java.lang.String id(java.lang.String)>(x)"
+    "$stack8 = new soot.jimple.infoflow.test.android.ConnectionManager"->"y = specialinvoke this.<soot.jimple.infoflow.test.ContextSensitivityTestCode: java.lang.String id(java.lang.String)>(x)";
+    "x = specialinvoke this.<soot.jimple.infoflow.test.ContextSensitivityTestCode: java.lang.String id(java.lang.String)>(tainted)"
+    "y = specialinvoke this.<soot.jimple.infoflow.test.ContextSensitivityTestCode: java.lang.String id(java.lang.String)>(x)"->"x = specialinvoke this.<soot.jimple.infoflow.test.ContextSensitivityTestCode: java.lang.String id(java.lang.String)>(tainted)";
     "tainted = staticinvoke <soot.jimple.infoflow.test.android.TelephonyManager: java.lang.String getDeviceId()>()"
-    "$stack7 = new java.util.HashSet"->"tainted = staticinvoke <soot.jimple.infoflow.test.android.TelephonyManager: java.lang.String getDeviceId()>()";
-    "this := @this: soot.jimple.infoflow.test.SetTestCode"
-    "tainted = staticinvoke <soot.jimple.infoflow.test.android.TelephonyManager: java.lang.String getDeviceId()>()"->"this := @this: soot.jimple.infoflow.test.SetTestCode";
+    "x = specialinvoke this.<soot.jimple.infoflow.test.ContextSensitivityTestCode: java.lang.String id(java.lang.String)>(tainted)"->"tainted = staticinvoke <soot.jimple.infoflow.test.android.TelephonyManager: java.lang.String getDeviceId()>()";
+    "this := @this: soot.jimple.infoflow.test.ContextSensitivityTestCode"
+    "tainted = staticinvoke <soot.jimple.infoflow.test.android.TelephonyManager: java.lang.String getDeviceId()>()"->"this := @this: soot.jimple.infoflow.test.ContextSensitivityTestCode";
 }
