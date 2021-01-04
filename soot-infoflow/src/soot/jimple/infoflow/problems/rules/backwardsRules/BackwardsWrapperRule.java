@@ -11,6 +11,7 @@ import soot.jimple.infoflow.data.AccessPath;
 import soot.jimple.infoflow.problems.TaintPropagationResults;
 import soot.jimple.infoflow.problems.rules.AbstractTaintPropagationRule;
 import soot.jimple.infoflow.sourcesSinks.manager.SourceInfo;
+import soot.jimple.infoflow.taintWrappers.EasyTaintWrapper;
 import soot.jimple.infoflow.taintWrappers.IReversibleTaintWrapper;
 import soot.jimple.infoflow.taintWrappers.ITaintPropagationWrapper;
 import soot.jimple.infoflow.util.ByReferenceBoolean;
@@ -61,18 +62,27 @@ public class BackwardsWrapperRule extends AbstractTaintPropagationRule {
             if (invokeExpr instanceof InstanceInvokeExpr)
                 isTainted = aliasing.mayAlias(((InstanceInvokeExpr) invokeExpr).getBase(), ap.getPlainValue());
 
-            // is at least one parameter tainted?
-            if (!isTainted)
-                isTainted = invokeExpr.getArgs().stream().anyMatch(arg -> aliasing.mayAlias(arg, ap.getPlainValue()));
-
             // is the return value tainted
             if (!isTainted && stmt instanceof AssignStmt)
                 isTainted = aliasing.mayAlias(((AssignStmt) stmt).getLeftOp(), ap.getPlainValue());
+
+
+            // is at least one parameter tainted?
+            // we need this because of one special case in EasyTaintWrapper:
+            // String.getChars(int srcBegin, int srcEnd, char[] dest, int destBegin)
+            // if String is tainted, the third parameter contains the exploded string
+            if (!isTainted) {
+                if (wrapper instanceof EasyTaintWrapper && invokeExpr.getArgCount() >= 3)
+                    isTainted = aliasing.mayAlias(invokeExpr.getArg(2), ap.getPlainValue());
+                else
+                    isTainted = invokeExpr.getArgs().stream().anyMatch(arg -> aliasing.mayAlias(arg, ap.getPlainValue()));
+            }
         }
 
         if (!isTainted)
             return null;
 
+        // This is the same as in (Forward)WrapperPropagationRule as sources/sinks are swapped in SourceSinkManager
         if (!getManager().getConfig().getInspectSources()) {
             final SourceInfo sourceInfo = manager.getSourceSinkManager() != null
                     ? manager.getSourceSinkManager().getSourceInfo(stmt, manager)

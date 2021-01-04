@@ -1,37 +1,27 @@
 digraph "" {
-    "virtualinvoke cm.<soot.jimple.infoflow.test.android.ConnectionManager: void publish(java.lang.String)>($stack15)"
-    "$stack15 = out[0]"
-    "virtualinvoke cm.<soot.jimple.infoflow.test.android.ConnectionManager: void publish(java.lang.String)>($stack15)"->"$stack15 = out[0]";
-    "cm = $stack14"
-    "$stack15 = out[0]"->"cm = $stack14";
-    "specialinvoke $stack14.<soot.jimple.infoflow.test.android.ConnectionManager: void <init>()>()"
-    "cm = $stack14"->"specialinvoke $stack14.<soot.jimple.infoflow.test.android.ConnectionManager: void <init>()>()";
-    "$stack14 = new soot.jimple.infoflow.test.android.ConnectionManager"
-    "specialinvoke $stack14.<soot.jimple.infoflow.test.android.ConnectionManager: void <init>()>()"->"$stack14 = new soot.jimple.infoflow.test.android.ConnectionManager";
-    "out = (java.lang.String[]) $stack13"
-    "$stack14 = new soot.jimple.infoflow.test.android.ConnectionManager"->"out = (java.lang.String[]) $stack13";
-    "$stack13 = (java.lang.String[]) obj"
-    "out = (java.lang.String[]) $stack13"->"$stack13 = (java.lang.String[]) obj";
-    "obj = y"
-    "$stack13 = (java.lang.String[]) obj"->"obj = y";
-    "z[0] = $stack12"
-    "obj = y"->"z[0] = $stack12";
-    "$stack12 = staticinvoke <soot.jimple.infoflow.test.android.TelephonyManager: java.lang.String getDeviceId()>()"
-    "z[0] = $stack12"->"$stack12 = staticinvoke <soot.jimple.infoflow.test.android.TelephonyManager: java.lang.String getDeviceId()>()";
-    "y = z"
-    "$stack12 = staticinvoke <soot.jimple.infoflow.test.android.TelephonyManager: java.lang.String getDeviceId()>()"->"y = z";
-    "z = (java.lang.String[]) $stack10"
-    "y = z"->"z = (java.lang.String[]) $stack10";
-    "$stack10 = (java.lang.String[]) a2"
-    "z = (java.lang.String[]) $stack10"->"$stack10 = (java.lang.String[]) a2";
-    "a2 = a"
-    "$stack10 = (java.lang.String[]) a2"->"a2 = a";
-    "a = (java.lang.String) e"
-    "a2 = a"->"a = (java.lang.String) e";
-    "e = x"
-    "a = (java.lang.String) e"->"e = x";
-    "x = newarray (java.lang.String)[1]"
-    "e = x"->"x = newarray (java.lang.String)[1]";
-    "this := @this: soot.jimple.infoflow.test.TypeTestCode"
-    "x = newarray (java.lang.String)[1]"->"this := @this: soot.jimple.infoflow.test.TypeTestCode";
+    "virtualinvoke cm.<soot.jimple.infoflow.test.android.ConnectionManager: void publish(java.lang.String)>(taintedElement)"
+    "cm = $stack10"
+    "virtualinvoke cm.<soot.jimple.infoflow.test.android.ConnectionManager: void publish(java.lang.String)>(taintedElement)"->"cm = $stack10";
+    "specialinvoke $stack10.<soot.jimple.infoflow.test.android.ConnectionManager: void <init>()>()"
+    "cm = $stack10"->"specialinvoke $stack10.<soot.jimple.infoflow.test.android.ConnectionManager: void <init>()>()";
+    "$stack10 = new soot.jimple.infoflow.test.android.ConnectionManager"
+    "specialinvoke $stack10.<soot.jimple.infoflow.test.android.ConnectionManager: void <init>()>()"->"$stack10 = new soot.jimple.infoflow.test.android.ConnectionManager";
+    "taintedElement = (java.lang.String) $stack9"
+    "$stack10 = new soot.jimple.infoflow.test.android.ConnectionManager"->"taintedElement = (java.lang.String) $stack9";
+    "$stack9 = interfaceinvoke $stack8.<java.util.Iterator: java.lang.Object next()>()"
+    "taintedElement = (java.lang.String) $stack9"->"$stack9 = interfaceinvoke $stack8.<java.util.Iterator: java.lang.Object next()>()";
+    "$stack8 = interfaceinvoke set.<java.util.Set: java.util.Iterator iterator()>()"
+    "$stack9 = interfaceinvoke $stack8.<java.util.Iterator: java.lang.Object next()>()"->"$stack8 = interfaceinvoke set.<java.util.Set: java.util.Iterator iterator()>()";
+    "interfaceinvoke set.<java.util.Set: boolean add(java.lang.Object)>(tainted)"
+    "$stack8 = interfaceinvoke set.<java.util.Set: java.util.Iterator iterator()>()"->"interfaceinvoke set.<java.util.Set: boolean add(java.lang.Object)>(tainted)";
+    "set = $stack6"
+    "interfaceinvoke set.<java.util.Set: boolean add(java.lang.Object)>(tainted)"->"set = $stack6";
+    "specialinvoke $stack6.<java.util.HashSet: void <init>()>()"
+    "set = $stack6"->"specialinvoke $stack6.<java.util.HashSet: void <init>()>()";
+    "$stack6 = new java.util.HashSet"
+    "specialinvoke $stack6.<java.util.HashSet: void <init>()>()"->"$stack6 = new java.util.HashSet";
+    "tainted = staticinvoke <soot.jimple.infoflow.test.android.TelephonyManager: java.lang.String getDeviceId()>()"
+    "$stack6 = new java.util.HashSet"->"tainted = staticinvoke <soot.jimple.infoflow.test.android.TelephonyManager: java.lang.String getDeviceId()>()";
+    "this := @this: soot.jimple.infoflow.test.SetTestCode"
+    "tainted = staticinvoke <soot.jimple.infoflow.test.android.TelephonyManager: java.lang.String getDeviceId()>()"->"this := @this: soot.jimple.infoflow.test.SetTestCode";
 }

@@ -1,33 +1,51 @@
 digraph "" {
-    "virtualinvoke cm.<soot.jimple.infoflow.test.android.ConnectionManager: void publish(java.lang.String)>($stack8)"
-    "$stack8 = f.<soot.jimple.infoflow.test.TypeTestCode$F: java.lang.String data>"
-    "virtualinvoke cm.<soot.jimple.infoflow.test.android.ConnectionManager: void publish(java.lang.String)>($stack8)"->"$stack8 = f.<soot.jimple.infoflow.test.TypeTestCode$F: java.lang.String data>";
-    "specialinvoke this.<soot.jimple.infoflow.test.TypeTestCode: void doTaintX(soot.jimple.infoflow.test.TypeTestCode$A)>(f)"
-    "$stack8 = f.<soot.jimple.infoflow.test.TypeTestCode$F: java.lang.String data>"->"specialinvoke this.<soot.jimple.infoflow.test.TypeTestCode: void doTaintX(soot.jimple.infoflow.test.TypeTestCode$A)>(f)";
-    "f = $stack7"
-    "specialinvoke this.<soot.jimple.infoflow.test.TypeTestCode: void doTaintX(soot.jimple.infoflow.test.TypeTestCode$A)>(f)"->"f = $stack7";
-    "specialinvoke $stack7.<soot.jimple.infoflow.test.TypeTestCode$F: void <init>(soot.jimple.infoflow.test.TypeTestCode,soot.jimple.infoflow.test.TypeTestCode$1)>(this, null)"
-    "f = $stack7"->"specialinvoke $stack7.<soot.jimple.infoflow.test.TypeTestCode$F: void <init>(soot.jimple.infoflow.test.TypeTestCode,soot.jimple.infoflow.test.TypeTestCode$1)>(this, null)";
-    "$stack7 = new soot.jimple.infoflow.test.TypeTestCode$F"
-    "specialinvoke $stack7.<soot.jimple.infoflow.test.TypeTestCode$F: void <init>(soot.jimple.infoflow.test.TypeTestCode,soot.jimple.infoflow.test.TypeTestCode$1)>(this, null)"->"$stack7 = new soot.jimple.infoflow.test.TypeTestCode$F";
-    "virtualinvoke cm.<soot.jimple.infoflow.test.android.ConnectionManager: void publish(java.lang.String)>($stack6)"
-    "$stack7 = new soot.jimple.infoflow.test.TypeTestCode$F"->"virtualinvoke cm.<soot.jimple.infoflow.test.android.ConnectionManager: void publish(java.lang.String)>($stack6)";
-    "$stack6 = e.<soot.jimple.infoflow.test.TypeTestCode$E: java.lang.String data>"
-    "virtualinvoke cm.<soot.jimple.infoflow.test.android.ConnectionManager: void publish(java.lang.String)>($stack6)"->"$stack6 = e.<soot.jimple.infoflow.test.TypeTestCode$E: java.lang.String data>";
-    "cm = $stack5"
-    "$stack6 = e.<soot.jimple.infoflow.test.TypeTestCode$E: java.lang.String data>"->"cm = $stack5";
-    "specialinvoke $stack5.<soot.jimple.infoflow.test.android.ConnectionManager: void <init>()>()"
-    "cm = $stack5"->"specialinvoke $stack5.<soot.jimple.infoflow.test.android.ConnectionManager: void <init>()>()";
-    "$stack5 = new soot.jimple.infoflow.test.android.ConnectionManager"
-    "specialinvoke $stack5.<soot.jimple.infoflow.test.android.ConnectionManager: void <init>()>()"->"$stack5 = new soot.jimple.infoflow.test.android.ConnectionManager";
-    "specialinvoke this.<soot.jimple.infoflow.test.TypeTestCode: void doTaintX(soot.jimple.infoflow.test.TypeTestCode$A)>(e)"
-    "$stack5 = new soot.jimple.infoflow.test.android.ConnectionManager"->"specialinvoke this.<soot.jimple.infoflow.test.TypeTestCode: void doTaintX(soot.jimple.infoflow.test.TypeTestCode$A)>(e)";
-    "e = $stack4"
-    "specialinvoke this.<soot.jimple.infoflow.test.TypeTestCode: void doTaintX(soot.jimple.infoflow.test.TypeTestCode$A)>(e)"->"e = $stack4";
-    "specialinvoke $stack4.<soot.jimple.infoflow.test.TypeTestCode$E: void <init>(soot.jimple.infoflow.test.TypeTestCode,soot.jimple.infoflow.test.TypeTestCode$1)>(this, null)"
-    "e = $stack4"->"specialinvoke $stack4.<soot.jimple.infoflow.test.TypeTestCode$E: void <init>(soot.jimple.infoflow.test.TypeTestCode,soot.jimple.infoflow.test.TypeTestCode$1)>(this, null)";
-    "$stack4 = new soot.jimple.infoflow.test.TypeTestCode$E"
-    "specialinvoke $stack4.<soot.jimple.infoflow.test.TypeTestCode$E: void <init>(soot.jimple.infoflow.test.TypeTestCode,soot.jimple.infoflow.test.TypeTestCode$1)>(this, null)"->"$stack4 = new soot.jimple.infoflow.test.TypeTestCode$E";
-    "this := @this: soot.jimple.infoflow.test.TypeTestCode"
-    "$stack4 = new soot.jimple.infoflow.test.TypeTestCode$E"->"this := @this: soot.jimple.infoflow.test.TypeTestCode";
+    "virtualinvoke cm.<soot.jimple.infoflow.test.android.ConnectionManager: void publish(java.lang.String)>($stack14)"
+    "$stack14 = $stack13.<soot.jimple.infoflow.test.OverwriteTestCode$DataClass2: java.lang.String data>"
+    "virtualinvoke cm.<soot.jimple.infoflow.test.android.ConnectionManager: void publish(java.lang.String)>($stack14)"->"$stack14 = $stack13.<soot.jimple.infoflow.test.OverwriteTestCode$DataClass2: java.lang.String data>";
+    "$stack13 = dc2.<soot.jimple.infoflow.test.OverwriteTestCode$DataClass: soot.jimple.infoflow.test.OverwriteTestCode$DataClass2 dataClass2>"
+    "$stack14 = $stack13.<soot.jimple.infoflow.test.OverwriteTestCode$DataClass2: java.lang.String data>"->"$stack13 = dc2.<soot.jimple.infoflow.test.OverwriteTestCode$DataClass: soot.jimple.infoflow.test.OverwriteTestCode$DataClass2 dataClass2>";
+    "virtualinvoke cm.<soot.jimple.infoflow.test.android.ConnectionManager: void publish(java.lang.String)>($stack12)"
+    "$stack13 = dc2.<soot.jimple.infoflow.test.OverwriteTestCode$DataClass: soot.jimple.infoflow.test.OverwriteTestCode$DataClass2 dataClass2>"->"virtualinvoke cm.<soot.jimple.infoflow.test.android.ConnectionManager: void publish(java.lang.String)>($stack12)";
+    "$stack12 = $stack11.<soot.jimple.infoflow.test.OverwriteTestCode$DataClass2: java.lang.String data>"
+    "virtualinvoke cm.<soot.jimple.infoflow.test.android.ConnectionManager: void publish(java.lang.String)>($stack12)"->"$stack12 = $stack11.<soot.jimple.infoflow.test.OverwriteTestCode$DataClass2: java.lang.String data>";
+    "$stack11 = dc.<soot.jimple.infoflow.test.OverwriteTestCode$DataClass: soot.jimple.infoflow.test.OverwriteTestCode$DataClass2 dataClass2>"
+    "$stack12 = $stack11.<soot.jimple.infoflow.test.OverwriteTestCode$DataClass2: java.lang.String data>"->"$stack11 = dc.<soot.jimple.infoflow.test.OverwriteTestCode$DataClass: soot.jimple.infoflow.test.OverwriteTestCode$DataClass2 dataClass2>";
+    "cm = $stack10"
+    "$stack11 = dc.<soot.jimple.infoflow.test.OverwriteTestCode$DataClass: soot.jimple.infoflow.test.OverwriteTestCode$DataClass2 dataClass2>"->"cm = $stack10";
+    "specialinvoke $stack10.<soot.jimple.infoflow.test.android.ConnectionManager: void <init>()>()"
+    "cm = $stack10"->"specialinvoke $stack10.<soot.jimple.infoflow.test.android.ConnectionManager: void <init>()>()";
+    "$stack10 = new soot.jimple.infoflow.test.android.ConnectionManager"
+    "specialinvoke $stack10.<soot.jimple.infoflow.test.android.ConnectionManager: void <init>()>()"->"$stack10 = new soot.jimple.infoflow.test.android.ConnectionManager";
+    "virtualinvoke dc2.<soot.jimple.infoflow.test.OverwriteTestCode$DataClass: void clear()>()"
+    "$stack10 = new soot.jimple.infoflow.test.android.ConnectionManager"->"virtualinvoke dc2.<soot.jimple.infoflow.test.OverwriteTestCode$DataClass: void clear()>()";
+    "dc2.<soot.jimple.infoflow.test.OverwriteTestCode$DataClass: soot.jimple.infoflow.test.OverwriteTestCode$DataClass2 dataClass2> = $stack9"
+    "virtualinvoke dc2.<soot.jimple.infoflow.test.OverwriteTestCode$DataClass: void clear()>()"->"dc2.<soot.jimple.infoflow.test.OverwriteTestCode$DataClass: soot.jimple.infoflow.test.OverwriteTestCode$DataClass2 dataClass2> = $stack9";
+    "$stack9 = dc.<soot.jimple.infoflow.test.OverwriteTestCode$DataClass: soot.jimple.infoflow.test.OverwriteTestCode$DataClass2 dataClass2>"
+    "dc2.<soot.jimple.infoflow.test.OverwriteTestCode$DataClass: soot.jimple.infoflow.test.OverwriteTestCode$DataClass2 dataClass2> = $stack9"->"$stack9 = dc.<soot.jimple.infoflow.test.OverwriteTestCode$DataClass: soot.jimple.infoflow.test.OverwriteTestCode$DataClass2 dataClass2>";
+    "dc2 = $stack8"
+    "$stack9 = dc.<soot.jimple.infoflow.test.OverwriteTestCode$DataClass: soot.jimple.infoflow.test.OverwriteTestCode$DataClass2 dataClass2>"->"dc2 = $stack8";
+    "specialinvoke $stack8.<soot.jimple.infoflow.test.OverwriteTestCode$DataClass: void <init>(soot.jimple.infoflow.test.OverwriteTestCode,soot.jimple.infoflow.test.OverwriteTestCode$1)>(this, null)"
+    "dc2 = $stack8"->"specialinvoke $stack8.<soot.jimple.infoflow.test.OverwriteTestCode$DataClass: void <init>(soot.jimple.infoflow.test.OverwriteTestCode,soot.jimple.infoflow.test.OverwriteTestCode$1)>(this, null)";
+    "$stack8 = new soot.jimple.infoflow.test.OverwriteTestCode$DataClass"
+    "specialinvoke $stack8.<soot.jimple.infoflow.test.OverwriteTestCode$DataClass: void <init>(soot.jimple.infoflow.test.OverwriteTestCode,soot.jimple.infoflow.test.OverwriteTestCode$1)>(this, null)"->"$stack8 = new soot.jimple.infoflow.test.OverwriteTestCode$DataClass";
+    "$stack6.<soot.jimple.infoflow.test.OverwriteTestCode$DataClass2: java.lang.String data> = $stack7"
+    "$stack8 = new soot.jimple.infoflow.test.OverwriteTestCode$DataClass"->"$stack6.<soot.jimple.infoflow.test.OverwriteTestCode$DataClass2: java.lang.String data> = $stack7";
+    "$stack7 = staticinvoke <soot.jimple.infoflow.test.android.TelephonyManager: java.lang.String getDeviceId()>()"
+    "$stack6.<soot.jimple.infoflow.test.OverwriteTestCode$DataClass2: java.lang.String data> = $stack7"->"$stack7 = staticinvoke <soot.jimple.infoflow.test.android.TelephonyManager: java.lang.String getDeviceId()>()";
+    "$stack6 = dc.<soot.jimple.infoflow.test.OverwriteTestCode$DataClass: soot.jimple.infoflow.test.OverwriteTestCode$DataClass2 dataClass2>"
+    "$stack7 = staticinvoke <soot.jimple.infoflow.test.android.TelephonyManager: java.lang.String getDeviceId()>()"->"$stack6 = dc.<soot.jimple.infoflow.test.OverwriteTestCode$DataClass: soot.jimple.infoflow.test.OverwriteTestCode$DataClass2 dataClass2>";
+    "dc.<soot.jimple.infoflow.test.OverwriteTestCode$DataClass: soot.jimple.infoflow.test.OverwriteTestCode$DataClass2 dataClass2> = $stack5"
+    "$stack6 = dc.<soot.jimple.infoflow.test.OverwriteTestCode$DataClass: soot.jimple.infoflow.test.OverwriteTestCode$DataClass2 dataClass2>"->"dc.<soot.jimple.infoflow.test.OverwriteTestCode$DataClass: soot.jimple.infoflow.test.OverwriteTestCode$DataClass2 dataClass2> = $stack5";
+    "specialinvoke $stack5.<soot.jimple.infoflow.test.OverwriteTestCode$DataClass2: void <init>(soot.jimple.infoflow.test.OverwriteTestCode,soot.jimple.infoflow.test.OverwriteTestCode$1)>(this, null)"
+    "dc.<soot.jimple.infoflow.test.OverwriteTestCode$DataClass: soot.jimple.infoflow.test.OverwriteTestCode$DataClass2 dataClass2> = $stack5"->"specialinvoke $stack5.<soot.jimple.infoflow.test.OverwriteTestCode$DataClass2: void <init>(soot.jimple.infoflow.test.OverwriteTestCode,soot.jimple.infoflow.test.OverwriteTestCode$1)>(this, null)";
+    "$stack5 = new soot.jimple.infoflow.test.OverwriteTestCode$DataClass2"
+    "specialinvoke $stack5.<soot.jimple.infoflow.test.OverwriteTestCode$DataClass2: void <init>(soot.jimple.infoflow.test.OverwriteTestCode,soot.jimple.infoflow.test.OverwriteTestCode$1)>(this, null)"->"$stack5 = new soot.jimple.infoflow.test.OverwriteTestCode$DataClass2";
+    "dc = $stack4"
+    "$stack5 = new soot.jimple.infoflow.test.OverwriteTestCode$DataClass2"->"dc = $stack4";
+    "specialinvoke $stack4.<soot.jimple.infoflow.test.OverwriteTestCode$DataClass: void <init>(soot.jimple.infoflow.test.OverwriteTestCode,soot.jimple.infoflow.test.OverwriteTestCode$1)>(this, null)"
+    "dc = $stack4"->"specialinvoke $stack4.<soot.jimple.infoflow.test.OverwriteTestCode$DataClass: void <init>(soot.jimple.infoflow.test.OverwriteTestCode,soot.jimple.infoflow.test.OverwriteTestCode$1)>(this, null)";
+    "$stack4 = new soot.jimple.infoflow.test.OverwriteTestCode$DataClass"
+    "specialinvoke $stack4.<soot.jimple.infoflow.test.OverwriteTestCode$DataClass: void <init>(soot.jimple.infoflow.test.OverwriteTestCode,soot.jimple.infoflow.test.OverwriteTestCode$1)>(this, null)"->"$stack4 = new soot.jimple.infoflow.test.OverwriteTestCode$DataClass";
+    "this := @this: soot.jimple.infoflow.test.OverwriteTestCode"
+    "$stack4 = new soot.jimple.infoflow.test.OverwriteTestCode$DataClass"->"this := @this: soot.jimple.infoflow.test.OverwriteTestCode";
 }

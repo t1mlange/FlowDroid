@@ -1,37 +1,57 @@
 digraph "" {
-    "virtualinvoke cm.<soot.jimple.infoflow.test.android.ConnectionManager: void publish(java.lang.String)>($stack9)"
-    "$stack9 = f.<soot.jimple.infoflow.test.TypeTestCode$F: java.lang.String str>"
-    "virtualinvoke cm.<soot.jimple.infoflow.test.android.ConnectionManager: void publish(java.lang.String)>($stack9)"->"$stack9 = f.<soot.jimple.infoflow.test.TypeTestCode$F: java.lang.String str>";
-    "virtualinvoke cm.<soot.jimple.infoflow.test.android.ConnectionManager: void publish(java.lang.String)>($stack8)"
-    "$stack9 = f.<soot.jimple.infoflow.test.TypeTestCode$F: java.lang.String str>"->"virtualinvoke cm.<soot.jimple.infoflow.test.android.ConnectionManager: void publish(java.lang.String)>($stack8)";
-    "$stack8 = f.<soot.jimple.infoflow.test.TypeTestCode$F: java.lang.String data>"
-    "virtualinvoke cm.<soot.jimple.infoflow.test.android.ConnectionManager: void publish(java.lang.String)>($stack8)"->"$stack8 = f.<soot.jimple.infoflow.test.TypeTestCode$F: java.lang.String data>";
-    "specialinvoke this.<soot.jimple.infoflow.test.TypeTestCode: void doTaintX(soot.jimple.infoflow.test.TypeTestCode$A)>(f)"
-    "$stack8 = f.<soot.jimple.infoflow.test.TypeTestCode$F: java.lang.String data>"->"specialinvoke this.<soot.jimple.infoflow.test.TypeTestCode: void doTaintX(soot.jimple.infoflow.test.TypeTestCode$A)>(f)";
-    "f = $stack7"
-    "specialinvoke this.<soot.jimple.infoflow.test.TypeTestCode: void doTaintX(soot.jimple.infoflow.test.TypeTestCode$A)>(f)"->"f = $stack7";
-    "specialinvoke $stack7.<soot.jimple.infoflow.test.TypeTestCode$F: void <init>(soot.jimple.infoflow.test.TypeTestCode,soot.jimple.infoflow.test.TypeTestCode$1)>(this, null)"
-    "f = $stack7"->"specialinvoke $stack7.<soot.jimple.infoflow.test.TypeTestCode$F: void <init>(soot.jimple.infoflow.test.TypeTestCode,soot.jimple.infoflow.test.TypeTestCode$1)>(this, null)";
-    "$stack7 = new soot.jimple.infoflow.test.TypeTestCode$F"
-    "specialinvoke $stack7.<soot.jimple.infoflow.test.TypeTestCode$F: void <init>(soot.jimple.infoflow.test.TypeTestCode,soot.jimple.infoflow.test.TypeTestCode$1)>(this, null)"->"$stack7 = new soot.jimple.infoflow.test.TypeTestCode$F";
-    "virtualinvoke cm.<soot.jimple.infoflow.test.android.ConnectionManager: void publish(java.lang.String)>($stack6)"
-    "$stack7 = new soot.jimple.infoflow.test.TypeTestCode$F"->"virtualinvoke cm.<soot.jimple.infoflow.test.android.ConnectionManager: void publish(java.lang.String)>($stack6)";
-    "$stack6 = e.<soot.jimple.infoflow.test.TypeTestCode$E: java.lang.String data>"
-    "virtualinvoke cm.<soot.jimple.infoflow.test.android.ConnectionManager: void publish(java.lang.String)>($stack6)"->"$stack6 = e.<soot.jimple.infoflow.test.TypeTestCode$E: java.lang.String data>";
-    "cm = $stack5"
-    "$stack6 = e.<soot.jimple.infoflow.test.TypeTestCode$E: java.lang.String data>"->"cm = $stack5";
-    "specialinvoke $stack5.<soot.jimple.infoflow.test.android.ConnectionManager: void <init>()>()"
-    "cm = $stack5"->"specialinvoke $stack5.<soot.jimple.infoflow.test.android.ConnectionManager: void <init>()>()";
-    "$stack5 = new soot.jimple.infoflow.test.android.ConnectionManager"
-    "specialinvoke $stack5.<soot.jimple.infoflow.test.android.ConnectionManager: void <init>()>()"->"$stack5 = new soot.jimple.infoflow.test.android.ConnectionManager";
-    "specialinvoke this.<soot.jimple.infoflow.test.TypeTestCode: void doTaintX(soot.jimple.infoflow.test.TypeTestCode$A)>(e)"
-    "$stack5 = new soot.jimple.infoflow.test.android.ConnectionManager"->"specialinvoke this.<soot.jimple.infoflow.test.TypeTestCode: void doTaintX(soot.jimple.infoflow.test.TypeTestCode$A)>(e)";
-    "e = $stack4"
-    "specialinvoke this.<soot.jimple.infoflow.test.TypeTestCode: void doTaintX(soot.jimple.infoflow.test.TypeTestCode$A)>(e)"->"e = $stack4";
-    "specialinvoke $stack4.<soot.jimple.infoflow.test.TypeTestCode$E: void <init>(soot.jimple.infoflow.test.TypeTestCode,soot.jimple.infoflow.test.TypeTestCode$1)>(this, null)"
-    "e = $stack4"->"specialinvoke $stack4.<soot.jimple.infoflow.test.TypeTestCode$E: void <init>(soot.jimple.infoflow.test.TypeTestCode,soot.jimple.infoflow.test.TypeTestCode$1)>(this, null)";
-    "$stack4 = new soot.jimple.infoflow.test.TypeTestCode$E"
-    "specialinvoke $stack4.<soot.jimple.infoflow.test.TypeTestCode$E: void <init>(soot.jimple.infoflow.test.TypeTestCode,soot.jimple.infoflow.test.TypeTestCode$1)>(this, null)"->"$stack4 = new soot.jimple.infoflow.test.TypeTestCode$E";
-    "this := @this: soot.jimple.infoflow.test.TypeTestCode"
-    "$stack4 = new soot.jimple.infoflow.test.TypeTestCode$E"->"this := @this: soot.jimple.infoflow.test.TypeTestCode";
+    "virtualinvoke cm.<soot.jimple.infoflow.test.android.ConnectionManager: void publish(java.lang.String)>($stack17)"
+    "$stack17 = $stack16.<soot.jimple.infoflow.test.HeapTestCode$A: java.lang.String b>"
+    "virtualinvoke cm.<soot.jimple.infoflow.test.android.ConnectionManager: void publish(java.lang.String)>($stack17)"->"$stack17 = $stack16.<soot.jimple.infoflow.test.HeapTestCode$A: java.lang.String b>";
+    "$stack16 = b.<soot.jimple.infoflow.test.HeapTestCode$B: soot.jimple.infoflow.test.HeapTestCode$A attr>"
+    "$stack17 = $stack16.<soot.jimple.infoflow.test.HeapTestCode$A: java.lang.String b>"->"$stack16 = b.<soot.jimple.infoflow.test.HeapTestCode$B: soot.jimple.infoflow.test.HeapTestCode$A attr>";
+    "b.<soot.jimple.infoflow.test.HeapTestCode$B: soot.jimple.infoflow.test.HeapTestCode$A attr> = $stack15"
+    "$stack16 = b.<soot.jimple.infoflow.test.HeapTestCode$B: soot.jimple.infoflow.test.HeapTestCode$A attr>"->"b.<soot.jimple.infoflow.test.HeapTestCode$B: soot.jimple.infoflow.test.HeapTestCode$A attr> = $stack15";
+    "$stack15 = b2.<soot.jimple.infoflow.test.HeapTestCode$B: soot.jimple.infoflow.test.HeapTestCode$A attr>"
+    "b.<soot.jimple.infoflow.test.HeapTestCode$B: soot.jimple.infoflow.test.HeapTestCode$A attr> = $stack15"->"$stack15 = b2.<soot.jimple.infoflow.test.HeapTestCode$B: soot.jimple.infoflow.test.HeapTestCode$A attr>";
+    "virtualinvoke cm.<soot.jimple.infoflow.test.android.ConnectionManager: void publish(java.lang.String)>($stack14)"
+    "$stack15 = b2.<soot.jimple.infoflow.test.HeapTestCode$B: soot.jimple.infoflow.test.HeapTestCode$A attr>"->"virtualinvoke cm.<soot.jimple.infoflow.test.android.ConnectionManager: void publish(java.lang.String)>($stack14)";
+    "$stack14 = $stack13.<soot.jimple.infoflow.test.HeapTestCode$A: java.lang.String b>"
+    "virtualinvoke cm.<soot.jimple.infoflow.test.android.ConnectionManager: void publish(java.lang.String)>($stack14)"->"$stack14 = $stack13.<soot.jimple.infoflow.test.HeapTestCode$A: java.lang.String b>";
+    "$stack13 = b2.<soot.jimple.infoflow.test.HeapTestCode$B: soot.jimple.infoflow.test.HeapTestCode$A attr>"
+    "$stack14 = $stack13.<soot.jimple.infoflow.test.HeapTestCode$A: java.lang.String b>"->"$stack13 = b2.<soot.jimple.infoflow.test.HeapTestCode$B: soot.jimple.infoflow.test.HeapTestCode$A attr>";
+    "virtualinvoke cm.<soot.jimple.infoflow.test.android.ConnectionManager: void publish(java.lang.String)>($stack12)"
+    "$stack13 = b2.<soot.jimple.infoflow.test.HeapTestCode$B: soot.jimple.infoflow.test.HeapTestCode$A attr>"->"virtualinvoke cm.<soot.jimple.infoflow.test.android.ConnectionManager: void publish(java.lang.String)>($stack12)";
+    "$stack12 = $stack11.<soot.jimple.infoflow.test.HeapTestCode$A: java.lang.String b>"
+    "virtualinvoke cm.<soot.jimple.infoflow.test.android.ConnectionManager: void publish(java.lang.String)>($stack12)"->"$stack12 = $stack11.<soot.jimple.infoflow.test.HeapTestCode$A: java.lang.String b>";
+    "$stack11 = b.<soot.jimple.infoflow.test.HeapTestCode$B: soot.jimple.infoflow.test.HeapTestCode$A attr>"
+    "$stack12 = $stack11.<soot.jimple.infoflow.test.HeapTestCode$A: java.lang.String b>"->"$stack11 = b.<soot.jimple.infoflow.test.HeapTestCode$B: soot.jimple.infoflow.test.HeapTestCode$A attr>";
+    "tainted = staticinvoke <soot.jimple.infoflow.test.android.TelephonyManager: java.lang.String getDeviceId()>()"
+    "$stack11 = b.<soot.jimple.infoflow.test.HeapTestCode$B: soot.jimple.infoflow.test.HeapTestCode$A attr>"->"tainted = staticinvoke <soot.jimple.infoflow.test.android.TelephonyManager: java.lang.String getDeviceId()>()";
+    "cm = $stack9"
+    "tainted = staticinvoke <soot.jimple.infoflow.test.android.TelephonyManager: java.lang.String getDeviceId()>()"->"cm = $stack9";
+    "specialinvoke $stack9.<soot.jimple.infoflow.test.android.ConnectionManager: void <init>()>()"
+    "cm = $stack9"->"specialinvoke $stack9.<soot.jimple.infoflow.test.android.ConnectionManager: void <init>()>()";
+    "$stack9 = new soot.jimple.infoflow.test.android.ConnectionManager"
+    "specialinvoke $stack9.<soot.jimple.infoflow.test.android.ConnectionManager: void <init>()>()"->"$stack9 = new soot.jimple.infoflow.test.android.ConnectionManager";
+    "b2.<soot.jimple.infoflow.test.HeapTestCode$B: soot.jimple.infoflow.test.HeapTestCode$A attr> = $stack8"
+    "$stack9 = new soot.jimple.infoflow.test.android.ConnectionManager"->"b2.<soot.jimple.infoflow.test.HeapTestCode$B: soot.jimple.infoflow.test.HeapTestCode$A attr> = $stack8";
+    "specialinvoke $stack8.<soot.jimple.infoflow.test.HeapTestCode$A: void <init>(soot.jimple.infoflow.test.HeapTestCode)>(this)"
+    "b2.<soot.jimple.infoflow.test.HeapTestCode$B: soot.jimple.infoflow.test.HeapTestCode$A attr> = $stack8"->"specialinvoke $stack8.<soot.jimple.infoflow.test.HeapTestCode$A: void <init>(soot.jimple.infoflow.test.HeapTestCode)>(this)";
+    "$stack8 = new soot.jimple.infoflow.test.HeapTestCode$A"
+    "specialinvoke $stack8.<soot.jimple.infoflow.test.HeapTestCode$A: void <init>(soot.jimple.infoflow.test.HeapTestCode)>(this)"->"$stack8 = new soot.jimple.infoflow.test.HeapTestCode$A";
+    "b2 = $stack7"
+    "$stack8 = new soot.jimple.infoflow.test.HeapTestCode$A"->"b2 = $stack7";
+    "specialinvoke $stack7.<soot.jimple.infoflow.test.HeapTestCode$B: void <init>(soot.jimple.infoflow.test.HeapTestCode)>(this)"
+    "b2 = $stack7"->"specialinvoke $stack7.<soot.jimple.infoflow.test.HeapTestCode$B: void <init>(soot.jimple.infoflow.test.HeapTestCode)>(this)";
+    "$stack7 = new soot.jimple.infoflow.test.HeapTestCode$B"
+    "specialinvoke $stack7.<soot.jimple.infoflow.test.HeapTestCode$B: void <init>(soot.jimple.infoflow.test.HeapTestCode)>(this)"->"$stack7 = new soot.jimple.infoflow.test.HeapTestCode$B";
+    "b.<soot.jimple.infoflow.test.HeapTestCode$B: soot.jimple.infoflow.test.HeapTestCode$A attr> = $stack6"
+    "$stack7 = new soot.jimple.infoflow.test.HeapTestCode$B"->"b.<soot.jimple.infoflow.test.HeapTestCode$B: soot.jimple.infoflow.test.HeapTestCode$A attr> = $stack6";
+    "specialinvoke $stack6.<soot.jimple.infoflow.test.HeapTestCode$A: void <init>(soot.jimple.infoflow.test.HeapTestCode)>(this)"
+    "b.<soot.jimple.infoflow.test.HeapTestCode$B: soot.jimple.infoflow.test.HeapTestCode$A attr> = $stack6"->"specialinvoke $stack6.<soot.jimple.infoflow.test.HeapTestCode$A: void <init>(soot.jimple.infoflow.test.HeapTestCode)>(this)";
+    "$stack6 = new soot.jimple.infoflow.test.HeapTestCode$A"
+    "specialinvoke $stack6.<soot.jimple.infoflow.test.HeapTestCode$A: void <init>(soot.jimple.infoflow.test.HeapTestCode)>(this)"->"$stack6 = new soot.jimple.infoflow.test.HeapTestCode$A";
+    "b = $stack5"
+    "$stack6 = new soot.jimple.infoflow.test.HeapTestCode$A"->"b = $stack5";
+    "specialinvoke $stack5.<soot.jimple.infoflow.test.HeapTestCode$B: void <init>(soot.jimple.infoflow.test.HeapTestCode)>(this)"
+    "b = $stack5"->"specialinvoke $stack5.<soot.jimple.infoflow.test.HeapTestCode$B: void <init>(soot.jimple.infoflow.test.HeapTestCode)>(this)";
+    "$stack5 = new soot.jimple.infoflow.test.HeapTestCode$B"
+    "specialinvoke $stack5.<soot.jimple.infoflow.test.HeapTestCode$B: void <init>(soot.jimple.infoflow.test.HeapTestCode)>(this)"->"$stack5 = new soot.jimple.infoflow.test.HeapTestCode$B";
+    "this := @this: soot.jimple.infoflow.test.HeapTestCode"
+    "$stack5 = new soot.jimple.infoflow.test.HeapTestCode$B"->"this := @this: soot.jimple.infoflow.test.HeapTestCode";
 }

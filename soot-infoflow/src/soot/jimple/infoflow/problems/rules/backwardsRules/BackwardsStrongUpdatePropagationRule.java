@@ -51,8 +51,7 @@ public class BackwardsStrongUpdatePropagationRule extends AbstractTaintPropagati
 			return null;
 
 		// If the statement has just been activated, we do not overwrite stuff
-		if (source.getPredecessor() != null && source.getPredecessor().getDeactivationUnit() == stmt
-				&& source.getAccessPath().equals(source.getPredecessor().getAccessPath()))
+		if (source.getPredecessor() != null && source.getAccessPath().equals(source.getPredecessor().getAccessPath()))
 			return null;
 
 		if (source.getAccessPath().isInstanceFieldRef()) {

@@ -54,11 +54,7 @@ public class Abstraction implements Cloneable, FastSolverLinkedNode<Abstraction,
 	 */
 	protected Unit activationUnit = null;
 	/**
-	 * Unit/Stmt which kills the taint when the abstraction passes it
-	 */
-	protected Unit deactivationUnit = null;
-	/**
-	 * Unit/Stmt which indicates it origin; tells the forwards aliasing to turn around
+	 * Unit/Stmt which indicates it origin; tells the aliasing to turn around in backwards analysis
 	 */
 	protected Unit turnUnit = null;
 	/**
@@ -155,7 +151,6 @@ public class Abstraction implements Cloneable, FastSolverLinkedNode<Abstraction,
 		this.sourceContext = sourceContext;
 		this.accessPath = apToTaint;
 		this.activationUnit = null;
-		this.deactivationUnit = null;
 		this.turnUnit = null;
 		this.exceptionThrown = exceptionThrown;
 
@@ -176,18 +171,14 @@ public class Abstraction implements Cloneable, FastSolverLinkedNode<Abstraction,
 			sourceContext = null;
 			exceptionThrown = false;
 			activationUnit = null;
-			deactivationUnit = null;
 			turnUnit = null;
 			isImplicit = false;
 		} else {
 			sourceContext = original.sourceContext;
 			exceptionThrown = original.exceptionThrown;
 			activationUnit = original.activationUnit;
-			deactivationUnit = original.deactivationUnit;
 			turnUnit = original.turnUnit;
 			assert activationUnit == null || flowSensitiveAliasing;
-			assert deactivationUnit == null || flowSensitiveAliasing;
-			assert turnUnit == null || flowSensitiveAliasing;
 
 			postdominators = original.postdominators == null ? null
 					: new ArrayList<UnitContainer>(original.postdominators);
@@ -230,7 +221,7 @@ public class Abstraction implements Cloneable, FastSolverLinkedNode<Abstraction,
 	}
 
 	public Abstraction deriveActiveAbstraction(Stmt deactivationUnit) {
-		if (!flowSensitiveAliasing || this.deactivationUnit != null)
+		if (!flowSensitiveAliasing)
 			return this;
 
 		Abstraction a = deriveNewAbstractionMutable(accessPath, null);
@@ -238,7 +229,6 @@ public class Abstraction implements Cloneable, FastSolverLinkedNode<Abstraction,
 			return null;
 
 		a.postdominators = null;
-		a.deactivationUnit = deactivationUnit;
 		a.turnUnit = turnUnit;
 		a.dependsOnCutAP |= a.getAccessPath().isCutOffApproximation();
 		return a;
@@ -331,8 +321,7 @@ public class Abstraction implements Cloneable, FastSolverLinkedNode<Abstraction,
 	@Override
 	public String toString() {
 		return (isAbstractionActive() ? "" : "_") + accessPath.toString() + " | "
-				+ (activationUnit == null ? "" : activationUnit.toString()) + " | "
-				+ (deactivationUnit == null ? "" : deactivationUnit.toString()) + " | "
+				+ (activationUnit == null ? "" : activationUnit.toString())
 				+ (turnUnit == null ? "" : turnUnit.toString()) + ">>";
 	}
 
@@ -344,13 +333,10 @@ public class Abstraction implements Cloneable, FastSolverLinkedNode<Abstraction,
 		return this.activationUnit;
 	}
 
-	public Unit getDeactivationUnit() {
-		return this.deactivationUnit;
-	}
-
 	public Unit getTurnUnit() {
 		return this.turnUnit;
 	}
+
 	public void setTurnUnit(Unit turnUnit) {
 		this.turnUnit = turnUnit;
 	}

@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.BeforeClass;
 
@@ -151,4 +152,21 @@ public abstract class JUnitTests {
 		return result;
 	}
 
+	/**
+	 * Tells that the test should only be run on backwards analysis
+	 *
+	 * @param infoflow infoflow object
+	 */
+	protected void onlyBackwards(IInfoflow infoflow) {
+		Assume.assumeTrue("Test is only applicable on backwards analysis", infoflow instanceof BackwardsInfoflow);
+	}
+
+	/**
+	 * Tells that the test should only be run on forwards analysis
+	 *
+	 * @param infoflow infoflow object
+	 */
+	protected void onlyForwards(IInfoflow infoflow) {
+		Assume.assumeTrue("Test is only applicable on forwards analysis", infoflow instanceof Infoflow);
+	}
 }
