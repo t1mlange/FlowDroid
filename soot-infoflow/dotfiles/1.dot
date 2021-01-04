@@ -1,25 +1,33 @@
 digraph "" {
-    "virtualinvoke cm.<soot.jimple.infoflow.test.android.ConnectionManager: void publish(java.lang.String)>(data2)"
-    "virtualinvoke cm.<soot.jimple.infoflow.test.android.ConnectionManager: void publish(java.lang.String)>(data1)"
-    "virtualinvoke cm.<soot.jimple.infoflow.test.android.ConnectionManager: void publish(java.lang.String)>(data2)"->"virtualinvoke cm.<soot.jimple.infoflow.test.android.ConnectionManager: void publish(java.lang.String)>(data1)";
-    "cm = $stack11"
-    "virtualinvoke cm.<soot.jimple.infoflow.test.android.ConnectionManager: void publish(java.lang.String)>(data1)"->"cm = $stack11";
-    "specialinvoke $stack11.<soot.jimple.infoflow.test.android.ConnectionManager: void <init>()>()"
-    "cm = $stack11"->"specialinvoke $stack11.<soot.jimple.infoflow.test.android.ConnectionManager: void <init>()>()";
-    "$stack11 = new soot.jimple.infoflow.test.android.ConnectionManager"
-    "specialinvoke $stack11.<soot.jimple.infoflow.test.android.ConnectionManager: void <init>()>()"->"$stack11 = new soot.jimple.infoflow.test.android.ConnectionManager";
-    "data2 = specialinvoke this.<soot.jimple.infoflow.test.SingleJoinPointTestCode: java.lang.String id(java.lang.String)>(secret2)"
-    "$stack11 = new soot.jimple.infoflow.test.android.ConnectionManager"->"data2 = specialinvoke this.<soot.jimple.infoflow.test.SingleJoinPointTestCode: java.lang.String id(java.lang.String)>(secret2)";
-    "data1 = specialinvoke this.<soot.jimple.infoflow.test.SingleJoinPointTestCode: java.lang.String id(java.lang.String)>(secret1)"
-    "data2 = specialinvoke this.<soot.jimple.infoflow.test.SingleJoinPointTestCode: java.lang.String id(java.lang.String)>(secret2)"->"data1 = specialinvoke this.<soot.jimple.infoflow.test.SingleJoinPointTestCode: java.lang.String id(java.lang.String)>(secret1)";
-    "secret2 = virtualinvoke $stack7.<soot.jimple.infoflow.test.android.AccountManager: java.lang.String getPassword()>()"
-    "data1 = specialinvoke this.<soot.jimple.infoflow.test.SingleJoinPointTestCode: java.lang.String id(java.lang.String)>(secret1)"->"secret2 = virtualinvoke $stack7.<soot.jimple.infoflow.test.android.AccountManager: java.lang.String getPassword()>()";
-    "specialinvoke $stack7.<soot.jimple.infoflow.test.android.AccountManager: void <init>()>()"
-    "secret2 = virtualinvoke $stack7.<soot.jimple.infoflow.test.android.AccountManager: java.lang.String getPassword()>()"->"specialinvoke $stack7.<soot.jimple.infoflow.test.android.AccountManager: void <init>()>()";
-    "$stack7 = new soot.jimple.infoflow.test.android.AccountManager"
-    "specialinvoke $stack7.<soot.jimple.infoflow.test.android.AccountManager: void <init>()>()"->"$stack7 = new soot.jimple.infoflow.test.android.AccountManager";
-    "secret1 = staticinvoke <soot.jimple.infoflow.test.android.TelephonyManager: java.lang.String getDeviceId()>()"
-    "$stack7 = new soot.jimple.infoflow.test.android.AccountManager"->"secret1 = staticinvoke <soot.jimple.infoflow.test.android.TelephonyManager: java.lang.String getDeviceId()>()";
-    "this := @this: soot.jimple.infoflow.test.SingleJoinPointTestCode"
-    "secret1 = staticinvoke <soot.jimple.infoflow.test.android.TelephonyManager: java.lang.String getDeviceId()>()"->"this := @this: soot.jimple.infoflow.test.SingleJoinPointTestCode";
+    "virtualinvoke cm.<soot.jimple.infoflow.test.android.ConnectionManager: void publish(java.lang.String)>($stack8)"
+    "$stack8 = f.<soot.jimple.infoflow.test.TypeTestCode$F: java.lang.String data>"
+    "virtualinvoke cm.<soot.jimple.infoflow.test.android.ConnectionManager: void publish(java.lang.String)>($stack8)"->"$stack8 = f.<soot.jimple.infoflow.test.TypeTestCode$F: java.lang.String data>";
+    "specialinvoke this.<soot.jimple.infoflow.test.TypeTestCode: void doTaintX(soot.jimple.infoflow.test.TypeTestCode$A)>(f)"
+    "$stack8 = f.<soot.jimple.infoflow.test.TypeTestCode$F: java.lang.String data>"->"specialinvoke this.<soot.jimple.infoflow.test.TypeTestCode: void doTaintX(soot.jimple.infoflow.test.TypeTestCode$A)>(f)";
+    "f = $stack7"
+    "specialinvoke this.<soot.jimple.infoflow.test.TypeTestCode: void doTaintX(soot.jimple.infoflow.test.TypeTestCode$A)>(f)"->"f = $stack7";
+    "specialinvoke $stack7.<soot.jimple.infoflow.test.TypeTestCode$F: void <init>(soot.jimple.infoflow.test.TypeTestCode,soot.jimple.infoflow.test.TypeTestCode$1)>(this, null)"
+    "f = $stack7"->"specialinvoke $stack7.<soot.jimple.infoflow.test.TypeTestCode$F: void <init>(soot.jimple.infoflow.test.TypeTestCode,soot.jimple.infoflow.test.TypeTestCode$1)>(this, null)";
+    "$stack7 = new soot.jimple.infoflow.test.TypeTestCode$F"
+    "specialinvoke $stack7.<soot.jimple.infoflow.test.TypeTestCode$F: void <init>(soot.jimple.infoflow.test.TypeTestCode,soot.jimple.infoflow.test.TypeTestCode$1)>(this, null)"->"$stack7 = new soot.jimple.infoflow.test.TypeTestCode$F";
+    "virtualinvoke cm.<soot.jimple.infoflow.test.android.ConnectionManager: void publish(java.lang.String)>($stack6)"
+    "$stack7 = new soot.jimple.infoflow.test.TypeTestCode$F"->"virtualinvoke cm.<soot.jimple.infoflow.test.android.ConnectionManager: void publish(java.lang.String)>($stack6)";
+    "$stack6 = e.<soot.jimple.infoflow.test.TypeTestCode$E: java.lang.String data>"
+    "virtualinvoke cm.<soot.jimple.infoflow.test.android.ConnectionManager: void publish(java.lang.String)>($stack6)"->"$stack6 = e.<soot.jimple.infoflow.test.TypeTestCode$E: java.lang.String data>";
+    "cm = $stack5"
+    "$stack6 = e.<soot.jimple.infoflow.test.TypeTestCode$E: java.lang.String data>"->"cm = $stack5";
+    "specialinvoke $stack5.<soot.jimple.infoflow.test.android.ConnectionManager: void <init>()>()"
+    "cm = $stack5"->"specialinvoke $stack5.<soot.jimple.infoflow.test.android.ConnectionManager: void <init>()>()";
+    "$stack5 = new soot.jimple.infoflow.test.android.ConnectionManager"
+    "specialinvoke $stack5.<soot.jimple.infoflow.test.android.ConnectionManager: void <init>()>()"->"$stack5 = new soot.jimple.infoflow.test.android.ConnectionManager";
+    "specialinvoke this.<soot.jimple.infoflow.test.TypeTestCode: void doTaintX(soot.jimple.infoflow.test.TypeTestCode$A)>(e)"
+    "$stack5 = new soot.jimple.infoflow.test.android.ConnectionManager"->"specialinvoke this.<soot.jimple.infoflow.test.TypeTestCode: void doTaintX(soot.jimple.infoflow.test.TypeTestCode$A)>(e)";
+    "e = $stack4"
+    "specialinvoke this.<soot.jimple.infoflow.test.TypeTestCode: void doTaintX(soot.jimple.infoflow.test.TypeTestCode$A)>(e)"->"e = $stack4";
+    "specialinvoke $stack4.<soot.jimple.infoflow.test.TypeTestCode$E: void <init>(soot.jimple.infoflow.test.TypeTestCode,soot.jimple.infoflow.test.TypeTestCode$1)>(this, null)"
+    "e = $stack4"->"specialinvoke $stack4.<soot.jimple.infoflow.test.TypeTestCode$E: void <init>(soot.jimple.infoflow.test.TypeTestCode,soot.jimple.infoflow.test.TypeTestCode$1)>(this, null)";
+    "$stack4 = new soot.jimple.infoflow.test.TypeTestCode$E"
+    "specialinvoke $stack4.<soot.jimple.infoflow.test.TypeTestCode$E: void <init>(soot.jimple.infoflow.test.TypeTestCode,soot.jimple.infoflow.test.TypeTestCode$1)>(this, null)"->"$stack4 = new soot.jimple.infoflow.test.TypeTestCode$E";
+    "this := @this: soot.jimple.infoflow.test.TypeTestCode"
+    "$stack4 = new soot.jimple.infoflow.test.TypeTestCode$E"->"this := @this: soot.jimple.infoflow.test.TypeTestCode";
 }

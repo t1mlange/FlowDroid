@@ -3,6 +3,7 @@ package soot.jimple.infoflow.problems.rules.backwardsRules;
 import soot.*;
 import soot.jimple.*;
 import soot.jimple.infoflow.InfoflowManager;
+import soot.jimple.infoflow.aliasing.Aliasing;
 import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.data.AccessPath;
 import soot.jimple.infoflow.data.AccessPath.ArrayTaintType;
@@ -35,6 +36,10 @@ public class BackwardsArrayPropagationRule extends AbstractTaintPropagationRule 
 			return null;
 		AssignStmt assignStmt = (AssignStmt) stmt;
 
+		Aliasing aliasing = manager.getAliasing();
+		if (aliasing == null)
+			return null;
+
 		Abstraction newAbs = null;
 		final Value leftVal = assignStmt.getLeftOp();
 		final Value rightVal = assignStmt.getRightOp();
@@ -42,7 +47,7 @@ public class BackwardsArrayPropagationRule extends AbstractTaintPropagationRule 
 		// x = a.length -> a length tainted
 		if (rightVal instanceof LengthExpr) {
 			LengthExpr lengthExpr = (LengthExpr) rightVal;
-			if (leftVal == source.getAccessPath().getPlainValue()) {
+			if (aliasing.mayAlias(leftVal, source.getAccessPath().getPlainValue())) {
 				// Taint the array length
 				AccessPath ap = getManager().getAccessPathFactory().createAccessPath(lengthExpr.getOp(),
 						lengthExpr.getOp().getType(), true, ArrayTaintType.Length);
@@ -53,7 +58,7 @@ public class BackwardsArrayPropagationRule extends AbstractTaintPropagationRule 
 		else if (rightVal instanceof NewArrayExpr && getManager().getConfig().getEnableArraySizeTainting()) {
 			NewArrayExpr newArrayExpr = (NewArrayExpr) rightVal;
 			if (!(newArrayExpr.getSize() instanceof Constant) && source.getAccessPath().getArrayTaintType() != ArrayTaintType.Contents
-					&& source.getAccessPath().getPlainValue() == leftVal) {
+					&& aliasing.mayAlias(source.getAccessPath().getPlainValue(), leftVal)) {
 				// Create the new taint abstraction
 				AccessPath ap = getManager().getAccessPathFactory().copyWithNewValue(source.getAccessPath(), newArrayExpr.getSize(),
 						null, false, true, ArrayTaintType.Length);
@@ -66,7 +71,7 @@ public class BackwardsArrayPropagationRule extends AbstractTaintPropagationRule 
 			Value rightIndex = ((ArrayRef) rightVal).getIndex();
 			// y = x[i]
 			if (source.getAccessPath().getArrayTaintType() != ArrayTaintType.Length
-					&& leftVal == source.getAccessPath().getPlainValue()) {
+					&& aliasing.mayAlias(leftVal, source.getAccessPath().getPlainValue())) {
 				AccessPath ap;
 				// track index
 				if (getManager().getConfig().getImplicitFlowMode().trackArrayAccesses()) {
@@ -94,6 +99,10 @@ public class BackwardsArrayPropagationRule extends AbstractTaintPropagationRule 
 		killSource.value = !(leftVal instanceof ArrayRef);
 		Set<Abstraction> res = new HashSet<>();
 		res.add(newAbs);
+
+		if (aliasing.canHaveAliases(assignStmt, leftVal, newAbs))
+			aliasing.computeAliases(d1, assignStmt, leftVal, res, manager.getICFG().getMethodOf(assignStmt),
+					newAbs);
 
 		return res;
 	}

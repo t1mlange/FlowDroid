@@ -64,7 +64,7 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                             taintPropagationHandler.notifyFlowIn(srcUnit, source, manager,
                                     TaintPropagationHandler.FlowFunctionType.NormalFlowFunction);
 
-                        Set<Abstraction> res = source.getDeactivationUnit() == srcUnit ? null : computeTargetsInternal(d1, source);
+                        Set<Abstraction> res = computeTargetsInternal(d1, source);
                         if (DEBUG_PRINT)
                             System.out.println("Normal" + "\n" + "In: " + source.toString() + "\n" + "Stmt: " + srcUnit.toString() + "\n" + "Out: " + (res == null ? "[]" : res.toString()) + "\n" + "---------------------------------------");
 
@@ -250,7 +250,7 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                             taintPropagationHandler.notifyFlowIn(stmt, source, manager,
                                     TaintPropagationHandler.FlowFunctionType.CallFlowFunction);
 
-                        Set<Abstraction> res = source.getDeactivationUnit() == callStmt ? null : computeTargetsInternal(d1, source);
+                        Set<Abstraction> res = computeTargetsInternal(d1, source);
                         if (res != null) {
                             for (Abstraction abs : res)
                                 aliasing.getAliasingStrategy().injectCallingContext(abs, solver, dest, callStmt, source, d1);
@@ -444,7 +444,7 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                         if (callSite.toString().contains("doPrivileged"))
                             calleeD1=calleeD1;
 
-                        Set<Abstraction> res = source.getDeactivationUnit() == callSite ? null : computeTargetsInternal(source, callerD1s);
+                        Set<Abstraction> res = computeTargetsInternal(source, callerD1s);
                         if (DEBUG_PRINT)
                             System.out.println("Return" + "\n" + "In: " + source.toString() + "\n" + "Stmt: " + stmt.toString() + "\n" + "Out: " + (res == null ? "[]" : res.toString()) + "\n" + "---------------------------------------");
                         return notifyOutFlowHandlers(exitSite, calleeD1, source, res,
@@ -576,7 +576,7 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                         if (callSite.toString().contains("notify"))
                             d1=d1;
 
-                        Set<Abstraction> res = source.getDeactivationUnit() == callSite ? null : computeTargetsInternal(d1, source);
+                        Set<Abstraction> res = computeTargetsInternal(d1, source);
                         if (DEBUG_PRINT)
                             System.out.println("CallToReturn" + "\n" + "In: " + source.toString() + "\n" + "Stmt: " + callStmt.toString() + "\n" + "Out: " + (res == null ? "[]" : res.toString()) + "\n" + "---------------------------------------");
 

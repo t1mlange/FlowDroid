@@ -1,21 +1,37 @@
 digraph "" {
-    "virtualinvoke cm.<soot.jimple.infoflow.test.android.ConnectionManager: void publish(java.lang.String)>($stack7)"
-    "$stack7 = virtualinvoke a.<soot.jimple.infoflow.test.EasyWrapperTestCode$A: java.lang.String getConstant()>()"
-    "virtualinvoke cm.<soot.jimple.infoflow.test.android.ConnectionManager: void publish(java.lang.String)>($stack7)"->"$stack7 = virtualinvoke a.<soot.jimple.infoflow.test.EasyWrapperTestCode$A: java.lang.String getConstant()>()";
-    "cm = $stack6"
-    "$stack7 = virtualinvoke a.<soot.jimple.infoflow.test.EasyWrapperTestCode$A: java.lang.String getConstant()>()"->"cm = $stack6";
-    "specialinvoke $stack6.<soot.jimple.infoflow.test.android.ConnectionManager: void <init>()>()"
-    "cm = $stack6"->"specialinvoke $stack6.<soot.jimple.infoflow.test.android.ConnectionManager: void <init>()>()";
-    "$stack6 = new soot.jimple.infoflow.test.android.ConnectionManager"
-    "specialinvoke $stack6.<soot.jimple.infoflow.test.android.ConnectionManager: void <init>()>()"->"$stack6 = new soot.jimple.infoflow.test.android.ConnectionManager";
-    "a = $stack5"
-    "$stack6 = new soot.jimple.infoflow.test.android.ConnectionManager"->"a = $stack5";
-    "specialinvoke $stack5.<soot.jimple.infoflow.test.EasyWrapperTestCode$A: void <init>(soot.jimple.infoflow.test.EasyWrapperTestCode,java.lang.String)>(this, tainted)"
-    "a = $stack5"->"specialinvoke $stack5.<soot.jimple.infoflow.test.EasyWrapperTestCode$A: void <init>(soot.jimple.infoflow.test.EasyWrapperTestCode,java.lang.String)>(this, tainted)";
-    "$stack5 = new soot.jimple.infoflow.test.EasyWrapperTestCode$A"
-    "specialinvoke $stack5.<soot.jimple.infoflow.test.EasyWrapperTestCode$A: void <init>(soot.jimple.infoflow.test.EasyWrapperTestCode,java.lang.String)>(this, tainted)"->"$stack5 = new soot.jimple.infoflow.test.EasyWrapperTestCode$A";
-    "tainted = staticinvoke <soot.jimple.infoflow.test.android.TelephonyManager: java.lang.String getDeviceId()>()"
-    "$stack5 = new soot.jimple.infoflow.test.EasyWrapperTestCode$A"->"tainted = staticinvoke <soot.jimple.infoflow.test.android.TelephonyManager: java.lang.String getDeviceId()>()";
-    "this := @this: soot.jimple.infoflow.test.EasyWrapperTestCode"
-    "tainted = staticinvoke <soot.jimple.infoflow.test.android.TelephonyManager: java.lang.String getDeviceId()>()"->"this := @this: soot.jimple.infoflow.test.EasyWrapperTestCode";
+    "virtualinvoke cm.<soot.jimple.infoflow.test.android.ConnectionManager: void publish(java.lang.String)>($stack15)"
+    "$stack15 = out[0]"
+    "virtualinvoke cm.<soot.jimple.infoflow.test.android.ConnectionManager: void publish(java.lang.String)>($stack15)"->"$stack15 = out[0]";
+    "cm = $stack14"
+    "$stack15 = out[0]"->"cm = $stack14";
+    "specialinvoke $stack14.<soot.jimple.infoflow.test.android.ConnectionManager: void <init>()>()"
+    "cm = $stack14"->"specialinvoke $stack14.<soot.jimple.infoflow.test.android.ConnectionManager: void <init>()>()";
+    "$stack14 = new soot.jimple.infoflow.test.android.ConnectionManager"
+    "specialinvoke $stack14.<soot.jimple.infoflow.test.android.ConnectionManager: void <init>()>()"->"$stack14 = new soot.jimple.infoflow.test.android.ConnectionManager";
+    "out = (java.lang.String[]) $stack13"
+    "$stack14 = new soot.jimple.infoflow.test.android.ConnectionManager"->"out = (java.lang.String[]) $stack13";
+    "$stack13 = (java.lang.String[]) obj"
+    "out = (java.lang.String[]) $stack13"->"$stack13 = (java.lang.String[]) obj";
+    "obj = y"
+    "$stack13 = (java.lang.String[]) obj"->"obj = y";
+    "z[0] = $stack12"
+    "obj = y"->"z[0] = $stack12";
+    "$stack12 = staticinvoke <soot.jimple.infoflow.test.android.TelephonyManager: java.lang.String getDeviceId()>()"
+    "z[0] = $stack12"->"$stack12 = staticinvoke <soot.jimple.infoflow.test.android.TelephonyManager: java.lang.String getDeviceId()>()";
+    "y = z"
+    "$stack12 = staticinvoke <soot.jimple.infoflow.test.android.TelephonyManager: java.lang.String getDeviceId()>()"->"y = z";
+    "z = (java.lang.String[]) $stack10"
+    "y = z"->"z = (java.lang.String[]) $stack10";
+    "$stack10 = (java.lang.String[]) a2"
+    "z = (java.lang.String[]) $stack10"->"$stack10 = (java.lang.String[]) a2";
+    "a2 = a"
+    "$stack10 = (java.lang.String[]) a2"->"a2 = a";
+    "a = (java.lang.String) e"
+    "a2 = a"->"a = (java.lang.String) e";
+    "e = x"
+    "a = (java.lang.String) e"->"e = x";
+    "x = newarray (java.lang.String)[1]"
+    "e = x"->"x = newarray (java.lang.String)[1]";
+    "this := @this: soot.jimple.infoflow.test.TypeTestCode"
+    "x = newarray (java.lang.String)[1]"->"this := @this: soot.jimple.infoflow.test.TypeTestCode";
 }

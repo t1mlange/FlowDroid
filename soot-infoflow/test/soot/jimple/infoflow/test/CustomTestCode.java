@@ -5,6 +5,7 @@ import soot.jimple.infoflow.test.android.ConnectionManager;
 import soot.jimple.infoflow.test.android.Location;
 import soot.jimple.infoflow.test.android.LocationManager;
 import soot.jimple.infoflow.test.android.TelephonyManager;
+import soot.jimple.infoflow.test.utilclasses.ClassWithStatic;
 
 import java.util.ArrayList;
 
@@ -36,6 +37,30 @@ public class CustomTestCode {
 
 		ConnectionManager cm = new ConnectionManager();
 		cm.publish((String) d.arr[0]);
+	}
+
+	public void testForEarlyTermination(){
+		ConnectionManager cm = new ConnectionManager();
+		cm.publish(ClassWithStatic.staticString);
+
+		@SuppressWarnings("unused")
+		ClassWithStatic c1 = new ClassWithStatic();
+
+		WrapperClass w1 = new WrapperClass();
+		w1.callIt(); // ClassWithStatic.staticString = source()
+	}
+
+	class WrapperClass{
+
+		public void callIt(){
+			ClassWithStatic.staticString = TelephonyManager.getDeviceId();
+		}
+
+		public void sink(){
+			ConnectionManager cm = new ConnectionManager();
+			cm.publish(ClassWithStatic.staticString);
+		}
+
 	}
 
 //	class IntegerRef {

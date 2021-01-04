@@ -156,13 +156,14 @@ public class ForwardsAliasProblem extends AbstractInfoflowProblem {
                         AccessPath ap = source.getAccessPath();
                         Value sourceBase = ap.getPlainValue();
 
-                        // TODO
-                        boolean aliasOverwritten = Aliasing.baseMatchesStrict(leftOp, source)
-                                && leftOp.getType() instanceof RefType && !source.dependsOnCutAP();
+                        // No need to try to taint the right side if the taint is already
+                        // on the right side
+                        boolean aliasOverwritten = Aliasing.baseMatchesStrict(rightVal, source)
+                                && rightVal.getType() instanceof RefType && !source.dependsOnCutAP();
 
-                        if (!(leftOp.getType() instanceof PrimType)
+                        boolean addRightValue = false;
+                        if (!aliasOverwritten && !(leftOp.getType() instanceof PrimType)
                                 && (rightVal instanceof Local || rightVal instanceof FieldRef)) {
-                            boolean addRightValue = false;
                             boolean cutFirstFieldRight = false;
                             Type rightType = null;
 
@@ -192,7 +193,6 @@ public class ForwardsAliasProblem extends AbstractInfoflowProblem {
                                 // If we don't track arrays or just the length is tainted we have nothing to do.
                                 if (getManager().getConfig().getEnableArrayTracking()
                                         &&  ap.getArrayTaintType() != AccessPath.ArrayTaintType.Length) {
-
                                     ArrayRef arrayRef = (ArrayRef) leftOp;
                                     if (arrayRef.getBase() == sourceBase) {
                                         addRightValue = true;
@@ -210,12 +210,13 @@ public class ForwardsAliasProblem extends AbstractInfoflowProblem {
                                 if (!manager.getTypeUtils().checkCast(source.getAccessPath(), rightVal.getType()))
                                     return null;
 
-                                // LengthExpr handled in ArrayPropagationRule
                                 // CastExpr only make the types more imprecise backwards
-                                // InstanceOfExpr do not produce aliases
+                                // InstanceOfExpr are booleans aka primtypes on the left, should not occur
+                                // LengthExpr are ints aka primtypes on the left, can not occur
+                                // as it is a subclass of UnopExpr
 
                                 addRightValue = true;
-                                rightType = source.getAccessPath().getBaseType();
+//                                rightType = source.getAccessPath().getBaseType();
                             }
 
 
@@ -223,7 +224,8 @@ public class ForwardsAliasProblem extends AbstractInfoflowProblem {
                                 AccessPath newAp = manager.getAccessPathFactory().copyWithNewValue(source.getAccessPath(),
                                         rightVal, rightType, cutFirstFieldRight);
                                 Abstraction newAbs = checkAbstraction(source.deriveNewAbstraction(newAp, assignStmt));
-                                if (newAbs != null && newAbs != source) {
+
+                                if (newAbs != null && !newAp.equals(ap)) {
                                     if (rightVal instanceof StaticFieldRef && manager.getConfig().getStaticFieldTrackingMode()
                                             == InfoflowConfiguration.StaticFieldTrackingMode.ContextFlowInsensitive)
                                         manager.getGlobalTaintManager().addToGlobalTaintState(newAbs);
@@ -239,7 +241,7 @@ public class ForwardsAliasProblem extends AbstractInfoflowProblem {
                             }
                         }
 
-                        if (!(rightVal.getType() instanceof PrimType)
+                        if (!addRightValue && !(rightVal.getType() instanceof PrimType)
                                 && (leftOp instanceof Local || leftOp instanceof FieldRef)) {
                             boolean addLeftValue = false;
                             boolean cutFirstFieldLeft = false;
@@ -249,7 +251,7 @@ public class ForwardsAliasProblem extends AbstractInfoflowProblem {
                                 if (manager.getConfig().getStaticFieldTrackingMode() != InfoflowConfiguration.StaticFieldTrackingMode.None
                                         && ap.firstFieldMatches(((StaticFieldRef) rightVal).getField())) {
                                     addLeftValue = true;
-                                    leftType = source.getAccessPath().getBaseType();
+//                                    leftType = source.getAccessPath().getBaseType();
                                 }
                             } else if (rightVal instanceof InstanceFieldRef) {
                                 InstanceFieldRef instRef = (InstanceFieldRef) rightVal;
@@ -258,13 +260,13 @@ public class ForwardsAliasProblem extends AbstractInfoflowProblem {
                                         && ap.firstFieldMatches(instRef.getField())) {
                                     addLeftValue = true;
                                     cutFirstFieldLeft = true;
-                                    leftType = ap.getFirstFieldType();
+//                                    leftType = ap.getFirstFieldType();
                                 }
                             } else if (rightVal == sourceBase) {
                                 addLeftValue = true;
                                 leftType = ap.getBaseType();
                                 // We did not keep the ArrayRef, so rightVal is already the array base
-                                if (rightVal instanceof ArrayRef) {
+                                if (rightOp instanceof ArrayRef) {
                                     leftType = ((ArrayType) leftType).getElementType();
                                 } else if (leftOp instanceof ArrayRef) {
                                     ArrayRef arrayRef = (ArrayRef) leftOp;
