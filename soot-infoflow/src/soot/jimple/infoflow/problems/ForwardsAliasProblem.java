@@ -22,6 +22,7 @@ import soot.jimple.infoflow.data.AccessPath;
 import soot.jimple.infoflow.handlers.TaintPropagationHandler;
 import soot.jimple.infoflow.problems.rules.IPropagationRuleManagerFactory;
 import soot.jimple.infoflow.problems.rules.PropagationRuleManager;
+import soot.jimple.infoflow.solver.cfg.InfoflowCFG;
 import soot.jimple.infoflow.solver.functions.SolverCallFlowFunction;
 import soot.jimple.infoflow.solver.functions.SolverCallToReturnFlowFunction;
 import soot.jimple.infoflow.solver.functions.SolverNormalFlowFunction;
@@ -39,7 +40,7 @@ import java.util.*;
  * @author Tim Lange
  */
 public class ForwardsAliasProblem extends AbstractInfoflowProblem {
-    private final static boolean DEBUG_PRINT = false;
+    private final static boolean DEBUG_PRINT = true;
 
     public ForwardsAliasProblem(InfoflowManager manager) {
         super(manager);
@@ -114,11 +115,21 @@ public class ForwardsAliasProblem extends AbstractInfoflowProblem {
                     private Set<Abstraction> computeAliases(final DefinitionStmt defStmt, Abstraction d1,
                                                             Abstraction source) {
                         MutableTwoElementSet<Abstraction> res = new MutableTwoElementSet<>();
-                        res.add(source);
+
                         final Value leftOp = defStmt.getLeftOp();
                         final Value rightOp = defStmt.getRightOp();
 
+                        boolean aliasOverwritten = Aliasing.baseMatchesStrict(leftOp, source)
+                                && leftOp.getType() instanceof RefType && !source.dependsOnCutAP();
                         boolean leftSideMatches = Aliasing.baseMatches(leftOp, source);
+                        if (!leftSideMatches) {
+                            res.add(source);
+                        } else {
+                            for (Unit u : manager.getICFG().getPredsOf(defStmt))
+                                manager.getForwardSolver()
+                                        .processEdge(new PathEdge<Unit, Abstraction>(d1, u, source));
+                        }
+
 //                        if (!leftSideMatches) {
 //                            // The left side is overwritten and no further taints can be created
 //                            // so we send the taint back to the infoflow solver
@@ -156,14 +167,8 @@ public class ForwardsAliasProblem extends AbstractInfoflowProblem {
                         AccessPath ap = source.getAccessPath();
                         Value sourceBase = ap.getPlainValue();
 
-                        // No need to try to taint the right side if the taint is already
-                        // on the right side
-                        boolean aliasOverwritten = Aliasing.baseMatchesStrict(rightVal, source)
-                                && rightVal.getType() instanceof RefType && !source.dependsOnCutAP();
-
                         boolean addRightValue = false;
-                        if (!aliasOverwritten && !(leftOp.getType() instanceof PrimType)
-                                && (rightVal instanceof Local || rightVal instanceof FieldRef)) {
+                        if ((rightVal instanceof Local || rightVal instanceof FieldRef)) {
                             boolean cutFirstFieldRight = false;
                             Type rightType = null;
 
@@ -223,7 +228,7 @@ public class ForwardsAliasProblem extends AbstractInfoflowProblem {
                             if (addRightValue) {
                                 AccessPath newAp = manager.getAccessPathFactory().copyWithNewValue(source.getAccessPath(),
                                         rightVal, rightType, cutFirstFieldRight);
-                                Abstraction newAbs = checkAbstraction(source.deriveNewAbstraction(newAp, assignStmt));
+                                Abstraction newAbs = source.deriveNewAbstraction(newAp, assignStmt);
 
                                 if (newAbs != null && !newAp.equals(ap)) {
                                     if (rightVal instanceof StaticFieldRef && manager.getConfig().getStaticFieldTrackingMode()

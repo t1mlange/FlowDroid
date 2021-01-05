@@ -218,11 +218,12 @@ public class BackwardsSourceSinkManager implements ISourceSinkManager {
 				aps.add(manager.getAccessPathFactory().createAccessPath(arg, true));
 			}
 
+			// TODO: for easier debugging I decided to comment this out for now. Uncomment later on!
 			// Add the base object access path
-			if (ie instanceof InstanceInvokeExpr) {
-				Value base = ((InstanceInvokeExpr) sCallSite.getInvokeExpr()).getBase();
-				aps.add(manager.getAccessPathFactory().createAccessPath(base, true));
-			}
+//			if (ie instanceof InstanceInvokeExpr) {
+//				Value base = ((InstanceInvokeExpr) sCallSite.getInvokeExpr()).getBase();
+//				aps.add(manager.getAccessPathFactory().createAccessPath(base, true));
+//			}
 		}
 
 		if (aps.isEmpty())

@@ -8,6 +8,7 @@ import soot.jimple.Stmt;
 import soot.jimple.infoflow.InfoflowManager;
 import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.solver.IInfoflowSolver;
+import soot.jimple.infoflow.solver.cfg.BackwardsInfoflowCFG;
 
 import java.util.Set;
 
@@ -29,9 +30,10 @@ public class BackwardsFlowSensitiveAliasStrategy extends AbstractBulkAliasStrate
 	public void computeAliasTaints(final Abstraction d1, final Stmt src, final Value targetValue,
 			Set<Abstraction> taintSet, SootMethod method, Abstraction newAbs) {
 		// Start the backwards solver
-		Abstraction bwAbs = newAbs.deriveActiveAbstraction(src);
-		for (Unit succUnit : manager.getICFG().getSuccsOf(src))
-			bSolver.processEdge(new PathEdge<Unit, Abstraction>(d1, succUnit, bwAbs));
+		Abstraction bwAbs = newAbs.deriveInactiveAbstraction(src);
+		assert manager.getICFG() instanceof BackwardsInfoflowCFG;
+		for (Unit predUnit : manager.getICFG().getPredsOf(src))
+			bSolver.processEdge(new PathEdge<Unit, Abstraction>(d1, predUnit, bwAbs));
 	}
 
 	@Override

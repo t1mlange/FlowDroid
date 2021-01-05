@@ -1239,7 +1239,7 @@ public class HeapTestCode {
 		A b = a;
 		a.i = TelephonyManager.getIMEI();
 		ConnectionManager cm = new ConnectionManager();
-		cm.publish(b.i);		
+		cm.publish(b.i);
 	}
 	
 	public void taintPrimitiveFieldTest2() {
