@@ -5,7 +5,9 @@ import soot.SootFieldRef;
 import soot.SootMethod;
 import soot.Unit;
 import soot.Value;
+import soot.grimp.NewInvokeExpr;
 import soot.jimple.AssignStmt;
+import soot.jimple.IdentityStmt;
 import soot.jimple.StaticFieldRef;
 import soot.jimple.Stmt;
 import soot.jimple.infoflow.InfoflowManager;
@@ -32,8 +34,10 @@ public class BackwardsClinitRule extends AbstractTaintPropagationRule {
 
         final AccessPath ap = source.getAccessPath();
         final Aliasing aliasing = getAliasing();
+        if (aliasing == null)
+            return null;
 
-        if (ap != null && aliasing != null) {
+        if (ap != null) {
             Value val = BaseSelector.selectBase(assignStmt.getRightOp(), false);
             if (val instanceof StaticFieldRef) {
                 SootFieldRef ref = ((StaticFieldRef) val).getFieldRef();

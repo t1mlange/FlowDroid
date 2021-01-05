@@ -455,9 +455,9 @@ public class BackwardsInfoflow extends AbstractInfoflow {
                         collectedSinks.add(s);
                     logger.info("Sink found: {} in {}", u, m.getSignature());
 
-                    ICFGDotVisualizer visualizer = new ICFGDotVisualizer("./dotfiles/" + i +".dot", u, manager.getICFG());
-                    visualizer.exportToDot();
-                    i++;
+//                    ICFGDotVisualizer visualizer = new ICFGDotVisualizer("./dotfiles/" + i +".dot", u, manager.getICFG());
+//                    visualizer.exportToDot();
+//                    i++;
                 }
                 if (sourcesSinks.getSinkInfo(s, manager, null) != null) {
                     sourceCount++;

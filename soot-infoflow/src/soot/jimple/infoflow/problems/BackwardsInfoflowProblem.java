@@ -527,10 +527,10 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                     res.add(abs);
 
                                     // TODO: side-effects?
-                                    if (callSite instanceof AssignStmt) {
-                                        for (Abstraction callerD1 : callerD1s)
-                                            aliasing.computeAliases(callerD1, (Stmt) callSite, originalCallArg, res, callee, abs);
-                                    }
+//                                    if (callSite instanceof AssignStmt) {
+//                                        for (Abstraction callerD1 : callerD1s)
+//                                            aliasing.computeAliases(callerD1, (Stmt) callSite, originalCallArg, res, callee, abs);
+//                                    }
                                 }
                             }
                         }

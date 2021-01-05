@@ -41,6 +41,7 @@ public class BackwardsExceptionPropagationRule extends AbstractTaintPropagationR
 			IdentityStmt id = (IdentityStmt) stmt;
 			if (id.getRightOp() instanceof CaughtExceptionRef &&
                     aliasing.mayAlias(id.getLeftOp(), source.getAccessPath().getPlainValue())) {
+				// Kill the old taint
 				killSource.value = true;
 
 				// We leave it to another propagation of normal flow or the call flow function
@@ -52,9 +53,13 @@ public class BackwardsExceptionPropagationRule extends AbstractTaintPropagationR
         // If the exception is from the same method,
         // the next statement is a throw statement
 		if (source.getExceptionThrown() && stmt instanceof ThrowStmt) {
+			// Kill the old taint
+			killSource.value = true;
+			// Taint the thrown value
 			AccessPath ap = manager.getAccessPathFactory().copyWithNewValue(source.getAccessPath(),
 					((ThrowStmt) stmt).getOp());
-			return Collections.singleton(source.deriveNewAbstractionOnCatch(ap));
+			if (ap != null)
+				return Collections.singleton(source.deriveNewAbstractionOnCatch(ap));
 		}
 
 		return null;
