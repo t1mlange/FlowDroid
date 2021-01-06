@@ -40,7 +40,7 @@ import java.util.*;
  * @author Tim Lange
  */
 public class ForwardsAliasProblem extends AbstractInfoflowProblem {
-    private final static boolean DEBUG_PRINT = true;
+    private final static boolean DEBUG_PRINT = false;
 
     public ForwardsAliasProblem(InfoflowManager manager) {
         super(manager);
@@ -123,6 +123,8 @@ public class ForwardsAliasProblem extends AbstractInfoflowProblem {
                         final AssignStmt assignStmt = (AssignStmt) defStmt;
                         final Value leftOp = assignStmt.getLeftOp();
                         final Value rightOp = assignStmt.getRightOp();
+                        final Value leftVal = BaseSelector.selectBase(rightOp, false);
+                        final Value rightVal = BaseSelector.selectBase(rightOp, false);
 
                         boolean leftSideMatches = Aliasing.baseMatches(leftOp, source);
                         if (!leftSideMatches) {
@@ -138,24 +140,19 @@ public class ForwardsAliasProblem extends AbstractInfoflowProblem {
 
                         // BinopExr & UnopExpr operands can not have aliases
                         // as both only can have primitives on the right side
-                        if (rightOp instanceof BinopExpr || rightOp instanceof UnopExpr)
-                            return res;
-
                         // NewArrayExpr do not produce new aliases
-                        if (rightOp instanceof NewArrayExpr)
+                        if (rightOp instanceof BinopExpr || rightOp instanceof UnopExpr || rightOp instanceof NewArrayExpr)
                             return res;
 
-                        final Value rightVal = BaseSelector.selectBase(rightOp, false);
 
                         // If left side is tainted but right side can not have aliases anyways,
                         // we can stop now as left is overwritten and right is not tracked.
-//                        if (leftSideMatches && !(rightVal instanceof Local || rightVal instanceof FieldRef))
-//                            return null;
+                        if (leftSideMatches && !(rightVal instanceof Local || rightVal instanceof FieldRef))
+                            return null;
 
 
                         AccessPath ap = source.getAccessPath();
                         Value sourceBase = ap.getPlainValue();
-
                         boolean addRightValue = false;
                         if ((rightVal instanceof Local || rightVal instanceof FieldRef)) {
                             boolean cutFirstFieldRight = false;

@@ -60,8 +60,8 @@ public class BackwardsArrayPropagationRule extends AbstractTaintPropagationRule 
 			if (!(newArrayExpr.getSize() instanceof Constant) && source.getAccessPath().getArrayTaintType() != ArrayTaintType.Contents
 					&& aliasing.mayAlias(source.getAccessPath().getPlainValue(), leftVal)) {
 				// Create the new taint abstraction
-				AccessPath ap = getManager().getAccessPathFactory().copyWithNewValue(source.getAccessPath(), newArrayExpr.getSize(),
-						null, false, true, ArrayTaintType.Length);
+				AccessPath ap = getManager().getAccessPathFactory().createAccessPath(newArrayExpr.getSize(),
+						newArrayExpr.getSize().getType(), true, ArrayTaintType.Length);
 				newAbs = source.deriveNewAbstraction(ap, assignStmt);
 			}
 		}

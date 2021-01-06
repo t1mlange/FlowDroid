@@ -481,7 +481,7 @@ public class EasyTaintWrapper extends AbstractTaintWrapper implements IReversibl
 		// Do we always model equals() and hashCode()?
 		if (alwaysModelEqualsHashCode
 				&& (subSig.equals("boolean equals(java.lang.Object)") || subSig.equals("int hashCode()")))
-			return MethodWrapType.CreateTaint;
+			return MethodWrapType.NotRegistered;
 
 		// Do not process unsupported classes
 		if (!isSupported)

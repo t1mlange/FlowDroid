@@ -21,15 +21,14 @@ import org.junit.Assume;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import soot.RefType;
-import soot.Scene;
-import soot.SootField;
-import soot.SootMethod;
+import soot.*;
 import soot.jimple.AssignStmt;
 import soot.jimple.DefinitionStmt;
 import soot.jimple.InstanceInvokeExpr;
 import soot.jimple.Stmt;
+import soot.jimple.infoflow.BackwardsInfoflow;
 import soot.jimple.infoflow.IInfoflow;
+import soot.jimple.infoflow.Infoflow;
 import soot.jimple.infoflow.InfoflowConfiguration.AliasingAlgorithm;
 import soot.jimple.infoflow.InfoflowConfiguration.PathReconstructionMode;
 import soot.jimple.infoflow.InfoflowManager;
@@ -39,6 +38,7 @@ import soot.jimple.infoflow.data.SootMethodAndClass;
 import soot.jimple.infoflow.entryPointCreators.DefaultEntryPointCreator;
 import soot.jimple.infoflow.results.InfoflowResults;
 import soot.jimple.infoflow.sourcesSinks.definitions.MethodSourceSinkDefinition;
+import soot.jimple.infoflow.sourcesSinks.manager.BackwardsSourceSinkManager;
 import soot.jimple.infoflow.sourcesSinks.manager.ISourceSinkManager;
 import soot.jimple.infoflow.sourcesSinks.manager.SinkInfo;
 import soot.jimple.infoflow.sourcesSinks.manager.SourceInfo;
@@ -946,40 +946,79 @@ public class HeapTests extends JUnitTests {
 		IInfoflow infoflow = initInfoflow();
 		infoflow.getConfig().setInspectSources(false);
 		infoflow.getConfig().setInspectSinks(false);
-
+		onlyForwards(infoflow);
 		List<String> epoints = new ArrayList<String>();
 		epoints.add("<soot.jimple.infoflow.test.HeapTestCode: void aliasStrongUpdateTest3()>");
-		infoflow.computeInfoflow(appPath, libPath, new DefaultEntryPointCreator(epoints), new ISourceSinkManager() {
+		ISourceSinkManager ssm = null;
+		if (infoflow instanceof Infoflow) {
+			ssm = new ISourceSinkManager() {
 
-			@Override
-			public SinkInfo getSinkInfo(Stmt sCallSite, InfoflowManager manager, AccessPath ap) {
-				if (sCallSite.containsInvokeExpr()) {
-					SootMethod sm = sCallSite.getInvokeExpr().getMethod();
-					if (sm.getSignature().equals(sinkMethod))
-						return new SinkInfo(new MethodSourceSinkDefinition(new SootMethodAndClass(sm)));
+				@Override
+				public SinkInfo getSinkInfo(Stmt sCallSite, InfoflowManager manager, AccessPath ap) {
+					if (sCallSite.containsInvokeExpr()) {
+						SootMethod sm = sCallSite.getInvokeExpr().getMethod();
+						if (sm.getSignature().equals(sinkMethod))
+							return new SinkInfo(new MethodSourceSinkDefinition(new SootMethodAndClass(sm)));
+					}
+					return null;
 				}
-				return null;
-			}
 
-			@Override
-			public SourceInfo getSourceInfo(Stmt sCallSite, InfoflowManager manager) {
-				if (sCallSite instanceof AssignStmt) {
-					AssignStmt assignStmt = (AssignStmt) sCallSite;
-					if (assignStmt.getRightOp().toString().contains("taintedBySourceSinkManager"))
-						return new SourceInfo(null,
-								manager.getAccessPathFactory().createAccessPath(assignStmt.getLeftOp(), true));
-					else
-						return null;
+				@Override
+				public SourceInfo getSourceInfo(Stmt sCallSite, InfoflowManager manager) {
+					if (sCallSite instanceof AssignStmt) {
+						AssignStmt assignStmt = (AssignStmt) sCallSite;
+						if (assignStmt.getRightOp().toString().contains("taintedBySourceSinkManager"))
+							return new SourceInfo(null,
+									manager.getAccessPathFactory().createAccessPath(assignStmt.getLeftOp(), true));
+						else
+							return null;
+					}
+					return null;
 				}
-				return null;
-			}
 
-			@Override
-			public void initialize() {
-				//
-			}
+				@Override
+				public void initialize() {
+					//
+				}
 
-		});
+			};
+		} else if (infoflow instanceof BackwardsInfoflow) {
+			ssm = new BackwardsSourceSinkManager(null, null) {
+				@Override
+				public SinkInfo getSinkInfo(Stmt sCallSite, InfoflowManager manager, AccessPath ap) {
+					if (sCallSite instanceof AssignStmt) {
+						AssignStmt assignStmt = (AssignStmt) sCallSite;
+						if (assignStmt.getRightOp().toString().contains("taintedBySourceSinkManager")) {
+							SootMethod sm = manager.getICFG().getMethodOf(assignStmt);
+							return new SinkInfo(new MethodSourceSinkDefinition(new SootMethodAndClass(sm)));
+						}
+						else
+							return null;
+					}
+					return null;
+				}
+
+				@Override
+				public SourceInfo getSourceInfo(Stmt sCallSite, InfoflowManager manager) {
+					if (sCallSite.containsInvokeExpr()) {
+						SootMethod sm = sCallSite.getInvokeExpr().getMethod();
+						if (sm.getSignature().equals(sinkMethod)) {
+							Value firstParam = sCallSite.getInvokeExpr().getArg(0);
+							return new SourceInfo(null,
+									manager.getAccessPathFactory().createAccessPath(firstParam, true));
+						}
+					}
+					return null;
+				}
+
+				@Override
+				public void initialize() {
+					//
+				}
+
+			};
+		}
+		infoflow.computeInfoflow(appPath, libPath, new DefaultEntryPointCreator(epoints), ssm);
 
 		Assert.assertTrue(infoflow.isResultAvailable());
 		InfoflowResults map = infoflow.getResults();
