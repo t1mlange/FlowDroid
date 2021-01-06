@@ -53,7 +53,7 @@ public class StringTests extends JUnitTests {
 		checkInfoflow(infoflow, 1);
 	}
 
-	@Test(timeout = 6000)
+	@Test(timeout = 60000000)
 	public void lowerCaseTest() {
 		IInfoflow infoflow = initInfoflow();
 		List<String> epoints = new ArrayList<String>();
