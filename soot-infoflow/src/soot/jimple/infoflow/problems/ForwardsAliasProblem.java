@@ -232,7 +232,7 @@ public class ForwardsAliasProblem extends AbstractInfoflowProblem {
                             }
                         }
 
-                        if (!addRightValue && !(rightVal.getType() instanceof PrimType)
+                        if (!(rightVal.getType() instanceof PrimType)
                                 && (leftOp instanceof Local || leftOp instanceof FieldRef)) {
                             boolean addLeftValue = false;
                             boolean cutFirstFieldLeft = false;

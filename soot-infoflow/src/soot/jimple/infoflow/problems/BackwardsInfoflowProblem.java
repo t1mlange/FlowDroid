@@ -30,7 +30,7 @@ import java.util.*;
  * @author Tim Lange
  */
 public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
-    private final static boolean DEBUG_PRINT = true;
+    private final static boolean DEBUG_PRINT = false;
 
     private final PropagationRuleManager propagationRules;
     protected final TaintPropagationResults results;
@@ -108,6 +108,62 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                         // Statements such as c = a + b with the taint c can produce multiple taints because we can not
                         // decide which one originated from a source at this point.
                         for (Value rightVal : rightVals) {
+                            boolean addLeftValue = false;
+                            boolean cutFirstFieldLeft = false;
+                            Type leftType = null;
+
+                            if (rightVal instanceof StaticFieldRef) {
+                                if (manager.getConfig().getStaticFieldTrackingMode() != InfoflowConfiguration.StaticFieldTrackingMode.None
+                                        && ap.firstFieldMatches(((StaticFieldRef) rightVal).getField())) {
+                                    addLeftValue = true;
+//                                    leftType = source.getAccessPath().getBaseType();
+                                }
+                            } else if (rightVal instanceof InstanceFieldRef) {
+                                InstanceFieldRef instRef = (InstanceFieldRef) rightVal;
+
+                                if (ap.isInstanceFieldRef() && instRef.getBase() == sourceBase
+                                        && ap.firstFieldMatches(instRef.getField())) {
+                                    addLeftValue = true;
+                                    cutFirstFieldLeft = true;
+//                                    leftType = ap.getFirstFieldType();
+                                }
+                            } else if (rightVal == sourceBase) {
+                                addLeftValue = true;
+                                leftType = ap.getBaseType();
+                                // We did not keep the ArrayRef, so rightVal is already the array base
+                                if (rightOp instanceof ArrayRef) {
+                                    leftType = ((ArrayType) leftType).getElementType();
+                                } else if (leftVal instanceof ArrayRef) {
+                                    ArrayRef arrayRef = (ArrayRef) leftVal;
+                                    leftType = TypeUtils.buildArrayOrAddDimension(leftType, arrayRef.getType().getArrayType());
+                                } else {
+                                    if (!manager.getTypeUtils().checkCast(source.getAccessPath(), leftVal.getType()))
+                                        return null;
+                                }
+
+                                // LengthExpr extends UnopExpr, not possible here
+                                if (rightVal instanceof CastExpr) {
+                                    CastExpr ce = (CastExpr) rightOp;
+                                    if (!manager.getHierarchy().canStoreType(leftType, ce.getCastType()))
+                                        leftType = ce.getCastType();
+                                } else if (rightVal instanceof InstanceOfExpr) {
+                                    // We could just produce a boolean, which won't be tracked anyways
+                                    addLeftValue = false;
+                                }
+                            }
+
+                            if (addLeftValue) {
+                                AccessPath newAp = manager.getAccessPathFactory().copyWithNewValue(source.getAccessPath(),
+                                        leftVal, leftType, cutFirstFieldLeft);
+                                Abstraction newAbs = source.deriveNewAbstraction(newAp, assignStmt);
+                                if (newAbs != null) {
+                                    if (aliasing.canHaveAliasesRightSide(assignStmt, leftVal, newAbs)) {
+                                        aliasing.computeAliases(d1, assignStmt, leftVal, res,
+                                                interproceduralCFG().getMethodOf(assignStmt), newAbs);
+                                    }
+                                }
+                            }
+
                             boolean addRightValue = false;
                             boolean cutFirstField = false;
                             Type rightType = null;
