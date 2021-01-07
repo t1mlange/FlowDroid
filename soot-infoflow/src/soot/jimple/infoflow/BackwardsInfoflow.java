@@ -655,6 +655,28 @@ public class BackwardsInfoflow extends AbstractInfoflow {
      *                        if they are not sources
      */
     private void runAnalysis(ISourceSinkManager sourcesSinks, Set<String> additionalSeeds) {
+        // TODO: just debug things
+        Chain<SootClass> classes = Scene.v().getClasses();
+        for (SootClass c : classes) {
+            if (c.getName().contains("Test")) {
+                String name = c.getName().replace("soot.jimple.infoflow.test.", "");
+                String baseClass = name.split("\\$")[0];
+                File dir = new File("jimpleCode/" + baseClass);
+                if (dir.exists() || dir.mkdir()) {
+                    File file = new File("jimpleCode/" + baseClass + "/" + name + ".jimple");
+                    PrintWriter writer;
+                    try {
+                        writer = new PrintWriter(file);
+                        soot.Printer.v().printTo(c, writer);
+                        writer.flush();
+                        writer.close();
+                    } catch (FileNotFoundException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+
         final InfoflowPerformanceData performanceData = new InfoflowPerformanceData();
         try {
             // Clear the data from previous runs

@@ -52,10 +52,21 @@ public class HeapTests extends JUnitTests {
 	@Test(timeout = 300000)
 	public void testForEarlyTermination() {
 		IInfoflow infoflow = initInfoflow();
+		onlyForwards(infoflow);
 		List<String> epoints = new ArrayList<String>();
 		epoints.add("<soot.jimple.infoflow.test.HeapTestCode: void testForEarlyTermination()>");
 		infoflow.computeInfoflow(appPath, libPath, epoints, sources, sinks);
 		checkInfoflow(infoflow, 1);
+	}
+
+	@Test(timeout = 300000)
+	public void testForEarlyTerminationBW() {
+		IInfoflow infoflow = initInfoflow();
+		onlyBackwards(infoflow);
+		List<String> epoints = new ArrayList<String>();
+		epoints.add("<soot.jimple.infoflow.test.HeapTestCode: void testForEarlyTermination()>");
+		infoflow.computeInfoflow(appPath, libPath, epoints, sources, sinks);
+		negativeCheckInfoflow(infoflow);
 	}
 
 	@Test(timeout = 300000)
@@ -800,7 +811,6 @@ public class HeapTests extends JUnitTests {
 		IInfoflow infoflow = initInfoflow();
 		infoflow.getConfig().setInspectSources(false);
 		infoflow.getConfig().setInspectSinks(false);
-
 		List<String> epoints = new ArrayList<String>();
 		epoints.add("<soot.jimple.infoflow.test.HeapTestCode: void separatedTreeTest()>");
 		infoflow.computeInfoflow(appPath, libPath, epoints, sources, sinks);

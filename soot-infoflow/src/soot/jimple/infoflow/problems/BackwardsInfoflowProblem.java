@@ -30,7 +30,7 @@ import java.util.*;
  * @author Tim Lange
  */
 public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
-    private final static boolean DEBUG_PRINT = false;
+    private final static boolean DEBUG_PRINT = true;
 
     private final PropagationRuleManager propagationRules;
     protected final TaintPropagationResults results;
@@ -197,9 +197,9 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                     else {
                                         res.add(newAbs);
 
-                                        if (aliasing.canHaveAliasesRightSide(assignStmt, leftVal, source)) {
-                                            aliasing.computeAliases(d1, assignStmt, leftVal, res,
-                                                    interproceduralCFG().getMethodOf(assignStmt), source);
+                                        if (aliasing.canHaveAliasesRightSide(assignStmt, rightVal, newAbs)) {
+                                            aliasing.computeAliases(d1, assignStmt, rightVal, res,
+                                                    interproceduralCFG().getMethodOf(assignStmt), newAbs);
                                         }
                                     }
                                 }
@@ -528,10 +528,10 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                     res.add(abs);
 
                                     // TODO: side-effects?
-//                                    if (callSite instanceof AssignStmt) {
-//                                        for (Abstraction callerD1 : callerD1s)
-//                                            aliasing.computeAliases(callerD1, (Stmt) callSite, originalCallArg, res, callee, abs);
-//                                    }
+                                    if (callSite instanceof AssignStmt) {
+                                        for (Abstraction callerD1 : callerD1s)
+                                            aliasing.computeAliases(callerD1, (Stmt) callSite, originalCallArg, res, callee, abs);
+                                    }
                                 }
                             }
                         }

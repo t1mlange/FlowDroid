@@ -41,10 +41,11 @@ public class BackwardsClinitRule extends AbstractTaintPropagationRule {
             Value val = BaseSelector.selectBase(assignStmt.getRightOp(), false);
             if (val instanceof StaticFieldRef) {
                 SootFieldRef ref = ((StaticFieldRef) val).getFieldRef();
-                for (SootMethod caller : manager.getICFG().getCalleesOfCallAt(stmt)) {
-                    if (caller.hasActiveBody() && caller.getDeclaringClass() == ref.declaringClass()
-                            && caller.getSubSignature().equals("void <clinit>()")) {
-                        Unit last = caller.getActiveBody().getUnits().getLast();
+                Collection<SootMethod> callees = manager.getICFG().getCalleesOfCallAt(stmt);
+                for (SootMethod callee : callees) {
+                    if (callee.hasActiveBody() && callee.getDeclaringClass() == ref.declaringClass()
+                            && callee.getSubSignature().equals("void <clinit>()")) {
+                        Unit last = callee.getActiveBody().getUnits().getLast();
                         AccessPath newAp = manager.getAccessPathFactory().copyWithNewValue(source.getAccessPath(),
                                 val, val.getType(), false);
                         Abstraction newAbs = source.deriveNewAbstraction(newAp, stmt);
