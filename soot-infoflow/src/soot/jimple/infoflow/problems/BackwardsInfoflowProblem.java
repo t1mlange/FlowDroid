@@ -117,11 +117,14 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                             } else if (rightVal instanceof InstanceFieldRef) {
                                 InstanceFieldRef instRef = (InstanceFieldRef) rightVal;
 
-                                if (ap.isInstanceFieldRef() && instRef.getBase() == sourceBase
-                                        && ap.firstFieldMatches(instRef.getField())) {
-                                    addLeftValue = true;
-                                    cutFirstFieldLeft = true;
+                                if (ap.isInstanceFieldRef() && instRef.getBase() == sourceBase) {
+                                    if (ap.firstFieldMatches(instRef.getField())) {
+                                        addLeftValue = true;
+                                        cutFirstFieldLeft = true;
 //                                    leftType = ap.getFirstFieldType();
+                                    } else if (ap.getTaintSubFields() && ap.getFieldCount() == 0) {
+                                        addLeftValue = true;
+                                    }
                                 }
                             } else if (rightVal instanceof ArrayRef) {
                                 if (!getManager().getConfig().getEnableArrayTracking()
@@ -178,10 +181,10 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                         leftVal, leftType, cutFirstFieldLeft);
                                 Abstraction newAbs = source.deriveNewAbstraction(newAp, assignStmt);
                                 if (newAbs != null) {
-//                                    if (aliasing.canHaveAliasesRightSide(assignStmt, leftVal, newAbs)) {
+                                    if (aliasing.canHaveAliasesRightSide(assignStmt, leftVal, newAbs)) {
                                         aliasing.computeAliases(d1, assignStmt, leftVal, res,
                                                 interproceduralCFG().getMethodOf(assignStmt), newAbs);
-//                                    }
+                                    }
                                 }
                             }
 

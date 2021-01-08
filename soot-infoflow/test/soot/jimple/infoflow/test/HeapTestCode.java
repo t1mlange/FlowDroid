@@ -631,10 +631,10 @@ public class HeapTestCode {
 		
 		// Create the alias
 		foo2(b, b);
-		String tainted = bar2(a).b;
+		String tainted = bar2(a).b; // {bar2(a)}
 		
-		ConnectionManager cm = new ConnectionManager();
-		cm.publish(tainted);
+		ConnectionManager cm = new ConnectionManager(); // {tainted}
+		cm.publish(tainted); // {tainted}
 	}
 
 	public void negativeTestAliases() {

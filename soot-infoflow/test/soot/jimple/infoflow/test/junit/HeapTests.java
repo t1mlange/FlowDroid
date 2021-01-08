@@ -43,6 +43,8 @@ import soot.jimple.infoflow.sourcesSinks.manager.ISourceSinkManager;
 import soot.jimple.infoflow.sourcesSinks.manager.SinkInfo;
 import soot.jimple.infoflow.sourcesSinks.manager.SourceInfo;
 import soot.jimple.infoflow.taintWrappers.AbstractTaintWrapper;
+import soot.jimple.infoflow.taintWrappers.IReversibleTaintWrapper;
+import soot.jimple.infoflow.taintWrappers.ITaintPropagationWrapper;
 
 /**
  * tests aliasing of heap references
@@ -405,78 +407,147 @@ public class HeapTests extends JUnitTests {
 		checkInfoflow(infoflow, 1);
 	}
 
-	@Test(timeout = 300000)
-	public void wrapperAliasesTest() {
-		IInfoflow infoflow = initInfoflow();
-		infoflow.setTaintWrapper(new AbstractTaintWrapper() {
+	private class MyTaintWrapper extends AbstractTaintWrapper implements IReversibleTaintWrapper {
+		@Override
+		public boolean isExclusiveInternal (Stmt stmt, AccessPath taintedPath){
+			return stmt.containsInvokeExpr() && (stmt.getInvokeExpr().getMethod().getName().equals("foo2")
+					|| stmt.getInvokeExpr().getMethod().getName().equals("bar2"));
+		}
 
-			@Override
-			public boolean isExclusiveInternal(Stmt stmt, AccessPath taintedPath) {
-				return stmt.containsInvokeExpr() && (stmt.getInvokeExpr().getMethod().getName().equals("foo2")
-						|| stmt.getInvokeExpr().getMethod().getName().equals("bar2"));
+		@Override
+		public Set<AccessPath> getTaintsForMethodInternal (Stmt stmt, AccessPath taintedPath){
+			if (!stmt.containsInvokeExpr())
+				return Collections.singleton(taintedPath);
+
+			Set<AccessPath> res = new HashSet<AccessPath>();
+			res.add(taintedPath);
+
+			// We use a path length of 1, i.e. do not work with member
+			// fields,
+			// hence the commented-out code
+			if (stmt.getInvokeExpr().getMethod().getName().equals("foo2")) {
+				InstanceInvokeExpr iinv = (InstanceInvokeExpr) stmt.getInvokeExpr();
+				if (taintedPath.getPlainValue() == iinv.getArg(0)) {
+					RefType rt = (RefType) iinv.getBase().getType();
+					AccessPath ap = manager.getAccessPathFactory().createAccessPath(iinv.getBase(),
+							new SootField[]{rt.getSootClass().getFieldByName("b1")}, true);
+					res.add(ap);
+				}
+				if (taintedPath.getPlainValue() == iinv.getArg(1)) {
+					RefType rt = (RefType) iinv.getBase().getType();
+					AccessPath ap = manager.getAccessPathFactory().createAccessPath(iinv.getBase(),
+							new SootField[]{rt.getSootClass().getFieldByName("b2")}, true);
+					res.add(ap);
+				}
+			} else if (stmt.getInvokeExpr().getMethod().getName().equals("bar2")) {
+				InstanceInvokeExpr iinv = (InstanceInvokeExpr) stmt.getInvokeExpr();
+				if (taintedPath.getPlainValue() == iinv.getArg(0)) {
+					RefType rt = (RefType) iinv.getBase().getType();
+					AccessPath ap = manager.getAccessPathFactory().createAccessPath(iinv.getBase(),
+							new SootField[]{rt.getSootClass().getFieldByName("b1")}, true);
+					res.add(ap);
+				} else if (taintedPath.getPlainValue() == iinv.getBase()) {
+					DefinitionStmt def = (DefinitionStmt) stmt;
+					AccessPath ap = manager.getAccessPathFactory()
+							.createAccessPath(def.getLeftOp(), new SootField[]{Scene.v()
+											.getSootClass("soot.jimple.infoflow.test.HeapTestCode$A").getFieldByName("b")},
+									true);
+					res.add(ap);
+				}
 			}
 
-			@Override
-			public Set<AccessPath> getTaintsForMethodInternal(Stmt stmt, AccessPath taintedPath) {
-				if (!stmt.containsInvokeExpr())
-					return Collections.singleton(taintedPath);
+			return res;
+		}
 
-				Set<AccessPath> res = new HashSet<AccessPath>();
-				res.add(taintedPath);
+		@Override
+		public Set<Abstraction> getInverseTaintsForMethod(Stmt stmt, Abstraction d1,
+												   Abstraction taintedPath) {
+			// Compute the tainted access paths
+			Set<AccessPath> aps = getInverseTaintsForMethodInternal(stmt,
+					taintedPath.getAccessPath());
+			if (aps == null || aps.isEmpty())
+				return null;
 
-				// We use a path length of 1, i.e. do not work with member
-				// fields,
-				// hence the commented-out code
-				if (stmt.getInvokeExpr().getMethod().getName().equals("foo2")) {
-					InstanceInvokeExpr iinv = (InstanceInvokeExpr) stmt.getInvokeExpr();
-					if (taintedPath.getPlainValue() == iinv.getArg(0)) {
-						RefType rt = (RefType) iinv.getBase().getType();
-						AccessPath ap = manager.getAccessPathFactory().createAccessPath(iinv.getBase(),
-								new SootField[] { rt.getSootClass().getFieldByName("b1") }, true);
+			// Convert the access paths into full abstractions
+			Set<Abstraction> res = new HashSet<Abstraction>(aps.size());
+			for (AccessPath ap : aps)
+				if (ap == taintedPath.getAccessPath())
+					res.add(taintedPath);
+				else
+					res.add(taintedPath.deriveNewAbstraction(ap, stmt));
+			return res;
+		}
+
+		public Set<AccessPath> getInverseTaintsForMethodInternal(Stmt stmt, AccessPath taintedPath) {
+			if (!stmt.containsInvokeExpr())
+				return Collections.singleton(taintedPath);
+
+			Set<AccessPath> res = new HashSet<AccessPath>();
+			res.add(taintedPath);
+
+			if (stmt.getInvokeExpr().getMethod().getName().equals("foo2")) {
+				InstanceInvokeExpr iinv = (InstanceInvokeExpr) stmt.getInvokeExpr();
+
+				if (iinv.getBase() == taintedPath.getPlainValue()) {
+					RefType rt = (RefType) iinv.getBase().getType();
+					boolean wholeObjectIsTainted = taintedPath.getTaintSubFields() && taintedPath.getFieldCount() == 0;
+
+					if (wholeObjectIsTainted || taintedPath.firstFieldMatches(rt.getSootClass().getFieldByName("b1"))) {
+						AccessPath ap = manager.getAccessPathFactory().createAccessPath(iinv.getArg(0), true);
 						res.add(ap);
 					}
-					if (taintedPath.getPlainValue() == iinv.getArg(1)) {
-						RefType rt = (RefType) iinv.getBase().getType();
-						AccessPath ap = manager.getAccessPathFactory().createAccessPath(iinv.getBase(),
-								new SootField[] { rt.getSootClass().getFieldByName("b2") }, true);
-						res.add(ap);
-					}
-				} else if (stmt.getInvokeExpr().getMethod().getName().equals("bar2")) {
-					InstanceInvokeExpr iinv = (InstanceInvokeExpr) stmt.getInvokeExpr();
-					if (taintedPath.getPlainValue() == iinv.getArg(0)) {
-						RefType rt = (RefType) iinv.getBase().getType();
-						AccessPath ap = manager.getAccessPathFactory().createAccessPath(iinv.getBase(),
-								new SootField[] { rt.getSootClass().getFieldByName("b1") }, true);
-						res.add(ap);
-					} else if (taintedPath.getPlainValue() == iinv.getBase()) {
-						DefinitionStmt def = (DefinitionStmt) stmt;
-						AccessPath ap = manager.getAccessPathFactory()
-								.createAccessPath(def.getLeftOp(), new SootField[] { Scene.v()
-										.getSootClass("soot.jimple.infoflow.test.HeapTestCode$A").getFieldByName("b") },
-										true);
+					if (wholeObjectIsTainted || taintedPath.firstFieldMatches(rt.getSootClass().getFieldByName("b2"))) {
+						AccessPath ap = manager.getAccessPathFactory().createAccessPath(iinv.getArg(1), true);
 						res.add(ap);
 					}
 				}
+			} else if (stmt.getInvokeExpr().getMethod().getName().equals("bar2")) {
+				InstanceInvokeExpr iinv = (InstanceInvokeExpr) stmt.getInvokeExpr();
 
-				return res;
+				if (iinv.getBase() == taintedPath.getPlainValue()) {
+					RefType rt = (RefType) iinv.getBase().getType();
+					boolean wholeObjectIsTainted = taintedPath.getTaintSubFields() && taintedPath.getFieldCount() == 0;
+
+					if (wholeObjectIsTainted || taintedPath.firstFieldMatches(rt.getSootClass().getFieldByName("b1"))) {
+						AccessPath ap = manager.getAccessPathFactory().createAccessPath(iinv.getArg(0), true);
+						res.add(ap);
+					}
+				} else if (stmt instanceof AssignStmt) {
+					AssignStmt assignStmt = (AssignStmt) stmt;
+
+					if (assignStmt.getLeftOp() == taintedPath.getPlainValue() && taintedPath.firstFieldMatches(Scene.v()
+								.getSootClass("soot.jimple.infoflow.test.HeapTestCode$A").getFieldByName("b"))) {
+						AccessPath ap = manager.getAccessPathFactory().createAccessPath(iinv.getBase(), true);
+						res.add(ap);
+						res.remove(taintedPath);
+					}
+				}
 			}
 
-			@Override
-			public boolean supportsCallee(SootMethod method) {
-				return false;
-			}
+			return res;
+		}
 
-			@Override
-			public boolean supportsCallee(Stmt callSite) {
-				return false;
-			}
+		@Override
+		public boolean supportsCallee (SootMethod method){
+			return false;
+		}
 
-			@Override
-			public Set<Abstraction> getAliasesForMethod(Stmt stmt, Abstraction d1, Abstraction taintedPath) {
-				return null;
-			}
+		@Override
+		public boolean supportsCallee (Stmt callSite){
+			return false;
+		}
 
-		});
+		@Override
+		public Set<Abstraction> getAliasesForMethod (Stmt stmt, Abstraction d1, Abstraction taintedPath){
+			return null;
+		}
+	}
+
+	@Test(timeout = 300000)
+	public void wrapperAliasesTest() {
+		IInfoflow infoflow = initInfoflow();
+		ITaintPropagationWrapper taintWrapper = new MyTaintWrapper();
+		infoflow.setTaintWrapper(taintWrapper);
 
 		infoflow.getConfig().getAccessPathConfiguration().setAccessPathLength(3);
 		infoflow.getConfig().setInspectSources(false);

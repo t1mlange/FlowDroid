@@ -40,7 +40,7 @@ import java.util.*;
  * @author Tim Lange
  */
 public class ForwardsAliasProblem extends AbstractInfoflowProblem {
-    private final static boolean DEBUG_PRINT = true;
+    private final static boolean DEBUG_PRINT = false;
 
     public ForwardsAliasProblem(InfoflowManager manager) {
         super(manager);
@@ -429,6 +429,7 @@ public class ForwardsAliasProblem extends AbstractInfoflowProblem {
                                         .copyWithNewValue(source.getAccessPath(), leftOp);
                                 Abstraction abs = checkAbstraction(source.deriveNewAbstraction(ap, (Stmt) exitStmt));
                                 if (abs != null) {
+                                    registerActivationCallSite(callSite, callee, abs);
                                     res.add(abs);
                                 }
                             }
@@ -528,6 +529,8 @@ public class ForwardsAliasProblem extends AbstractInfoflowProblem {
                 final boolean isSource = manager.getSourceSinkManager() != null
                         && manager.getSourceSinkManager().getSourceInfo(callStmt, manager) != null;
 
+                final AssignStmt assignStmt = callStmt instanceof AssignStmt ? (AssignStmt) callStmt : null;
+
                 return new SolverCallToReturnFlowFunction() {
                     @Override
                     public Set<Abstraction> computeTargets(Abstraction d1, Abstraction source) {
@@ -566,6 +569,22 @@ public class ForwardsAliasProblem extends AbstractInfoflowProblem {
                         // we just pass the taint over the statement
                         if (isExcluded(callee) || interproceduralCFG().getCalleesOfCallAt(callSite).isEmpty())
                             return res;
+
+                        if (taintWrapper != null) {
+                            Set<Abstraction> wrapperAliases = taintWrapper.getAliasesForMethod(callStmt, d1, source);
+                            if (wrapperAliases != null && !wrapperAliases.isEmpty()) {
+                                Set<Abstraction> passOnSet = new HashSet<>(wrapperAliases.size());
+                                for (Abstraction abs : wrapperAliases) {
+                                    if (assignStmt == null || assignStmt.getLeftOp() != abs.getAccessPath().getPlainValue())
+                                        passOnSet.add(abs);
+
+                                    for (Unit u : manager.getICFG().getPredsOf(callSite))
+                                        manager.getForwardSolver()
+                                                .processEdge(new PathEdge<Unit, Abstraction>(d1, u, abs));
+                                }
+                                return passOnSet;
+                            }
+                        }
 
                         // If static field is used, we do not pass it over
                         if (manager.getConfig().getStaticFieldTrackingMode() != InfoflowConfiguration.StaticFieldTrackingMode.None
