@@ -30,7 +30,7 @@ import java.util.*;
  * @author Tim Lange
  */
 public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
-    private final static boolean DEBUG_PRINT = false;
+    private final static boolean DEBUG_PRINT = true;
 
     private final PropagationRuleManager propagationRules;
     protected final TaintPropagationResults results;
@@ -157,10 +157,10 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                         leftVal, leftType, cutFirstFieldLeft);
                                 Abstraction newAbs = source.deriveNewAbstraction(newAp, assignStmt);
                                 if (newAbs != null) {
-                                    if (aliasing.canHaveAliasesRightSide(assignStmt, leftVal, newAbs)) {
+//                                    if (aliasing.canHaveAliasesRightSide(assignStmt, leftVal, newAbs)) {
                                         aliasing.computeAliases(d1, assignStmt, leftVal, res,
                                                 interproceduralCFG().getMethodOf(assignStmt), newAbs);
-                                    }
+//                                    }
                                 }
                             }
 
@@ -253,6 +253,10 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                     else {
                                         res.add(newAbs);
 
+//                                        if (aliasing.canHaveAliasesRightSide(assignStmt, rightVal, newAbs)) {
+//                                            aliasing.computeAliases(d1, assignStmt, rightVal, res,
+//                                                    interproceduralCFG().getMethodOf(assignStmt), newAbs);
+//                                        }
                                         if (aliasing.canHaveAliasesRightSide(assignStmt, rightVal, newAbs)) {
                                             aliasing.computeAliases(d1, assignStmt, rightVal, res,
                                                     interproceduralCFG().getMethodOf(assignStmt), newAbs);

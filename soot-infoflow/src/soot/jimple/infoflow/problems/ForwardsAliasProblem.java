@@ -40,7 +40,7 @@ import java.util.*;
  * @author Tim Lange
  */
 public class ForwardsAliasProblem extends AbstractInfoflowProblem {
-    private final static boolean DEBUG_PRINT = false;
+    private final static boolean DEBUG_PRINT = true;
 
     public ForwardsAliasProblem(InfoflowManager manager) {
         super(manager);
@@ -132,10 +132,11 @@ public class ForwardsAliasProblem extends AbstractInfoflowProblem {
                             res.add(source);
                         } else {
                             // The source taint will end here, so we give it back
-                            // to our dat flow solver
-                            for (Unit u : manager.getICFG().getPredsOf(assignStmt))
+                            // to our data flow solver
+                            for (Unit u : manager.getICFG().getSuccsOf(assignStmt))
                                 manager.getForwardSolver()
                                         .processEdge(new PathEdge<Unit, Abstraction>(d1, u, source));
+                            return null;
                         }
 
                         // BinopExr & UnopExpr operands can not have aliases
@@ -144,96 +145,9 @@ public class ForwardsAliasProblem extends AbstractInfoflowProblem {
                         if (rightOp instanceof BinopExpr || rightOp instanceof UnopExpr || rightOp instanceof NewArrayExpr)
                             return res;
 
-
-                        // If left side is tainted but right side can not have aliases anyways,
-                        // we can stop now as left is overwritten and right is not tracked.
-                        if (leftSideMatches && !(rightVal instanceof Local || rightVal instanceof FieldRef))
-                            return null;
-
-
                         AccessPath ap = source.getAccessPath();
                         Value sourceBase = ap.getPlainValue();
-                        boolean addRightValue = false;
-                        if ((rightVal instanceof Local || rightVal instanceof FieldRef)) {
-                            boolean cutFirstFieldRight = false;
-                            Type rightType = null;
-
-                            // S.x
-                            if (leftOp instanceof StaticFieldRef) {
-                                // If we do not track statics, just skip this rightVal
-                                if (getManager().getConfig().getStaticFieldTrackingMode()
-                                        != InfoflowConfiguration.StaticFieldTrackingMode.None
-                                        && ap.firstFieldMatches(((StaticFieldRef) leftOp).getField())) {
-                                    addRightValue = true;
-                                    cutFirstFieldRight = true;
-                                    rightType = ap.getFirstFieldType();
-                                }
-                            }
-                            // o.x
-                            else if (leftOp instanceof InstanceFieldRef) {
-                                InstanceFieldRef instRef = ((InstanceFieldRef) leftOp);
-
-                                if (ap.isInstanceFieldRef() && instRef.getBase() == sourceBase
-                                        && ap.firstFieldMatches(instRef.getField())) {
-                                    addRightValue = true;
-                                    // Without o1.x = o2.x would result in o2.x.x
-                                    cutFirstFieldRight = true;
-                                    rightType = ap.getFirstFieldType();
-                                }
-                            } else if (leftOp instanceof ArrayRef) {
-                                // If we don't track arrays or just the length is tainted we have nothing to do.
-                                if (getManager().getConfig().getEnableArrayTracking()
-                                        && ap.getArrayTaintType() != AccessPath.ArrayTaintType.Length) {
-                                    ArrayRef arrayRef = (ArrayRef) leftOp;
-                                    if (arrayRef.getBase() == sourceBase) {
-                                        addRightValue = true;
-                                        rightType = ((ArrayType) arrayRef.getBase().getType()).getElementType();
-                                        if (TypeUtils.isObjectLikeType(rightType))
-                                            rightType = rightVal.getType();
-
-                                        if (!manager.getTypeUtils().checkCast(rightVal.getType(), rightType))
-                                            addRightValue = false;
-                                    }
-                                }
-                            }
-                            // default case
-                            else if (leftOp == sourceBase) {
-//                                if (!manager.getTypeUtils().checkCast(source.getAccessPath(), rightVal.getType()))
-//                                    return null;
-
-                                // CastExpr only make the types more imprecise backwards
-                                // InstanceOfExpr are booleans aka primtypes on the left, should not occur
-                                // LengthExpr are ints aka primtypes on the left, can not occur
-                                // as it is a subclass of UnopExpr
-
-                                addRightValue = true;
-//                                rightType = source.getAccessPath().getBaseType();
-                            }
-
-
-                            if (addRightValue) {
-                                AccessPath newAp = manager.getAccessPathFactory().copyWithNewValue(source.getAccessPath(),
-                                        rightVal, rightType, cutFirstFieldRight);
-                                Abstraction newAbs = source.deriveNewAbstraction(newAp, assignStmt);
-
-                                if (newAbs != null && !newAp.equals(ap)) {
-                                    if (rightVal instanceof StaticFieldRef && manager.getConfig().getStaticFieldTrackingMode()
-                                            == InfoflowConfiguration.StaticFieldTrackingMode.ContextFlowInsensitive)
-                                        manager.getGlobalTaintManager().addToGlobalTaintState(newAbs);
-                                    else {
-                                        res.add(newAbs);
-
-                                        // Inject the new alias into the forward solver
-                                        for (Unit u : manager.getICFG().getPredsOf(defStmt))
-                                            manager.getForwardSolver()
-                                                    .processEdge(new PathEdge<Unit, Abstraction>(d1, u, newAbs));
-                                    }
-                                }
-                            }
-                        }
-
-                        if (!(rightVal.getType() instanceof PrimType)
-                                && (leftOp instanceof Local || leftOp instanceof FieldRef)) {
+                        if ((leftOp instanceof Local || leftOp instanceof FieldRef)) {
                             boolean addLeftValue = false;
                             boolean cutFirstFieldLeft = false;
                             Type leftType = null;
@@ -281,7 +195,7 @@ public class ForwardsAliasProblem extends AbstractInfoflowProblem {
                             if (addLeftValue) {
                                 AccessPath newAp = manager.getAccessPathFactory().copyWithNewValue(source.getAccessPath(),
                                         leftOp, leftType, cutFirstFieldLeft);
-                                Abstraction newAbs = checkAbstraction(source.deriveNewAbstraction(newAp, assignStmt));
+                                Abstraction newAbs = source.deriveNewAbstraction(newAp, assignStmt);
                                 if (newAbs != null && newAbs != source) {
                                     if (rightVal instanceof StaticFieldRef && manager.getConfig().getStaticFieldTrackingMode()
                                             == InfoflowConfiguration.StaticFieldTrackingMode.ContextFlowInsensitive)
