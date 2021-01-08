@@ -30,7 +30,7 @@ import java.util.*;
  * @author Tim Lange
  */
 public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
-    private final static boolean DEBUG_PRINT = true;
+    private final static boolean DEBUG_PRINT = false;
 
     private final PropagationRuleManager propagationRules;
     protected final TaintPropagationResults results;
@@ -98,11 +98,6 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                         final Value rightOp = assignStmt.getRightOp();
                         final Value[] rightVals = BaseSelector.selectBaseList(rightOp, true);
 
-                        // NewExpr's can not be tainted
-                        // so we can stop here
-                        if (rightOp instanceof AnyNewExpr)
-                            return res;
-
                         AccessPath ap = source.getAccessPath();
                         Local sourceBase = ap.getPlainValue();
                         // Statements such as c = a + b with the taint c can produce multiple taints because we can not
@@ -110,6 +105,7 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                         for (Value rightVal : rightVals) {
                             boolean addLeftValue = false;
                             boolean cutFirstFieldLeft = false;
+                            boolean createNewVal = false;
                             Type leftType = null;
 
                             if (rightVal instanceof StaticFieldRef) {
@@ -127,33 +123,58 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                     cutFirstFieldLeft = true;
 //                                    leftType = ap.getFirstFieldType();
                                 }
-                            } else if (rightVal == sourceBase) {
+                            } else if (rightVal instanceof ArrayRef) {
+                                if (!getManager().getConfig().getEnableArrayTracking()
+                                        || ap.getArrayTaintType() == AccessPath.ArrayTaintType.Length)
+                                    continue;
+
+                                ArrayRef arrayRef = (ArrayRef) rightVal;
+                                // do we track indices...
+                                if (getManager().getConfig().getImplicitFlowMode().trackArrayAccesses()) {
+                                    if (arrayRef.getIndex() == sourceBase) {
+                                        addLeftValue = true;
+                                        leftType = ((ArrayType) arrayRef.getBase().getType()).getElementType();
+                                    }
+                                }
+                                // ...or only the whole array?
+                                else if (aliasing.mayAlias(arrayRef.getBase(), sourceBase)) {
+                                    addLeftValue = true;
+                                    leftType = ((ArrayType) arrayRef.getBase().getType()).getElementType();
+                                }
+                            } if (rightVal == sourceBase) {
                                 addLeftValue = true;
                                 leftType = ap.getBaseType();
-                                // We did not keep the ArrayRef, so rightVal is already the array base
-                                if (rightOp instanceof ArrayRef) {
-                                    leftType = ((ArrayType) leftType).getElementType();
-                                } else if (leftVal instanceof ArrayRef) {
+
+                                if (leftVal instanceof ArrayRef) {
                                     ArrayRef arrayRef = (ArrayRef) leftVal;
                                     leftType = TypeUtils.buildArrayOrAddDimension(leftType, arrayRef.getType().getArrayType());
+                                } else if (rightOp instanceof InstanceOfExpr) {
+                                    createNewVal = true;
+                                } else if (rightOp instanceof LengthExpr) {
+                                    if (ap.getArrayTaintType() == AccessPath.ArrayTaintType.Contents)
+                                        addLeftValue = false;
+                                    createNewVal = true;
+                                } else if (rightOp instanceof NewArrayExpr) {
+                                    createNewVal = true;
                                 } else {
                                     if (!manager.getTypeUtils().checkCast(source.getAccessPath(), leftVal.getType()))
                                         return null;
                                 }
 
-                                // LengthExpr extends UnopExpr, not possible here
                                 if (rightVal instanceof CastExpr) {
                                     CastExpr ce = (CastExpr) rightOp;
                                     if (!manager.getHierarchy().canStoreType(leftType, ce.getCastType()))
                                         leftType = ce.getCastType();
-                                } else if (rightVal instanceof InstanceOfExpr) {
-                                    // We could just produce a boolean, which won't be tracked anyways
-                                    addLeftValue = false;
                                 }
                             }
 
                             if (addLeftValue) {
-                                AccessPath newAp = manager.getAccessPathFactory().copyWithNewValue(source.getAccessPath(),
+                                res.add(source);
+                                AccessPath newAp;
+                                if (createNewVal)
+                                    newAp = manager.getAccessPathFactory().createAccessPath(leftVal, true);
+                                else
+                                    newAp = manager.getAccessPathFactory().copyWithNewValue(source.getAccessPath(),
                                         leftVal, leftType, cutFirstFieldLeft);
                                 Abstraction newAbs = source.deriveNewAbstraction(newAp, assignStmt);
                                 if (newAbs != null) {
@@ -163,6 +184,12 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
 //                                    }
                                 }
                             }
+
+
+                            // NewExpr's can not be tainted
+                            // so we can stop here
+                            if (rightOp instanceof AnyNewExpr)
+                                continue;
 
                             boolean addRightValue = false;
                             boolean cutFirstField = false;

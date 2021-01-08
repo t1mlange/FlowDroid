@@ -6,6 +6,19 @@ import soot.jimple.infoflow.test.android.TelephonyManager;
 public class AliasTestCode {
     class A {
         int i;
+        String str;
+
+        String getStrA() {
+            return this.str;
+        }
+    }
+    class B extends A {
+        String getStrB() {
+            return this.str;
+        }
+    }
+    class C {
+        String str;
     }
 
     public void testAliasBefore1() {
@@ -78,5 +91,32 @@ public class AliasTestCode {
         cm.publish(b.i); // {b.i, b.i'}
         a.i = TelephonyManager.getIMEI(); // {b.i}
         cm.publish(b.i); // {b.i}
+    }
+
+    public void aliasCast() {
+        ConnectionManager cm = new ConnectionManager();
+        String tainted = TelephonyManager.getDeviceId();
+        A a = new A();
+        a.str = tainted;
+
+        Object o = (Object) a;
+        C c = (C) o;
+        cm.publish(c.str);
+    }
+
+    public void aliasInstanceOf() {
+        ConnectionManager cm = new ConnectionManager();
+        String tainted = TelephonyManager.getDeviceId();
+        A a;
+        if (tainted.startsWith("x"))
+            a = new A();
+        else
+            a = new B();
+        a.str = tainted;
+
+        if (a instanceof A)
+            cm.publish(a.getStrA());
+        else if (a instanceof B)
+            cm.publish(((B) a).getStrB());
     }
 }

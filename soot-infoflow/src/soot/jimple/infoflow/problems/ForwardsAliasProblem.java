@@ -123,8 +123,11 @@ public class ForwardsAliasProblem extends AbstractInfoflowProblem {
                         final AssignStmt assignStmt = (AssignStmt) defStmt;
                         final Value leftOp = assignStmt.getLeftOp();
                         final Value rightOp = assignStmt.getRightOp();
-                        final Value leftVal = BaseSelector.selectBase(rightOp, false);
+                        final Value leftVal = BaseSelector.selectBase(leftOp, false);
                         final Value rightVal = BaseSelector.selectBase(rightOp, false);
+
+                        if (assignStmt.toString().contains("$stack2.<soot.jimple.infoflow.test.HeapTestCode$A: java.lang.String b> = $stack3"))
+                            d1=d1;
 
                         boolean leftSideMatches = Aliasing.baseMatches(leftOp, source);
                         if (!leftSideMatches) {
@@ -161,11 +164,14 @@ public class ForwardsAliasProblem extends AbstractInfoflowProblem {
                             } else if (rightVal instanceof InstanceFieldRef) {
                                 InstanceFieldRef instRef = (InstanceFieldRef) rightVal;
 
-                                if (ap.isInstanceFieldRef() && instRef.getBase() == sourceBase
-                                        && ap.firstFieldMatches(instRef.getField())) {
-                                    addLeftValue = true;
-                                    cutFirstFieldLeft = true;
+                                if (ap.isInstanceFieldRef() && instRef.getBase() == sourceBase) {
+                                    if (ap.firstFieldMatches(instRef.getField())) {
+                                        addLeftValue = true;
+                                        cutFirstFieldLeft = true;
 //                                    leftType = ap.getFirstFieldType();
+                                    } else if (ap.getTaintSubFields() && ap.getFieldCount() == 0) {
+                                        addLeftValue = true;
+                                    }
                                 }
                             } else if (rightVal == sourceBase) {
                                 addLeftValue = true;
@@ -400,7 +406,7 @@ public class ForwardsAliasProblem extends AbstractInfoflowProblem {
                     private Set<Abstraction> computeTargetsInternal(Abstraction source, Abstraction calleeD1, Collection<Abstraction> callerD1s) {
                         HashSet<Abstraction> res = new HashSet<>();
 
-                        // Static fields get propagated unchaged
+                        // Static fields get propagated unchanged
                         if (manager.getConfig().getStaticFieldTrackingMode()
                                 != InfoflowConfiguration.StaticFieldTrackingMode.None
                                 && source.getAccessPath().isStaticFieldRef()) {
@@ -409,9 +415,10 @@ public class ForwardsAliasProblem extends AbstractInfoflowProblem {
                             return res;
                         }
 
+                        if (source.toString().equals("_$stack1(soot.jimple.infoflow.test.HeapTestCode$TreeElement) <soot.jimple.infoflow.test.HeapTestCode$TreeElement: java.lang.String data> * <+length> | $stack6 = staticinvoke <soot.jimple.infoflow.test.HeapTestCode$SeparatedTree: soot.jimple.infoflow.test.HeapTestCode$TreeElement access$2300(soot.jimple.infoflow.test.HeapTestCode$SeparatedTree)>(myTree)virtualinvoke cm.<soot.jimple.infoflow.test.android.ConnectionManager: void publish(java.lang.String)>($stack22)>>"))
+                            calleeD1=calleeD1;
                         // x = o.m()
-                        if (!source.getAccessPath().isInstanceFieldRef() && !callee.isStatic()
-                                && returnStmt != null && callStmt instanceof AssignStmt) {
+                        if (returnStmt != null && callStmt instanceof AssignStmt) {
                             Value retLocal = returnStmt.getOp();
                             DefinitionStmt defnStmt = (DefinitionStmt) callSite;
                             Value leftOp = defnStmt.getLeftOp();
@@ -484,6 +491,15 @@ public class ForwardsAliasProblem extends AbstractInfoflowProblem {
                                     res.add(abs);
                                 }
                             }
+                        }
+
+                        // TODO: uncomment
+                        if (res.isEmpty()) {
+                            // last occurence of this taint, so go back
+                            for (Unit u : manager.getICFG().getPredsOf(exitStmt))
+                                manager.getForwardSolver()
+                                        .processEdge(new PathEdge<Unit, Abstraction>(calleeD1, u, source));
+                            return null;
                         }
 
                         return res;
