@@ -63,6 +63,30 @@ public class CustomTestCode {
 
 	}
 
+	public void clinitSource() {
+		ClinitSource c = new ClinitSource();
+		ConnectionManager cm = new ConnectionManager();
+		cm.publish(ClinitSource.staticStr);
+	}
+
+	static String staticStr;
+	public void clinitLeak() {
+		CustomTestCode.staticStr = TelephonyManager.getDeviceId();
+		ClinitLeak c = new ClinitLeak();
+	}
+}
+class ClinitSource {
+	static String staticStr = TelephonyManager.getDeviceId();
+}
+
+class ClinitLeak {
+	static {
+		ConnectionManager staticCm = new ConnectionManager();
+		staticCm.publish(CustomTestCode.staticStr);
+	}
+}
+
+
 //	class IntegerRef {
 //		int value;
 //	}
@@ -115,7 +139,6 @@ public class CustomTestCode {
 //		ConnectionManager cm = new ConnectionManager();
 //		cm.publish(lst.get(0));
 //	}
-}
 
 //class TestClinit {
 //	static String test = source();

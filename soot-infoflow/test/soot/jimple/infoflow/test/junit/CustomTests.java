@@ -84,4 +84,30 @@ public class CustomTests extends JUnitTests {
         infoflow.computeInfoflow(appPath, libPath, epoints, sources, sinks);
         checkInfoflow(infoflow, 1);
     }
+
+    @Test
+    public void clinitSource() {
+        IInfoflow infoflow = initInfoflow();
+        List<String> epoints = new ArrayList<String>();
+        epoints.add("<soot.jimple.infoflow.test.CustomTestCode: void clinitSource()>");
+        infoflow.computeInfoflow(appPath, libPath, epoints, sources, sinks);
+        checkInfoflow(infoflow, 1);
+    }
+    @Test
+    public void clinitSourceNegative() {
+        IInfoflow infoflow = initInfoflow();
+        List<String> epoints = new ArrayList<String>();
+        epoints.add("<soot.jimple.infoflow.test.CustomTestCode: void clinitSourceNegative()>");
+        infoflow.computeInfoflow(appPath, libPath, epoints, sources, sinks);
+        negativeCheckInfoflow(infoflow);
+    }
+
+    @Test
+    public void clinitLeak() {
+        IInfoflow infoflow = initInfoflow();
+        List<String> epoints = new ArrayList<String>();
+        epoints.add("<soot.jimple.infoflow.test.CustomTestCode: void clinitLeak()>");
+        infoflow.computeInfoflow(appPath, libPath, epoints, sources, sinks);
+        checkInfoflow(infoflow, 1);
+    }
 }

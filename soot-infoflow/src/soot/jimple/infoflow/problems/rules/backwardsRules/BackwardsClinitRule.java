@@ -1,10 +1,7 @@
 package soot.jimple.infoflow.problems.rules.backwardsRules;
 
 import heros.solver.PathEdge;
-import soot.SootFieldRef;
-import soot.SootMethod;
-import soot.Unit;
-import soot.Value;
+import soot.*;
 import soot.grimp.NewInvokeExpr;
 import soot.jimple.AssignStmt;
 import soot.jimple.IdentityStmt;
@@ -37,21 +34,29 @@ public class BackwardsClinitRule extends AbstractTaintPropagationRule {
         if (aliasing == null)
             return null;
 
-        if (ap != null) {
+        // We only need to visit the clinit edge if the rhs is a StaticFieldRef and the lhs is tainted
+        boolean leftSideMatches = Aliasing.baseMatches(BaseSelector.selectBase(assignStmt.getLeftOp(), false), source);
+        if (ap != null && leftSideMatches) {
             Value val = BaseSelector.selectBase(assignStmt.getRightOp(), false);
             if (val instanceof StaticFieldRef) {
                 SootFieldRef ref = ((StaticFieldRef) val).getFieldRef();
                 Collection<SootMethod> callees = manager.getICFG().getCalleesOfCallAt(stmt);
-                for (SootMethod callee : callees) {
-                    if (callee.hasActiveBody() && callee.getDeclaringClass() == ref.declaringClass()
-                            && callee.getSubSignature().equals("void <clinit>()")) {
-                        Unit last = callee.getActiveBody().getUnits().getLast();
-                        AccessPath newAp = manager.getAccessPathFactory().copyWithNewValue(source.getAccessPath(),
-                                val, val.getType(), false);
-                        Abstraction newAbs = source.deriveNewAbstraction(newAp, stmt);
-                        if (newAbs != null)
-                            manager.getForwardSolver().processEdge(new PathEdge<>(d1, last, newAbs));
-                    }
+                // Look through all callees and find the clinit call
+                SootMethod callee = callees.stream().filter(c -> c.hasActiveBody() && c.getDeclaringClass() == ref.declaringClass()
+                        && c.getSubSignature().equals("void <clinit>()")).findAny().orElse(null);
+
+                if (callee == null)
+                    return null;
+
+                AccessPath newAp = manager.getAccessPathFactory().copyWithNewValue(source.getAccessPath(),
+                        val, val.getType(), true);
+                Abstraction newAbs = source.deriveNewAbstraction(newAp, stmt);
+                if (newAbs != null) {
+                    newAbs.setCorrespondingCallSite(assignStmt);
+
+                    Collection<Unit> startPoints = manager.getICFG().getStartPointsOf(callee);
+                    for (Unit startPoint : startPoints)
+                        manager.getForwardSolver().processEdge(new PathEdge<>(d1, startPoint, newAbs));
                 }
             }
         }
@@ -71,10 +76,10 @@ public class BackwardsClinitRule extends AbstractTaintPropagationRule {
 
     @Override
     public Collection<Abstraction> propagateReturnFlow(Collection<Abstraction> callerD1s, Abstraction source, Stmt stmt, Stmt retSite, Stmt callSite, ByReferenceBoolean killAll) {
-        // Do not return taints from clinit methods as the call edge was introduced manually
-        // to find sources inside clinit.
+        // This kills all taints returning from the manual injection of the edge to clinit.
+        Stmt callStmt = source.getCorrespondingCallSite();
         if (manager.getICFG().getMethodOf(stmt).getSubSignature().equals("void <clinit>()")
-                && source.getAccessPath().isStaticFieldRef())
+                && callStmt instanceof AssignStmt && ((AssignStmt) callStmt).getRightOp() instanceof StaticFieldRef)
             killAll.value = true;
 
         return null;
