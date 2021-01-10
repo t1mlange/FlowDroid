@@ -101,6 +101,7 @@ public class Abstraction implements Cloneable, FastSolverLinkedNode<Abstraction,
 
 			result = prime * result + ((abs.sourceContext == null) ? 0 : abs.sourceContext.hashCode());
 			result = prime * result + ((abs.activationUnit == null) ? 0 : abs.activationUnit.hashCode());
+			result = prime * result + ((abs.turnUnit == null) ? 0 : abs.turnUnit.hashCode());
 			result = prime * result + ((abs.postdominators == null) ? 0 : abs.postdominators.hashCode());
 
 			abs.neighborHashCode = result;
@@ -477,6 +478,11 @@ public class Abstraction implements Cloneable, FastSolverLinkedNode<Abstraction,
 				return false;
 		} else if (!activationUnit.equals(other.activationUnit))
 			return false;
+		if (turnUnit == null) {
+			if (other.turnUnit != null)
+				return false;
+		} else if (!turnUnit.equals(other.turnUnit))
+			return false;
 		if (this.exceptionThrown != other.exceptionThrown)
 			return false;
 		if (postdominators == null) {
@@ -503,6 +509,7 @@ public class Abstraction implements Cloneable, FastSolverLinkedNode<Abstraction,
 		result = prime * result + ((sourceContext == null) ? 0 : sourceContext.hashCode());
 		result = prime * result + ((accessPath == null) ? 0 : accessPath.hashCode());
 		result = prime * result + ((activationUnit == null) ? 0 : activationUnit.hashCode());
+		result = prime * result + ((activationUnit == null) ? 0 : turnUnit.hashCode());
 		result = prime * result + (exceptionThrown ? 1231 : 1237);
 		result = prime * result + ((postdominators == null) ? 0 : postdominators.hashCode());
 		result = prime * result + (dependsOnCutAP ? 1231 : 1237);

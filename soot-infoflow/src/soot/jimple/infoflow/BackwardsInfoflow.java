@@ -526,7 +526,8 @@ public class BackwardsInfoflow extends AbstractInfoflow {
             for (AbstractionAtSink checkAbs : res) {
                 if (checkAbs != curAbs && checkAbs.getSinkStmt() == curAbs.getSinkStmt()
                         && checkAbs.getAbstraction().isImplicit() == curAbs.getAbstraction().isImplicit()
-                        && checkAbs.getAbstraction().getSourceContext() == curAbs.getAbstraction().getSourceContext()) {
+                        && checkAbs.getAbstraction().getSourceContext() == curAbs.getAbstraction().getSourceContext()
+                        && checkAbs.getAbstraction().getTurnUnit() == curAbs.getAbstraction().getTurnUnit()) {
                     if (checkAbs.getAbstraction().getAccessPath().entails(curAbs.getAbstraction().getAccessPath())) {
                         absAtSinkIt.remove();
                         break;

@@ -140,6 +140,10 @@ public class BackwardsSourcePropagationRule extends AbstractTaintPropagationRule
 		// We only report leaks for active taints, not for alias queries
 		if (source.isAbstractionActive() && !source.getAccessPath().isStaticFieldRef()) {
 			// Is the taint even visible inside the callee?
+
+			if (stmt.toString().contains("tainted") && source.toString().contains("tainted"))
+				d1=d1;
+
 			if (!stmt.containsInvokeExpr() || isTaintVisibleInCallee(stmt, source)) {
 				// Is this a sink?
 				if (getManager().getSourceSinkManager() != null) {

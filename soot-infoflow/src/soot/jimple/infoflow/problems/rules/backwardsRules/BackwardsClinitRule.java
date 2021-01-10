@@ -49,7 +49,7 @@ public class BackwardsClinitRule extends AbstractTaintPropagationRule {
                     return null;
 
                 AccessPath newAp = manager.getAccessPathFactory().copyWithNewValue(source.getAccessPath(),
-                        val, val.getType(), true);
+                        val, val.getType(), false);
                 Abstraction newAbs = source.deriveNewAbstraction(newAp, stmt);
                 if (newAbs != null) {
                     newAbs.setCorrespondingCallSite(assignStmt);
