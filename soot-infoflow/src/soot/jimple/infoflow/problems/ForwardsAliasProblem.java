@@ -90,7 +90,7 @@ public class ForwardsAliasProblem extends AbstractInfoflowProblem {
                         if (source.getTurnUnit() == srcUnit) {
                             for (Unit u : interproceduralCFG().getPredsOf(srcUnit))
                                 manager.getForwardSolver()
-                                        .processEdge(new PathEdge<Unit, Abstraction>(d1, u, source));
+                                        .processEdge(new PathEdge<Unit, Abstraction>(d1, u, source.getActiveCopy()));
 
 
                             return notifyOutFlowHandlers(srcUnit, d1, source, null,
@@ -138,7 +138,7 @@ public class ForwardsAliasProblem extends AbstractInfoflowProblem {
                             // to our data flow solver
                             for (Unit u : manager.getICFG().getSuccsOf(assignStmt))
                                 manager.getForwardSolver()
-                                        .processEdge(new PathEdge<Unit, Abstraction>(d1, u, source));
+                                        .processEdge(new PathEdge<Unit, Abstraction>(d1, u, source.getActiveCopy()));
                             return null;
                         }
 
@@ -212,7 +212,7 @@ public class ForwardsAliasProblem extends AbstractInfoflowProblem {
                                         // Inject the new alias into the forward solver
                                         for (Unit u : manager.getICFG().getPredsOf(defStmt))
                                             manager.getForwardSolver()
-                                                    .processEdge(new PathEdge<Unit, Abstraction>(d1, u, newAbs));
+                                                    .processEdge(new PathEdge<Unit, Abstraction>(d1, u, newAbs.getActiveCopy()));
                                     }
                                 }
                             }
@@ -499,7 +499,7 @@ public class ForwardsAliasProblem extends AbstractInfoflowProblem {
                             // last occurence of this taint, so go back
                             for (Unit u : manager.getICFG().getPredsOf(exitStmt))
                                 manager.getForwardSolver()
-                                        .processEdge(new PathEdge<Unit, Abstraction>(calleeD1, u, source));
+                                        .processEdge(new PathEdge<Unit, Abstraction>(calleeD1, u, source.getActiveCopy()));
                             return null;
                         }
 
@@ -547,7 +547,7 @@ public class ForwardsAliasProblem extends AbstractInfoflowProblem {
                         if (source.getTurnUnit() == callSite) {
                             for (Unit u : interproceduralCFG().getPredsOf(callSite))
                                 manager.getForwardSolver()
-                                        .processEdge(new PathEdge<Unit, Abstraction>(d1, u, source));
+                                        .processEdge(new PathEdge<Unit, Abstraction>(d1, u, source.getActiveCopy()));
 
                             return notifyOutFlowHandlers(callSite, d1, source, null,
                                     TaintPropagationHandler.FlowFunctionType.CallToReturnFlowFunction);
@@ -580,7 +580,7 @@ public class ForwardsAliasProblem extends AbstractInfoflowProblem {
 
                                     for (Unit u : manager.getICFG().getPredsOf(callSite))
                                         manager.getForwardSolver()
-                                                .processEdge(new PathEdge<Unit, Abstraction>(d1, u, abs));
+                                                .processEdge(new PathEdge<Unit, Abstraction>(d1, u, abs.getActiveCopy()));
                                 }
                                 return passOnSet;
                             }

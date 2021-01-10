@@ -30,7 +30,7 @@ import java.util.*;
  * @author Tim Lange
  */
 public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
-    private final static boolean DEBUG_PRINT = true;
+    private final static boolean DEBUG_PRINT = false;
 
     private final PropagationRuleManager propagationRules;
     protected final TaintPropagationResults results;
@@ -254,11 +254,16 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                             }
                             // default case
                             else if (aliasing.mayAlias(leftVal, sourceBase)) {
-                                // CastExpr only make the types more imprecise backwards
                                 if (rightOp instanceof InstanceOfExpr) {
                                     // Left side is a boolean but the resulting taint
                                     // needs to be the object type
                                     rightType = rightVal.getType();
+                                } else if (rightOp instanceof CastExpr) {
+                                    // CastExpr only make the types more imprecise backwards
+                                    // but we need to kill impossible casts
+                                    CastExpr ce = (CastExpr) rightOp;
+                                    if (!manager.getTypeUtils().checkCast(ce.getCastType(), rightVal.getType()))
+                                        return null;
                                 }
                                 // LengthExpr/RHS ArrayRef handled in ArrayPropagationRule
                                 addRightValue = !(rightOp instanceof LengthExpr || rightOp instanceof ArrayRef);
@@ -267,7 +272,8 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                             if (addRightValue) {
                                 // TODO: Don't kill on whole object?
                                 if (!(leftVal instanceof ArrayRef)
-                                        || getManager().getConfig().getImplicitFlowMode().trackArrayAccesses())
+                                        || getManager().getConfig().getImplicitFlowMode().trackArrayAccesses()
+                                        || (ap.getTaintSubFields() && ap.getFieldCount() == 0 && rightVal instanceof FieldRef))
                                     res.remove(source);
 
                                 if (rightVal instanceof Constant)
@@ -283,10 +289,6 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                     else {
                                         res.add(newAbs);
 
-//                                        if (aliasing.canHaveAliasesRightSide(assignStmt, rightVal, newAbs)) {
-//                                            aliasing.computeAliases(d1, assignStmt, rightVal, res,
-//                                                    interproceduralCFG().getMethodOf(assignStmt), newAbs);
-//                                        }
                                         if (aliasing.canHaveAliasesRightSide(assignStmt, rightVal, newAbs)) {
                                             aliasing.computeAliases(d1, assignStmt, rightVal, res,
                                                     interproceduralCFG().getMethodOf(assignStmt), newAbs);
