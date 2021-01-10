@@ -501,6 +501,11 @@ public class ForwardsAliasProblem extends AbstractInfoflowProblem {
                                 manager.getForwardSolver()
                                         .processEdge(new PathEdge<Unit, Abstraction>(calleeD1, u, source.getActiveCopy()));
                             return null;
+                        } else {
+                            for (Abstraction abs : res) {
+                                if (abs != source)
+                                    abs.setCorrespondingCallSite((Stmt) callSite);
+                            }
                         }
 
                         return res;

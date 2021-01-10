@@ -768,10 +768,10 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                 };
             }
 
-            private void setCallSite(Abstraction source, Set<Abstraction> set, Stmt callSite) {
+            private void setCallSite(Abstraction source, Set<Abstraction> set, Stmt callStmt) {
                 for (Abstraction abs : set) {
                     if (abs != source)
-                        abs.setCorrespondingCallSite(callSite);
+                        abs.setCorrespondingCallSite(callStmt);
                 }
             }
 

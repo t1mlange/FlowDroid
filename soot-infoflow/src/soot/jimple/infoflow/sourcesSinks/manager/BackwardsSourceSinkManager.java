@@ -215,7 +215,8 @@ public class BackwardsSourceSinkManager implements ISourceSinkManager {
 
 			// Add the parameter access paths
 			for (Value arg : ie.getArgs()) {
-				aps.add(manager.getAccessPathFactory().createAccessPath(arg, true));
+				if (!(arg instanceof Constant))
+					aps.add(manager.getAccessPathFactory().createAccessPath(arg, true));
 			}
 
 			// TODO: for easier debugging I decided to comment this out for now. Uncomment later on!
