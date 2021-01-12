@@ -3,10 +3,7 @@ package soot.jimple.infoflow.problems.rules.backwardsRules;
 import heros.solver.PathEdge;
 import soot.*;
 import soot.grimp.NewInvokeExpr;
-import soot.jimple.AssignStmt;
-import soot.jimple.IdentityStmt;
-import soot.jimple.StaticFieldRef;
-import soot.jimple.Stmt;
+import soot.jimple.*;
 import soot.jimple.infoflow.InfoflowManager;
 import soot.jimple.infoflow.aliasing.Aliasing;
 import soot.jimple.infoflow.data.Abstraction;
@@ -23,6 +20,20 @@ public class BackwardsClinitRule extends AbstractTaintPropagationRule {
         super(manager, zeroValue, results);
     }
 
+    private void propagateToClinit(Abstraction d1, Abstraction abs, Stmt stmt, SootClass declaringClass) {
+        Collection<SootMethod> callees = manager.getICFG().getCalleesOfCallAt(stmt);
+        // Look through all callees and find the clinit call
+        SootMethod callee = callees.stream().filter(c -> c.hasActiveBody() && c.getDeclaringClass() == declaringClass
+                && c.getSubSignature().equals("void <clinit>()")).findAny().orElse(null);
+
+        if (callee == null)
+            return;
+
+        Collection<Unit> startPoints = manager.getICFG().getStartPointsOf(callee);
+        for (Unit startPoint : startPoints)
+            manager.getForwardSolver().processEdge(new PathEdge<>(d1, startPoint, abs));
+    }
+
     @Override
     public Collection<Abstraction> propagateNormalFlow(Abstraction d1, Abstraction source, Stmt stmt, Stmt destStmt, ByReferenceBoolean killSource, ByReferenceBoolean killAll) {
         if (!(stmt instanceof AssignStmt))
@@ -34,31 +45,35 @@ public class BackwardsClinitRule extends AbstractTaintPropagationRule {
         if (aliasing == null)
             return null;
 
-        // We only need to visit the clinit edge if the rhs is a StaticFieldRef and the lhs is tainted
         boolean leftSideMatches = Aliasing.baseMatches(BaseSelector.selectBase(assignStmt.getLeftOp(), false), source);
-        if (ap != null && leftSideMatches) {
-            Value val = BaseSelector.selectBase(assignStmt.getRightOp(), false);
-            if (val instanceof StaticFieldRef) {
-                SootFieldRef ref = ((StaticFieldRef) val).getFieldRef();
-                Collection<SootMethod> callees = manager.getICFG().getCalleesOfCallAt(stmt);
-                // Look through all callees and find the clinit call
-                SootMethod callee = callees.stream().filter(c -> c.hasActiveBody() && c.getDeclaringClass() == ref.declaringClass()
-                        && c.getSubSignature().equals("void <clinit>()")).findAny().orElse(null);
 
-                if (callee == null)
-                    return null;
+        Value rightOp = assignStmt.getRightOp();
+        Value rightVal = BaseSelector.selectBase(assignStmt.getRightOp(), false);
+        if (rightOp instanceof StaticFieldRef && leftSideMatches) {
+            SootFieldRef ref = ((StaticFieldRef) rightVal).getFieldRef();
+            SootMethod m = manager.getICFG().getMethodOf(stmt);
 
-                AccessPath newAp = manager.getAccessPathFactory().copyWithNewValue(source.getAccessPath(),
-                        val, val.getType(), false);
-                Abstraction newAbs = source.deriveNewAbstraction(newAp, stmt);
-                if (newAbs != null) {
-                    newAbs.setCorrespondingCallSite(assignStmt);
+            // If the static reference is from the same class
+            // we will at least find the class NewExpr above.
+            if (m.getDeclaringClass() == ref.declaringClass())
+                return null;
 
-                    Collection<Unit> startPoints = manager.getICFG().getStartPointsOf(callee);
-                    for (Unit startPoint : startPoints)
-                        manager.getForwardSolver().processEdge(new PathEdge<>(d1, startPoint, newAbs));
-                }
+            // This might be the last occurence of the declaring class of the static reference
+            // so we need the visit the clinit method too. This is an overapproximation
+            // inherited from the default callgraph algorithm SPARK.
+            AccessPath newAp = manager.getAccessPathFactory().copyWithNewValue(ap, rightVal,
+                    rightVal.getType(), false);
+            Abstraction newAbs = source.deriveNewAbstraction(newAp, stmt);
+            if (newAbs != null) {
+                newAbs.setCorrespondingCallSite(assignStmt);
+                propagateToClinit(d1, newAbs, stmt, ref.declaringClass());
             }
+        } else if (rightOp instanceof NewExpr && ap.isStaticFieldRef()) {
+            SootClass declaringClass = ((NewExpr) rightOp).getBaseType().getSootClass();
+            // If the taint is static and is a field of the instanciated
+            // class, this NewExpr might be the last occurence.
+            if (ap.getFirstField().getDeclaringClass() == declaringClass)
+                propagateToClinit(d1, source, stmt, declaringClass);
         }
 
         return null;

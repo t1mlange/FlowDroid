@@ -31,7 +31,7 @@ import java.util.*;
  */
 public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
     private final static boolean DEBUG_PRINT = true;
-    private final static boolean ONLY_CALLS = false;
+    private final static boolean ONLY_CALLS = true;
 
     private final PropagationRuleManager propagationRules;
     protected final TaintPropagationResults results;
@@ -108,27 +108,25 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                             boolean cutFirstFieldLeft = false;
                             boolean createNewVal = false;
                             Type leftType = null;
-                            AccessPath mappedApLeft = null;
 
                             if (rightVal instanceof StaticFieldRef) {
-                                mappedApLeft = aliasing.mayAlias(source.getAccessPath(), rightVal);
-
                                 if (manager.getConfig().getStaticFieldTrackingMode() != InfoflowConfiguration.StaticFieldTrackingMode.None
                                         && ap.firstFieldMatches(((StaticFieldRef) rightVal).getField())) {
                                     addLeftValue = true;
+                                    cutFirstFieldLeft = true;
 //                                    leftType = source.getAccessPath().getBaseType();
                                 }
                             } else if (rightVal instanceof InstanceFieldRef) {
                                 InstanceFieldRef instRef = (InstanceFieldRef) rightVal;
 
-                                if (ap.isInstanceFieldRef() && instRef.getBase() == sourceBase) {
-                                    if (ap.firstFieldMatches(instRef.getField())) {
-                                        addLeftValue = true;
-                                        cutFirstFieldLeft = true;
+                                if (ap.firstFieldMatches(instRef.getField())) {
+                                    addLeftValue = true;
+                                    cutFirstFieldLeft = ap.getFieldCount() > 0
+                                            && ap.getFirstField() == instRef.getField();
 //                                    leftType = ap.getFirstFieldType();
-                                    } else if (ap.getTaintSubFields() && ap.getFieldCount() == 0) {
-                                        addLeftValue = true;
-                                    }
+                                } else if (aliasing.mayAlias(instRef.getBase(), sourceBase)
+                                        && ap.getTaintSubFields() && ap.getFieldCount() == 0) {
+                                    addLeftValue = true;
                                 }
                             } else if (rightVal instanceof ArrayRef) {
                                 if (!getManager().getConfig().getEnableArrayTracking()
@@ -178,6 +176,7 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                             if (addLeftValue) {
                                 res.add(source);
                                 AccessPath newAp;
+
                                 if (createNewVal)
                                     newAp = manager.getAccessPathFactory().createAccessPath(leftVal, true);
                                 else
