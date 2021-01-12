@@ -10,6 +10,7 @@
  ******************************************************************************/
 package soot.jimple.infoflow.nativeCallHandler;
 
+import heros.TwoElementSet;
 import soot.Value;
 import soot.jimple.Stmt;
 import soot.jimple.infoflow.data.Abstraction;
@@ -35,11 +36,19 @@ public class BackwardNativeCallHandler extends AbstractNativeCallHandler {
         //Copies an array from the specified source array, beginning at the specified position,
 		//to the specified position of the destination array.
 		if (source.isAbstractionActive()) {
-			if(call.getInvokeExpr().getMethod().getSignature().equals(SIG_ARRAYCOPY)) {
-				if(params[2].equals(source.getAccessPath().getPlainValue())) {
+			if (call.getInvokeExpr().getMethod().getSignature().equals(SIG_ARRAYCOPY)) {
+				if (params[2].equals(source.getAccessPath().getPlainValue())) {
 					if (manager.getTypeUtils().checkCast(source.getAccessPath(), params[0].getType())) {
 						AccessPath ap = manager.getAccessPathFactory().copyWithNewValue(source.getAccessPath(),
 								params[0], source.getAccessPath().getBaseType(), false);
+						Abstraction abs = source.deriveNewAbstraction(ap, call);
+						abs.setCorrespondingCallSite(call);
+						return Collections.singleton(abs);
+					}
+				} else if (params[0].equals(source.getAccessPath().getPlainValue())) {
+					if (manager.getTypeUtils().checkCast(source.getAccessPath(), params[2].getType())) {
+						AccessPath ap = manager.getAccessPathFactory().copyWithNewValue(source.getAccessPath(),
+								params[2], source.getAccessPath().getBaseType(), false);
 						Abstraction abs = source.deriveNewAbstraction(ap, call);
 						abs.setCorrespondingCallSite(call);
 						return Collections.singleton(abs);

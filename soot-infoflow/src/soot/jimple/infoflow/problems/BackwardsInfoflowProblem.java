@@ -31,6 +31,7 @@ import java.util.*;
  */
 public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
     private final static boolean DEBUG_PRINT = true;
+    private final static boolean ONLY_CALLS = false;
 
     private final PropagationRuleManager propagationRules;
     protected final TaintPropagationResults results;
@@ -65,7 +66,7 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                     TaintPropagationHandler.FlowFunctionType.NormalFlowFunction);
 
                         Set<Abstraction> res = computeTargetsInternal(d1, source.isAbstractionActive() ? source : source.getActiveCopy());
-                        if (DEBUG_PRINT)
+                        if (DEBUG_PRINT && !ONLY_CALLS)
                             System.out.println("Normal" + "\n" + "In: " + source.toString() + "\n" + "Stmt: " + srcUnit.toString() + "\n" + "Out: " + (res == null ? "[]" : res.toString()) + "\n" + "---------------------------------------");
 
                         return notifyOutFlowHandlers(srcUnit, d1, source, res,
@@ -107,8 +108,11 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                             boolean cutFirstFieldLeft = false;
                             boolean createNewVal = false;
                             Type leftType = null;
+                            AccessPath mappedApLeft = null;
 
                             if (rightVal instanceof StaticFieldRef) {
+                                mappedApLeft = aliasing.mayAlias(source.getAccessPath(), rightVal);
+
                                 if (manager.getConfig().getStaticFieldTrackingMode() != InfoflowConfiguration.StaticFieldTrackingMode.None
                                         && ap.firstFieldMatches(((StaticFieldRef) rightVal).getField())) {
                                     addLeftValue = true;
@@ -178,7 +182,7 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                     newAp = manager.getAccessPathFactory().createAccessPath(leftVal, true);
                                 else
                                     newAp = manager.getAccessPathFactory().copyWithNewValue(source.getAccessPath(),
-                                        leftVal, leftType, cutFirstFieldLeft);
+                                        leftVal, leftType, cutFirstFieldLeft, false);
                                 Abstraction newAbs = source.deriveNewAbstraction(newAp, assignStmt);
                                 if (newAbs != null) {
                                     if (aliasing.canHaveAliasesRightSide(assignStmt, leftVal, newAbs)) {
@@ -280,7 +284,7 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                     continue;
 
                                 AccessPath newAp = manager.getAccessPathFactory().copyWithNewValue(source.getAccessPath(),
-                                        rightVal, rightType, cutFirstField);
+                                        rightVal, rightType, cutFirstField, false);
                                 Abstraction newAbs = source.deriveNewAbstraction(newAp, assignStmt);
                                 if (newAbs != null) {
                                     if (rightVal instanceof StaticFieldRef && manager.getConfig().getStaticFieldTrackingMode()
@@ -732,7 +736,7 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
 
                                         // Compute the aliases
                                         for (Abstraction abs : nativeAbs) {
-                                            if (abs.getAccessPath().isStaticFieldRef() || aliasing.canHaveAliases(
+                                            if (abs.getAccessPath().isStaticFieldRef() || aliasing.canHaveAliasesRightSide(
                                                     callStmt, abs.getAccessPath().getPlainValue(), abs)) {
                                                 aliasing.computeAliases(d1, callStmt,
                                                         abs.getAccessPath().getPlainValue(), res,
@@ -744,7 +748,6 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                 }
                             }
                         }
-
                         // Do not pass base if tainted
                         // CallFlow passes this into the callee
                         // unless the callee is native and can not be visited

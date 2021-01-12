@@ -37,11 +37,7 @@ import soot.Scene;
 import soot.SootClass;
 import soot.SootMethod;
 import soot.Value;
-import soot.jimple.Constant;
-import soot.jimple.DefinitionStmt;
-import soot.jimple.InstanceInvokeExpr;
-import soot.jimple.InvokeExpr;
-import soot.jimple.Stmt;
+import soot.jimple.*;
 import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.data.AccessPath;
 import soot.jimple.infoflow.problems.BackwardsInfoflowProblem;
@@ -382,11 +378,15 @@ public class EasyTaintWrapper extends AbstractTaintWrapper implements IReversibl
 			// If we are inside a conditional, we always taint
 			boolean doTaint = taintedPath.isEmpty();
 
-			// Otherwise, we have to check whether we have a tainted base object
 			if (!doTaint) {
+				// Otherwise, we have to check whether we have a tainted base object
 				if (stmt.getInvokeExpr() instanceof InstanceInvokeExpr) {
 					InstanceInvokeExpr iiExpr = (InstanceInvokeExpr) stmt.getInvokeExpr();
 					doTaint = !taintEqualsHashCode && iiExpr.getBase().equals(taintedPath.getPlainValue());
+				}
+				// or for static fields if the retVal is tainted
+				else if (stmt.getInvokeExpr() instanceof StaticInvokeExpr && stmt instanceof DefinitionStmt) {
+					doTaint = !taintEqualsHashCode && ((DefinitionStmt) stmt).getLeftOp().equals(taintedPath.getPlainValue());
 				}
 			}
 
@@ -398,8 +398,8 @@ public class EasyTaintWrapper extends AbstractTaintWrapper implements IReversibl
 						taints.add(manager.getAccessPathFactory().createAccessPath(param, true));
 				}
 
-				// If the return was tainted, it is now overwritten
-				// If the base was tainted, one parameter was responsible for this
+				// If the return was tainted, it is now overwritten.
+				// If the base was tainted, one parameter was responsible for this.
 			}
 		}
 

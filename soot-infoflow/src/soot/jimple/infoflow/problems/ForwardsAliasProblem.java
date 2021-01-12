@@ -40,7 +40,7 @@ import java.util.*;
  * @author Tim Lange
  */
 public class ForwardsAliasProblem extends AbstractInfoflowProblem {
-    private final static boolean DEBUG_PRINT = false;
+    private final static boolean DEBUG_PRINT = true;
 
     public ForwardsAliasProblem(InfoflowManager manager) {
         super(manager);
@@ -200,7 +200,7 @@ public class ForwardsAliasProblem extends AbstractInfoflowProblem {
 
                             if (addLeftValue) {
                                 AccessPath newAp = manager.getAccessPathFactory().copyWithNewValue(source.getAccessPath(),
-                                        leftOp, leftType, cutFirstFieldLeft);
+                                        leftOp, leftType, cutFirstFieldLeft, false);
                                 Abstraction newAbs = source.deriveNewAbstraction(newAp, assignStmt);
                                 if (newAbs != null && newAbs != source) {
                                     if (rightVal instanceof StaticFieldRef && manager.getConfig().getStaticFieldTrackingMode()
