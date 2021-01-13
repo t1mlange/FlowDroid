@@ -119,14 +119,15 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                             } else if (rightVal instanceof InstanceFieldRef) {
                                 InstanceFieldRef instRef = (InstanceFieldRef) rightVal;
 
-                                if (ap.firstFieldMatches(instRef.getField())) {
-                                    addLeftValue = true;
-                                    cutFirstFieldLeft = ap.getFieldCount() > 0
-                                            && ap.getFirstField() == instRef.getField();
+                                if (aliasing.mayAlias(instRef.getBase(), sourceBase)) {
+                                    if (ap.firstFieldMatches(instRef.getField())) {
+                                        addLeftValue = true;
+                                        cutFirstFieldLeft = ap.getFieldCount() > 0
+                                                && ap.getFirstField() == instRef.getField();
 //                                    leftType = ap.getFirstFieldType();
-                                } else if (aliasing.mayAlias(instRef.getBase(), sourceBase)
-                                        && ap.getTaintSubFields() && ap.getFieldCount() == 0) {
-                                    addLeftValue = true;
+                                    } else if (ap.getTaintSubFields() && ap.getFieldCount() == 0) {
+                                        addLeftValue = true;
+                                    }
                                 }
                             } else if (rightVal instanceof ArrayRef) {
                                 if (!getManager().getConfig().getEnableArrayTracking()

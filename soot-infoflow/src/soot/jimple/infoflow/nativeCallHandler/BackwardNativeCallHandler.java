@@ -45,14 +45,6 @@ public class BackwardNativeCallHandler extends AbstractNativeCallHandler {
 						abs.setCorrespondingCallSite(call);
 						return Collections.singleton(abs);
 					}
-				} else if (params[0].equals(source.getAccessPath().getPlainValue())) {
-					if (manager.getTypeUtils().checkCast(source.getAccessPath(), params[2].getType())) {
-						AccessPath ap = manager.getAccessPathFactory().copyWithNewValue(source.getAccessPath(),
-								params[2], source.getAccessPath().getBaseType(), false);
-						Abstraction abs = source.deriveNewAbstraction(ap, call);
-						abs.setCorrespondingCallSite(call);
-						return Collections.singleton(abs);
-					}
 				}
 			}
 			else if(call.getInvokeExpr().getMethod().getSignature().equals(SIG_NEW_ARRAY)) {

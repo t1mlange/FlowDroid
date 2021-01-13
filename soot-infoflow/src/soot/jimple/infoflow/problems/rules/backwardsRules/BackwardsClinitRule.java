@@ -30,6 +30,7 @@ public class BackwardsClinitRule extends AbstractTaintPropagationRule {
             return;
 
         Collection<Unit> startPoints = manager.getICFG().getStartPointsOf(callee);
+        // Most likely |startPoints|=1 but just to be safe
         for (Unit startPoint : startPoints)
             manager.getForwardSolver().processEdge(new PathEdge<>(d1, startPoint, abs));
     }
@@ -50,12 +51,12 @@ public class BackwardsClinitRule extends AbstractTaintPropagationRule {
         Value rightOp = assignStmt.getRightOp();
         Value rightVal = BaseSelector.selectBase(assignStmt.getRightOp(), false);
         if (rightOp instanceof StaticFieldRef && leftSideMatches) {
-            SootFieldRef ref = ((StaticFieldRef) rightVal).getFieldRef();
-            SootMethod m = manager.getICFG().getMethodOf(stmt);
+            SootClass declaringClassOp = ((StaticFieldRef) rightVal).getFieldRef().declaringClass();
+            SootClass declaringClassMethod = manager.getICFG().getMethodOf(stmt).getDeclaringClass();
 
             // If the static reference is from the same class
             // we will at least find the class NewExpr above.
-            if (m.getDeclaringClass() == ref.declaringClass())
+            if (declaringClassMethod == declaringClassOp)
                 return null;
 
             // This might be the last occurence of the declaring class of the static reference
@@ -66,14 +67,16 @@ public class BackwardsClinitRule extends AbstractTaintPropagationRule {
             Abstraction newAbs = source.deriveNewAbstraction(newAp, stmt);
             if (newAbs != null) {
                 newAbs.setCorrespondingCallSite(assignStmt);
-                propagateToClinit(d1, newAbs, stmt, ref.declaringClass());
+                propagateToClinit(d1, newAbs, stmt, declaringClassOp);
             }
         } else if (rightOp instanceof NewExpr && ap.isStaticFieldRef()) {
-            SootClass declaringClass = ((NewExpr) rightOp).getBaseType().getSootClass();
+            SootClass declaringClassOp = ((NewExpr) rightOp).getBaseType().getSootClass();
+            SootClass declaringClassTaint = ap.getFirstField().getDeclaringClass();
+
             // If the taint is static and is a field of the instanciated
             // class, this NewExpr might be the last occurence.
-            if (ap.getFirstField().getDeclaringClass() == declaringClass)
-                propagateToClinit(d1, source, stmt, declaringClass);
+            if (declaringClassTaint == declaringClassOp)
+                propagateToClinit(d1, source, stmt, declaringClassOp);
         }
 
         return null;

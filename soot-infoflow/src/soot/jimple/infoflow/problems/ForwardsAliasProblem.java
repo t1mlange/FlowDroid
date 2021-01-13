@@ -567,13 +567,11 @@ public class ForwardsAliasProblem extends AbstractInfoflowProblem {
                     }
 
                     private Set<Abstraction> computeTargetsInternal(Abstraction d1, Abstraction source) {
-                        HashSet<Abstraction> res = new HashSet<>();
-                        res.add(source);
-
                         // If excluded or we do not anything about the callee,
                         // we just pass the taint over the statement
-                        if (isExcluded(callee) || interproceduralCFG().getCalleesOfCallAt(callSite).isEmpty())
-                            return res;
+                        if (isExcluded(callee) || interproceduralCFG().getCalleesOfCallAt(callSite).isEmpty()) {
+                            return Collections.singleton(source);
+                        }
 
                         if (taintWrapper != null) {
                             Set<Abstraction> wrapperAliases = taintWrapper.getAliasesForMethod(callStmt, d1, source);
@@ -598,20 +596,23 @@ public class ForwardsAliasProblem extends AbstractInfoflowProblem {
                                 return null;
                         }
 
-                        // Do not pass tainted base over the statement
-                        if (callStmt.getInvokeExpr() instanceof InstanceInvokeExpr) {
-                            InstanceInvokeExpr inv = (InstanceInvokeExpr) callStmt.getInvokeExpr();
-                            if (inv.getBase() == source.getAccessPath().getPlainValue())
+                        // See stringBuilderTest5. original needs to pass over arraycopy.
+                        if (!callee.isNative()) {
+                            // Do not pass tainted base over the statement
+                            if (callStmt.getInvokeExpr() instanceof InstanceInvokeExpr) {
+                                InstanceInvokeExpr inv = (InstanceInvokeExpr) callStmt.getInvokeExpr();
+                                if (inv.getBase() == source.getAccessPath().getPlainValue())
+                                    return null;
+                            }
+
+                            // Do not pass over reference parameters
+                            // CallFlow passes this into the callee
+                            if (!callee.isNative() && Arrays.stream(callArgs).anyMatch(arg -> !isPrimtiveOrStringBase(source)
+                                    && arg == source.getAccessPath().getPlainValue()))
                                 return null;
                         }
 
-                        // Do not pass over reference parameters
-                        // CallFlow passes this into the callee
-                        if (Arrays.stream(callArgs).anyMatch(arg -> !isPrimtiveOrStringBase(source)
-                                && arg == source.getAccessPath().getPlainValue()))
-                            return null;
-
-                        return res;
+                        return Collections.singleton(source);
                     }
                 };
             }
