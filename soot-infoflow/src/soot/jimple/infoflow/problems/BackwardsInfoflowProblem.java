@@ -30,7 +30,7 @@ import java.util.*;
  * @author Tim Lange
  */
 public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
-    private final static boolean DEBUG_PRINT = true;
+    private final static boolean DEBUG_PRINT = false;
     private final static boolean ONLY_CALLS = false;
 
     private final PropagationRuleManager propagationRules;
@@ -293,7 +293,7 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                     else {
                                         res.add(newAbs);
 
-                                        if (aliasing.canHaveAliasesRightSide(assignStmt, rightVal, newAbs)) {
+                                        if (!isPrimtiveOrStringBase(source) && aliasing.canHaveAliasesRightSide(assignStmt, rightVal, newAbs)) {
                                             aliasing.computeAliases(d1, assignStmt, rightVal, res,
                                                     interproceduralCFG().getMethodOf(assignStmt), newAbs);
                                         }
@@ -605,6 +605,13 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                             for (int i = 0; i < callee.getParameterCount(); i++) {
                                 if (!aliasing.mayAlias(source.getAccessPath().getPlainValue(), paramLocals[i]))
                                     continue;
+                                if (callSite instanceof AssignStmt) {
+                                    // if parameter is
+                                    if (aliasing.mayAlias(source.getAccessPath().getPlainValue(),
+                                            ((AssignStmt) callSite).getLeftOp()))
+                                        continue;
+                                }
+
                                 // Yes, we even map primitives or strings back as a
                                 // return flow in backwards is a call.
 

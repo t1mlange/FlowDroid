@@ -40,7 +40,7 @@ import java.util.*;
  * @author Tim Lange
  */
 public class ForwardsAliasProblem extends AbstractInfoflowProblem {
-    private final static boolean DEBUG_PRINT = true;
+    private final static boolean DEBUG_PRINT = false;
 
     public ForwardsAliasProblem(InfoflowManager manager) {
         super(manager);
@@ -125,9 +125,6 @@ public class ForwardsAliasProblem extends AbstractInfoflowProblem {
                         final Value rightOp = assignStmt.getRightOp();
                         final Value leftVal = BaseSelector.selectBase(leftOp, false);
                         final Value rightVal = BaseSelector.selectBase(rightOp, false);
-
-                        if (assignStmt.toString().contains("$stack2.<soot.jimple.infoflow.test.HeapTestCode$A: java.lang.String b> = $stack3"))
-                            d1=d1;
 
                         boolean leftSideMatches = Aliasing.baseMatches(leftOp, source);
                         if (!leftSideMatches) {
@@ -478,7 +475,13 @@ public class ForwardsAliasProblem extends AbstractInfoflowProblem {
                                     continue;
 
                                 Value originalCallArg = ie.getArg(isReflectiveCallSite ? 1 : i);
-
+                                if (callSite instanceof DefinitionStmt && !isExceptionHandler(returnSite)) {
+                                    DefinitionStmt defnStmt = (DefinitionStmt) callSite;
+                                    Value leftOp = defnStmt.getLeftOp();
+                                    originalCallArg = defnStmt.getInvokeExpr().getArg(i);
+                                    if (originalCallArg == leftOp)
+                                        continue;
+                                }
                                 if (!AccessPath.canContainValue(originalCallArg))
                                     continue;
                                 if (!isReflectiveCallSite && !manager.getTypeUtils()

@@ -21,6 +21,7 @@ import soot.SootField;
 import soot.SootMethod;
 import soot.Type;
 import soot.Value;
+import soot.baf.Inst;
 import soot.jimple.ArrayRef;
 import soot.jimple.Constant;
 import soot.jimple.DefinitionStmt;
