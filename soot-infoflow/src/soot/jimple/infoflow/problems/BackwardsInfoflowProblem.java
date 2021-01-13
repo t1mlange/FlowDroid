@@ -31,7 +31,7 @@ import java.util.*;
  */
 public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
     private final static boolean DEBUG_PRINT = true;
-    private final static boolean ONLY_CALLS = true;
+    private final static boolean ONLY_CALLS = false;
 
     private final PropagationRuleManager propagationRules;
     protected final TaintPropagationResults results;
@@ -376,11 +376,6 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                         if (isExcluded(dest))
                             return null;
 
-                        // Can we use the taintWrapper results?
-                        // If yes, this is done in CallToReturnFlowFunction
-//                        if (taintWrapper != null && taintWrapper.isExclusive(stmt, source))
-//                            return null;
-
                         // not used static fields do not need to be propagated
                         if (manager.getConfig().getStaticFieldTrackingMode()
                                 != InfoflowConfiguration.StaticFieldTrackingMode.None
@@ -512,9 +507,9 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                 if (aliasing == null)
                     return null;
 
-//                final Value[] paramLocals = new Value[callee.getParameterCount()];
-//                for (int i = 0; i < callee.getParameterCount(); i++)
-//                    paramLocals[i] = callee.getActiveBody().getParameterLocal(i);
+                final Value[] paramLocals = new Value[callee.getParameterCount()];
+                for (int i = 0; i < callee.getParameterCount(); i++)
+                    paramLocals[i] = callee.getActiveBody().getParameterLocal(i);
 
                 final Stmt stmt = (Stmt) callSite;
                 final InvokeExpr ie = (stmt != null && stmt.containsInvokeExpr()) ? stmt.getInvokeExpr() : null;
@@ -580,7 +575,8 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                 Value callBase = isReflectiveCallSite ?
                                         instanceInvokeExpr.getArg(0) : instanceInvokeExpr.getBase();
 
-                                // TODO: understand why second condition
+                                // Either the callBase is from a reflective call site
+                                // or the source base doesn't match with any parameters
                                 if (isReflectiveCallSite ||
                                         instanceInvokeExpr.getArgs().stream().noneMatch(arg -> aliasing.mayAlias(arg, sourceBase))) {
                                     AccessPath ap = manager.getAccessPathFactory()
@@ -607,8 +603,12 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                             }
                         } else if (ie != null) {
                             for (int i = 0; i < callee.getParameterCount(); i++) {
-                                Value originalCallArg = ie.getArg(isReflectiveCallSite ? 1 : i);
+                                if (!aliasing.mayAlias(source.getAccessPath().getPlainValue(), paramLocals[i]))
+                                    continue;
+                                // Yes, we even map primitives or strings back as a
+                                // return flow in backwards is a call.
 
+                                Value originalCallArg = ie.getArg(isReflectiveCallSite ? 1 : i);
                                 if (!AccessPath.canContainValue(originalCallArg))
                                     continue;
                                 if (!isReflectiveCallSite && !manager.getTypeUtils()
@@ -623,11 +623,10 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                 if (abs != null) {
                                     res.add(abs);
 
-                                    // TODO: side-effects?
-                                    if (callSite instanceof AssignStmt) {
-                                        for (Abstraction callerD1 : callerD1s)
-                                            aliasing.computeAliases(callerD1, (Stmt) callSite, originalCallArg, res, callee, abs);
-                                    }
+//                                    if (callSite instanceof AssignStmt) {
+//                                        for (Abstraction callerD1 : callerD1s)
+//                                            aliasing.computeAliases(callerD1, (Stmt) callSite, originalCallArg, res, callee, abs);
+//                                    }
                                 }
                             }
                         }

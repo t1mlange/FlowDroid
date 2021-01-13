@@ -40,7 +40,7 @@ import java.util.*;
  * @author Tim Lange
  */
 public class ForwardsAliasProblem extends AbstractInfoflowProblem {
-    private final static boolean DEBUG_PRINT = false;
+    private final static boolean DEBUG_PRINT = true;
 
     public ForwardsAliasProblem(InfoflowManager manager) {
         super(manager);
@@ -472,14 +472,17 @@ public class ForwardsAliasProblem extends AbstractInfoflowProblem {
                             }
                         } else if (ie != null) {
                             for (int i = 0; i < callee.getParameterCount(); i++) {
+                                if (source.getAccessPath().getPlainValue() != paramLocals[i])
+                                    continue;
+                                if (isPrimtiveOrStringBase(source))
+                                    continue;
+
                                 Value originalCallArg = ie.getArg(isReflectiveCallSite ? 1 : i);
 
                                 if (!AccessPath.canContainValue(originalCallArg))
                                     continue;
                                 if (!isReflectiveCallSite && !manager.getTypeUtils()
                                         .checkCast(source.getAccessPath(), originalCallArg.getType()))
-                                    continue;
-                                if (isPrimtiveOrStringBase(source))
                                     continue;
 
                                 AccessPath ap = manager.getAccessPathFactory().copyWithNewValue(

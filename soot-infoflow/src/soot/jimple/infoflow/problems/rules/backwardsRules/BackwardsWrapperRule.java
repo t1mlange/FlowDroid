@@ -35,6 +35,8 @@ public class BackwardsWrapperRule extends AbstractTaintPropagationRule {
     public Collection<Abstraction> propagateCallFlow(Abstraction d1, Abstraction source, Stmt stmt, SootMethod dest, ByReferenceBoolean killAll) {
         final ITaintPropagationWrapper wrapper = manager.getTaintWrapper();
 
+        // Can we use the taintWrapper results?
+        // If yes, this is done in CallToReturnFlowFunction
         if (wrapper != null && wrapper.isExclusive(stmt, source))
             killAll.value = true;
         return null;
