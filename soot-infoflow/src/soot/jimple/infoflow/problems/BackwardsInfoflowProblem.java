@@ -110,8 +110,10 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                             Type leftType = null;
 
                             if (rightVal instanceof StaticFieldRef) {
+                                StaticFieldRef staticRef = (StaticFieldRef) rightVal;
+
                                 if (manager.getConfig().getStaticFieldTrackingMode() != InfoflowConfiguration.StaticFieldTrackingMode.None
-                                        && ap.firstFieldMatches(((StaticFieldRef) rightVal).getField())) {
+                                        && ap.firstFieldMatches(staticRef.getField())) {
                                     addLeftValue = true;
                                     cutFirstFieldLeft = true;
 //                                    leftType = source.getAccessPath().getBaseType();
@@ -120,7 +122,8 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                 InstanceFieldRef instRef = (InstanceFieldRef) rightVal;
 
                                 if (aliasing.mayAlias(instRef.getBase(), sourceBase)) {
-                                    if (ap.firstFieldMatches(instRef.getField())) {
+                                    if (ap.firstFieldMatches(instRef.getField())
+                                            || (source.dependsOnCutAP() && !(leftVal instanceof PrimType))) {
                                         addLeftValue = true;
                                         cutFirstFieldLeft = ap.getFieldCount() > 0
                                                 && ap.getFirstField() == instRef.getField();
@@ -182,7 +185,7 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                     newAp = manager.getAccessPathFactory().createAccessPath(leftVal, true);
                                 else
                                     newAp = manager.getAccessPathFactory().copyWithNewValue(source.getAccessPath(),
-                                        leftVal, leftType, cutFirstFieldLeft, false);
+                                        leftVal, leftType, cutFirstFieldLeft);
                                 Abstraction newAbs = source.deriveNewAbstraction(newAp, assignStmt);
                                 if (newAbs != null) {
                                     if (aliasing.canHaveAliasesRightSide(assignStmt, leftVal, newAbs)) {
@@ -224,7 +227,8 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                 // base object matches
                                 if (aliasing.mayAlias(instRef.getBase(), sourceBase)) {
                                     // field also matches
-                                    if (ap.firstFieldMatches(instRef.getField())) {
+                                    if (ap.firstFieldMatches(instRef.getField())
+                                            || (source.dependsOnCutAP() && !(rightVal instanceof PrimType))) {
                                         addRightValue = true;
                                         // Without o1.x = o2.x would result in o2.x.x
                                         cutFirstField = true;
@@ -284,7 +288,7 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                     continue;
 
                                 AccessPath newAp = manager.getAccessPathFactory().copyWithNewValue(source.getAccessPath(),
-                                        rightVal, rightType, cutFirstField, false);
+                                        rightVal, rightType, cutFirstField);
                                 Abstraction newAbs = source.deriveNewAbstraction(newAp, assignStmt);
                                 if (newAbs != null) {
                                     if (rightVal instanceof StaticFieldRef && manager.getConfig().getStaticFieldTrackingMode()
@@ -516,7 +520,7 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                 final boolean isReflectiveCallSite = interproceduralCFG().isReflectiveCallSite(ie);
                 final Stmt callStmt = (Stmt) callSite;
                 final Stmt exitStmt = (Stmt) exitSite;
-                final ReturnStmt returnStmt = (exitSite instanceof ReturnStmt) ? (ReturnStmt) exitSite : null;
+//                final ReturnStmt returnStmt = (exitSite instanceof ReturnStmt) ? (ReturnStmt) exitSite : null;
 
                 final Local thisLocal = callee.isStatic() ? null : callee.getActiveBody().getThisLocal();
                 final boolean isExecutorExecute = interproceduralCFG().isExecutorExecute(ie, callee);
@@ -532,9 +536,6 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                         if (taintPropagationHandler != null)
                             taintPropagationHandler.notifyFlowIn(stmt, source, manager,
                                     TaintPropagationHandler.FlowFunctionType.ReturnFlowFunction);
-
-                        if (callSite.toString().contains("doPrivileged"))
-                            calleeD1=calleeD1;
 
                         Set<Abstraction> res = computeTargetsInternal(source.isAbstractionActive() ? source : source.getActiveCopy(), callerD1s);
                         if (DEBUG_PRINT)
@@ -676,8 +677,6 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                         if (taintPropagationHandler != null)
                             taintPropagationHandler.notifyFlowIn(callSite, source, manager,
                                     TaintPropagationHandler.FlowFunctionType.CallToReturnFlowFunction);
-                        if (callSite.toString().contains("notify"))
-                            d1=d1;
 
                         Set<Abstraction> res = computeTargetsInternal(d1, source.isAbstractionActive() ? source : source.getActiveCopy());
                         if (DEBUG_PRINT)

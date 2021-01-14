@@ -15,91 +15,20 @@ import soot.jimple.infoflow.IInfoflow;
  */
 public class CustomTests extends JUnitTests {
     @Test
-    public void easyAliasTest() {
+    public void testLList() {
         IInfoflow infoflow = initInfoflow();
         List<String> epoints = new ArrayList<String>();
-        epoints.add("<soot.jimple.infoflow.test.CustomTestCode: void easyAliasTest()>");
+        epoints.add("<soot.jimple.infoflow.test.CustomTestCode: void testLList()>");
         infoflow.computeInfoflow(appPath, libPath, epoints, sources, sinks);
-        checkInfoflow(infoflow, 1);
-    }
-
-    @Test
-    public void callAliasTest() {
-        IInfoflow infoflow = initInfoflow();
-        List<String> epoints = new ArrayList<String>();
-        epoints.add("<soot.jimple.infoflow.test.CustomTestCode: void callAliasTest()>");
-        infoflow.computeInfoflow(appPath, libPath, epoints, sources, sinks);
-        checkInfoflow(infoflow, 1);
-    }
-
-    @Test
-    public void negativeCallAliasTest() {
-        IInfoflow infoflow = initInfoflow();
-        List<String> epoints = new ArrayList<String>();
-        epoints.add("<soot.jimple.infoflow.test.CustomTestCode: void negativeCallAliasTest()>");
-        infoflow.computeInfoflow(appPath, libPath, epoints, sources, sinks);
-        checkInfoflow(infoflow, 1);
-    }
-
-    @Test
-    public void clinitTest() {
-        IInfoflow infoflow = initInfoflow();
-        List<String> epoints = new ArrayList<String>();
-        epoints.add("<soot.jimple.infoflow.test.CustomTestCode: void clinitTest()>");
-        infoflow.computeInfoflow(appPath, libPath, epoints, sources, sinks);
-        checkInfoflow(infoflow, 1);
+        checkInfoflow(infoflow, 3);
     }
     @Test
-    public void strongClinitTest() {
+    public void testLListStatic() {
         IInfoflow infoflow = initInfoflow();
         List<String> epoints = new ArrayList<String>();
-        epoints.add("<soot.jimple.infoflow.test.CustomTestCode: void strongClinitTest()>");
+        epoints.add("<soot.jimple.infoflow.test.CustomTestCode: void testLListStatic()>");
         infoflow.computeInfoflow(appPath, libPath, epoints, sources, sinks);
-        checkInfoflow(infoflow, 1);
-    }
-
-    @Test
-    public void easyListTest() {
-        IInfoflow infoflow = initInfoflow();
-        List<String> epoints = new ArrayList<String>();
-        epoints.add("<soot.jimple.infoflow.test.CustomTestCode: void easyListTest()>");
-        infoflow.computeInfoflow(appPath, libPath, epoints, sources, sinks);
-        checkInfoflow(infoflow, 1);
-    }
-
-    @Test
-    public void aliasTypeTest() {
-        IInfoflow infoflow = initInfoflow();
-        List<String> epoints = new ArrayList<String>();
-        epoints.add("<soot.jimple.infoflow.test.CustomTestCode: void aliasTypeTest()>");
-        infoflow.computeInfoflow(appPath, libPath, epoints, sources, sinks);
-        checkInfoflow(infoflow, 1);
-    }
-
-    @Test
-    public void testForEarlyTermination() {
-        IInfoflow infoflow = initInfoflow();
-        List<String> epoints = new ArrayList<String>();
-        epoints.add("<soot.jimple.infoflow.test.CustomTestCode: void testForEarlyTermination()>");
-        infoflow.computeInfoflow(appPath, libPath, epoints, sources, sinks);
-        checkInfoflow(infoflow, 1);
-    }
-
-    @Test
-    public void clinitSource() {
-        IInfoflow infoflow = initInfoflow();
-        List<String> epoints = new ArrayList<String>();
-        epoints.add("<soot.jimple.infoflow.test.CustomTestCode: void clinitSource()>");
-        infoflow.computeInfoflow(appPath, libPath, epoints, sources, sinks);
-        checkInfoflow(infoflow, 1);
-    }
-    @Test
-    public void clinitSourceNegative() {
-        IInfoflow infoflow = initInfoflow();
-        List<String> epoints = new ArrayList<String>();
-        epoints.add("<soot.jimple.infoflow.test.CustomTestCode: void clinitSourceNegative()>");
-        infoflow.computeInfoflow(appPath, libPath, epoints, sources, sinks);
-        negativeCheckInfoflow(infoflow);
+        checkInfoflow(infoflow, 3);
     }
 
     @Test

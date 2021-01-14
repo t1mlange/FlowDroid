@@ -8,6 +8,8 @@ import soot.jimple.infoflow.test.android.TelephonyManager;
 import soot.jimple.infoflow.test.utilclasses.ClassWithStatic;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Simple test targets for very basic functions
@@ -16,57 +18,30 @@ import java.util.ArrayList;
  *
  */
 public class CustomTestCode {
-	class X {
-//		private Object o;
-		private Object[] arr;
+	class LList {
+		LList next;
+		int data;
 	}
-	private void doAlias(X b, X c) {
-		b.arr = c.arr;
-	}
-	public void aliasTypeTest() {
-		X b = new X();
-		b.arr = new Object[2];
-		X c = new X();
-
-		doAlias(b, c);
-		b.arr[0] = TelephonyManager.getDeviceId();
-
-		X d = new X();
-		doAlias(c, d);
-		b.arr[1] = new String[] { TelephonyManager.getDeviceId() };
-
+	LList lst;
+	public void testLList(){
+		LList l1 = new LList();
+		l1.next = new LList();
+		l1.next.next = new LList();
+		l1.next.next.data = TelephonyManager.getIMEI();
 		ConnectionManager cm = new ConnectionManager();
-		cm.publish((String) d.arr[0]);
+		cm.publish(l1.data);
+		cm.publish(l1.next.data);
+		cm.publish(l1.next.next.data);
 	}
-
-	public void testForEarlyTermination(){
+	public void testLListStatic(){
+		lst = new LList();
+		lst.next = new LList();
+		lst.next.next = new LList();
+		lst.next.next.data = TelephonyManager.getIMEI();
 		ConnectionManager cm = new ConnectionManager();
-		cm.publish(ClassWithStatic.staticString);
-
-		@SuppressWarnings("unused")
-		ClassWithStatic c1 = new ClassWithStatic();
-
-		WrapperClass w1 = new WrapperClass();
-		w1.callIt(); // ClassWithStatic.staticString = source()
-	}
-
-	class WrapperClass{
-
-		public void callIt(){
-			ClassWithStatic.staticString = TelephonyManager.getDeviceId();
-		}
-
-		public void sink(){
-			ConnectionManager cm = new ConnectionManager();
-			cm.publish(ClassWithStatic.staticString);
-		}
-
-	}
-
-	public void clinitSource() {
-		ClinitSource c = new ClinitSource();
-		ConnectionManager cm = new ConnectionManager();
-		cm.publish(ClinitSource.staticStr);
+		cm.publish(lst.data);
+		cm.publish(lst.next.data);
+		cm.publish(lst.next.next.data);
 	}
 
 	static String staticStr;
@@ -74,9 +49,6 @@ public class CustomTestCode {
 		CustomTestCode.staticStr = TelephonyManager.getDeviceId();
 		ClinitLeak c = new ClinitLeak();
 	}
-}
-class ClinitSource {
-	static String staticStr = TelephonyManager.getDeviceId();
 }
 
 class ClinitLeak {

@@ -509,7 +509,7 @@ public class Abstraction implements Cloneable, FastSolverLinkedNode<Abstraction,
 		result = prime * result + ((sourceContext == null) ? 0 : sourceContext.hashCode());
 		result = prime * result + ((accessPath == null) ? 0 : accessPath.hashCode());
 		result = prime * result + ((activationUnit == null) ? 0 : activationUnit.hashCode());
-		result = prime * result + ((activationUnit == null) ? 0 : turnUnit.hashCode());
+		result = prime * result + ((turnUnit == null) ? 0 : turnUnit.hashCode());
 		result = prime * result + (exceptionThrown ? 1231 : 1237);
 		result = prime * result + ((postdominators == null) ? 0 : postdominators.hashCode());
 		result = prime * result + (dependsOnCutAP ? 1231 : 1237);
