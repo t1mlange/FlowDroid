@@ -104,97 +104,99 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                         // Statements such as c = a + b with the taint c can produce multiple taints because we can not
                         // decide which one originated from a source at this point.
                         for (Value rightVal : rightVals) {
-                            boolean addLeftValue = false;
-                            boolean cutFirstFieldLeft = false;
-                            boolean createNewVal = false;
-                            Type leftType = null;
+                            if (source.getSkipUnit() != srcUnit) {
+                                boolean addLeftValue = false;
+                                boolean cutFirstFieldLeft = false;
+                                boolean createNewVal = false;
+                                Type leftType = null;
 
-                            if (rightVal instanceof StaticFieldRef) {
-                                StaticFieldRef staticRef = (StaticFieldRef) rightVal;
+                                if (rightVal instanceof StaticFieldRef) {
+                                    StaticFieldRef staticRef = (StaticFieldRef) rightVal;
 
-                                if (manager.getConfig().getStaticFieldTrackingMode() != InfoflowConfiguration.StaticFieldTrackingMode.None
-                                        && ap.firstFieldMatches(staticRef.getField())) {
-                                    addLeftValue = true;
-                                    cutFirstFieldLeft = true;
+                                    if (manager.getConfig().getStaticFieldTrackingMode() != InfoflowConfiguration.StaticFieldTrackingMode.None
+                                            && ap.firstFieldMatches(staticRef.getField())) {
+                                        addLeftValue = true;
+                                        cutFirstFieldLeft = true;
 //                                    leftType = source.getAccessPath().getBaseType();
-                                }
-                            } else if (rightVal instanceof InstanceFieldRef) {
-                                InstanceFieldRef instRef = (InstanceFieldRef) rightVal;
-
-                                if (aliasing.mayAlias(instRef.getBase(), sourceBase)) {
-                                    if (ap.firstFieldMatches(instRef.getField())
-                                            || (source.dependsOnCutAP() && !(leftVal instanceof PrimType))) {
-                                        addLeftValue = true;
-                                        cutFirstFieldLeft = ap.getFieldCount() > 0
-                                                && ap.getFirstField() == instRef.getField();
-//                                    leftType = ap.getFirstFieldType();
-                                    } else if (ap.getTaintSubFields() && ap.getFieldCount() == 0) {
-                                        addLeftValue = true;
                                     }
-                                }
-                            } else if (rightVal instanceof ArrayRef) {
-                                if (!getManager().getConfig().getEnableArrayTracking()
-                                        || ap.getArrayTaintType() == AccessPath.ArrayTaintType.Length)
-                                    continue;
+                                } else if (rightVal instanceof InstanceFieldRef) {
+                                    InstanceFieldRef instRef = (InstanceFieldRef) rightVal;
 
-                                ArrayRef arrayRef = (ArrayRef) rightVal;
-                                // do we track indices...
-                                if (getManager().getConfig().getImplicitFlowMode().trackArrayAccesses()) {
-                                    if (arrayRef.getIndex() == sourceBase) {
+                                    if (aliasing.mayAlias(instRef.getBase(), sourceBase)) {
+                                        if (ap.firstFieldMatches(instRef.getField())) {
+                                            addLeftValue = true;
+                                            cutFirstFieldLeft = ap.getFieldCount() > 0
+                                                    && ap.getFirstField() == instRef.getField();
+//                                    leftType = ap.getFirstFieldType();
+                                        } else if (ap.getTaintSubFields() && ap.getFieldCount() == 0) {
+                                            addLeftValue = true;
+                                        } else if (source.dependsOnCutAP() && !(leftVal.getType() instanceof PrimType)) {
+                                            addLeftValue = true;
+                                            cutFirstFieldLeft = true;
+                                        }
+                                    }
+                                } else if (rightVal instanceof ArrayRef) {
+                                    if (!getManager().getConfig().getEnableArrayTracking()
+                                            || ap.getArrayTaintType() == AccessPath.ArrayTaintType.Length)
+                                        continue;
+
+                                    ArrayRef arrayRef = (ArrayRef) rightVal;
+                                    // do we track indices...
+                                    if (getManager().getConfig().getImplicitFlowMode().trackArrayAccesses()) {
+                                        if (arrayRef.getIndex() == sourceBase) {
+                                            addLeftValue = true;
+                                            leftType = ((ArrayType) arrayRef.getBase().getType()).getElementType();
+                                        }
+                                    }
+                                    // ...or only the whole array?
+                                    else if (aliasing.mayAlias(arrayRef.getBase(), sourceBase)) {
                                         addLeftValue = true;
                                         leftType = ((ArrayType) arrayRef.getBase().getType()).getElementType();
                                     }
                                 }
-                                // ...or only the whole array?
-                                else if (aliasing.mayAlias(arrayRef.getBase(), sourceBase)) {
+                                if (rightVal == sourceBase) {
                                     addLeftValue = true;
-                                    leftType = ((ArrayType) arrayRef.getBase().getType()).getElementType();
+                                    leftType = ap.getBaseType();
+
+                                    if (leftVal instanceof ArrayRef) {
+                                        ArrayRef arrayRef = (ArrayRef) leftVal;
+                                        leftType = TypeUtils.buildArrayOrAddDimension(leftType, arrayRef.getType().getArrayType());
+                                    } else if (rightOp instanceof InstanceOfExpr) {
+                                        createNewVal = true;
+                                    } else if (rightOp instanceof LengthExpr) {
+                                        if (ap.getArrayTaintType() == AccessPath.ArrayTaintType.Contents)
+                                            addLeftValue = false;
+                                        createNewVal = true;
+                                    } else if (rightOp instanceof NewArrayExpr) {
+                                        createNewVal = true;
+                                    } else {
+                                        if (!manager.getTypeUtils().checkCast(source.getAccessPath(), leftVal.getType()))
+                                            return null;
+                                    }
+
+                                    if (rightVal instanceof CastExpr) {
+                                        CastExpr ce = (CastExpr) rightOp;
+                                        if (!manager.getHierarchy().canStoreType(leftType, ce.getCastType()))
+                                            leftType = ce.getCastType();
+                                    }
                                 }
-                            } if (rightVal == sourceBase) {
-                                addLeftValue = true;
-                                leftType = ap.getBaseType();
 
-                                if (leftVal instanceof ArrayRef) {
-                                    ArrayRef arrayRef = (ArrayRef) leftVal;
-                                    leftType = TypeUtils.buildArrayOrAddDimension(leftType, arrayRef.getType().getArrayType());
-                                } else if (rightOp instanceof InstanceOfExpr) {
-                                    createNewVal = true;
-                                } else if (rightOp instanceof LengthExpr) {
-                                    if (ap.getArrayTaintType() == AccessPath.ArrayTaintType.Contents)
-                                        addLeftValue = false;
-                                    createNewVal = true;
-                                } else if (rightOp instanceof NewArrayExpr) {
-                                    createNewVal = true;
-                                } else {
-                                    if (!manager.getTypeUtils().checkCast(source.getAccessPath(), leftVal.getType()))
-                                        return null;
-                                }
-
-                                if (rightVal instanceof CastExpr) {
-                                    CastExpr ce = (CastExpr) rightOp;
-                                    if (!manager.getHierarchy().canStoreType(leftType, ce.getCastType()))
-                                        leftType = ce.getCastType();
-                                }
-                            }
-
-                            if (addLeftValue) {
-                                res.add(source);
-                                AccessPath newAp;
-
-                                if (createNewVal)
-                                    newAp = manager.getAccessPathFactory().createAccessPath(leftVal, true);
-                                else
-                                    newAp = manager.getAccessPathFactory().copyWithNewValue(source.getAccessPath(),
-                                        leftVal, leftType, cutFirstFieldLeft);
-                                Abstraction newAbs = source.deriveNewAbstraction(newAp, assignStmt);
-                                if (newAbs != null) {
-                                    if (aliasing.canHaveAliasesRightSide(assignStmt, leftVal, newAbs)) {
-                                        aliasing.computeAliases(d1, assignStmt, leftVal, res,
-                                                interproceduralCFG().getMethodOf(assignStmt), newAbs);
+                                if (addLeftValue) {
+                                    AccessPath newAp;
+                                    if (createNewVal)
+                                        newAp = manager.getAccessPathFactory().createAccessPath(leftVal, true);
+                                    else
+                                        newAp = manager.getAccessPathFactory().copyWithNewValue(source.getAccessPath(),
+                                                leftVal, leftType, cutFirstFieldLeft);
+                                    Abstraction newAbs = source.deriveNewAbstraction(newAp, assignStmt);
+                                    if (newAbs != null) {
+                                        if (aliasing.canHaveAliasesRightSide(assignStmt, leftVal, newAbs)) {
+                                            aliasing.computeAliases(d1, assignStmt, leftVal, res,
+                                                    interproceduralCFG().getMethodOf(assignStmt), newAbs);
+                                        }
                                     }
                                 }
                             }
-
 
                             // NewExpr's can not be tainted
                             // so we can stop here
@@ -227,8 +229,7 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                 // base object matches
                                 if (aliasing.mayAlias(instRef.getBase(), sourceBase)) {
                                     // field also matches
-                                    if (ap.firstFieldMatches(instRef.getField())
-                                            || (source.dependsOnCutAP() && !(rightVal instanceof PrimType))) {
+                                    if (ap.firstFieldMatches(instRef.getField())) {
                                         addRightValue = true;
                                         // Without o1.x = o2.x would result in o2.x.x
                                         cutFirstField = true;
@@ -238,6 +239,9 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                     else if (ap.getTaintSubFields() && ap.getFieldCount() == 0) {
                                         addRightValue = true;
                                         rightType = instRef.getField().getType();
+                                    } else if (source.dependsOnCutAP() && !(rightVal.getType() instanceof PrimType)) {
+                                        addRightValue = true;
+                                        cutFirstField = true;
                                     }
                                 }
                             } else if (leftVal instanceof ArrayRef) {
@@ -386,7 +390,8 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                 && source.getAccessPath().isStaticFieldRef()) {
                             // static fields first get pushed onto the stack before used,
                             // so we check for a read on the base class
-                            if (!interproceduralCFG().isStaticFieldUsed(dest, source.getAccessPath().getFirstField()))
+                            if (!(interproceduralCFG().isStaticFieldUsed(dest, source.getAccessPath().getFirstField())
+                                    || interproceduralCFG().isStaticFieldRead(dest, source.getAccessPath().getFirstField())))
                                 return null;
                         }
 
@@ -420,7 +425,7 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                                 continue;
 
                                             AccessPath ap = manager.getAccessPathFactory().copyWithNewValue(
-                                                    source.getAccessPath(), returnStmt.getOp(), returnStmt.getOp().getType(), false);
+                                                    source.getAccessPath(), retVal, returnStmt.getOp().getType(), false);
                                             Abstraction abs = source.deriveNewAbstraction(ap, stmt);
                                             if (abs != null) {
                                                 res.add(abs);
@@ -631,10 +636,17 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                 if (abs != null) {
                                     res.add(abs);
 
-//                                    if (callSite instanceof AssignStmt) {
-//                                        for (Abstraction callerD1 : callerD1s)
-//                                            aliasing.computeAliases(callerD1, (Stmt) callSite, originalCallArg, res, callee, abs);
-//                                    }
+
+                                    if (callStmt instanceof AssignStmt) {
+                                        Value leftOp = ((AssignStmt) callStmt).getLeftOp();
+
+                                        if (!isPrimtiveOrStringType(leftOp.getType())
+                                                && manager.getTypeUtils().checkCast(leftOp.getType(), abs.getAccessPath().getBaseType())
+                                                && aliasing.canHaveAliasesRightSide((Stmt) callSite, originalCallArg, source)) {
+                                            for (Abstraction callerD1 : callerD1s)
+                                                aliasing.computeAliases(callerD1, (Stmt) callSite, originalCallArg, res, callee, abs);
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -725,7 +737,7 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                         }
 
                         // Static values can be propagated over methods if
-                        // the value isn't used inside the method.
+                        // the value isn't written inside the method.
                         // Otherwise CallFlowFunction already does the job.
                         if (manager.getConfig().getStaticFieldTrackingMode() != InfoflowConfiguration.StaticFieldTrackingMode.None
                                 && source.getAccessPath().isStaticFieldRef()
@@ -785,6 +797,9 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
 
             private boolean isPrimtiveOrStringBase(Abstraction abs) {
                 Type t = abs.getAccessPath().getBaseType();
+                return t instanceof PrimType || TypeUtils.isStringType(t);
+            }
+            private boolean isPrimtiveOrStringType(Type t) {
                 return t instanceof PrimType || TypeUtils.isStringType(t);
             }
         };

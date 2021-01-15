@@ -13,6 +13,7 @@ import soot.jimple.infoflow.data.AbstractionAtSink;
 import soot.jimple.infoflow.data.AccessPath;
 import soot.jimple.infoflow.problems.TaintPropagationResults;
 import soot.jimple.infoflow.problems.rules.AbstractTaintPropagationRule;
+import soot.jimple.infoflow.sourcesSinks.manager.IReversibleSourceSinkManager;
 import soot.jimple.infoflow.sourcesSinks.manager.ISourceSinkManager;
 import soot.jimple.infoflow.sourcesSinks.manager.SinkInfo;
 import soot.jimple.infoflow.util.BaseSelector;
@@ -72,15 +73,17 @@ public class BackwardsSourcePropagationRule extends AbstractTaintPropagationRule
 		// The incoming value may be a complex expression. We have to look at
 		// every simple value contained within it.
 		final AccessPath ap = source.getAccessPath();
-		final ISourceSinkManager sourceSinkManager = getManager().getSourceSinkManager();
+		if (!(manager.getSourceSinkManager() instanceof IReversibleSourceSinkManager))
+			return;
+		final IReversibleSourceSinkManager ssm = (IReversibleSourceSinkManager) manager.getSourceSinkManager();
 		final Aliasing aliasing = getAliasing();
 
-		if (ap != null && sourceSinkManager != null && aliasing != null && source.isAbstractionActive()) {
+		if (ap != null && ssm != null && aliasing != null && source.isAbstractionActive()) {
 			for (Value val : BaseSelector.selectBaseList(retVal, false)) {
 				if (aliasing.mayAlias(val, ap.getPlainValue())) {
-					SinkInfo sinkInfo = sourceSinkManager.getSinkInfo(stmt, getManager(), source.getAccessPath());
-					if (sinkInfo != null
-							&& !getResults().addResult(new AbstractionAtSink(sinkInfo.getDefinition(), source, stmt)))
+					SinkInfo sourceInfo = ssm.getInverseSourceInfo(stmt, getManager(), source.getAccessPath());
+					if (sourceInfo != null
+							&& !getResults().addResult(new AbstractionAtSink(sourceInfo.getDefinition(), source, stmt)))
 						killState = true;
 				}
 			}
@@ -137,23 +140,23 @@ public class BackwardsSourcePropagationRule extends AbstractTaintPropagationRule
 	@Override
 	public Collection<Abstraction> propagateCallToReturnFlow(Abstraction d1, Abstraction source, Stmt stmt,
 			ByReferenceBoolean killSource, ByReferenceBoolean killAll) {
+		if (!(manager.getSourceSinkManager() instanceof IReversibleSourceSinkManager))
+			return null;
+		final IReversibleSourceSinkManager ssm = (IReversibleSourceSinkManager) manager.getSourceSinkManager();
+
 		// We only report leaks for active taints, not for alias queries
 		if (source.isAbstractionActive() && !source.getAccessPath().isStaticFieldRef()) {
 			// Is the taint even visible inside the callee?
 			if (!stmt.containsInvokeExpr() || isTaintVisibleInCallee(stmt, source)) {
-				// Is this a sink?
-				if (getManager().getSourceSinkManager() != null) {
-					// Get the sink descriptor
-					SinkInfo sinkInfo = getManager().getSourceSinkManager().getSinkInfo(stmt, getManager(),
-							source.getAccessPath());
+				// Get the sink descriptor
+				SinkInfo sourceInfo = ssm.getInverseSourceInfo(stmt, getManager(), source.getAccessPath());
 
-					// If we have already seen the same taint at the same sink, there is no need to
-					// propagate this taint any further.
-					if (sinkInfo != null) {
-						boolean result = getResults().addResult(new AbstractionAtSink(sinkInfo.getDefinition(), source, stmt));
-						if (!result)
-							killState = true;
-					}
+				// If we have already seen the same taint at the same sink, there is no need to
+				// propagate this taint any further.
+				if (sourceInfo != null) {
+					boolean result = getResults().addResult(new AbstractionAtSink(sourceInfo.getDefinition(), source, stmt));
+					if (!result)
+						killState = true;
 				}
 			}
 		}

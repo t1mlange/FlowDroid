@@ -102,12 +102,6 @@ public class ForwardsAliasProblem extends AbstractInfoflowProblem {
                         if (DEBUG_PRINT)
                             System.out.println("Alias Normal" + "\n" + "In: " + source.toString() + "\n" + "Stmt: " + srcUnit.toString() + "\n" + "Out: " + (res == null ? "[]" : res.toString()) + "\n" + "---------------------------------------");
 
-//                        if (destDefStmt != null && res != null && !res.isEmpty()
-//                                && manager.getICFG().isExitStmt(destDefStmt)) {
-//                            for (Abstraction abs : res)
-//                                computeAliases(destDefStmt, d1, abs);
-//                        }
-
                         return notifyOutFlowHandlers(srcUnit, d1, source, res,
                                 TaintPropagationHandler.FlowFunctionType.NormalFlowFunction);
                     }
@@ -166,8 +160,13 @@ public class ForwardsAliasProblem extends AbstractInfoflowProblem {
                                         addLeftValue = true;
                                         cutFirstFieldLeft = true;
 //                                    leftType = ap.getFirstFieldType();
-                                    } else if (ap.getTaintSubFields() && ap.getFieldCount() == 0) {
+                                    }
+                                    else if (ap.getTaintSubFields() && ap.getFieldCount() == 0) {
                                         addLeftValue = true;
+                                    }
+                                    else if (source.dependsOnCutAP() && !(leftVal.getType() instanceof PrimType)) {
+                                        addLeftValue = true;
+                                        cutFirstFieldLeft = true;
                                     }
                                 }
                             } else if (rightVal == sourceBase) {
@@ -197,7 +196,7 @@ public class ForwardsAliasProblem extends AbstractInfoflowProblem {
 
                             if (addLeftValue) {
                                 AccessPath newAp = manager.getAccessPathFactory().copyWithNewValue(source.getAccessPath(),
-                                        leftOp, leftType, cutFirstFieldLeft, false);
+                                        leftOp, leftType, cutFirstFieldLeft);
                                 Abstraction newAbs = source.deriveNewAbstraction(newAp, assignStmt);
                                 if (newAbs != null && newAbs != source) {
                                     if (rightVal instanceof StaticFieldRef && manager.getConfig().getStaticFieldTrackingMode()
@@ -412,8 +411,6 @@ public class ForwardsAliasProblem extends AbstractInfoflowProblem {
                             return res;
                         }
 
-                        if (source.toString().equals("_$stack1(soot.jimple.infoflow.test.HeapTestCode$TreeElement) <soot.jimple.infoflow.test.HeapTestCode$TreeElement: java.lang.String data> * <+length> | $stack6 = staticinvoke <soot.jimple.infoflow.test.HeapTestCode$SeparatedTree: soot.jimple.infoflow.test.HeapTestCode$TreeElement access$2300(soot.jimple.infoflow.test.HeapTestCode$SeparatedTree)>(myTree)virtualinvoke cm.<soot.jimple.infoflow.test.android.ConnectionManager: void publish(java.lang.String)>($stack22)>>"))
-                            calleeD1=calleeD1;
                         // x = o.m()
                         if (returnStmt != null && callStmt instanceof AssignStmt) {
                             Value retLocal = returnStmt.getOp();
@@ -431,7 +428,6 @@ public class ForwardsAliasProblem extends AbstractInfoflowProblem {
                                 }
                             }
                         }
-
 
                         // o.m(a1, ..., an)
                         // map o.f to this.f

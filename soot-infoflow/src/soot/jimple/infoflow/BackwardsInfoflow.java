@@ -47,8 +47,8 @@ import soot.jimple.infoflow.solver.gcSolver.GCSolverPeerGroup;
 import soot.jimple.infoflow.solver.memory.DefaultMemoryManagerFactory;
 import soot.jimple.infoflow.solver.memory.IMemoryManager;
 import soot.jimple.infoflow.solver.memory.IMemoryManagerFactory;
-import soot.jimple.infoflow.sourcesSinks.manager.BackwardsSourceSinkManager;
 import soot.jimple.infoflow.sourcesSinks.manager.IOneSourceAtATimeManager;
+import soot.jimple.infoflow.sourcesSinks.manager.IReversibleSourceSinkManager;
 import soot.jimple.infoflow.sourcesSinks.manager.ISourceSinkManager;
 import soot.jimple.infoflow.threading.DefaultExecutorFactory;
 import soot.jimple.infoflow.threading.IExecutorFactory;
@@ -212,25 +212,6 @@ public class BackwardsInfoflow extends AbstractInfoflow {
 
         // Run the analysis
         runAnalysis(sourcesSinks, seeds);
-    }
-
-    @Override
-    public void computeInfoflow(String appPath, String libPath, IEntryPointCreator entryPointCreator,
-                                List<String> sources, List<String> sinks) {
-        this.computeInfoflow(appPath, libPath, entryPointCreator, new BackwardsSourceSinkManager(sources, sinks));
-    }
-
-    @Override
-    public void computeInfoflow(String appPath, String libPath, Collection<String> entryPoints,
-                                Collection<String> sources, Collection<String> sinks) {
-        this.computeInfoflow(appPath, libPath, new DefaultEntryPointCreator(entryPoints),
-                new BackwardsSourceSinkManager(sources, sinks));
-    }
-
-    @Override
-    public void computeInfoflow(String libPath, String appPath, String entryPoint, Collection<String> sources,
-                                Collection<String> sinks) {
-        this.computeInfoflow(appPath, libPath, entryPoint, new BackwardsSourceSinkManager(sources, sinks));
     }
 
     /**
@@ -425,6 +406,13 @@ public class BackwardsInfoflow extends AbstractInfoflow {
 
     private int scanMethodForSourcesSinks(final ISourceSinkManager sourcesSinks, BackwardsInfoflowProblem forwardProblem,
                                             SootMethod m) {
+        if (!(manager.getSourceSinkManager() instanceof IReversibleSourceSinkManager)) {
+            logger.error("SourceSinkManager is incompatle with backwards analysis." +
+                    "Please use an IReversibleSourceSinkManager.");
+            return 0;
+        }
+        IReversibleSourceSinkManager ssm = (IReversibleSourceSinkManager) manager.getSourceSinkManager();
+
         if (getConfig().getLogSourcesAndSinks() && collectedSources == null) {
             collectedSources = new HashSet<>();
             collectedSinks = new HashSet<>();
@@ -450,7 +438,7 @@ public class BackwardsInfoflow extends AbstractInfoflow {
 //                    visualizer.exportToDot();
 //                }
                 Stmt s = (Stmt) u;
-                if (sourcesSinks.getSourceInfo(s, manager) != null) {
+                if (ssm.getInverseSinkInfo(s, manager) != null) {
                     forwardProblem.addInitialSeeds(u, Collections.singleton(forwardProblem.zeroValue()));
                     if (getConfig().getLogSourcesAndSinks())
                         collectedSinks.add(s);
@@ -460,7 +448,7 @@ public class BackwardsInfoflow extends AbstractInfoflow {
 //                    visualizer.exportToDot();
 //                    i++;
                 }
-                if (sourcesSinks.getSinkInfo(s, manager, null) != null) {
+                if (ssm.getInverseSourceInfo(s, manager, null) != null) {
                     sourceCount++;
                     if (getConfig().getLogSourcesAndSinks())
                         collectedSources.add(s);
@@ -566,7 +554,7 @@ public class BackwardsInfoflow extends AbstractInfoflow {
 
         ICodeOptimizer dce = new DeadCodeEliminator();
         dce.initialize(config);
-        dce.run(dceManager, entryPoints, ((BackwardsSourceSinkManager) sourcesSinks).getDefaultSourceSinkManager(), taintWrapper);
+        dce.run(dceManager, entryPoints, sourcesSinks, taintWrapper);
 
         // Fixes an edge case, see AddNopStmt
         ICodeOptimizer nopStmt = new AddNopStmt();

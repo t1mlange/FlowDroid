@@ -58,6 +58,11 @@ public class Abstraction implements Cloneable, FastSolverLinkedNode<Abstraction,
 	 */
 	protected Unit turnUnit = null;
 	/**
+	 * Unit/Stmt which indicates where the alias search originated from; tells the backwards analysis
+	 * to not derive new taints at this statement
+	 */
+	protected Unit skipUnit = null;
+	/**
 	 * taint is thrown by an exception (is set to false when it reaches the
 	 * catch-Stmt)
 	 */
@@ -173,12 +178,14 @@ public class Abstraction implements Cloneable, FastSolverLinkedNode<Abstraction,
 			exceptionThrown = false;
 			activationUnit = null;
 			turnUnit = null;
+			skipUnit = null;
 			isImplicit = false;
 		} else {
 			sourceContext = original.sourceContext;
 			exceptionThrown = original.exceptionThrown;
 			activationUnit = original.activationUnit;
 			turnUnit = original.turnUnit;
+//			skipUnit = original.skipUnit;
 			assert activationUnit == null || flowSensitiveAliasing;
 
 			postdominators = original.postdominators == null ? null
@@ -230,7 +237,6 @@ public class Abstraction implements Cloneable, FastSolverLinkedNode<Abstraction,
 			return null;
 
 		a.postdominators = null;
-		a.turnUnit = turnUnit;
 		a.dependsOnCutAP |= a.getAccessPath().isCutOffApproximation();
 		return a;
 	}
@@ -342,6 +348,14 @@ public class Abstraction implements Cloneable, FastSolverLinkedNode<Abstraction,
 		this.turnUnit = turnUnit;
 	}
 
+	public Unit getSkipUnit() {
+		return this.skipUnit;
+	}
+
+	public void setSkipUnit(Unit skipUnit) {
+		this.skipUnit = skipUnit;
+	}
+
 	public Abstraction getActiveCopy() {
 		if (this.isAbstractionActive())
 			return this;
@@ -349,6 +363,7 @@ public class Abstraction implements Cloneable, FastSolverLinkedNode<Abstraction,
 		Abstraction a = clone();
 		a.sourceContext = null;
 		a.activationUnit = null;
+		a.skipUnit = this.skipUnit;
 		return a;
 	}
 
