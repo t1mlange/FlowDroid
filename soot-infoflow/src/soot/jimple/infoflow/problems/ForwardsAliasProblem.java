@@ -179,7 +179,7 @@ public class ForwardsAliasProblem extends AbstractInfoflowProblem {
                                     ArrayRef arrayRef = (ArrayRef) leftOp;
                                     leftType = TypeUtils.buildArrayOrAddDimension(leftType, arrayRef.getType().getArrayType());
                                 } else {
-                                    if (!manager.getTypeUtils().checkCast(source.getAccessPath(), leftOp.getType()))
+                                    if (!manager.getTypeUtils().checkCast(source.getAccessPath().getBaseType(), leftOp.getType()))
                                         return null;
                                 }
 
