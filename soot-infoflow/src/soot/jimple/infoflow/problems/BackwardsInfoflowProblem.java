@@ -30,7 +30,7 @@ import java.util.*;
  * @author Tim Lange
  */
 public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
-    private final static boolean DEBUG_PRINT = false;
+    private final static boolean DEBUG_PRINT = true;
     private final static boolean ONLY_CALLS = false;
 
     private final PropagationRuleManager propagationRules;
@@ -421,7 +421,7 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                         // taint only if local variable or reference
                                         if (retVal instanceof Local || retVal instanceof FieldRef) {
                                             // if types are incompatible, stop here
-                                            if (!manager.getTypeUtils().checkCast(source.getAccessPath(), retVal.getType()))
+                                            if (!manager.getTypeUtils().checkCast(source.getAccessPath().getBaseType(), retVal.getType()))
                                                 continue;
 
                                             AccessPath ap = manager.getAccessPathFactory().copyWithNewValue(

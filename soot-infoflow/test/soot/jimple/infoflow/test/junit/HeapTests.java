@@ -53,7 +53,7 @@ public class HeapTests extends JUnitTests {
 	@Test(timeout = 300000)
 	public void testForEarlyTermination() {
 		IInfoflow infoflow = initInfoflow();
-		onlyForwards(infoflow);
+//		onlyForwards(infoflow);
 		List<String> epoints = new ArrayList<String>();
 		epoints.add("<soot.jimple.infoflow.test.HeapTestCode: void testForEarlyTermination()>");
 		infoflow.computeInfoflow(appPath, libPath, epoints, sources, sinks);

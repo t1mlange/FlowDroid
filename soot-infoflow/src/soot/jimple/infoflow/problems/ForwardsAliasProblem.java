@@ -161,9 +161,9 @@ public class ForwardsAliasProblem extends AbstractInfoflowProblem {
                                         cutFirstFieldLeft = true;
 //                                    leftType = ap.getFirstFieldType();
                                     }
-                                    else if (ap.getTaintSubFields() && ap.getFieldCount() == 0) {
-                                        addLeftValue = true;
-                                    }
+//                                    else if (ap.getTaintSubFields() && ap.getFieldCount() == 0) {
+//                                        addLeftValue = true;
+//                                    }
                                     else if (source.dependsOnCutAP() && !(leftVal.getType() instanceof PrimType)) {
                                         addLeftValue = true;
                                         cutFirstFieldLeft = true;
