@@ -4,10 +4,7 @@ import java.util.Collection;
 
 import soot.Local;
 import soot.SootMethod;
-import soot.jimple.ArrayRef;
-import soot.jimple.AssignStmt;
-import soot.jimple.InstanceFieldRef;
-import soot.jimple.Stmt;
+import soot.jimple.*;
 import soot.jimple.infoflow.InfoflowManager;
 import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.problems.TaintPropagationResults;
@@ -43,15 +40,18 @@ public class BackwardsStrongUpdatePropagationRule extends AbstractTaintPropagati
 		if (assignStmt.getLeftOp() instanceof ArrayRef)
 			return null;
 
+		if (!(assignStmt.getRightOp() instanceof Constant))
+			return null;
+
 		// If this is a newly created alias at this statement, we don't kill it right
 		// away
 		if (source.getCurrentStmt() == stmt)
 			return null;
 
 		// If the statement has just been activated, we do not overwrite stuff
-		if (source.getPredecessor() != null && source.getPredecessor().isAbstractionActive()
-				&& source.isAbstractionActive() && source.getAccessPath().equals(source.getPredecessor().getAccessPath()))
-			return null;
+//		if (source.getPredecessor() != null && source.getPredecessor().isAbstractionActive()
+//				&& source.isAbstractionActive() && source.getAccessPath().equals(source.getPredecessor().getAccessPath()))
+//			return null;
 
 		if (source.getAccessPath().isInstanceFieldRef()) {
 			// Data Propagation: x.f = y && x.f tainted --> no taint propagated
@@ -59,15 +59,10 @@ public class BackwardsStrongUpdatePropagationRule extends AbstractTaintPropagati
 			// otherwise it might just be the creation of yet another alias
 			if (assignStmt.getLeftOp() instanceof InstanceFieldRef) {
 				InstanceFieldRef leftRef = (InstanceFieldRef) assignStmt.getLeftOp();
-				boolean baseAliases;
-				if (source.isAbstractionActive())
-					baseAliases = getAliasing().mustAlias((Local) leftRef.getBase(),
-							source.getAccessPath().getPlainValue(), assignStmt);
-				else
-					baseAliases = leftRef.getBase() == source.getAccessPath().getPlainValue();
-				if (baseAliases) {
+				if (getAliasing().mustAlias((Local) leftRef.getBase(),
+						source.getAccessPath().getPlainValue(), assignStmt)) {
 					if (getAliasing().mustAlias(leftRef.getField(), source.getAccessPath().getFirstField())) {
-						killSource.value = true;
+						killAll.value = true;
 						return null;
 					}
 				}
@@ -77,7 +72,7 @@ public class BackwardsStrongUpdatePropagationRule extends AbstractTaintPropagati
 			else if (assignStmt.getLeftOp() instanceof Local) {
 				if (getAliasing().mustAlias((Local) assignStmt.getLeftOp(), source.getAccessPath().getPlainValue(),
 						stmt)) {
-					killSource.value = true;
+					killAll.value = true;
 					return null;
 				}
 			}

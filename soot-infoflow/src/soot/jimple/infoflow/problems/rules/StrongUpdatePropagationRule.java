@@ -2,20 +2,16 @@ package soot.jimple.infoflow.problems.rules;
 
 import java.util.Collection;
 
-import soot.Local;
-import soot.SootMethod;
-import soot.ValueBox;
-import soot.jimple.ArrayRef;
-import soot.jimple.AssignStmt;
-import soot.jimple.InstanceFieldRef;
-import soot.jimple.StaticFieldRef;
-import soot.jimple.Stmt;
+import soot.*;
+import soot.jimple.*;
 import soot.jimple.infoflow.InfoflowManager;
 import soot.jimple.infoflow.aliasing.Aliasing;
 import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.data.AccessPath;
 import soot.jimple.infoflow.problems.TaintPropagationResults;
+import soot.jimple.infoflow.util.BaseSelector;
 import soot.jimple.infoflow.util.ByReferenceBoolean;
+import soot.jimple.infoflow.util.TypeUtils;
 
 /**
  * Propagation rule that implements strong updates
@@ -46,12 +42,13 @@ public class StrongUpdatePropagationRule extends AbstractTaintPropagationRule {
 		if (assignStmt.getLeftOp() instanceof ArrayRef)
 			return null;
 
+
 		// If this is a newly created alias at this statement, we don't kill it right
 		// away
-		if (!source.isAbstractionActive() && source.getCurrentStmt() == stmt)
-			return null;
-
-		// If the statement has just been activated, we do not overwrite stuff
+//		if (!source.isAbstractionActive() && source.getCurrentStmt() == stmt)
+//			return null;
+//
+//		// If the statement has just been activated, we do not overwrite stuff
 		if (source.getPredecessor() != null && !source.getPredecessor().isAbstractionActive()
 				&& source.isAbstractionActive() && source.getPredecessor().getActivationUnit() == stmt
 				&& source.getAccessPath().equals(source.getPredecessor().getAccessPath()))

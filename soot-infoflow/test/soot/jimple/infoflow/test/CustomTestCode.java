@@ -49,6 +49,38 @@ public class CustomTestCode {
 		CustomTestCode.staticStr = TelephonyManager.getDeviceId();
 		ClinitLeak c = new ClinitLeak();
 	}
+
+
+
+	public void bookkeepingTest() {
+		IntegerRef i = new IntegerRef();
+		method(i);
+		ConnectionManager cm = new ConnectionManager();
+		cm.publish(i.value);
+	}
+	void method(IntegerRef i) {
+		if (i.value == 1) {
+			i.value = 2;
+			i = source();
+		}
+//		else
+//			i.value = TelephonyManager.getIMEI();
+	}
+
+	IntegerRef source() {
+		return new IntegerRef(42);
+	}
+}
+
+class IntegerRef {
+	int value;
+
+	IntegerRef(int value) {
+		this.value = value;
+	}
+	IntegerRef() {
+		this(0);
+	}
 }
 
 class ClinitLeak {

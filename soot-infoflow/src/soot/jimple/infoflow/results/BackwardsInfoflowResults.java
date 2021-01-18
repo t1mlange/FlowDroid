@@ -40,6 +40,10 @@ public class BackwardsInfoflowResults extends InfoflowResults {
 															List<Stmt> propagationPath, List<AccessPath> propagationAccessPath) {
 		// We create a sink info out of a source definition as in backwards analysis the start(=source def) is a sink
 		ResultSinkInfo sourceObj = new ResultSinkInfo(sourceDefinition, source, sourceStmt);
+		if (propagationPath != null)
+			Collections.reverse(propagationPath);
+		if (propagationAccessPath != null)
+			Collections.reverse(propagationAccessPath);
 		ResultSourceInfo sinkObj = new ResultSourceInfo(sinkDefinition, sink, sinkStmt, userData, propagationPath, propagationAccessPath);
 
 		this.addResult(sourceObj, sinkObj);

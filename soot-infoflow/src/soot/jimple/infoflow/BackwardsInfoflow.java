@@ -427,9 +427,8 @@ public class BackwardsInfoflow extends AbstractInfoflow {
             // have no sink in the program, we don't need to perform any
             // analysis
             PatchingChain<Unit> units = m.getActiveBody().getUnits();
-            int i = 0;
-//            Unit lastUnit = units.getFirst();
-//            ICFGDotVisualizer visualizer = new ICFGDotVisualizer("./dotfiles/" + lastUnit.toString() + ".dot", lastUnit, manager.getICFG());
+//            Unit lastUnit = units.getLast();
+//            ICFGDotVisualizer visualizer = new ICFGDotVisualizer("./dotfiles/" + m.toString() + ".dot", lastUnit, manager.getICFG());
 //            visualizer.exportToDot();
             for (Unit u : units) {
 

@@ -65,6 +65,9 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                             taintPropagationHandler.notifyFlowIn(srcUnit, source, manager,
                                     TaintPropagationHandler.FlowFunctionType.NormalFlowFunction);
 
+                        if (srcUnit.toString().contains("$stack2 = new java.util.LinkedList"))
+                            d1=d1;
+
                         Set<Abstraction> res = computeTargetsInternal(d1, source.isAbstractionActive() ? source : source.getActiveCopy());
                         if (DEBUG_PRINT && !ONLY_CALLS)
                             System.out.println("Normal" + "\n" + "In: " + source.toString() + "\n" + "Stmt: " + srcUnit.toString() + "\n" + "Out: " + (res == null ? "[]" : res.toString()) + "\n" + "---------------------------------------");
@@ -198,11 +201,6 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                 }
                             }
 
-                            // NewExpr's can not be tainted
-                            // so we can stop here
-                            if (rightOp instanceof AnyNewExpr)
-                                continue;
-
                             boolean addRightValue = false;
                             boolean cutFirstField = false;
                             Type rightType = null;
@@ -278,17 +276,21 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                         return null;
                                 }
                                 // LengthExpr/RHS ArrayRef handled in ArrayPropagationRule
-                                addRightValue = !(rightOp instanceof LengthExpr || rightOp instanceof ArrayRef);
+                                addRightValue = !(rightOp instanceof LengthExpr || rightOp instanceof ArrayRef || rightOp instanceof NewArrayExpr);
                             }
 
                             if (addRightValue) {
                                 // TODO: Don't kill on whole object?
                                 if (!(leftVal instanceof ArrayRef)
-                                        || getManager().getConfig().getImplicitFlowMode().trackArrayAccesses()
                                         || (ap.getTaintSubFields() && ap.getFieldCount() == 0 && rightVal instanceof FieldRef))
                                     res.remove(source);
 
                                 if (rightVal instanceof Constant)
+                                    continue;
+
+                                // NewExpr's can not be tainted
+                                // so we can stop here
+                                if (rightOp instanceof AnyNewExpr)
                                     continue;
 
                                 AccessPath newAp = manager.getAccessPathFactory().copyWithNewValue(source.getAccessPath(),
@@ -301,7 +303,7 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                     else {
                                         res.add(newAbs);
 
-                                        if (!isPrimtiveOrStringBase(source) && aliasing.canHaveAliasesRightSide(assignStmt, rightVal, newAbs)) {
+                                        if (!isPrimitiveOrStringBase(source) && aliasing.canHaveAliasesRightSide(assignStmt, rightVal, newAbs)) {
                                             aliasing.computeAliases(d1, assignStmt, rightVal, res,
                                                     interproceduralCFG().getMethodOf(assignStmt), newAbs);
                                         }
@@ -480,6 +482,19 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                             for (int i = isReflectiveCallSite ? 1 : 0; i < ie.getArgCount(); i++) {
                                 if (!aliasing.mayAlias(ie.getArg(i), source.getAccessPath().getPlainValue()))
                                     continue;
+                                if (isPrimitiveOrStringBase(source))
+                                    continue;
+                                if (!source.getAccessPath().getTaintSubFields())
+                                    continue;
+
+                                // If the variable was overwritten
+                                // somewehere in the callee, we assume
+                                // it to overwritten on all paths (yeah,
+                                // I know ...) Otherwise, we need SSA
+                                // or lots of bookkeeping to avoid FPs
+                                // (BytecodeTests.flowSensitivityTest1).
+                                if (interproceduralCFG().methodWritesValue(dest, paramLocals[i]))
+                                    continue;
 
                                 // taint all parameters if reflective call site
                                 if (isReflectiveCallSite) {
@@ -588,7 +603,7 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                     AccessPath ap = manager.getAccessPathFactory()
                                             .copyWithNewValue(source.getAccessPath(), callBase, isReflectiveCallSite ? null
                                                     : source.getAccessPath().getBaseType(), false);
-                                    Abstraction abs = source.deriveNewAbstraction(ap, (Stmt) exitSite);
+                                    Abstraction abs = source.deriveNewAbstraction(ap, (Stmt) exitStmt);
                                     if (abs != null) {
                                         res.add(abs);
                                     }
@@ -603,7 +618,6 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                         ie.getArg(0));
                                 Abstraction abs = source.deriveNewAbstraction(ap, exitStmt);
                                 if (abs != null) {
-                                    abs.setCorrespondingCallSite(callStmt);
                                     res.add(abs);
                                 }
                             }
@@ -611,12 +625,6 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                             for (int i = 0; i < callee.getParameterCount(); i++) {
                                 if (!aliasing.mayAlias(source.getAccessPath().getPlainValue(), paramLocals[i]))
                                     continue;
-                                if (callSite instanceof AssignStmt) {
-                                    // if parameter is
-                                    if (aliasing.mayAlias(source.getAccessPath().getPlainValue(),
-                                            ((AssignStmt) callSite).getLeftOp()))
-                                        continue;
-                                }
 
                                 // Yes, we even map primitives or strings back as a
                                 // return flow in backwards is a call.
@@ -632,10 +640,9 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                         source.getAccessPath(), originalCallArg,
                                         isReflectiveCallSite ? null : source.getAccessPath().getBaseType(),
                                         false);
-                                Abstraction abs = source.deriveNewAbstraction(ap, (Stmt) exitSite);
+                                Abstraction abs = source.deriveNewAbstraction(ap, exitStmt);
                                 if (abs != null) {
                                     res.add(abs);
-
 
                                     if (callStmt instanceof AssignStmt) {
                                         Value leftOp = ((AssignStmt) callStmt).getLeftOp();
@@ -775,7 +782,7 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
 
                         // Do not pass over reference parameters
                         // CallFlow passes this into the callee
-                        if (Arrays.stream(callArgs).anyMatch(arg -> !isPrimtiveOrStringBase(source)
+                        if (Arrays.stream(callArgs).anyMatch(arg -> !isPrimitiveOrStringBase(source)
                                 && aliasing.mayAlias(arg, source.getAccessPath().getPlainValue())))
                             return res;
 
@@ -795,7 +802,7 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                 }
             }
 
-            private boolean isPrimtiveOrStringBase(Abstraction abs) {
+            private boolean isPrimitiveOrStringBase(Abstraction abs) {
                 Type t = abs.getAccessPath().getBaseType();
                 return t instanceof PrimType || TypeUtils.isStringType(t);
             }

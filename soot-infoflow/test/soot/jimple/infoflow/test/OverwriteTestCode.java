@@ -70,12 +70,12 @@ public class OverwriteTestCode {
 	public void returnOverwrite(){
 		String tainted = TelephonyManager.getDeviceId();
 		Test1 t = new Test1();
-		t.field = tainted;
-		t.field = t.testMethod();
+//		t.field = tainted;
+//		t.field = t.testMethod();
 		t.list.add(tainted);
 		t.list = t.testMethodList();
 		ConnectionManager cm = new ConnectionManager();
-		cm.publish(t.field);
+//		cm.publish(t.field);
 		cm.publish(t.list.get(0));
 	}
 	
