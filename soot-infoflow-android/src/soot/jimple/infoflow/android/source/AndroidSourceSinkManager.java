@@ -34,6 +34,7 @@ import soot.jimple.InvokeExpr;
 import soot.jimple.NullConstant;
 import soot.jimple.Stmt;
 import soot.jimple.StringConstant;
+import soot.jimple.infoflow.IInfoflow;
 import soot.jimple.infoflow.InfoflowConfiguration.LayoutMatchingMode;
 import soot.jimple.infoflow.InfoflowManager;
 import soot.jimple.infoflow.android.InfoflowAndroidConfiguration;

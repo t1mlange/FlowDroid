@@ -1,18 +1,12 @@
 package soot.jimple.infoflow.problems;
 
-import com.sun.xml.bind.v2.runtime.reflect.opt.Const;
-import fj.Hash;
-import fj.P;
 import heros.FlowFunction;
 import heros.FlowFunctions;
 import heros.flowfunc.Identity;
 import heros.flowfunc.KillAll;
 import heros.solver.PathEdge;
-import polyglot.ast.Assert;
-import polyglot.ast.NewArray;
 import soot.*;
 import soot.jimple.*;
-import soot.jimple.infoflow.AbstractInfoflow;
 import soot.jimple.infoflow.InfoflowConfiguration;
 import soot.jimple.infoflow.InfoflowManager;
 import soot.jimple.infoflow.aliasing.Aliasing;
@@ -20,16 +14,11 @@ import soot.jimple.infoflow.collect.MutableTwoElementSet;
 import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.data.AccessPath;
 import soot.jimple.infoflow.handlers.TaintPropagationHandler;
-import soot.jimple.infoflow.problems.rules.IPropagationRuleManagerFactory;
-import soot.jimple.infoflow.problems.rules.PropagationRuleManager;
-import soot.jimple.infoflow.solver.cfg.InfoflowCFG;
 import soot.jimple.infoflow.solver.functions.SolverCallFlowFunction;
 import soot.jimple.infoflow.solver.functions.SolverCallToReturnFlowFunction;
 import soot.jimple.infoflow.solver.functions.SolverNormalFlowFunction;
 import soot.jimple.infoflow.solver.functions.SolverReturnFlowFunction;
 import soot.jimple.infoflow.util.BaseSelector;
-import soot.jimple.infoflow.util.ByReferenceBoolean;
-import soot.jimple.infoflow.util.SystemClassHandler;
 import soot.jimple.infoflow.util.TypeUtils;
 
 import java.util.*;

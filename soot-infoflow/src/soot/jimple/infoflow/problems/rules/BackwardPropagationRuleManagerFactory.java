@@ -35,11 +35,8 @@ public class BackwardPropagationRuleManagerFactory implements IPropagationRuleMa
 			ruleList.add(new BackwardsArrayPropagationRule(manager, zeroValue, results));
 		if (manager.getTaintWrapper() != null)
 			ruleList.add(new BackwardsWrapperRule(manager, zeroValue, results));
-//
 //		if (manager.getConfig().getImplicitFlowMode().trackControlFlowDependencies())
 //			ruleList.add(new ImplicitPropagtionRule(manager, zeroValue, results));
-//		if (manager.getConfig().getEnableTypeChecking())
-//			ruleList.add(new BackwardTypingPropagationRule(manager, zeroValue, results));
 
 		return new PropagationRuleManager(manager, zeroValue, results,
 				ruleList.toArray(new ITaintPropagationRule[0]));

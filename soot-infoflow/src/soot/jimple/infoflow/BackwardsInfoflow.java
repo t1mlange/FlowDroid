@@ -636,6 +636,9 @@ public class BackwardsInfoflow extends AbstractInfoflow {
         return new Aliasing(aliasingStrategy, manager);
     }
 
+    protected void runAnalysis(ISourceSinkManager sourcesSinks) {
+        runAnalysis(sourcesSinks, null);
+    }
     /**
      * Conducts a taint analysis on an already initialized callgraph
      *
@@ -643,7 +646,7 @@ public class BackwardsInfoflow extends AbstractInfoflow {
      * @param additionalSeeds Additional seeds at which to create A ZERO fact even
      *                        if they are not sources
      */
-    private void runAnalysis(ISourceSinkManager sourcesSinks, Set<String> additionalSeeds) {
+     private void runAnalysis(ISourceSinkManager sourcesSinks, Set<String> additionalSeeds) {
         final InfoflowPerformanceData performanceData = new InfoflowPerformanceData();
         try {
             // Clear the data from previous runs

@@ -30,8 +30,8 @@ import java.util.*;
  * @author Tim Lange
  */
 public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
-    private final static boolean DEBUG_PRINT = false;
-    private final static boolean ONLY_CALLS = true;
+    private final static boolean DEBUG_PRINT = true;
+    private final static boolean ONLY_CALLS = false;
 
     private final PropagationRuleManager propagationRules;
     protected final TaintPropagationResults results;

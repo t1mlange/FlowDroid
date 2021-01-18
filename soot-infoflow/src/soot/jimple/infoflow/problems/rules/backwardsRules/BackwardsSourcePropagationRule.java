@@ -55,6 +55,9 @@ public class BackwardsSourcePropagationRule extends AbstractTaintPropagationRule
 		} else if (stmt instanceof AssignStmt) {
 			final AssignStmt assignStmt = (AssignStmt) stmt;
 			checkForSource(d1, source, stmt, assignStmt.getRightOp());
+		} else if (stmt instanceof IdentityStmt) {
+			IdentityStmt identityStmt = (IdentityStmt) stmt;
+			checkForSource(d1, source, stmt, identityStmt.getLeftOp());
 		}
 
 		return null;

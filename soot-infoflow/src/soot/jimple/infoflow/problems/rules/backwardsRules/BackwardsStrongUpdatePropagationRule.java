@@ -4,20 +4,14 @@ import java.util.Collection;
 
 import soot.Local;
 import soot.SootMethod;
-import soot.Value;
-import soot.ValueBox;
 import soot.jimple.ArrayRef;
 import soot.jimple.AssignStmt;
 import soot.jimple.InstanceFieldRef;
-import soot.jimple.StaticFieldRef;
 import soot.jimple.Stmt;
 import soot.jimple.infoflow.InfoflowManager;
-import soot.jimple.infoflow.aliasing.Aliasing;
 import soot.jimple.infoflow.data.Abstraction;
-import soot.jimple.infoflow.data.AccessPath;
 import soot.jimple.infoflow.problems.TaintPropagationResults;
 import soot.jimple.infoflow.problems.rules.AbstractTaintPropagationRule;
-import soot.jimple.infoflow.util.BaseSelector;
 import soot.jimple.infoflow.util.ByReferenceBoolean;
 
 /**
@@ -46,78 +40,77 @@ public class BackwardsStrongUpdatePropagationRule extends AbstractTaintPropagati
 		// of collections
 		// because we do not use a MUST-Alias analysis, we cannot delete aliases of
 		// taints
-		if (assignStmt.getRightOp() instanceof ArrayRef)
+		if (assignStmt.getLeftOp() instanceof ArrayRef)
 			return null;
 
 		// If this is a newly created alias at this statement, we don't kill it right
 		// away
-		if (!source.isAbstractionActive() && source.getCurrentStmt() == stmt)
+		if (source.getCurrentStmt() == stmt)
 			return null;
 
 		// If the statement has just been activated, we do not overwrite stuff
-		if (source.getPredecessor() != null && !source.getPredecessor().isAbstractionActive()
-				&& source.isAbstractionActive() && source.getPredecessor().getActivationUnit() == stmt
-				&& source.getAccessPath().equals(source.getPredecessor().getAccessPath()))
+		if (source.getPredecessor() != null && source.getPredecessor().isAbstractionActive()
+				&& source.isAbstractionActive() && source.getAccessPath().equals(source.getPredecessor().getAccessPath()))
 			return null;
-		Value rightVal = BaseSelector.selectBase(assignStmt.getRightOp(), true);
+
 		if (source.getAccessPath().isInstanceFieldRef()) {
 			// Data Propagation: x.f = y && x.f tainted --> no taint propagated
 			// Alias Propagation: Only kill the alias if we directly overwrite it,
 			// otherwise it might just be the creation of yet another alias
-			if (assignStmt.getRightOp() instanceof InstanceFieldRef) {
-				InstanceFieldRef rightRef = (InstanceFieldRef) assignStmt.getRightOp();
+			if (assignStmt.getLeftOp() instanceof InstanceFieldRef) {
+				InstanceFieldRef leftRef = (InstanceFieldRef) assignStmt.getLeftOp();
 				boolean baseAliases;
 				if (source.isAbstractionActive())
-					baseAliases = getAliasing().mustAlias((Local) rightRef.getBase(),
+					baseAliases = getAliasing().mustAlias((Local) leftRef.getBase(),
 							source.getAccessPath().getPlainValue(), assignStmt);
 				else
-					baseAliases = rightRef.getBase() == source.getAccessPath().getPlainValue();
+					baseAliases = leftRef.getBase() == source.getAccessPath().getPlainValue();
 				if (baseAliases) {
-					if (getAliasing().mustAlias(rightRef.getField(), source.getAccessPath().getFirstField())) {
-						killAll.value = true;
+					if (getAliasing().mustAlias(leftRef.getField(), source.getAccessPath().getFirstField())) {
+						killSource.value = true;
 						return null;
 					}
 				}
 			}
 			// x = y && x.f tainted -> no taint propagated. This must only check the precise
 			// variable which gets replaced, but not any potential strong aliases
-			else if (assignStmt.getRightOp() instanceof Local) {
-				if (getAliasing().mustAlias((Local) assignStmt.getRightOp(), source.getAccessPath().getPlainValue(),
+			else if (assignStmt.getLeftOp() instanceof Local) {
+				if (getAliasing().mustAlias((Local) assignStmt.getLeftOp(), source.getAccessPath().getPlainValue(),
 						stmt)) {
-					killAll.value = true;
+					killSource.value = true;
 					return null;
 				}
 			}
 		}
 		// X.f = y && X.f tainted -> no taint propagated. Kills are allowed even if
 		// static field tracking is disabled
-		else if (source.getAccessPath().isStaticFieldRef()) {
-			if (assignStmt.getRightOp() instanceof StaticFieldRef && getAliasing().mustAlias(
-					((StaticFieldRef) assignStmt.getRightOp()).getField(), source.getAccessPath().getFirstField())) {
-				killAll.value = true;
-				return null;
-			}
-
-		}
-		// when the fields of an object are tainted, but the base object is overwritten
-		// then the fields should not be tainted any more
-		// x = y && x.f tainted -> no taint propagated
-		else if (source.getAccessPath().isLocal() && assignStmt.getRightOp() instanceof Local
-				&& assignStmt.getRightOp() == source.getAccessPath().getPlainValue()) {
-			// If there is also a reference to the tainted value on the right side, we
-			// must only kill the source, but give the other rules the possibility to
-			// re-create the taint
-			boolean found = false;
-			for (ValueBox vb : assignStmt.getRightOp().getUseBoxes())
-				if (vb.getValue() == source.getAccessPath().getPlainValue()) {
-					found = true;
-					break;
-				}
-
-			killAll.value = !found;
-			killSource.value = true;
-			return null;
-		}
+//		else if (source.getAccessPath().isStaticFieldRef()) {
+//			if (assignStmt.getLeftOp() instanceof StaticFieldRef && getAliasing().mustAlias(
+//					((StaticFieldRef) assignStmt.getLeftOp()).getField(), source.getAccessPath().getFirstField())) {
+//				killAll.value = true;
+//				return null;
+//			}
+//
+//		}
+//		// when the fields of an object are tainted, but the base object is overwritten
+//		// then the fields should not be tainted any more
+//		// x = y && x.f tainted -> no taint propagated
+//		else if (source.getAccessPath().isLocal() && assignStmt.getLeftOp() instanceof Local
+//				&& assignStmt.getLeftOp() == source.getAccessPath().getPlainValue()) {
+//			// If there is also a reference to the tainted value on the right side, we
+//			// must only kill the source, but give the other rules the possibility to
+//			// re-create the taint
+//			boolean found = false;
+//			for (ValueBox vb : assignStmt.getRightOp().getUseBoxes())
+//				if (vb.getValue() == source.getAccessPath().getPlainValue()) {
+//					found = true;
+//					break;
+//				}
+//
+//			killAll.value = !found;
+//			killSource.value = true;
+//			return null;
+//		}
 
 		return null;
 	}

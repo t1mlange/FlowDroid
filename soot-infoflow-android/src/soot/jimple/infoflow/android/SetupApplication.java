@@ -39,6 +39,7 @@ import soot.SootMethod;
 import soot.Unit;
 import soot.jimple.Stmt;
 import soot.jimple.infoflow.AbstractInfoflow;
+import soot.jimple.infoflow.BackwardsInfoflow;
 import soot.jimple.infoflow.IInfoflow;
 import soot.jimple.infoflow.Infoflow;
 import soot.jimple.infoflow.InfoflowConfiguration.SootIntegrationMode;
@@ -1259,7 +1260,7 @@ public class SetupApplication implements ITaintWrapperDataFlowAnalysis {
 	 * @author Steven Arzt
 	 *
 	 */
-	protected class InPlaceInfoflow extends Infoflow implements IInPlaceInfoflow {
+	protected class InPlaceInfoflow extends BackwardsInfoflow implements IInPlaceInfoflow {
 
 		/**
 		 * Creates a new instance of the Infoflow class for analyzing Android APK files.
