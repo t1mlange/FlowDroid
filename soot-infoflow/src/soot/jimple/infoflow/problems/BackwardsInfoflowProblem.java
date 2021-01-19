@@ -30,7 +30,7 @@ import java.util.*;
  * @author Tim Lange
  */
 public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
-    private final static boolean DEBUG_PRINT = false;
+    private final static boolean DEBUG_PRINT = true;
     private final static boolean ONLY_CALLS = false;
 
     private final PropagationRuleManager propagationRules;
@@ -64,9 +64,6 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                         if (taintPropagationHandler != null)
                             taintPropagationHandler.notifyFlowIn(srcUnit, source, manager,
                                     TaintPropagationHandler.FlowFunctionType.NormalFlowFunction);
-
-                        if (srcUnit.toString().contains("$stack2 = new java.util.LinkedList"))
-                            d1=d1;
 
                         Set<Abstraction> res = computeTargetsInternal(d1, source.isAbstractionActive() ? source : source.getActiveCopy());
                         if (DEBUG_PRINT && !ONLY_CALLS)
@@ -497,6 +494,13 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                 if (interproceduralCFG().methodWritesValue(dest, paramLocals[i]))
                                     continue;
 
+//                                if (callStmt instanceof AssignStmt) {
+//                                    AssignStmt assignStmt = (AssignStmt) callStmt;
+//                                    Value leftOp = assignStmt.getLeftOp();
+//                                    if (aliasing.mayAlias(ie.getArg(i), leftOp))
+//                                        continue;
+//                                }
+
                                 // taint all parameters if reflective call site
                                 if (isReflectiveCallSite) {
                                     for (Value param : paramLocals) {
@@ -646,10 +650,19 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                         Value leftOp = ((AssignStmt) callStmt).getLeftOp();
 
                                         if (!isPrimtiveOrStringType(leftOp.getType())
-                                                && manager.getTypeUtils().checkCast(leftOp.getType(), abs.getAccessPath().getBaseType())
+                                                && manager.getTypeUtils().checkCast(abs.getAccessPath().getBaseType(), leftOp.getType())
                                                 && aliasing.canHaveAliasesRightSide((Stmt) callSite, originalCallArg, source)) {
-                                            for (Abstraction callerD1 : callerD1s)
-                                                aliasing.computeAliases(callerD1, (Stmt) callSite, originalCallArg, res, callee, abs);
+
+                                            // trigger aliasing if param gets returned
+                                            for (Unit unit : callee.getActiveBody().getUnits()) {
+                                                if (unit instanceof ReturnStmt && !isExceptionHandler(unit)) {
+                                                    Value retVal = ((ReturnStmt) unit).getOp();
+                                                    if (aliasing.mayAlias(retVal, paramLocals[i])) {
+                                                        for (Abstraction callerD1 : callerD1s)
+                                                            aliasing.computeAliases(callerD1, (Stmt) callSite, originalCallArg, res, callee, abs);
+                                                    }
+                                                }
+                                            }
                                         }
                                     }
                                 }

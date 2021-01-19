@@ -585,7 +585,8 @@ public class Abstraction implements Cloneable, FastSolverLinkedNode<Abstraction,
 
 		// We should not add identical nodes as neighbors
 		if (this.predecessor == originalAbstraction.predecessor && this.currentStmt == originalAbstraction.currentStmt
-				&& this.predecessor == originalAbstraction.predecessor)
+				&& this.predecessor == originalAbstraction.predecessor
+				&& this.correspondingCallSite == originalAbstraction.correspondingCallSite)
 			return false;
 
 		synchronized (this) {

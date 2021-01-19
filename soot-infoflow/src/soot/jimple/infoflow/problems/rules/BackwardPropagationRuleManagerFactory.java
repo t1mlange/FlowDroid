@@ -25,7 +25,7 @@ public class BackwardPropagationRuleManagerFactory implements IPropagationRuleMa
 		ruleList.add(new BackwardsSourcePropagationRule(manager, zeroValue, results));
 		ruleList.add(new SkipSystemClassRule(manager, zeroValue, results));
 		ruleList.add(new BackwardsClinitRule(manager, zeroValue, results));
-//		ruleList.add(new BackwardsStrongUpdatePropagationRule(manager, zeroValue, results));
+		ruleList.add(new BackwardsStrongUpdatePropagationRule(manager, zeroValue, results));
 
 		if (manager.getConfig().getEnableExceptionTracking())
 			ruleList.add(new BackwardsExceptionPropagationRule(manager, zeroValue, results));

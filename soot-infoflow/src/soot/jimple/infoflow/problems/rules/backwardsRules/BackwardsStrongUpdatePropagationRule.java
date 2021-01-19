@@ -4,6 +4,7 @@ import java.util.Collection;
 
 import soot.Local;
 import soot.SootMethod;
+import soot.ValueBox;
 import soot.jimple.*;
 import soot.jimple.infoflow.InfoflowManager;
 import soot.jimple.infoflow.data.Abstraction;
@@ -49,9 +50,9 @@ public class BackwardsStrongUpdatePropagationRule extends AbstractTaintPropagati
 			return null;
 
 		// If the statement has just been activated, we do not overwrite stuff
-//		if (source.getPredecessor() != null && source.getPredecessor().isAbstractionActive()
-//				&& source.isAbstractionActive() && source.getAccessPath().equals(source.getPredecessor().getAccessPath()))
-//			return null;
+		if (source.getPredecessor() != null && source.getPredecessor().isAbstractionActive()
+				&& source.isAbstractionActive() && source.getAccessPath().equals(source.getPredecessor().getAccessPath()))
+			return null;
 
 		if (source.getAccessPath().isInstanceFieldRef()) {
 			// Data Propagation: x.f = y && x.f tainted --> no taint propagated
@@ -77,35 +78,35 @@ public class BackwardsStrongUpdatePropagationRule extends AbstractTaintPropagati
 				}
 			}
 		}
-		// X.f = y && X.f tainted -> no taint propagated. Kills are allowed even if
-		// static field tracking is disabled
-//		else if (source.getAccessPath().isStaticFieldRef()) {
-//			if (assignStmt.getLeftOp() instanceof StaticFieldRef && getAliasing().mustAlias(
-//					((StaticFieldRef) assignStmt.getLeftOp()).getField(), source.getAccessPath().getFirstField())) {
-//				killAll.value = true;
-//				return null;
-//			}
-//
-//		}
-//		// when the fields of an object are tainted, but the base object is overwritten
-//		// then the fields should not be tainted any more
-//		// x = y && x.f tainted -> no taint propagated
-//		else if (source.getAccessPath().isLocal() && assignStmt.getLeftOp() instanceof Local
-//				&& assignStmt.getLeftOp() == source.getAccessPath().getPlainValue()) {
-//			// If there is also a reference to the tainted value on the right side, we
-//			// must only kill the source, but give the other rules the possibility to
-//			// re-create the taint
-//			boolean found = false;
-//			for (ValueBox vb : assignStmt.getRightOp().getUseBoxes())
-//				if (vb.getValue() == source.getAccessPath().getPlainValue()) {
-//					found = true;
-//					break;
-//				}
-//
-//			killAll.value = !found;
-//			killSource.value = true;
-//			return null;
-//		}
+//		 X.f = y && X.f tainted -> no taint propagated. Kills are allowed even if
+//		 static field tracking is disabled
+		else if (source.getAccessPath().isStaticFieldRef()) {
+			if (assignStmt.getLeftOp() instanceof StaticFieldRef && getAliasing().mustAlias(
+					((StaticFieldRef) assignStmt.getLeftOp()).getField(), source.getAccessPath().getFirstField())) {
+				killAll.value = true;
+				return null;
+			}
+
+		}
+		// when the fields of an object are tainted, but the base object is overwritten
+		// then the fields should not be tainted any more
+		// x = y && x.f tainted -> no taint propagated
+		else if (source.getAccessPath().isLocal() && assignStmt.getLeftOp() instanceof Local
+				&& assignStmt.getLeftOp() == source.getAccessPath().getPlainValue()) {
+			// If there is also a reference to the tainted value on the right side, we
+			// must only kill the source, but give the other rules the possibility to
+			// re-create the taint
+			boolean found = false;
+			for (ValueBox vb : assignStmt.getRightOp().getUseBoxes())
+				if (vb.getValue() == source.getAccessPath().getPlainValue()) {
+					found = true;
+					break;
+				}
+
+			killAll.value = !found;
+			killSource.value = true;
+			return null;
+		}
 
 		return null;
 	}

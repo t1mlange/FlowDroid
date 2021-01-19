@@ -488,7 +488,6 @@ public class ForwardsAliasProblem extends AbstractInfoflowProblem {
                             }
                         }
 
-                        // TODO: uncomment
                         if (res.isEmpty()) {
                             // last occurence of this taint, so go back
                             for (Unit u : manager.getICFG().getPredsOf(exitStmt))
