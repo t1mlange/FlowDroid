@@ -195,7 +195,7 @@ public class ForwardsAliasProblem extends AbstractInfoflowProblem {
                                         res.add(newAbs);
 
                                         // Inject the new alias into the forward solver
-                                        for (Unit u : manager.getICFG().getPredsOf(defStmt))
+                                        for (Unit u : manager.getICFG().getSuccsOf(defStmt))
                                             manager.getForwardSolver()
                                                     .processEdge(new PathEdge<Unit, Abstraction>(d1, u, newAbs.getActiveCopy()));
                                     }
@@ -428,7 +428,6 @@ public class ForwardsAliasProblem extends AbstractInfoflowProblem {
                                 Value callBase = isReflectiveCallSite ?
                                         instanceInvokeExpr.getArg(0) : instanceInvokeExpr.getBase();
 
-                                // TODO: understand why second condition
                                 if (isReflectiveCallSite ||
                                         instanceInvokeExpr.getArgs().stream().noneMatch(arg -> arg == sourceBase)) {
                                     AccessPath ap = manager.getAccessPathFactory()
@@ -467,6 +466,10 @@ public class ForwardsAliasProblem extends AbstractInfoflowProblem {
                                     if (originalCallArg == leftOp)
                                         continue;
                                 }
+
+                                if (interproceduralCFG().methodWritesValue(callee, paramLocals[i]))
+                                    continue;
+
                                 if (!AccessPath.canContainValue(originalCallArg))
                                     continue;
                                 if (!isReflectiveCallSite && !manager.getTypeUtils()

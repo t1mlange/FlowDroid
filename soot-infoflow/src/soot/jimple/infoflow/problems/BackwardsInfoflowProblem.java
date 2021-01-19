@@ -30,7 +30,7 @@ import java.util.*;
  * @author Tim Lange
  */
 public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
-    private final static boolean DEBUG_PRINT = true;
+    private final static boolean DEBUG_PRINT = false;
     private final static boolean ONLY_CALLS = false;
 
     private final PropagationRuleManager propagationRules;
@@ -364,7 +364,8 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                         }
                         if (DEBUG_PRINT)
                             System.out.println("Call" + "\n" + "In: " + source.toString() + "\n" + "Stmt: " + stmt.toString() + "\n" + "Out: " + (res == null ? "[]" : res.toString()) + "\n" + "---------------------------------------");
-
+                        if (callStmt.toString().contains("testMethodList"))
+                            d1=d1;
                         return notifyOutFlowHandlers(stmt, d1, source, res,
                                 TaintPropagationHandler.FlowFunctionType.CallFlowFunction);
                     }
@@ -458,8 +459,8 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                             if (aliasing.mayAlias(callBase, sourceBase) && manager.getTypeUtils()
                                     .hasCompatibleTypesForCall(source.getAccessPath(), dest.getDeclaringClass())) {
                                 // TODO: understand why second condition
-                                if (isReflectiveCallSite ||
-                                        instanceInvokeExpr.getArgs().stream().noneMatch(arg -> arg == sourceBase)) {
+                                if (isReflectiveCallSite
+                                        || instanceInvokeExpr.getArgs().stream().noneMatch(arg -> arg == sourceBase)) {
                                     AccessPath ap = manager.getAccessPathFactory()
                                             .copyWithNewValue(source.getAccessPath(), thisLocal);
                                     Abstraction abs = source.deriveNewAbstraction(ap, (Stmt) callStmt);
@@ -626,9 +627,6 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                 if (!aliasing.mayAlias(source.getAccessPath().getPlainValue(), paramLocals[i]))
                                     continue;
 
-                                // Yes, we even map primitives or strings back as a
-                                // return flow in backwards is a call.
-
                                 Value originalCallArg = ie.getArg(isReflectiveCallSite ? 1 : i);
                                 if (!AccessPath.canContainValue(originalCallArg))
                                     continue;
@@ -644,7 +642,7 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                 if (abs != null) {
                                     res.add(abs);
 
-                                    if (callStmt instanceof AssignStmt) {
+                                    if (callStmt instanceof AssignStmt && callStmt != source.getSkipUnit()) {
                                         Value leftOp = ((AssignStmt) callStmt).getLeftOp();
 
                                         if (!isPrimtiveOrStringType(leftOp.getType())

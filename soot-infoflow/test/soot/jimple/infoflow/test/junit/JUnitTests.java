@@ -160,6 +160,9 @@ public abstract class JUnitTests {
 	protected void onlyBackwards(IInfoflow infoflow) {
 		Assume.assumeTrue("Test is only applicable on backwards analysis", infoflow instanceof BackwardsInfoflow);
 	}
+	protected void onlyBackwards(IInfoflow infoflow, String message) {
+		Assume.assumeTrue("Test is only applicable on backwards analysis: " + message, infoflow instanceof BackwardsInfoflow);
+	}
 
 	/**
 	 * Tells that the test should only be run on forwards analysis
