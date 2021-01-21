@@ -86,7 +86,6 @@ public class ForwardsAliasProblem extends AbstractInfoflowProblem {
                                     TaintPropagationHandler.FlowFunctionType.NormalFlowFunction);
                         }
 
-
                         Set<Abstraction> res = computeAliases(defStmt, d1, source);
                         if (DEBUG_PRINT)
                             System.out.println("Alias Normal" + "\n" + "In: " + source.toString() + "\n" + "Stmt: " + srcUnit.toString() + "\n" + "Out: " + (res == null ? "[]" : res.toString()) + "\n" + "---------------------------------------");
@@ -109,16 +108,17 @@ public class ForwardsAliasProblem extends AbstractInfoflowProblem {
                         final Value leftVal = BaseSelector.selectBase(leftOp, false);
                         final Value rightVal = BaseSelector.selectBase(rightOp, false);
 
-                        boolean leftSideMatches = Aliasing.baseMatches(leftOp, source);
-                        if (!leftSideMatches) {
+                        boolean leftSideOverwritten = Aliasing.baseMatchesStrict(leftOp, source) && !source.dependsOnCutAP();
+                        if (!leftSideOverwritten) {
                             // Taint is not on the left side, so it needs to be kept
                             res.add(source);
-                        } else {
-                            // The source taint will end here, so we give it back
-                            // to our data flow solver
-                            for (Unit u : manager.getICFG().getSuccsOf(assignStmt))
+                            // We can give it back to the backwards infoflow
+                            for (Unit u : manager.getICFG().getPredsOf(assignStmt))
                                 manager.getForwardSolver()
                                         .processEdge(new PathEdge<Unit, Abstraction>(d1, u, source.getActiveCopy()));
+                        } else {
+                            // At this statement the taint is overwritten
+                            manager.getForwardSolver().processEdge(new PathEdge<Unit, Abstraction>(d1, srcUnit, source.getActiveCopy()));
                             return null;
                         }
 
@@ -147,7 +147,7 @@ public class ForwardsAliasProblem extends AbstractInfoflowProblem {
                                 if (ap.isInstanceFieldRef() && instRef.getBase() == sourceBase) {
                                     if (ap.firstFieldMatches(instRef.getField())) {
                                         addLeftValue = true;
-                                        cutFirstFieldLeft = true;
+                                        cutFirstFieldLeft = ap.getFieldCount() > 0 && ap.getFirstField() == instRef.getField();
 //                                    leftType = ap.getFirstFieldType();
                                     }
 //                                    else if (ap.getTaintSubFields() && ap.getFieldCount() == 0) {
@@ -193,11 +193,6 @@ public class ForwardsAliasProblem extends AbstractInfoflowProblem {
                                         manager.getGlobalTaintManager().addToGlobalTaintState(newAbs);
                                     else {
                                         res.add(newAbs);
-
-                                        // Inject the new alias into the forward solver
-                                        for (Unit u : manager.getICFG().getSuccsOf(defStmt))
-                                            manager.getForwardSolver()
-                                                    .processEdge(new PathEdge<Unit, Abstraction>(d1, u, newAbs.getActiveCopy()));
                                     }
                                 }
                             }
@@ -600,7 +595,7 @@ public class ForwardsAliasProblem extends AbstractInfoflowProblem {
 
                             // Do not pass over reference parameters
                             // CallFlow passes this into the callee
-                            if (!callee.isNative() && Arrays.stream(callArgs).anyMatch(arg -> !isPrimtiveOrStringBase(source)
+                            if (Arrays.stream(callArgs).anyMatch(arg -> !isPrimtiveOrStringBase(source)
                                     && arg == source.getAccessPath().getPlainValue()))
                                 return null;
                         }

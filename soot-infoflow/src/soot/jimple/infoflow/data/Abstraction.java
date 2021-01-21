@@ -158,6 +158,7 @@ public class Abstraction implements Cloneable, FastSolverLinkedNode<Abstraction,
 		this.accessPath = apToTaint;
 		this.activationUnit = null;
 		this.turnUnit = null;
+		this.skipUnit = null;
 		this.exceptionThrown = exceptionThrown;
 
 		this.neighbors = null;

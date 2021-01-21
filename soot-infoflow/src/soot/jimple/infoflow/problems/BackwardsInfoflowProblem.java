@@ -30,7 +30,7 @@ import java.util.*;
  * @author Tim Lange
  */
 public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
-    private final static boolean DEBUG_PRINT = true;
+    private final static boolean DEBUG_PRINT = false;
     private final static boolean ONLY_CALLS = false;
 
     private final PropagationRuleManager propagationRules;
@@ -125,8 +125,7 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                     if (aliasing.mayAlias(instRef.getBase(), sourceBase)) {
                                         if (ap.firstFieldMatches(instRef.getField())) {
                                             addLeftValue = true;
-                                            cutFirstFieldLeft = ap.getFieldCount() > 0
-                                                    && ap.getFirstField() == instRef.getField();
+                                            cutFirstFieldLeft = true;
 //                                    leftType = ap.getFirstFieldType();
                                         } else if (ap.getTaintSubFields() && ap.getFieldCount() == 0) {
                                             addLeftValue = true;
@@ -182,6 +181,12 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                 }
 
                                 if (addLeftValue) {
+                                    // res.add(source);
+                                    assert res.contains(source);
+
+                                    if (source.toString().contains("ll1"))
+                                        d1=d1;
+
                                     AccessPath newAp;
                                     if (createNewVal)
                                         newAp = manager.getAccessPathFactory().createAccessPath(leftVal, true);
