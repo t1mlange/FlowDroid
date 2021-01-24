@@ -25,7 +25,7 @@ import java.util.*;
 
 /**
  * Class which contains the flow functions for the backwards analysis.
- * Not to be confused with the BackwardsAliasProblem, which is used for finding aliases.
+ * Not to be confused with the AliasProblem, which is used for finding aliases.
  *
  * @author Tim Lange
  */
@@ -64,6 +64,9 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                         if (taintPropagationHandler != null)
                             taintPropagationHandler.notifyFlowIn(srcUnit, source, manager,
                                     TaintPropagationHandler.FlowFunctionType.NormalFlowFunction);
+
+                        if (source.toString().contains("l1(soo") && srcUnit.toString().contains("this.<soot.jimple.infoflow.test.HeapTestCode$Inner1b: soot.jimple.infoflow.test.HeapTestCode this$0> = l1"))
+                            d1=d1;
 
                         Set<Abstraction> res = computeTargetsInternal(d1, source.isAbstractionActive() ? source : source.getActiveCopy());
                         if (DEBUG_PRINT && !ONLY_CALLS)
@@ -712,6 +715,9 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                         if (taintPropagationHandler != null)
                             taintPropagationHandler.notifyFlowIn(callSite, source, manager,
                                     TaintPropagationHandler.FlowFunctionType.CallToReturnFlowFunction);
+
+                        if (source.toString().contains("r2") && callStmt.toString().contains("getChars"))
+                            d1=d1;
 
                         Set<Abstraction> res = computeTargetsInternal(d1, source.isAbstractionActive() ? source : source.getActiveCopy());
                         if (DEBUG_PRINT)

@@ -22,7 +22,7 @@ public interface IPathBuilderFactory {
 	 *            The maximum number of threads to use * @return The newly
 	 *            created path builder
 	 */
-	public IAbstractionPathBuilder createPathBuilder(InfoflowManager manager, int maxThreadNum, InfoflowResults results);
+	public IAbstractionPathBuilder createPathBuilder(InfoflowManager manager, int maxThreadNum);
 
 	/**
 	 * Creates a new path builder. Use this overload if you want the path
@@ -35,7 +35,7 @@ public interface IPathBuilderFactory {
 	 *            The executor in which to run the path reconstruction tasks.
 	 *            * @return The newly created path builder
 	 */
-	public IAbstractionPathBuilder createPathBuilder(InfoflowManager manager, InterruptableExecutor executor, InfoflowResults results);
+	public IAbstractionPathBuilder createPathBuilder(InfoflowManager manager, InterruptableExecutor executor);
 
 	/**
 	 * Gets whether the {@link IAbstractionPathBuilder} object created by this

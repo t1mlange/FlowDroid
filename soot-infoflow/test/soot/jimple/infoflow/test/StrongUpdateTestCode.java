@@ -29,10 +29,12 @@ public class StrongUpdateTestCode {
 
     public void strongUpdateTest3() {
         ConnectionManager cm = new ConnectionManager();
+        IntegerRef ix = new IntegerRef();
+        ix.value = 42;
         IntegerRef i1 = new IntegerRef();
         IntegerRef i2 = i1;
         i2.value = TelephonyManager.getIMEI();
-        i1.value = addOne(41);
+        i1.value = addOne(ix.value);
         cm.publish(i2.value);
     }
 

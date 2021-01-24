@@ -19,8 +19,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import soot.*;
-import soot.jimple.Jimple;
-import soot.jimple.JimpleBody;
 import soot.jimple.Stmt;
 import soot.jimple.infoflow.InfoflowConfiguration.AccessPathConfiguration;
 import soot.jimple.infoflow.InfoflowConfiguration.CallgraphAlgorithm;
@@ -86,7 +84,6 @@ import soot.jimple.infoflow.threading.IExecutorFactory;
 import soot.jimple.infoflow.util.SootMethodRepresentationParser;
 import soot.jimple.infoflow.util.SystemClassHandler;
 import soot.jimple.toolkits.callgraph.ReachableMethods;
-import soot.jimple.toolkits.ide.icfg.dotexport.ICFGDotVisualizer;
 import soot.options.Options;
 
 /**
@@ -473,7 +470,7 @@ public class Infoflow extends AbstractInfoflow {
 
 					// Create the path builder
 					final IAbstractionPathBuilder builder = new BatchPathBuilder(manager,
-							pathBuilderFactory.createPathBuilder(manager, resultExecutor, new InfoflowResults()));
+							pathBuilderFactory.createPathBuilder(manager, resultExecutor));
 //					final IAbstractionPathBuilder builder = new DebuggingPathBuilder(pathBuilderFactory, manager);
 
 					// If we want incremental result reporting, we have to
@@ -903,13 +900,13 @@ public class Infoflow extends AbstractInfoflow {
 												  InterruptableExecutor executor, IMemoryManager<Abstraction, Unit> memoryManager) {
 		IAliasingStrategy aliasingStrategy;
 		IInfoflowSolver backSolver = null;
-		BackwardsAliasProblem backProblem = null;
+		AliasProblem backProblem = null;
 		InfoflowManager backwardsManager = null;
 		switch (getConfig().getAliasingAlgorithm()) {
 			case FlowSensitive:
 				backwardsManager = new InfoflowManager(config, null, new BackwardsInfoflowCFG(iCfg), sourcesSinks,
 						taintWrapper, hierarchy, manager.getAccessPathFactory(), manager.getGlobalTaintManager());
-				backProblem = new BackwardsAliasProblem(backwardsManager);
+				backProblem = new AliasProblem(backwardsManager);
 
 				// We need to create the right data flow solver
 				SolverConfiguration solverConfig = config.getSolverConfiguration();

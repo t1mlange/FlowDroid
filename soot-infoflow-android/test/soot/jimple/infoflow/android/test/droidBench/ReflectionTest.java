@@ -73,7 +73,7 @@ public class ReflectionTest extends JUnitTests {
 	}
 	
 	@Test(timeout=300000)
-	@Ignore
+	
 	public void runTestReflection7() throws IOException, XmlPullParserException {
 		InfoflowResults res = analyzeAPKFile("Reflection/Reflection7.apk", null,
 				enableReflectionCallback);

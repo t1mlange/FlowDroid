@@ -270,6 +270,8 @@ public abstract class BaseSourceSinkManager implements IReversibleSourceSinkMana
 		if (sCallSite.containsInvokeExpr()) {
 			// This might be a normal source method
 			final SootMethod callee = sCallSite.getInvokeExpr().getMethod();
+
+			// Only difference to getSource
 			if (!SystemClassHandler.v().isTaintVisible(ap, callee))
 				return null;
 

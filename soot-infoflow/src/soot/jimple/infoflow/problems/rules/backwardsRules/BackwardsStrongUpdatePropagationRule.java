@@ -33,6 +33,7 @@ public class BackwardsStrongUpdatePropagationRule extends AbstractTaintPropagati
 		if (!(stmt instanceof AssignStmt))
 			return null;
 		AssignStmt assignStmt = (AssignStmt) stmt;
+		Value leftOp = assignStmt.getLeftOp();
 
 		// if leftvalue contains the tainted value -> it is overwritten - remove taint:
 		// but not for arrayRefs:
@@ -40,9 +41,8 @@ public class BackwardsStrongUpdatePropagationRule extends AbstractTaintPropagati
 		// of collections
 		// because we do not use a MUST-Alias analysis, we cannot delete aliases of
 		// taints
-		if (assignStmt.getLeftOp() instanceof ArrayRef)
+		if (leftOp instanceof ArrayRef)
 			return null;
-
 
 		// If this is a newly created alias at this statement, we don't kill it right
 		// away
@@ -50,14 +50,13 @@ public class BackwardsStrongUpdatePropagationRule extends AbstractTaintPropagati
 			return null;
 
 		// If the statement has just been activated, we do not overwrite stuff
-		if (source.getPredecessor() != null && source.getPredecessor().isAbstractionActive()
+		if (source.getPredecessor() != null && !source.getPredecessor().isAbstractionActive()
 				&& source.isAbstractionActive() && source.getAccessPath().equals(source.getPredecessor().getAccessPath()))
 			return null;
 
 		if (!(assignStmt.getRightOp() instanceof Constant))
 			return null;
 
-		Value leftOp = assignStmt.getLeftOp();
 		if (source.getAccessPath().isInstanceFieldRef()) {
 			// Data Propagation: x.f = y && x.f tainted --> no taint propagated
 			// Alias Propagation: Only kill the alias if we directly overwrite it,
@@ -67,7 +66,7 @@ public class BackwardsStrongUpdatePropagationRule extends AbstractTaintPropagati
 				if (getAliasing().mustAlias((Local) leftRef.getBase(),
 						source.getAccessPath().getPlainValue(), assignStmt)) {
 					if (getAliasing().mustAlias(leftRef.getField(), source.getAccessPath().getFirstField())) {
-						killAll.value = true;
+						killSource.value = true;
 						return null;
 					}
 				}
@@ -77,7 +76,7 @@ public class BackwardsStrongUpdatePropagationRule extends AbstractTaintPropagati
 			else if (leftOp instanceof Local) {
 				if (getAliasing().mustAlias((Local) leftOp, source.getAccessPath().getPlainValue(),
 						stmt)) {
-					killAll.value = true;
+					killSource.value = true;
 					return null;
 				}
 			}
@@ -87,7 +86,7 @@ public class BackwardsStrongUpdatePropagationRule extends AbstractTaintPropagati
 		else if (source.getAccessPath().isStaticFieldRef()) {
 			if (leftOp instanceof StaticFieldRef && getAliasing().mustAlias(
 					((StaticFieldRef) leftOp).getField(), source.getAccessPath().getFirstField())) {
-				killAll.value = true;
+				killSource.value = true;
 				return null;
 			}
 
@@ -97,7 +96,7 @@ public class BackwardsStrongUpdatePropagationRule extends AbstractTaintPropagati
 		// x = y && x.f tainted -> no taint propagated
 		else if (source.getAccessPath().isLocal() && leftOp instanceof Local
 				&& leftOp == source.getAccessPath().getPlainValue()) {
-			killAll.value = true;
+			killSource.value = true;
 			return null;
 		}
 

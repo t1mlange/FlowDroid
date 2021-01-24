@@ -32,8 +32,8 @@ public class ContextInsensitiveSourceFinder extends ConcurrentAbstractionPathBui
 	 * @param maxThreadNum
 	 *            The maximum number of threads to use
 	 */
-	public ContextInsensitiveSourceFinder(InfoflowManager manager, InterruptableExecutor executor, InfoflowResults results) {
-		this(manager, executor, -1, results);
+	public ContextInsensitiveSourceFinder(InfoflowManager manager, InterruptableExecutor executor) {
+		this(manager, executor, -1);
 	}
 
 	/**
@@ -51,8 +51,8 @@ public class ContextInsensitiveSourceFinder extends ConcurrentAbstractionPathBui
 	 *            The maximum number of abstractions for which a path
 	 *            reconstruction will be performed
 	 */
-	public ContextInsensitiveSourceFinder(InfoflowManager manager, InterruptableExecutor executor, int numTasks, InfoflowResults results) {
-		super(manager, executor, results);
+	public ContextInsensitiveSourceFinder(InfoflowManager manager, InterruptableExecutor executor, int numTasks) {
+		super(manager, executor);
 		this.numTasks = numTasks;
 	}
 

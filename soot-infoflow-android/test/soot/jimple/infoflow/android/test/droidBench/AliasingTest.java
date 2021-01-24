@@ -29,7 +29,7 @@ public class AliasingTest extends JUnitTests {
 	}
 	
 	@Test(timeout=300000)
-	@Ignore // not yet supported
+	 // not yet supported
 	public void runTestMerge1() throws IOException, XmlPullParserException {
 		InfoflowResults res = analyzeAPKFile("Aliasing/Merge1.apk");
 		if (res != null)

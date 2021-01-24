@@ -31,7 +31,7 @@ public class LifecycleTest extends JUnitTests {
 	}
 
 	@Test(timeout = 300000)
-	@Ignore // Test case broken?
+	 // Test case broken?
 	public void runTestActivityEventSequence2() throws IOException, XmlPullParserException {
 		InfoflowResults res = analyzeAPKFile("Lifecycle/ActivityEventSequence2.apk");
 		Assert.assertNotNull(res);
@@ -39,7 +39,7 @@ public class LifecycleTest extends JUnitTests {
 	}
 
 	@Test(timeout = 300000)
-	@Ignore
+	
 	public void runTestActivityEventSequence3() throws IOException, XmlPullParserException {
 		InfoflowResults res = analyzeAPKFile("Lifecycle/ActivityEventSequence3.apk");
 		Assert.assertNotNull(res);
@@ -126,7 +126,7 @@ public class LifecycleTest extends JUnitTests {
 		Assert.assertEquals(1, res.size());
 	}
 
-	@Ignore
+	
 	@Test(timeout = 300000)
 	public void runTestBroadcastReceiverLifecycle2() throws IOException, XmlPullParserException {
 		InfoflowResults res = analyzeAPKFile("Lifecycle/BroadcastReceiverLifecycle2.apk");
@@ -156,7 +156,7 @@ public class LifecycleTest extends JUnitTests {
 	}
 
 	@Test(timeout = 300000)
-	@Ignore // not supported yet
+	 // not supported yet
 	public void runTestFragmentLifecycle2() throws IOException, XmlPullParserException {
 		InfoflowResults res = analyzeAPKFile("Lifecycle/FragmentLifecycle2.apk");
 		Assert.assertNotNull(res);
@@ -164,7 +164,7 @@ public class LifecycleTest extends JUnitTests {
 	}
 
 	@Test(timeout = 300000)
-	@Ignore
+	
 	public void runTestServiceEventSequence1() throws IOException, XmlPullParserException {
 		InfoflowResults res = analyzeAPKFile("Lifecycle/ServiceEventSequence1.apk");
 		Assert.assertNotNull(res);
@@ -172,7 +172,7 @@ public class LifecycleTest extends JUnitTests {
 	}
 
 	@Test(timeout = 300000)
-	@Ignore
+	
 	public void runTestServiceEventSequence2() throws IOException, XmlPullParserException {
 		InfoflowResults res = analyzeAPKFile("Lifecycle/ServiceEventSequence2.apk");
 		Assert.assertNotNull(res);

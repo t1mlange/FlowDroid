@@ -3,7 +3,6 @@ package soot.jimple.infoflow;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import soot.*;
-import soot.jimple.Jimple;
 import soot.jimple.Stmt;
 import soot.jimple.infoflow.InfoflowConfiguration.*;
 import soot.jimple.infoflow.aliasing.*;
@@ -18,7 +17,6 @@ import soot.jimple.infoflow.data.FlowDroidMemoryManager;
 import soot.jimple.infoflow.data.pathBuilders.BatchPathBuilder;
 import soot.jimple.infoflow.data.pathBuilders.DefaultPathBuilderFactory;
 import soot.jimple.infoflow.data.pathBuilders.IAbstractionPathBuilder;
-import soot.jimple.infoflow.entryPointCreators.DefaultEntryPointCreator;
 import soot.jimple.infoflow.entryPointCreators.IEntryPointCreator;
 import soot.jimple.infoflow.globalTaints.GlobalTaintManager;
 import soot.jimple.infoflow.handlers.PostAnalysisHandler;
@@ -55,7 +53,6 @@ import soot.jimple.infoflow.threading.IExecutorFactory;
 import soot.jimple.infoflow.util.SootMethodRepresentationParser;
 import soot.jimple.infoflow.util.SystemClassHandler;
 import soot.jimple.toolkits.callgraph.ReachableMethods;
-import soot.jimple.toolkits.ide.icfg.dotexport.ICFGDotVisualizer;
 import soot.options.Options;
 import soot.util.Chain;
 
@@ -97,6 +94,7 @@ public class BackwardsInfoflow extends AbstractInfoflow {
      */
     public BackwardsInfoflow() {
         super();
+        config.setDataFlowDirection(DataFlowDirection.Backwards);
         setNativeCallHandler(new BackwardNativeCallHandler());
     }
 
@@ -113,6 +111,7 @@ public class BackwardsInfoflow extends AbstractInfoflow {
      */
     public BackwardsInfoflow(String androidPath, boolean forceAndroidJar) {
         super(null, androidPath, forceAndroidJar);
+        config.setDataFlowDirection(DataFlowDirection.Backwards);
         setNativeCallHandler(new BackwardNativeCallHandler());
     }
 
@@ -131,6 +130,7 @@ public class BackwardsInfoflow extends AbstractInfoflow {
      */
     public BackwardsInfoflow(String androidPath, boolean forceAndroidJar, BiDirICFGFactory icfgFactory) {
         super(icfgFactory, androidPath, forceAndroidJar);
+        config.setDataFlowDirection(DataFlowDirection.Backwards);
         setNativeCallHandler(new BackwardNativeCallHandler());
     }
 
@@ -575,13 +575,13 @@ public class BackwardsInfoflow extends AbstractInfoflow {
                                                   InterruptableExecutor executor, IMemoryManager<Abstraction, Unit> memoryManager) {
         IAliasingStrategy aliasingStrategy;
         IInfoflowSolver aliasSolver = null;
-        ForwardsAliasProblem aliasProblem = null;
+        BackwardsAliasProblem aliasProblem = null;
         InfoflowManager aliasManager = null;
         switch (getConfig().getAliasingAlgorithm()) {
             case FlowSensitive:
                 aliasManager = new InfoflowManager(config, null, new InfoflowCFG(iCfg), sourcesSinks,
                         taintWrapper, hierarchy, manager.getAccessPathFactory(), manager.getGlobalTaintManager());
-                aliasProblem = new ForwardsAliasProblem(aliasManager);
+                aliasProblem = new BackwardsAliasProblem(aliasManager);
 
                 // We need to create the right data flow solver
                 SolverConfiguration solverConfig = config.getSolverConfiguration();
@@ -688,20 +688,25 @@ public class BackwardsInfoflow extends AbstractInfoflow {
             // TODO: just debug things
             Chain<SootClass> classes = Scene.v().getClasses();
             for (SootClass c : classes) {
-                if (c.getName().contains("Test")) {
-                    String name = c.getName().replace("soot.jimple.infoflow.test.", "");
-                    String baseClass = name.split("\\$")[0];
-                    File dir = new File("jimpleCode/" + baseClass);
-                    if (dir.exists() || dir.mkdir()) {
-                        File file = new File("jimpleCode/" + baseClass + "/" + name + ".jimple");
-                        PrintWriter writer;
-                        try {
-                            writer = new PrintWriter(file);
-                            soot.Printer.v().printTo(c, writer);
-                            writer.flush();
-                            writer.close();
-                        } catch (FileNotFoundException e) {
-                            e.printStackTrace();
+                if (!c.getName().startsWith("java")) {
+                    if (c.getName().contains("Test") || c.getName().startsWith("edu.mit")) {
+                        String name = c.getName().replace("soot.jimple.infoflow.test.", "");
+                        name = name.replace("/", "");
+                        String baseClass = name.split("\\$")[0];
+                        File dir = new File("/home/tim/Projects/FlowDroid/soot-infoflow/jimpleCode/" + baseClass);
+                        boolean exists = dir.exists();
+                        boolean cont = exists || dir.mkdir();
+                        if (cont) {
+                            File file = new File("/home/tim/Projects/FlowDroid/soot-infoflow/jimpleCode/" + baseClass + "/" + name + ".jimple");
+                            PrintWriter writer;
+                            try {
+                                writer = new PrintWriter(file);
+                                soot.Printer.v().printTo(c, writer);
+                                writer.flush();
+                                writer.close();
+                            } catch (FileNotFoundException e) {
+                                e.printStackTrace();
+                            }
                         }
                     }
                 }
@@ -877,7 +882,7 @@ public class BackwardsInfoflow extends AbstractInfoflow {
 
                     // Create the path builder
                     final IAbstractionPathBuilder builder = new BatchPathBuilder(manager,
-                            pathBuilderFactory.createPathBuilder(manager, resultExecutor, new BackwardsInfoflowResults()));
+                            pathBuilderFactory.createPathBuilder(manager, resultExecutor));
 
                     // If we want incremental result reporting, we have to
                     // initialize it before we start the taint tracking

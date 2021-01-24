@@ -85,7 +85,7 @@ public class AndroidSpecificTest extends JUnitTests {
 	}
 
 	@Test(timeout = 300000)
-	@Ignore // not supported, would require taint tracking via files
+	 // not supported, would require taint tracking via files
 	public void runTestPrivateDataLeak3() throws IOException, XmlPullParserException {
 		InfoflowResults res = analyzeAPKFile("AndroidSpecific/PrivateDataLeak3.apk");
 		Assert.assertNotNull(res);

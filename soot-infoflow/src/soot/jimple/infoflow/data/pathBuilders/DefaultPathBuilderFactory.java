@@ -53,21 +53,21 @@ public class DefaultPathBuilderFactory implements IPathBuilderFactory {
 	}
 
 	@Override
-	public IAbstractionPathBuilder createPathBuilder(InfoflowManager manager, int maxThreadNum, InfoflowResults results) {
-		return createPathBuilder(manager, createExecutor(maxThreadNum), results);
+	public IAbstractionPathBuilder createPathBuilder(InfoflowManager manager, int maxThreadNum) {
+		return createPathBuilder(manager, createExecutor(maxThreadNum));
 	}
 
 	@Override
-	public IAbstractionPathBuilder createPathBuilder(InfoflowManager manager, InterruptableExecutor executor, InfoflowResults results) {
+	public IAbstractionPathBuilder createPathBuilder(InfoflowManager manager, InterruptableExecutor executor) {
 		switch (pathConfiguration.getPathBuildingAlgorithm()) {
 		case Recursive:
 			return new RecursivePathBuilder(manager, executor);
 		case ContextSensitive:
-			return new ContextSensitivePathBuilder(manager, executor, results);
+			return new ContextSensitivePathBuilder(manager, executor);
 		case ContextInsensitive:
-			return new ContextInsensitivePathBuilder(manager, executor, results);
+			return new ContextInsensitivePathBuilder(manager, executor);
 		case ContextInsensitiveSourceFinder:
-			return new ContextInsensitiveSourceFinder(manager, executor, results);
+			return new ContextInsensitiveSourceFinder(manager, executor);
 		case None:
 			return new EmptyPathBuilder();
 		}

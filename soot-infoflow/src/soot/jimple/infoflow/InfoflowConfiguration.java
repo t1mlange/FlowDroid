@@ -136,6 +136,18 @@ public class InfoflowConfiguration {
 		GarbageCollecting
 	}
 
+	public static enum DataFlowDirection {
+		/**
+		 * Use the default forwards infoflow search
+		 */
+		Forwards,
+
+		/**
+		 * Use the backwards infoflow search
+		 */
+		Backwards
+	}
+
 	/**
 	 * Enumeration containing the supported modes how the data flow analyzer shall
 	 * handle implicit flows
@@ -1285,6 +1297,7 @@ public class InfoflowConfiguration {
 	private CodeEliminationMode codeEliminationMode = CodeEliminationMode.PropagateConstants;
 	private StaticFieldTrackingMode staticFieldTrackingMode = StaticFieldTrackingMode.ContextFlowSensitive;
 	private SootIntegrationMode sootIntegrationMode = SootIntegrationMode.CreateNewInstance;
+	private DataFlowDirection dataFlowDirection;
 
 	private boolean taintAnalysisEnabled = true;
 	private boolean incrementalResultReporting = false;
@@ -1324,6 +1337,7 @@ public class InfoflowConfiguration {
 		this.codeEliminationMode = config.codeEliminationMode;
 		this.staticFieldTrackingMode = config.staticFieldTrackingMode;
 		this.sootIntegrationMode = config.sootIntegrationMode;
+		this.dataFlowDirection = config.dataFlowDirection;
 
 		this.inspectSources = config.inspectSources;
 		this.inspectSinks = config.inspectSinks;
@@ -1648,6 +1662,24 @@ public class InfoflowConfiguration {
 	 */
 	public AliasingAlgorithm getAliasingAlgorithm() {
 		return aliasingAlgorithm;
+	}
+
+	/**
+	 * Gets the data flow direction to be used for the taint analysis
+	 *
+	 * @return The data flow direction to be used for the taint analysis
+	 */
+	public DataFlowDirection getDataFlowDirection() {
+		return this.dataFlowDirection;
+	}
+
+	/**
+	 * Sets the data flow direction to be used for the taint analysis
+	 *
+	 * @param direction The data flow direction to be used for the taint analysis
+	 */
+	public void setDataFlowDirection(DataFlowDirection direction) {
+		this.dataFlowDirection = direction;
 	}
 
 	/**

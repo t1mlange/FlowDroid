@@ -132,7 +132,7 @@ public class CallbackTest extends JUnitTests {
 	}
 
 	@Test(timeout = 300000)
-	@Ignore // Unregistering callbacks is not supported
+	 // Unregistering callbacks is not supported
 	public void runTestUnregister1() throws IOException, XmlPullParserException {
 		InfoflowResults res = analyzeAPKFile("Callbacks/Unregister1.apk");
 		Assert.assertNotNull(res);

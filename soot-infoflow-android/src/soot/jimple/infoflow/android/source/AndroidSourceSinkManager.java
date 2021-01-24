@@ -35,6 +35,7 @@ import soot.jimple.NullConstant;
 import soot.jimple.Stmt;
 import soot.jimple.StringConstant;
 import soot.jimple.infoflow.IInfoflow;
+import soot.jimple.infoflow.Infoflow;
 import soot.jimple.infoflow.InfoflowConfiguration.LayoutMatchingMode;
 import soot.jimple.infoflow.InfoflowManager;
 import soot.jimple.infoflow.android.InfoflowAndroidConfiguration;
@@ -426,8 +427,8 @@ public class AndroidSourceSinkManager extends BaseSourceSinkManager
 	}
 
 	@Override
-	protected ISourceSinkDefinition getSinkDefinition(Stmt sCallSite, InfoflowManager manager, AccessPath ap) {
-		ISourceSinkDefinition definition = super.getSinkDefinition(sCallSite, manager, ap);
+	protected ISourceSinkDefinition getSource(Stmt sCallSite, IInfoflowCFG cfg) {
+		ISourceSinkDefinition definition = super.getSource(sCallSite, cfg);
 		if (definition != null)
 			return definition;
 
@@ -436,30 +437,14 @@ public class AndroidSourceSinkManager extends BaseSourceSinkManager
 			final String subSig = callee.getSubSignature();
 			final SootClass sc = callee.getDeclaringClass();
 
-			// Do not consider ICC methods as sinks if only the base object is
-			// tainted
-			boolean isParamTainted = false;
-			if (ap != null) {
-				if (!sc.isInterface() && !ap.isStaticFieldRef()) {
-					for (int i = 0; i < sCallSite.getInvokeExpr().getArgCount(); i++) {
-						if (sCallSite.getInvokeExpr().getArg(i) == ap.getPlainValue()) {
-							isParamTainted = true;
-							break;
-						}
-					}
-				}
-			}
-
-			if (isParamTainted || ap == null) {
-				for (SootClass clazz : iccBaseClasses) {
-					if (Scene.v().getOrMakeFastHierarchy().isSubclass(sc, clazz)) {
-						SootMethod sm = clazz.getMethodUnsafe(subSig);
-						if (sm != null) {
-							ISourceSinkDefinition def = this.sinkMethods.get(sm);
-							if (def != null)
-								return def;
-							break;
-						}
+			for (SootClass clazz : iccBaseClasses) {
+				if (Scene.v().getOrMakeFastHierarchy().isSubclass(sc, clazz)) {
+					SootMethod sm = clazz.getMethodUnsafe(subSig);
+					if (sm != null) {
+						ISourceSinkDefinition def = this.sinkMethods.get(sm);
+						if (def != null)
+							return def;
+						break;
 					}
 				}
 			}

@@ -3,10 +3,13 @@ package soot.jimple.infoflow.data.pathBuilders;
 import java.util.HashSet;
 import java.util.Set;
 
+import afu.org.checkerframework.checker.oigj.qual.O;
+import soot.jimple.infoflow.InfoflowConfiguration;
 import soot.jimple.infoflow.InfoflowManager;
 import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.data.AbstractionAtSink;
 import soot.jimple.infoflow.memory.ISolverTerminationReason;
+import soot.jimple.infoflow.results.BackwardsInfoflowResults;
 import soot.jimple.infoflow.results.InfoflowResults;
 import soot.jimple.infoflow.solver.executors.InterruptableExecutor;
 
@@ -18,10 +21,14 @@ public abstract class ConcurrentAbstractionPathBuilder extends AbstractAbstracti
 	private Set<IMemoryBoundedSolverStatusNotification> notificationListeners = new HashSet<>();
 	private ISolverTerminationReason killFlag = null;
 
-	public ConcurrentAbstractionPathBuilder(InfoflowManager manager, InterruptableExecutor executor, InfoflowResults results) {
+	public ConcurrentAbstractionPathBuilder(InfoflowManager manager, InterruptableExecutor executor) {
 		super(manager);
 		this.executor = executor;
-		this.results = results;
+		InfoflowConfiguration.DataFlowDirection direction = manager.getConfig().getDataFlowDirection();
+		if (direction == InfoflowConfiguration.DataFlowDirection.Backwards)
+			results = new BackwardsInfoflowResults();
+		else
+			results = new InfoflowResults();
 	}
 
 	/**
@@ -102,11 +109,6 @@ public abstract class ConcurrentAbstractionPathBuilder extends AbstractAbstracti
 	protected abstract boolean triggerComputationForNeighbors();
 
 	@Override
-	public InfoflowResults getResults() {
-		return this.results;
-	}
-
-	@Override
 	public void forceTerminate(ISolverTerminationReason reason) {
 		killFlag = reason;
 		executor.interrupt();
@@ -121,6 +123,11 @@ public abstract class ConcurrentAbstractionPathBuilder extends AbstractAbstracti
 	protected void scheduleDependentTask(Runnable task) {
 		if (!isKilled())
 			executor.execute(task);
+	}
+
+	@Override
+	public InfoflowResults getResults() {
+		return this.results;
 	}
 
 	@Override
@@ -156,5 +163,4 @@ public abstract class ConcurrentAbstractionPathBuilder extends AbstractAbstracti
 	InterruptableExecutor getExecutor() {
 		return this.executor;
 	}
-
 }
