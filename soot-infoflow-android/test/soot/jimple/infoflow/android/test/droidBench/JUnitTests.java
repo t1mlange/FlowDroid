@@ -15,6 +15,7 @@ import java.io.IOException;
 
 import org.xmlpull.v1.XmlPullParserException;
 
+import soot.jimple.infoflow.InfoflowConfiguration;
 import soot.jimple.infoflow.InfoflowConfiguration.ImplicitFlowMode;
 import soot.jimple.infoflow.android.InfoflowAndroidConfiguration;
 import soot.jimple.infoflow.android.SetupApplication;
@@ -147,6 +148,8 @@ public class JUnitTests {
 
 		setupApplication.setTaintWrapper(new EasyTaintWrapper(taintWrapperFile));
 		setupApplication.getConfig().setEnableArraySizeTainting(true);
+
+		setupApplication.getConfig().setDataFlowDirection(InfoflowConfiguration.DataFlowDirection.Backwards);
 
 		if (iccModel != null && iccModel.length() > 0) {
 			setupApplication.getConfig().getIccConfig().setIccModel(iccModel);

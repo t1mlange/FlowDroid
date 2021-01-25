@@ -6,13 +6,7 @@ import java.util.Map;
 import java.util.Set;
 
 import soot.Value;
-import soot.jimple.AssignStmt;
-import soot.jimple.DefinitionStmt;
-import soot.jimple.IdentityStmt;
-import soot.jimple.InstanceInvokeExpr;
-import soot.jimple.InvokeStmt;
-import soot.jimple.ParameterRef;
-import soot.jimple.Stmt;
+import soot.jimple.*;
 import soot.jimple.infoflow.IInfoflow;
 import soot.jimple.infoflow.InfoflowManager;
 import soot.jimple.infoflow.android.InfoflowAndroidConfiguration;
@@ -306,7 +300,8 @@ public class AccessPathBasedSourceSinkManager extends AndroidSourceSinkManager {
 			if (sCallSite.getInvokeExpr() instanceof InstanceInvokeExpr && methodDef.getBaseObjects() != null) {
 				for (AccessPathTuple apt : methodDef.getBaseObjects())
 					if (apt.getSourceSinkType().isSink()) {
-						AccessPath ap = manager.getAccessPathFactory().createAccessPath(((InstanceInvokeExpr) sCallSite).getBase(), true);
+						AccessPath ap = manager.getAccessPathFactory()
+								.createAccessPath(((InstanceInvokeExpr) sCallSite.getInvokeExpr()).getBase(), true);
 						return new SourceInfo(def, ap);
 					}
 			}
@@ -315,7 +310,10 @@ public class AccessPathBasedSourceSinkManager extends AndroidSourceSinkManager {
 			if (methodDef.getParameters() != null && methodDef.getParameters().length > 0) {
 				Set<AccessPath> aps = new HashSet<>();
 				// Get the tainted parameter index
-				for (int i = 0; i < sCallSite.getInvokeExpr().getArgCount(); i++)
+				for (int i = 0; i < sCallSite.getInvokeExpr().getArgCount(); i++) {
+					if (sCallSite.getInvokeExpr().getArg(i) instanceof Constant)
+						continue;
+
 					if (methodDef.getParameters().length > i) {
 						for (AccessPathTuple apt : methodDef.getParameters()[i]) {
 							if (apt.getSourceSinkType().isSink()) {
@@ -325,6 +323,7 @@ public class AccessPathBasedSourceSinkManager extends AndroidSourceSinkManager {
 						}
 						return new SourceInfo(def, aps);
 					}
+				}
 			}
 		} else if (def instanceof FieldSourceSinkDefinition) {
 			FieldSourceSinkDefinition fieldDef = (FieldSourceSinkDefinition) def;

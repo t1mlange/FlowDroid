@@ -97,7 +97,7 @@ public class InterComponentCommunicationTest extends JUnitTests {
 	public void runTestComponentNotInManifest1() throws IOException, XmlPullParserException {
 		InfoflowResults res = analyzeAPKFile("InterComponentCommunication/ComponentNotInManifest1.apk");
 		Assert.assertNotNull(res);
-		Assert.assertEquals(1, res.size());
+		Assert.assertEquals(0, res.size());
 	}
 
 	@Test(timeout=300000)

@@ -30,7 +30,7 @@ import java.util.*;
  * @author Tim Lange
  */
 public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
-    private final static boolean DEBUG_PRINT = false;
+    private final static boolean DEBUG_PRINT = true;
     private final static boolean ONLY_CALLS = false;
 
     private final PropagationRuleManager propagationRules;
@@ -184,12 +184,6 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                 }
 
                                 if (addLeftValue) {
-                                    // res.add(source);
-                                    assert res.contains(source);
-
-                                    if (source.toString().contains("ll1"))
-                                        d1=d1;
-
                                     AccessPath newAp;
                                     if (createNewVal)
                                         newAp = manager.getAccessPathFactory().createAccessPath(leftVal, true);
@@ -748,7 +742,8 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                             res = new HashSet<>();
 
                         if (isExcluded(callee)) {
-                            res.add(source);
+                            if (source != zeroValue)
+                                res.add(source);
                             return res;
                         }
 
@@ -808,7 +803,7 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                 && aliasing.mayAlias(arg, source.getAccessPath().getPlainValue())))
                             return res;
 
-                        if (!killSource.value)
+                        if (!killSource.value && source != zeroValue)
                             res.add(source);
 
                         setCallSite(source, res, callStmt);
