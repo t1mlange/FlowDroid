@@ -2,12 +2,10 @@ package soot.jimple.infoflow.codeOptimization;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 
-import soot.MethodOrMethodContext;
-import soot.Scene;
-import soot.SootMethod;
-import soot.Unit;
+import soot.*;
 import soot.jimple.Stmt;
 import soot.jimple.infoflow.InfoflowConfiguration;
 import soot.jimple.infoflow.InfoflowConfiguration.CodeEliminationMode;
@@ -16,6 +14,7 @@ import soot.jimple.infoflow.InfoflowManager;
 import soot.jimple.infoflow.sourcesSinks.manager.ISourceSinkManager;
 import soot.jimple.infoflow.taintWrappers.ITaintPropagationWrapper;
 import soot.jimple.infoflow.util.SystemClassHandler;
+import soot.jimple.toolkits.callgraph.Edge;
 import soot.jimple.toolkits.scalar.ConditionalBranchFolder;
 import soot.jimple.toolkits.scalar.ConstantPropagatorAndFolder;
 import soot.jimple.toolkits.scalar.DeadAssignmentEliminator;
@@ -55,11 +54,13 @@ public class DeadCodeEliminator implements ICodeOptimizer {
 				continue;
 
 			List<Unit> callSites = getCallsInMethod(method);
+			Body oldBody = (Body) method.retrieveActiveBody().clone();
 
 			ConstantPropagatorAndFolder.v().transform(method.getActiveBody());
 			DeadAssignmentEliminator.v().transform(method.getActiveBody());
 
 			// Remove the dead callgraph edges
+
 			removeDeadCallgraphEdges(method, callSites);
 		}
 
@@ -89,6 +90,7 @@ public class DeadCodeEliminator implements ICodeOptimizer {
 			// Delete all dead code. We need to be careful and patch the cfg so
 			// that it does not retain edges for call statements we have deleted
 			List<Unit> callSites = getCallsInMethod(method);
+			Body oldBody = (Body) method.retrieveActiveBody().clone();
 			UnreachableCodeEliminator.v().transform(method.getActiveBody());
 			removeDeadCallgraphEdges(method, callSites);
 		}
@@ -104,10 +106,14 @@ public class DeadCodeEliminator implements ICodeOptimizer {
 	 */
 	static void removeDeadCallgraphEdges(SootMethod method, List<Unit> oldCallSites) {
 		List<Unit> newCallSites = getCallsInMethod(method);
-		if (oldCallSites != null)
-			for (Unit u : oldCallSites)
-				if (newCallSites == null || !newCallSites.contains(u))
+		if (oldCallSites != null) {
+			for (Unit u : oldCallSites) {
+				if (newCallSites == null || !newCallSites.contains(u)) {
+					// Remove all outgoing edges
 					Scene.v().getCallGraph().removeAllEdgesOutOf(u);
+				}
+			}
+		}
 	}
 
 	/**

@@ -15,26 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import heros.solver.Pair;
-import soot.Body;
-import soot.DoubleType;
-import soot.FloatType;
-import soot.IntType;
-import soot.Local;
-import soot.LongType;
-import soot.MethodOrMethodContext;
-import soot.Modifier;
-import soot.RefType;
-import soot.Scene;
-import soot.SceneTransformer;
-import soot.SootClass;
-import soot.SootField;
-import soot.SootMethod;
-import soot.Trap;
-import soot.Type;
-import soot.Unit;
-import soot.Value;
-import soot.ValueBox;
-import soot.VoidType;
+import soot.*;
 import soot.dexpler.DalvikThrowAnalysis;
 import soot.javaToJimple.LocalGenerator;
 import soot.jimple.ArrayRef;
@@ -283,7 +264,7 @@ public class InterproceduralConstantValuePropagator extends SceneTransformer {
 						removeCallSite(s, sm);
 				}
 			}
-			logger.info("Removed %d call edges", callEdgesRemoved);
+			logger.info("Removed {} call edges", callEdgesRemoved);
 		}
 
 		// If we introduced a new class, we have to reset the hierarchy
@@ -860,8 +841,9 @@ public class InterproceduralConstantValuePropagator extends SceneTransformer {
 			// Propagate the constant inside the callee
 			if (inserted != null) {
 				ConstantPropagatorAndFolder.v().transform(sm.getActiveBody());
-				for (Unit u : inserted)
+				for (Unit u : inserted) {
 					sm.getActiveBody().getUnits().remove(u);
+				}
 
 				// This might lead to more opportunities of constant propagation
 				for (Unit u : sm.getActiveBody().getUnits())

@@ -579,7 +579,7 @@ public class BackwardsInfoflow extends AbstractInfoflow {
         InfoflowManager aliasManager = null;
         switch (getConfig().getAliasingAlgorithm()) {
             case FlowSensitive:
-                aliasManager = new InfoflowManager(config, null, new InfoflowCFG(iCfg), sourcesSinks,
+                aliasManager = new InfoflowManager(config, null, iCfg, sourcesSinks,
                         taintWrapper, hierarchy, manager.getAccessPathFactory(), manager.getGlobalTaintManager());
                 aliasProblem = new BackwardsAliasProblem(aliasManager);
 
@@ -635,6 +635,12 @@ public class BackwardsInfoflow extends AbstractInfoflow {
         return new Aliasing(aliasingStrategy, manager);
     }
 
+    protected InfoflowManager initializeInfoflowManager(final ISourceSinkManager sourcesSinks, IInfoflowCFG iCfg,
+                                                        GlobalTaintManager globalTaintManager) {
+        return new InfoflowManager(config, null, new BackwardsInfoflowCFG(iCfg), sourcesSinks,
+                taintWrapper, hierarchy, new AccessPathFactory(config), globalTaintManager);
+    }
+
     protected void runAnalysis(ISourceSinkManager sourcesSinks) {
         runAnalysis(sourcesSinks, null);
     }
@@ -677,7 +683,6 @@ public class BackwardsInfoflow extends AbstractInfoflow {
             if (sourcesSinks != null)
                 sourcesSinks.initialize();
 
-            // TODO: Breaks tests
             // Perform constant propagation and remove dead code
 			if (config.getCodeEliminationMode() != CodeEliminationMode.NoCodeElimination) {
 				long currentMillis = System.nanoTime();
@@ -688,8 +693,8 @@ public class BackwardsInfoflow extends AbstractInfoflow {
             // TODO: just debug things
             Chain<SootClass> classes = Scene.v().getClasses();
             for (SootClass c : classes) {
-                if (!c.getName().startsWith("java")) {
-                    if (c.getName().contains("Test") || c.getName().startsWith("edu.mit")) {
+                if (c.getName().contains("Vector") || !c.getName().startsWith("java")) {
+                    if (c.getName().contains("Vector") || c.getName().contains("Test") || c.getName().startsWith("edu.mit")) {
                         String name = c.getName().replace("soot.jimple.infoflow.test.", "");
                         name = name.replace("/", "");
                         String baseClass = name.split("\\$")[0];
@@ -734,7 +739,8 @@ public class BackwardsInfoflow extends AbstractInfoflow {
                     config.getEnableExceptionTracking());
 
             // Check whether we need to run with one source at a time
-            IOneSourceAtATimeManager oneSourceAtATime = config.getOneSourceAtATime() && sourcesSinks instanceof IOneSourceAtATimeManager ? (IOneSourceAtATimeManager) sourcesSinks
+            IOneSourceAtATimeManager oneSourceAtATime = config.getOneSourceAtATime()
+                    && sourcesSinks instanceof IOneSourceAtATimeManager ? (IOneSourceAtATimeManager) sourcesSinks
                     : null;
 
             // Reset the current source
@@ -770,8 +776,7 @@ public class BackwardsInfoflow extends AbstractInfoflow {
                 GlobalTaintManager globalTaintManager = new GlobalTaintManager(solvers);
 
                 // Initialize the data flow manager
-                manager = new InfoflowManager(config, null, new BackwardsInfoflowCFG(iCfg), sourcesSinks,
-                        taintWrapper, hierarchy, new AccessPathFactory(config), globalTaintManager);
+                manager = initializeInfoflowManager(sourcesSinks, iCfg, globalTaintManager);
 
                 // Create the solver peer group
                 solverPeerGroup = new GCSolverPeerGroup();
@@ -800,7 +805,7 @@ public class BackwardsInfoflow extends AbstractInfoflow {
 
                 memoryWatcher.addSolver((IMemoryBoundedSolver) solver);
                 manager.setForwardSolver(solver);
-                manager.setBackwardSolver(backwardSolver);
+//                manager.setBackwardSolver(backwardSolver);
                 if (aliasingStrategy.getSolver() != null)
                     aliasingStrategy.getSolver().getTabulationProblem().getManager().setForwardSolver(solver);
                 solvers.add(solver);

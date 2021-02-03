@@ -101,8 +101,7 @@ public class BackwardsWrapperRule extends AbstractTaintPropagationRule {
                 AccessPath absAp = abs.getAccessPath();
                 boolean isBasicString = TypeUtils.isStringType(absAp.getBaseType()) && !absAp.getCanHaveImmutableAliases()
                         && !getAliasing().isStringConstructorCall(stmt);
-                boolean taintsObjectValue = absAp.getBaseType() instanceof RefType
-                        && abs.getAccessPath().getBaseType() instanceof RefType && !isBasicString;
+                boolean taintsObjectValue = absAp.getBaseType() instanceof RefType && !isBasicString;
                 boolean taintsStaticField = getManager().getConfig()
                         .getStaticFieldTrackingMode() != InfoflowConfiguration.StaticFieldTrackingMode.None && abs.getAccessPath().isStaticFieldRef();
 
@@ -112,7 +111,7 @@ public class BackwardsWrapperRule extends AbstractTaintPropagationRule {
                             getManager().getICFG().getMethodOf(stmt), abs);
                 }
 
-                if (!killSource.value && absAp.equals(ap))
+                if (!killSource.value && !absAp.equals(ap))
                     killSource.value = abs != source;
             }
             res = resWAliases;

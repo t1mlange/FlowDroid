@@ -149,7 +149,7 @@ public class JUnitTests {
 		setupApplication.setTaintWrapper(new EasyTaintWrapper(taintWrapperFile));
 		setupApplication.getConfig().setEnableArraySizeTainting(true);
 
-		setupApplication.getConfig().setDataFlowDirection(InfoflowConfiguration.DataFlowDirection.Backwards);
+//		setupApplication.getConfig().setDataFlowDirection(InfoflowConfiguration.DataFlowDirection.Backwards);
 
 		if (iccModel != null && iccModel.length() > 0) {
 			setupApplication.getConfig().getIccConfig().setIccModel(iccModel);
