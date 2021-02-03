@@ -2,6 +2,7 @@ package soot.jimple.infoflow.problems.rules.backwardsRules;
 
 import soot.RefType;
 import soot.SootMethod;
+import soot.Unit;
 import soot.jimple.*;
 import soot.jimple.infoflow.InfoflowConfiguration;
 import soot.jimple.infoflow.InfoflowManager;
@@ -107,11 +108,11 @@ public class BackwardsWrapperRule extends AbstractTaintPropagationRule {
 
                 if (taintsObjectValue || taintsStaticField
                         || aliasing.canHaveAliasesRightSide(stmt, abs.getAccessPath().getPlainValue(), abs)) {
-                    aliasing.computeAliases(d1, stmt, absAp.getPlainValue(), resWAliases,
+                        aliasing.computeAliases(d1, stmt, absAp.getPlainValue(), resWAliases,
                             getManager().getICFG().getMethodOf(stmt), abs);
                 }
 
-                if (!killSource.value && !absAp.equals(ap))
+                if (!killSource.value /*&& !absAp.equals(ap)*/)
                     killSource.value = abs != source;
             }
             res = resWAliases;

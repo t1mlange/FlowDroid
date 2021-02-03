@@ -358,9 +358,9 @@ public class EasyTaintWrapper extends AbstractTaintWrapper implements IReversibl
 		if (wrapType == MethodWrapType.Exclude)
 			return Collections.singleton(taintedPath);
 
+		boolean taintedObj = false;
 		if (stmt instanceof DefinitionStmt && stmt.getInvokeExpr() instanceof InstanceInvokeExpr) {
 			DefinitionStmt def = (DefinitionStmt) stmt;
-			InstanceInvokeExpr iiExpr = (InstanceInvokeExpr) stmt.getInvokeExpr();
 			// If the return value is tainted, the base object needs to be tainted tainted
 			if (taintedPath.isEmpty() || def.getLeftOp().equals(taintedPath.getPlainValue())) {
 				// As we go backwards: If we have a taint, we guess it was wrongfully sent to this
@@ -370,13 +370,16 @@ public class EasyTaintWrapper extends AbstractTaintWrapper implements IReversibl
 
 				taints.add(manager.getAccessPathFactory().createAccessPath(
 						((InstanceInvokeExpr) stmt.getInvokeExprBox().getValue()).getBase(), true));
+				// this slightly different behavior is needed e.g. for StringBuilder#append
+				// where the string builder and the params get tainted
+				taintedObj = true;
 			}
 		}
 
 		// if base object is tainted, we need to taint all parameters
 		if (isSupported && wrapType == MethodWrapType.CreateTaint) {
 			// If we are inside a conditional, we always taint
-			boolean doTaint = taintedPath.isEmpty();
+			boolean doTaint = taintedPath.isEmpty() || taintedObj;
 
 			if (!doTaint) {
 				// Otherwise, we have to check whether we have a tainted base object

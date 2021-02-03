@@ -30,36 +30,43 @@ public class BackwardNativeCallHandler extends AbstractNativeCallHandler {
 	@Override
 	public Set<Abstraction> getTaintedValues(Stmt call, Abstraction source, Value[] params){
 		//check some evaluated methods:
-		
-		//arraycopy:
-		//arraycopy(Object src, int srcPos, Object dest, int destPos, int length)
-        //Copies an array from the specified source array, beginning at the specified position,
-		//to the specified position of the destination array.
-		if (source.isAbstractionActive()) {
-			if (call.getInvokeExpr().getMethod().getSignature().equals(SIG_ARRAYCOPY)) {
-				if (params[2].equals(source.getAccessPath().getPlainValue())) {
-					if (manager.getTypeUtils().checkCast(source.getAccessPath(), params[0].getType())) {
+		if (call.getInvokeExpr().getMethod().getSignature().equals(SIG_ARRAYCOPY)) {
+			if (source.isAbstractionActive()) {
+				if (call.getInvokeExpr().getMethod().getSignature().equals(SIG_ARRAYCOPY)) {
+					if (params[2].equals(source.getAccessPath().getPlainValue())) {
+						if (manager.getTypeUtils().checkCast(source.getAccessPath(), params[0].getType())) {
+							AccessPath ap = manager.getAccessPathFactory().copyWithNewValue(source.getAccessPath(),
+									params[0], source.getAccessPath().getBaseType(), false);
+							Abstraction abs = source.deriveNewAbstraction(ap, call);
+							abs.setCorrespondingCallSite(call);
+							return Collections.singleton(abs);
+						}
+					}
+				}
+			} else {
+				if(params[0].equals(source.getAccessPath().getPlainValue())) {
+					if (manager.getTypeUtils().checkCast(source.getAccessPath(), params[2].getType())) {
 						AccessPath ap = manager.getAccessPathFactory().copyWithNewValue(source.getAccessPath(),
-								params[0], source.getAccessPath().getBaseType(), false);
+								params[2], source.getAccessPath().getBaseType(), false);
 						Abstraction abs = source.deriveNewAbstraction(ap, call);
 						abs.setCorrespondingCallSite(call);
 						return Collections.singleton(abs);
 					}
 				}
 			}
-			else if(call.getInvokeExpr().getMethod().getSignature().equals(SIG_NEW_ARRAY)) {
-				if(params[1].equals(source.getAccessPath().getPlainValue())) {
-					if (manager.getTypeUtils().checkCast(source.getAccessPath(), params[1].getType())) {
-						AccessPath ap = manager.getAccessPathFactory().copyWithNewValue(source.getAccessPath(),
-								params[1], source.getAccessPath().getBaseType(), false, true, ArrayTaintType.Length);
-						Abstraction abs = source.deriveNewAbstraction(ap, call);
-						abs.setCorrespondingCallSite(call);
-						return Collections.singleton(abs);
-					}
-				}			
+		}
+		else if(call.getInvokeExpr().getMethod().getSignature().equals(SIG_NEW_ARRAY)) {
+			if(params[1].equals(source.getAccessPath().getPlainValue())) {
+				if (manager.getTypeUtils().checkCast(source.getAccessPath(), params[1].getType())) {
+					AccessPath ap = manager.getAccessPathFactory().copyWithNewValue(source.getAccessPath(),
+							params[1], source.getAccessPath().getBaseType(), false, true, ArrayTaintType.Length);
+					Abstraction abs = source.deriveNewAbstraction(ap, call);
+					abs.setCorrespondingCallSite(call);
+					return Collections.singleton(abs);
+				}
 			}
 		}
-		
+
 		return null;
 	}
 	

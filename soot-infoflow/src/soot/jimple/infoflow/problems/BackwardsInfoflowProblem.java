@@ -30,7 +30,7 @@ import java.util.*;
  * @author Tim Lange
  */
 public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
-    private final static boolean DEBUG_PRINT = false;
+    private final static boolean DEBUG_PRINT = true;
     private final static boolean ONLY_CALLS = false;
 
     private final PropagationRuleManager propagationRules;
@@ -48,13 +48,6 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
     @Override
     protected FlowFunctions<Unit, Abstraction, SootMethod> createFlowFunctionsFactory() {
         return new FlowFunctions<Unit, Abstraction, SootMethod>() {
-            private boolean isCircularTypeMatch(Value val, Abstraction source) {
-                if (!(val instanceof InstanceFieldRef))
-                    return false;
-                InstanceFieldRef ref = (InstanceFieldRef) val;
-                return ref.getBase().getType() == ref.getField().getType() && ref.getBase() == source.getAccessPath().getPlainValue();
-            }
-
             @Override
             public FlowFunction<Abstraction> getNormalFlowFunction(Unit srcUnit, Unit destUnit) {
                 if (!(srcUnit instanceof Stmt))
@@ -72,7 +65,7 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                     TaintPropagationHandler.FlowFunctionType.NormalFlowFunction);
 
                         Set<Abstraction> res = computeTargetsInternal(d1, source.isAbstractionActive() ? source : source.getActiveCopy());
-                        if (DEBUG_PRINT && !ONLY_CALLS)
+                        if (DEBUG_PRINT && !ONLY_CALLS && manager.getICFG().getMethodOf(srcUnit).toString().contains("append(java"))
                             System.out.println("Normal" + "\n" + "In: " + source.toString() + "\n" + "Stmt: " + srcUnit.toString() + "\n" + "Out: " + (res == null ? "[]" : res.toString()) + "\n" + "---------------------------------------");
 
                         return notifyOutFlowHandlers(srcUnit, d1, source, res,
@@ -714,7 +707,7 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                                 for (Abstraction d1 : callerD1s)
                                                     for (Unit succ : manager.getICFG().getSuccsOf(callSite))
                                                         aliasing.computeAliases(d1, (Stmt) succ, originalCallArg, res,
-                                                                interproceduralCFG().getMethodOf(callSite), abs);
+                                                                interproceduralCFG().getMethodOf(succ), abs);
                                                 break;
                                             }
                                         }
@@ -739,27 +732,9 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                         }
                                     } else {
                                         // just to be sure everything is cleaned up
-                                        if (abs.getAliasingFlag() == callStmt)
-                                            abs.setAliasingFlag(null);
+//                                        if (abs.getAliasingFlag() == callStmt)
+//                                            abs.setAliasingFlag(null);
                                     }
-
-
-//                                        if (!isPrimtiveOrStringType(leftOp.getType())
-//                                                && manager.getTypeUtils().checkCast(abs.getAccessPath().getBaseType(), leftOp.getType())
-//                                                && aliasing.canHaveAliasesRightSide((Stmt) callSite, originalCallArg, source)) {
-//
-//                                            // trigger aliasing if param gets returned
-//                                            for (Unit unit : callee.getActiveBody().getUnits()) {
-//                                                if (unit instanceof ReturnStmt && !isExceptionHandler(unit)) {
-//                                                    Value retVal = ((ReturnStmt) unit).getOp();
-//                                                    if (aliasing.mayAlias(retVal, paramLocals[i])) {
-//                                                        for (Abstraction callerD1 : callerD1s)
-//                                                            aliasing.computeAliases(callerD1, (Stmt) callSite, originalCallArg, res, callee, abs);
-//                                                    }
-//                                                }
-//                                            }
-//                                        }
-//                                    }
                                 }
                             }
                         }
@@ -802,9 +777,6 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                         if (taintPropagationHandler != null)
                             taintPropagationHandler.notifyFlowIn(callSite, source, manager,
                                     TaintPropagationHandler.FlowFunctionType.CallToReturnFlowFunction);
-
-                        if (source.toString().contains("r2") && callStmt.toString().contains("getChars"))
-                            d1=d1;
 
                         Set<Abstraction> res = computeTargetsInternal(d1, source.isAbstractionActive() ? source : source.getActiveCopy());
                         if (DEBUG_PRINT)

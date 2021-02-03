@@ -137,7 +137,7 @@ public class ListTests extends JUnitTests {
     	List<String> epoints = new ArrayList<String>();
     	epoints.add("<soot.jimple.infoflow.test.ListTestCode: void staticLinkedList()>");
 		infoflow.computeInfoflow(appPath, libPath, epoints, sources, sinks);
-		checkInfoflow(infoflow, 1);	
+		checkInfoflow(infoflow, 1);
     }
     
     @Test(timeout=300000)

@@ -30,7 +30,7 @@ import java.util.*;
  * @author Tim Lange
  */
 public class BackwardsAliasProblem extends AbstractInfoflowProblem {
-    private final static boolean DEBUG_PRINT = false;
+    private final static boolean DEBUG_PRINT = true;
 
     public BackwardsAliasProblem(InfoflowManager manager) {
         super(manager);
@@ -55,11 +55,11 @@ public class BackwardsAliasProblem extends AbstractInfoflowProblem {
                 return abs;
             }
 
-            private boolean isCircularTypeMatch(Value val, Abstraction source) {
+            private boolean isCircularType(Value val) {
                 if (!(val instanceof InstanceFieldRef))
                     return false;
                 InstanceFieldRef ref = (InstanceFieldRef) val;
-                return ref.getBase().getType() == ref.getField().getType() && ref.getBase() == source.getAccessPath().getPlainValue();
+                return ref.getBase().getType() == ref.getField().getType();
             }
 
             @Override
@@ -152,7 +152,7 @@ public class BackwardsAliasProblem extends AbstractInfoflowProblem {
                                     handoverLeftValue = true;
                                 }
                                 // due to cut down access path we can not know better
-                                else if (source.dependsOnCutAP() || isCircularTypeMatch(leftVal, source)) {
+                                else if (source.dependsOnCutAP() || isCircularType(leftVal)) {
                                     handoverLeftValue = true;
                                 }
                             }
@@ -199,13 +199,13 @@ public class BackwardsAliasProblem extends AbstractInfoflowProblem {
                                                 && ap.getFirstField() == instRef.getField();
                                         ap = ap;
 //                                    leftType = ap.getFirstFieldType();
-                                    }
-                                    else if (ap.getTaintSubFields() && ap.getFieldCount() == 0) {
-                                        addLeftValue = true;
-                                    }
-                                    else if ((source.dependsOnCutAP()) && !(leftVal.getType() instanceof PrimType)) {
+                                    } else if (source.dependsOnCutAP()) {
                                         addLeftValue = true;
                                         cutFirstFieldLeft = true;
+                                    }
+                                    // we don't know better. See HeapTests#separatedTreeTest
+                                    else if (ap.getTaintSubFields() /*&& ap.getFieldCount() == 0*/) {
+                                        addLeftValue = true;
                                     }
                                 }
                             } else if (rightVal == sourceBase) {
@@ -535,9 +535,9 @@ public class BackwardsAliasProblem extends AbstractInfoflowProblem {
 
                         if (res.isEmpty()) {
                             // last occurence of this taint, so go back
-//                            for (Unit u : manager.getICFG().getPredsOf(exitStmt))
-//                                manager.getForwardSolver()
-//                                        .processEdge(new PathEdge<Unit, Abstraction>(calleeD1, u, source.getActiveCopy()));
+                            for (Unit u : manager.getICFG().getPredsOf(exitStmt))
+                                manager.getForwardSolver()
+                                        .processEdge(new PathEdge<Unit, Abstraction>(calleeD1, u, source.getActiveCopy()));
                             return null;
                         } else {
                             for (Abstraction abs : res) {
@@ -587,7 +587,8 @@ public class BackwardsAliasProblem extends AbstractInfoflowProblem {
 
                         // TurnUnit is the sink. Below this stmt, the taint is not valid anymore
                         // Therefore we turn around here.
-                        if (source.getTurnUnit() == callSite) {
+                        if (source.getTurnUnit() == callSite || manager.getICFG().getCalleesOfCallAt(callSite).stream()
+                                .anyMatch(m -> manager.getICFG().getMethodOf(source.getTurnUnit()) == m)) {
 //                            for (Unit u : interproceduralCFG().getPredsOf(callSite))
 //                                manager.getForwardSolver()
 //                                        .processEdge(new PathEdge<Unit, Abstraction>(d1, u, source.getActiveCopy()));
@@ -648,6 +649,15 @@ public class BackwardsAliasProblem extends AbstractInfoflowProblem {
                             if (Arrays.stream(callArgs).anyMatch(arg -> !isPrimtiveOrStringBase(source)
                                     && arg == source.getAccessPath().getPlainValue()))
                                 return null;
+                        } else {
+                            for (Value arg : callArgs) {
+                                if (arg == source.getAccessPath().getPlainValue()) {
+                                    Set<Abstraction> nativeAbs = ncHandler.getTaintedValues(callStmt, source, callArgs);
+                                    if (nativeAbs != null) {
+                                        return nativeAbs;
+                                    }
+                                }
+                            }
                         }
 
                         return Collections.singleton(source);
