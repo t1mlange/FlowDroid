@@ -30,7 +30,7 @@ import java.util.*;
  * @author Tim Lange
  */
 public class BackwardsAliasProblem extends AbstractInfoflowProblem {
-    private final static boolean DEBUG_PRINT = true;
+    private final static boolean DEBUG_PRINT = false;
 
     public BackwardsAliasProblem(InfoflowManager manager) {
         super(manager);
@@ -116,15 +116,15 @@ public class BackwardsAliasProblem extends AbstractInfoflowProblem {
                         final Value leftVal = BaseSelector.selectBase(leftOp, false);
                         final Value rightVal = BaseSelector.selectBase(rightOp, false);
 
-                        boolean leftSideMatches = Aliasing.baseMatches(leftOp, source);
-                        if (!leftSideMatches) {
-                            // Taint is not on the left side, so it needs to be kept
-                            res.add(source);
+//                        boolean leftSideMatches = Aliasing.baseMatches(leftOp, source);
+//                        if (!leftSideMatches) {
+//                             Taint is not on the left side, so it needs to be kept
+//                            res.add(source);
                             // We can give it back to the backwards infoflow
 //                            for (Unit u : manager.getICFG().getPredsOf(assignStmt))
 //                                manager.getForwardSolver()
 //                                        .processEdge(new PathEdge<Unit, Abstraction>(d1, u, source.getActiveCopy()));
-                        }
+//                        }
 //                        else {
 //                            // At this statement the taint is overwritten
 //                            manager.getForwardSolver().processEdge(new PathEdge<Unit, Abstraction>(d1, srcUnit, source.getActiveCopy()));
@@ -178,10 +178,12 @@ public class BackwardsAliasProblem extends AbstractInfoflowProblem {
                         if (rightOp instanceof BinopExpr || rightOp instanceof UnopExpr || rightOp instanceof NewArrayExpr)
                             return res;
 
-                        if ((leftOp instanceof Local || leftOp instanceof FieldRef)) {
+                        if ((leftOp instanceof Local || leftOp instanceof FieldRef || leftOp instanceof ArrayRef)
+                                && !(leftOp.getType() instanceof PrimType)) {
                             boolean addLeftValue = false;
                             boolean cutFirstFieldLeft = false;
                             Type leftType = null;
+                            boolean createNewVal = false;
 
                             if (rightVal instanceof StaticFieldRef) {
                                 if (manager.getConfig().getStaticFieldTrackingMode() != InfoflowConfiguration.StaticFieldTrackingMode.None
@@ -197,16 +199,21 @@ public class BackwardsAliasProblem extends AbstractInfoflowProblem {
                                         addLeftValue = true;
                                         cutFirstFieldLeft = ap.getFieldCount() > 0
                                                 && ap.getFirstField() == instRef.getField();
-                                        ap = ap;
 //                                    leftType = ap.getFirstFieldType();
-                                    } else if (source.dependsOnCutAP()) {
+                                    }
+                                    else if (source.dependsOnCutAP() || isCircularType(instRef)) {
                                         addLeftValue = true;
                                         cutFirstFieldLeft = true;
                                     }
-                                    // we don't know better. See HeapTests#separatedTreeTest
-                                    else if (ap.getTaintSubFields() /*&& ap.getFieldCount() == 0*/) {
+                                    // We actually can't know better. See HeapTests#separatedTreeTest
+                                    else if (ap.isInstanceFieldRef()) {
                                         addLeftValue = true;
+//                                        cutFirstFieldLeft = true;
                                     }
+//                                    else if (ap.getTaintSubFields() && ap.getFieldCount() == 0) {
+//                                        addLeftValue = true;
+//                                        createNewVal = true;
+//                                    }
                                 }
                             } else if (rightVal == sourceBase) {
                                 addLeftValue = true;
@@ -234,9 +241,13 @@ public class BackwardsAliasProblem extends AbstractInfoflowProblem {
                             }
 
                             if (addLeftValue) {
-                                AccessPath newAp = manager.getAccessPathFactory().copyWithNewValue(ap, leftOp, leftType,
+                                AccessPath newAp;
+                                if (createNewVal)
+                                    newAp = manager.getAccessPathFactory().createAccessPath(leftVal, true);
+                                else
+                                    newAp = manager.getAccessPathFactory().copyWithNewValue(ap, leftOp, leftType,
                                         cutFirstFieldLeft);
-                                Abstraction newAbs = source.deriveNewAbstraction(newAp, assignStmt);
+                                Abstraction newAbs = checkAbstraction(source.deriveNewAbstraction(newAp, assignStmt));
                                 if (newAbs != null && newAbs != source) {
                                     if (rightVal instanceof StaticFieldRef && manager.getConfig().getStaticFieldTrackingMode()
                                             == InfoflowConfiguration.StaticFieldTrackingMode.ContextFlowInsensitive)

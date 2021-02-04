@@ -30,7 +30,7 @@ import java.util.*;
  * @author Tim Lange
  */
 public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
-    private final static boolean DEBUG_PRINT = true;
+    private final static boolean DEBUG_PRINT = false;
     private final static boolean ONLY_CALLS = false;
 
     private final PropagationRuleManager propagationRules;
@@ -100,7 +100,7 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
 
                         AccessPath ap = source.getAccessPath();
                         Local sourceBase = ap.getPlainValue();
-                        boolean keepSource = false;
+                        boolean keepSource = source.dependsOnCutAP();
                         // Statements such as c = a + b with the taint c can produce multiple taints because we can not
                         // decide which one originated from a source at this point.
                         for (Value rightVal : rightVals) {
@@ -117,7 +117,10 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                         && mappedAp != null) {
                                     addLeftValue = true;
                                     cutFirstFieldLeft = true;
-                                    ap = mappedAp;
+                                    if (!mappedAp.equals(ap)) {
+                                        ap = mappedAp;
+                                        source = source.deriveNewAbstraction(ap, null);
+                                    }
                                 }
                             } else if (rightVal instanceof InstanceFieldRef) {
                                 InstanceFieldRef instRef = (InstanceFieldRef) rightVal;
@@ -135,13 +138,17 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                             && mappedAp.getFirstField() == instRef.getField());
                                     // We can't really get more precise typewise
 //                                    leftType = leftVal.getType();
-                                    ap = mappedAp;
+                                    if (!mappedAp.equals(ap)) {
+                                        ap = mappedAp;
+                                        source = source.deriveNewAbstraction(ap, null);
+                                    }
                                 }
                                 // whole object tainted
                                 else if (aliasing.mayAlias(instRef.getBase(), sourceBase)
                                         && ap.getTaintSubFields() && ap.getFieldCount() == 0) {
                                     // $stack1 = o.x with t=o.* -> T={$stack1}.
                                     addLeftValue = true;
+                                    createNewVal = true;
 //                                    leftType = leftVal.getType();
                                 }
 //                                    } else if ((isCircularTypeMatch(rightVal, source) ||source.dependsOnCutAP())
@@ -207,8 +214,9 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
 
                                 if (newAbs != null) {
                                     if (aliasing.canHaveAliasesRightSide(assignStmt, leftVal, newAbs)) {
-                                        aliasing.computeAliases(d1, assignStmt, leftVal, Collections.singleton(newAbs),
-                                                interproceduralCFG().getMethodOf(assignStmt), newAbs);
+                                        for (Unit pred : manager.getICFG().getPredsOf(srcUnit))
+                                            aliasing.computeAliases(d1, (Stmt) pred, leftVal, Collections.singleton(newAbs),
+                                                interproceduralCFG().getMethodOf(pred), newAbs);
                                     }
                                 }
                             }
@@ -228,8 +236,11 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                         && mappedAp != null) {
                                     addRightValue = true;
                                     cutFirstField = true;
-                                    rightType = ap.getFirstFieldType();
-                                    ap = mappedAp;
+                                    rightType = mappedAp.getFirstFieldType();
+                                    if (!mappedAp.equals(ap)) {
+                                        ap = mappedAp;
+                                        source = source.deriveNewAbstraction(ap, null);
+                                    }
                                 }
                             }
                             // o.x
@@ -250,7 +261,10 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                     // If there was a path expansion (cutFirstField = false), we can not
                                     // precise the type using the left field
                                     rightType = mappedAp.getFirstFieldType();
-                                    ap = mappedAp;
+                                    if (!mappedAp.equals(ap)) {
+                                        ap = mappedAp;
+                                        source = source.deriveNewAbstraction(ap, null);
+                                    }
                                 }
                                 // whole object tainted
                                 else if (aliasing.mayAlias(instRef.getBase(), sourceBase)
@@ -307,6 +321,10 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                             }
 
                             if (addRightValue) {
+                                // keepSource is true if
+                                // ... the whole object is tainted
+                                // ... the left side is an ArrayRef
+                                // ... if the access path is an approximation
                                 if (!keepSource)
                                     res.remove(source);
 
@@ -318,8 +336,12 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                 if (rightOp instanceof AnyNewExpr)
                                     continue;
 
-                                AccessPath newAp = manager.getAccessPathFactory().copyWithNewValue(ap,
-                                        rightVal, rightType, cutFirstField);
+                                AccessPath newAp;
+//                                if (createNewValRight)
+//                                    newAp = manager.getAccessPathFactory().createAccessPath(rightVal, true);
+//                                else
+                                    newAp = manager.getAccessPathFactory().copyWithNewValue(ap,
+                                            rightVal, rightType, cutFirstField);
                                 Abstraction newAbs = source.deriveNewAbstraction(newAp, assignStmt);
                                 if (newAbs != null) {
                                     if (rightVal instanceof StaticFieldRef && manager.getConfig().getStaticFieldTrackingMode()
@@ -335,8 +357,9 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                             newAbs.setTurnUnit(srcUnit);
                                         } else {
                                             if (aliasing.canHaveAliasesRightSide(assignStmt, rightVal, newAbs)) {
-                                                aliasing.computeAliases(d1, assignStmt, rightVal, res,
-                                                        interproceduralCFG().getMethodOf(assignStmt), newAbs);
+                                                for (Unit pred : manager.getICFG().getPredsOf(assignStmt))
+                                                    aliasing.computeAliases(d1, (Stmt) pred, rightVal, res,
+                                                        interproceduralCFG().getMethodOf(pred), newAbs);
                                             }
                                         }
                                     }
@@ -468,7 +491,6 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                                     abs.setTurnUnit(stmt);
                                                 else
                                                     abs.setAliasingFlag((Stmt) callStmt);
-
 
                                                 res.add(abs);
                                             }
@@ -605,14 +627,14 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                             taintPropagationHandler.notifyFlowIn(stmt, source, manager,
                                     TaintPropagationHandler.FlowFunctionType.ReturnFlowFunction);
 
-                        Set<Abstraction> res = computeTargetsInternal(source.isAbstractionActive() ? source : source.getActiveCopy(), callerD1s);
+                        Set<Abstraction> res = computeTargetsInternal(source.isAbstractionActive() ? source : source.getActiveCopy(), calleeD1, callerD1s);
                         if (DEBUG_PRINT)
                             System.out.println("Return" + "\n" + "In: " + source.toString() + "\n" + "Stmt: " + stmt.toString() + "\n" + "Out: " + (res == null ? "[]" : res.toString()) + "\n" + "---------------------------------------");
                         return notifyOutFlowHandlers(exitSite, calleeD1, source, res,
                                 TaintPropagationHandler.FlowFunctionType.ReturnFlowFunction);
                     }
 
-                    private Set<Abstraction> computeTargetsInternal(Abstraction source, Collection<Abstraction> callerD1s) {
+                    private Set<Abstraction> computeTargetsInternal(Abstraction source, Abstraction calleeD1, Collection<Abstraction> callerD1s) {
                         if (manager.getConfig().getStopAfterFirstFlow() && !results.isEmpty())
                             return null;
 
@@ -670,11 +692,11 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                 }
                             }
                         } else if (ie != null) {
-                            for (int i = 0; i < callee.getParameterCount(); i++) {
-                                if (!aliasing.mayAlias(source.getAccessPath().getPlainValue(), paramLocals[i]))
+                            for (int paramIndex = 0; paramIndex < callee.getParameterCount(); paramIndex++) {
+                                if (!aliasing.mayAlias(source.getAccessPath().getPlainValue(), paramLocals[paramIndex]))
                                     continue;
 
-                                Value originalCallArg = ie.getArg(isReflectiveCallSite ? 1 : i);
+                                Value originalCallArg = ie.getArg(isReflectiveCallSite ? 1 : paramIndex);
                                 if (!AccessPath.canContainValue(originalCallArg))
                                     continue;
                                 if (!isReflectiveCallSite && !manager.getTypeUtils()
@@ -689,26 +711,29 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                 if (abs != null) {
                                     res.add(abs);
 
-//                                    if (aliasing.canHaveAliasesRightSide(callStmt, originalCallArg, abs)) {
-//                                        // see HeapTests#testAliases
-//                                        // we are unable to trigger
-//                                        for (Abstraction d1 : callerD1s)
-//                                            for (Unit succ : manager.getICFG().getSuccsOf(callSite))
-//                                                aliasing.computeAliases(d1, (Stmt) succ, originalCallArg, res,
-//                                                    interproceduralCFG().getMethodOf(callSite), abs);
-//                                    }
-
-                                    if (aliasing.canHaveAliasesRightSide(callStmt, originalCallArg, abs)) {
+                                    if (!isReflectiveCallSite && aliasing.canHaveAliasesRightSide(callStmt, originalCallArg, abs)) {
                                         // see HeapTests#testAliases
                                         // If two arguments are the same, we created an alias
                                         // so we fully revisit the callSite using aliasing
-                                        for (int argIndex = 0; argIndex < i; argIndex++) {
-                                            if (originalCallArg == ie.getArg(argIndex)) {
-                                                for (Abstraction d1 : callerD1s)
-                                                    for (Unit succ : manager.getICFG().getSuccsOf(callSite))
-                                                        aliasing.computeAliases(d1, (Stmt) succ, originalCallArg, res,
-                                                                interproceduralCFG().getMethodOf(succ), abs);
+                                        SootMethod caller = manager.getICFG().getMethodOf(callStmt);
+                                        boolean foundDuplicate = false;
+                                        // Look if we have a duplicate argument to originalCallArg
+                                        for (int argIndex = 0; argIndex < ie.getArgCount(); argIndex++) {
+                                            if (paramIndex != argIndex && originalCallArg == ie.getArg(argIndex)) {
+                                                foundDuplicate = true;
                                                 break;
+                                            }
+                                        }
+                                        // trigger aliasing on all args that are equal
+                                        // to originalCallArg including itself
+                                        if (foundDuplicate) {
+                                            for (Value arg : ie.getArgs()) {
+                                                if (arg == originalCallArg) {
+                                                    for (Abstraction d1 : callerD1s) {
+                                                        aliasing.computeAliases(d1, callStmt, arg, res,
+                                                                caller, abs);
+                                                    }
+                                                }
                                             }
                                         }
 
@@ -725,15 +750,17 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
 
                                             // Here we can skip the whole call site as we are searching for the
                                             // returned value
-                                            for (Abstraction callerD1 : callerD1s)
-                                                for (Unit pred : manager.getICFG().getPredsOf(callSite))
+                                            for (Abstraction callerD1 : callerD1s) {
+                                                for (Unit pred : manager.getICFG().getPredsOf(callSite)) {
                                                     aliasing.computeAliases(callerD1, (Stmt) pred, originalCallArg, res,
-                                                            interproceduralCFG().getMethodOf(callSite), abs);
+                                                            interproceduralCFG().getMethodOf(pred), abs);
+                                                }
+                                            }
                                         }
                                     } else {
                                         // just to be sure everything is cleaned up
-//                                        if (abs.getAliasingFlag() == callStmt)
-//                                            abs.setAliasingFlag(null);
+                                        if (abs.getAliasingFlag() == callStmt)
+                                            abs.setAliasingFlag(null);
                                     }
                                 }
                             }
@@ -844,9 +871,10 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                         for (Abstraction abs : nativeAbs) {
                                             if (abs.getAccessPath().isStaticFieldRef() || aliasing.canHaveAliasesRightSide(
                                                     callStmt, abs.getAccessPath().getPlainValue(), abs)) {
-                                                aliasing.computeAliases(d1, callStmt,
+                                                for (Unit pred : manager.getICFG().getPredsOf(callStmt))
+                                                    aliasing.computeAliases(d1, (Stmt) pred,
                                                         abs.getAccessPath().getPlainValue(), res,
-                                                        interproceduralCFG().getMethodOf(callSite), abs);
+                                                        interproceduralCFG().getMethodOf(pred), abs);
                                             }
                                         }
                                     }
