@@ -29,6 +29,7 @@ import soot.jimple.FieldRef;
 import soot.jimple.InstanceFieldRef;
 import soot.jimple.StaticFieldRef;
 import soot.jimple.Stmt;
+import soot.jimple.infoflow.Infoflow;
 import soot.jimple.infoflow.InfoflowManager;
 import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.data.AccessPath;
@@ -103,7 +104,7 @@ public class Aliasing {
 	 * @return The actually matched access path if a matching was possible,
 	 *         otherwise null
 	 */
-	private AccessPath getReferencedAPBase(AccessPath taintedAP, SootField[] referencedFields) {
+	public static AccessPath getReferencedAPBase(AccessPath taintedAP, SootField[] referencedFields, InfoflowManager manager) {
 		final Collection<BasePair> bases = taintedAP.isStaticFieldRef()
 				? manager.getAccessPathFactory().getBaseForType(taintedAP.getFirstFieldType())
 				: manager.getAccessPathFactory().getBaseForType(taintedAP.getBaseType());
@@ -241,7 +242,7 @@ public class Aliasing {
 		// Get the field set from the value
 		SootField[] fields = val instanceof FieldRef ? new SootField[] { ((FieldRef) val).getField() }
 				: new SootField[0];
-		return getReferencedAPBase(ap, fields);
+		return getReferencedAPBase(ap, fields, manager);
 	}
 
 	/**

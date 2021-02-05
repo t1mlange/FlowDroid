@@ -178,8 +178,11 @@ public class BackwardsAliasProblem extends AbstractInfoflowProblem {
                         if (rightOp instanceof BinopExpr || rightOp instanceof UnopExpr || rightOp instanceof NewArrayExpr)
                             return res;
 
-                        if ((leftOp instanceof Local || leftOp instanceof FieldRef || leftOp instanceof ArrayRef)
-                                && !(leftOp.getType() instanceof PrimType)) {
+                        boolean localAliases = (leftOp instanceof Local || leftOp instanceof ArrayRef)
+                                && !(leftOp.getType() instanceof PrimType);
+                        boolean fieldAliases = leftOp instanceof FieldRef
+                                && !(((FieldRef) leftOp).getField().getType() instanceof PrimType);
+                        if ((localAliases || fieldAliases) && !(rightVal.getType() instanceof PrimType)) {
                             boolean addLeftValue = false;
                             boolean cutFirstFieldLeft = false;
                             Type leftType = null;
@@ -194,22 +197,23 @@ public class BackwardsAliasProblem extends AbstractInfoflowProblem {
                             } else if (rightVal instanceof InstanceFieldRef) {
                                 InstanceFieldRef instRef = (InstanceFieldRef) rightVal;
 
-                                if (instRef.getBase() == sourceBase) {
-                                    if (ap.firstFieldMatches(instRef.getField())) {
-                                        addLeftValue = true;
-                                        cutFirstFieldLeft = ap.getFieldCount() > 0
-                                                && ap.getFirstField() == instRef.getField();
-//                                    leftType = ap.getFirstFieldType();
-                                    }
-                                    else if (source.dependsOnCutAP() || isCircularType(instRef)) {
+                                if (instRef.getBase() == sourceBase && ap.isInstanceFieldRef()) {
+                                    AccessPath mappedAp = Aliasing.getReferencedAPBase(ap, new SootField[] { instRef.getField() }, manager);
+                                    if (mappedAp != null) {
                                         addLeftValue = true;
                                         cutFirstFieldLeft = true;
+                                        ap = mappedAp;
+//                                    leftType = ap.getFirstFieldType();
                                     }
-                                    // We actually can't know better. See HeapTests#separatedTreeTest
-                                    else if (ap.isInstanceFieldRef()) {
-                                        addLeftValue = true;
+//                                    else if (source.dependsOnCutAP() || isCircularType(instRef)) {
+//                                        addLeftValue = true;
 //                                        cutFirstFieldLeft = true;
-                                    }
+//                                    }
+                                    // We actually can't know better. See HeapTests#separatedTreeTest
+//                                    else if (ap.isInstanceFieldRef()) {
+//                                        addLeftValue = true;
+////                                        cutFirstFieldLeft = true;
+//                                    }
 //                                    else if (ap.getTaintSubFields() && ap.getFieldCount() == 0) {
 //                                        addLeftValue = true;
 //                                        createNewVal = true;
@@ -273,8 +277,8 @@ public class BackwardsAliasProblem extends AbstractInfoflowProblem {
                 if (!(callSite instanceof Stmt))
                     return KillAll.v();
 
-                final Stmt stmt = (Stmt) callSite;
-                final InvokeExpr ie = stmt.containsInvokeExpr() ? stmt.getInvokeExpr() : null;
+                final Stmt callStmt = (Stmt) callSite;
+                final InvokeExpr ie = callStmt.containsInvokeExpr() ? callStmt.getInvokeExpr() : null;
 
                 final Local[] paramLocals = dest.getActiveBody().getParameterLocals().toArray(new Local[0]);
                 final Local thisLocal = dest.isStatic() ? null : dest.getActiveBody().getThisLocal();
@@ -282,7 +286,7 @@ public class BackwardsAliasProblem extends AbstractInfoflowProblem {
                 final boolean isSource = manager.getSourceSinkManager() != null
                         && manager.getSourceSinkManager().getSourceInfo((Stmt) callSite, manager) != null;
                 final boolean isSink = manager.getSourceSinkManager() != null
-                        && manager.getSourceSinkManager().getSinkInfo(stmt, manager, null) != null;
+                        && manager.getSourceSinkManager().getSinkInfo(callStmt, manager, null) != null;
 
                 final boolean isExecutorExecute = interproceduralCFG().isExecutorExecute(ie, dest);
                 final boolean isReflectiveCallSite = interproceduralCFG().isReflectiveCallSite(ie);
@@ -295,7 +299,7 @@ public class BackwardsAliasProblem extends AbstractInfoflowProblem {
 
                         // Notify the handler if we have one
                         if (taintPropagationHandler != null)
-                            taintPropagationHandler.notifyFlowIn(stmt, source, manager,
+                            taintPropagationHandler.notifyFlowIn(callStmt, source, manager,
                                     TaintPropagationHandler.FlowFunctionType.CallFlowFunction);
 
                         // TurnUnit is the sink. Below this stmt, the taint is not valid anymore
@@ -307,9 +311,9 @@ public class BackwardsAliasProblem extends AbstractInfoflowProblem {
 
                         Set<Abstraction> res = computeTargetsInternal(d1,source);
                         if (DEBUG_PRINT)
-                            System.out.println("Alias Call" + "\n" + "In: " + source.toString() + "\n" + "Stmt: " + stmt.toString() + "\n" + "Out: " + (res == null ? "[]" : res.toString()) + "\n" + "---------------------------------------");
+                            System.out.println("Alias Call" + "\n" + "In: " + source.toString() + "\n" + "Stmt: " + callStmt.toString() + "\n" + "Out: " + (res == null ? "[]" : res.toString()) + "\n" + "---------------------------------------");
 
-                        return notifyOutFlowHandlers(stmt, d1, source, res,
+                        return notifyOutFlowHandlers(callStmt, d1, source, res,
                                 TaintPropagationHandler.FlowFunctionType.CallFlowFunction);
                     }
                     private Set<Abstraction> computeTargetsInternal(Abstraction d1, Abstraction source) {
@@ -321,6 +325,8 @@ public class BackwardsAliasProblem extends AbstractInfoflowProblem {
                                 && dest.isStaticInitializer())
                             return null;
                         if (isExcluded(dest))
+                            return null;
+                        if (taintWrapper != null && taintWrapper.isExclusive(callStmt, source))
                             return null;
 
                         if (manager.getConfig().getStaticFieldTrackingMode() != InfoflowConfiguration.StaticFieldTrackingMode.None
@@ -334,14 +340,14 @@ public class BackwardsAliasProblem extends AbstractInfoflowProblem {
                         if (manager.getConfig().getStaticFieldTrackingMode() != InfoflowConfiguration.StaticFieldTrackingMode.None
                                 && source.getAccessPath().isStaticFieldRef()) {
                             Abstraction abs = checkAbstraction(
-                                    source.deriveNewAbstraction(source.getAccessPath(), stmt));
+                                    source.deriveNewAbstraction(source.getAccessPath(), callStmt));
                             if (abs != null)
                                 res.add(abs);
                         }
 
                         // map o to this
                         if (!isExecutorExecute && !source.getAccessPath().isStaticFieldRef() && !dest.isStatic()) {
-                            InstanceInvokeExpr instanceInvokeExpr = (InstanceInvokeExpr) stmt.getInvokeExpr();
+                            InstanceInvokeExpr instanceInvokeExpr = (InstanceInvokeExpr) callStmt.getInvokeExpr();
                             Value callBase = isReflectiveCallSite ?
                                     instanceInvokeExpr.getArg(0) : instanceInvokeExpr.getBase();
 
@@ -363,7 +369,7 @@ public class BackwardsAliasProblem extends AbstractInfoflowProblem {
                         if (isExecutorExecute && ie != null && ie.getArg(0) == source.getAccessPath().getPlainValue()) {
                             AccessPath ap = manager.getAccessPathFactory().copyWithNewValue(source.getAccessPath(),
                                     thisLocal);
-                            Abstraction abs = checkAbstraction(source.deriveNewAbstraction(ap, stmt));
+                            Abstraction abs = checkAbstraction(source.deriveNewAbstraction(ap, callStmt));
                             if (abs != null)
                                 res.add(abs);
                         } else if (ie != null && dest.getParameterCount() > 0) {
@@ -376,7 +382,7 @@ public class BackwardsAliasProblem extends AbstractInfoflowProblem {
                                     for (Value param : paramLocals) {
                                         AccessPath ap = manager.getAccessPathFactory().copyWithNewValue(
                                                 source.getAccessPath(), param, null, false);
-                                        Abstraction abs = checkAbstraction(source.deriveNewAbstraction(ap, stmt));
+                                        Abstraction abs = checkAbstraction(source.deriveNewAbstraction(ap, callStmt));
                                         if (abs != null)
                                             res.add(abs);
                                     }
@@ -384,7 +390,7 @@ public class BackwardsAliasProblem extends AbstractInfoflowProblem {
                                 } else {
                                     AccessPath ap = manager.getAccessPathFactory().copyWithNewValue(
                                             source.getAccessPath(), paramLocals[i]);
-                                    Abstraction abs = checkAbstraction(source.deriveNewAbstraction(ap, stmt));
+                                    Abstraction abs = checkAbstraction(source.deriveNewAbstraction(ap, callStmt));
                                     if (abs != null)
                                         res.add(abs);
                                 }
@@ -546,16 +552,21 @@ public class BackwardsAliasProblem extends AbstractInfoflowProblem {
 
                         if (res.isEmpty()) {
                             // last occurence of this taint, so go back
-                            for (Unit u : manager.getICFG().getPredsOf(exitStmt))
-                                manager.getForwardSolver()
-                                        .processEdge(new PathEdge<Unit, Abstraction>(calleeD1, u, source.getActiveCopy()));
+//                            for (Unit u : manager.getICFG().getPredsOf(exitStmt))
+//                                manager.getForwardSolver()
+//                                        .processEdge(new PathEdge<Unit, Abstraction>(calleeD1, u, source.getActiveCopy()));
                             return null;
                         } else {
                             for (Abstraction abs : res) {
-                                if (abs != source)
+                                if (abs != source) {
                                     abs.setCorrespondingCallSite((Stmt) callSite);
+
+                                    for (Abstraction d1 : callerD1s)
+                                        manager.getForwardSolver().processEdge(new PathEdge<>(d1, callSite, abs.getActiveCopy()));
+                                }
                             }
                         }
+
 
                         return res;
                     }
@@ -624,6 +635,11 @@ public class BackwardsAliasProblem extends AbstractInfoflowProblem {
                         }
 
                         if (taintWrapper != null) {
+                            if (taintWrapper.isExclusive(callStmt, source)) {
+                                manager.getForwardSolver()
+                                        .processEdge(new PathEdge<Unit, Abstraction>(d1, callStmt, source.getActiveCopy()));
+                            }
+
                             Set<Abstraction> wrapperAliases = taintWrapper.getAliasesForMethod(callStmt, d1, source);
                             if (wrapperAliases != null && !wrapperAliases.isEmpty()) {
                                 Set<Abstraction> passOnSet = new HashSet<>(wrapperAliases.size());

@@ -693,8 +693,8 @@ public class BackwardsInfoflow extends AbstractInfoflow {
             // TODO: just debug things
             Chain<SootClass> classes = Scene.v().getClasses();
             for (SootClass c : classes) {
-                if (c.getName().contains("Vector") || !c.getName().startsWith("java")) {
-                    if (c.getName().contains("Vector") || c.getName().contains("Test") || c.getName().startsWith("edu.mit")) {
+                if (c.getName().contains("StringBuilder") || !c.getName().startsWith("java")) {
+                    if (c.getName().contains("StringBuilder")  || c.getName().contains("Test") || c.getName().startsWith("edu.mit")) {
                         String name = c.getName().replace("soot.jimple.infoflow.test.", "");
                         name = name.replace("/", "");
                         String baseClass = name.split("\\$")[0];
