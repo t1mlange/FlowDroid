@@ -678,19 +678,14 @@ public class BackwardsAliasProblem extends AbstractInfoflowProblem {
                                 return null;
                         } else {
                             for (Value arg : callArgs) {
-//                                String str = "";
-//                                str.getChars(0, 1, new char[] {}, 22);
                                 if (arg == source.getAccessPath().getPlainValue()) {
-                                    Set<Abstraction> nativeAbs = ncHandler.getTaintedValues(callStmt, source, callArgs);
-                                    if (nativeAbs != null) {
-                                        for (Abstraction abs : nativeAbs) {
-                                            if (abs != source)
-                                                abs.setCorrespondingCallSite(callStmt);
-                                            for (Unit pred : manager.getICFG().getPredsOf(callSite))
-                                                manager.getForwardSolver().processEdge(new PathEdge<>(d1, pred, abs.getActiveCopy()));
-                                        }
-                                        return nativeAbs;
-                                    }
+                                    // well, this is sorta a mix of infoflow and alias search
+                                    // if we find an alias above, which is the an argument of arraycopy,
+                                    // the native stmt does not create a new alias but we notice that we
+                                    // missed this argument in the infoflow search.
+                                    source.setTurnUnit(callSite);
+                                    manager.getForwardSolver().processEdge(new PathEdge<>(d1, callSite, source.getActiveCopy()));
+                                    return null;
                                 }
                             }
                         }
