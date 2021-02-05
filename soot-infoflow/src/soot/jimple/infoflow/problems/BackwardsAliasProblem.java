@@ -560,9 +560,6 @@ public class BackwardsAliasProblem extends AbstractInfoflowProblem {
                             for (Abstraction abs : res) {
                                 if (abs != source) {
                                     abs.setCorrespondingCallSite((Stmt) callSite);
-
-                                    for (Abstraction d1 : callerD1s)
-                                        manager.getForwardSolver().processEdge(new PathEdge<>(d1, callSite, abs.getActiveCopy()));
                                 }
                             }
                         }
@@ -644,12 +641,15 @@ public class BackwardsAliasProblem extends AbstractInfoflowProblem {
                             if (wrapperAliases != null && !wrapperAliases.isEmpty()) {
                                 Set<Abstraction> passOnSet = new HashSet<>(wrapperAliases.size());
                                 for (Abstraction abs : wrapperAliases) {
-                                    if (assignStmt == null || assignStmt.getLeftOp() != abs.getAccessPath().getPlainValue())
+                                    if (assignStmt == null || assignStmt.getLeftOp() != abs.getAccessPath().getPlainValue()) {
                                         passOnSet.add(abs);
+                                        if (abs != source)
+                                            abs.setCorrespondingCallSite(callStmt);
 
-                                    for (Unit u : manager.getICFG().getPredsOf(callSite))
-                                        manager.getForwardSolver()
-                                                .processEdge(new PathEdge<Unit, Abstraction>(d1, u, abs.getActiveCopy()));
+                                        for (Unit u : manager.getICFG().getPredsOf(callSite))
+                                            manager.getForwardSolver()
+                                                    .processEdge(new PathEdge<Unit, Abstraction>(d1, u, abs.getActiveCopy()));
+                                    }
                                 }
                                 return passOnSet;
                             }
@@ -678,9 +678,17 @@ public class BackwardsAliasProblem extends AbstractInfoflowProblem {
                                 return null;
                         } else {
                             for (Value arg : callArgs) {
+//                                String str = "";
+//                                str.getChars(0, 1, new char[] {}, 22);
                                 if (arg == source.getAccessPath().getPlainValue()) {
                                     Set<Abstraction> nativeAbs = ncHandler.getTaintedValues(callStmt, source, callArgs);
                                     if (nativeAbs != null) {
+                                        for (Abstraction abs : nativeAbs) {
+                                            if (abs != source)
+                                                abs.setCorrespondingCallSite(callStmt);
+                                            for (Unit pred : manager.getICFG().getPredsOf(callSite))
+                                                manager.getForwardSolver().processEdge(new PathEdge<>(d1, pred, abs.getActiveCopy()));
+                                        }
                                         return nativeAbs;
                                     }
                                 }
