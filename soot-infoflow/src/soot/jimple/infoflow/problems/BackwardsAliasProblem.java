@@ -152,7 +152,7 @@ public class BackwardsAliasProblem extends AbstractInfoflowProblem {
                             manager.getForwardSolver().processEdge(new PathEdge<Unit, Abstraction>(d1, srcUnit, source.getActiveCopy()));
                         }
 
-                        boolean leftSideOverwritten = Aliasing.baseMatchesStrict(leftOp, source) && !(leftOp instanceof ArrayRef);
+                        boolean leftSideOverwritten = Aliasing.baseMatches(leftOp, source) && !(leftOp instanceof ArrayRef);
                         if (leftSideOverwritten)
                             return null;
                         else res.add(source);
@@ -187,8 +187,10 @@ public class BackwardsAliasProblem extends AbstractInfoflowProblem {
                                     if (mappedAp != null) {
                                         addLeftValue = true;
                                         cutFirstFieldLeft = true;
-                                        ap = mappedAp;
-//                                    leftType = ap.getFirstFieldType();
+                                        if (!mappedAp.equals(ap)) {
+                                            ap = mappedAp;
+                                            source = source.deriveNewAbstraction(mappedAp, null);
+                                        }
                                     }
                                 }
                             } else if (rightVal == sourceBase) {

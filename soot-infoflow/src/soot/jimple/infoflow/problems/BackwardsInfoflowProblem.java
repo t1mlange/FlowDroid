@@ -140,7 +140,7 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
 //                                    leftType = leftVal.getType();
                                     if (!mappedAp.equals(ap)) {
                                         ap = mappedAp;
-                                        source = source.deriveNewAbstraction(ap, null);
+//                                        source = source.deriveNewAbstraction(ap, null);
                                     }
                                 }
                                 // whole object tainted
@@ -319,7 +319,6 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                 // keepSource is true if
                                 // ... the whole object is tainted
                                 // ... the left side is an ArrayRef
-                                // ... if the access path is an approximation
                                 if (!keepSource)
                                     res.remove(source);
 
@@ -403,7 +402,8 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                             taintPropagationHandler.notifyFlowIn(stmt, source, manager,
                                     TaintPropagationHandler.FlowFunctionType.CallFlowFunction);
 
-
+                        if (callStmt.toString().contains("writeValue(java.lang.Object)"))
+                            d1=d1;
 
                         Set<Abstraction> res = computeTargetsInternal(d1, source.isAbstractionActive() ? source : source.getActiveCopy());
                         if (res != null) {
@@ -796,6 +796,10 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                             taintPropagationHandler.notifyFlowIn(callSite, source, manager,
                                     TaintPropagationHandler.FlowFunctionType.CallToReturnFlowFunction);
 
+                        if (callStmt.toString().contains("writeValue(java.lang.Object)"))
+                            d1=d1;
+
+
                         Set<Abstraction> res = computeTargetsInternal(d1, source.isAbstractionActive() ? source : source.getActiveCopy());
                         if (DEBUG_PRINT)
                             System.out.println("CallToReturn" + "\n" + "In: " + source.toString() + "\n" + "Stmt: " + callStmt.toString() + "\n" + "Out: " + (res == null ? "[]" : res.toString()) + "\n" + "---------------------------------------");
@@ -825,8 +829,9 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                             res = new HashSet<>();
 
                         if (isExcluded(callee)) {
-                            if (source != zeroValue)
+                            if (source != zeroValue) {
                                 res.add(source);
+                            }
                             return res;
                         }
 
@@ -898,7 +903,7 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
 
             private void setCallSite(Abstraction source, Set<Abstraction> set, Stmt callStmt) {
                 for (Abstraction abs : set) {
-                    if (abs != source)
+                    if (!abs.equals(source))
                         abs.setCorrespondingCallSite(callStmt);
                 }
             }

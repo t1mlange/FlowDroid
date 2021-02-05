@@ -108,15 +108,21 @@ public class BackwardsWrapperRule extends AbstractTaintPropagationRule {
 
                 if (taintsObjectValue || taintsStaticField
                         || aliasing.canHaveAliasesRightSide(stmt, abs.getAccessPath().getPlainValue(), abs)) {
-                        aliasing.computeAliases(d1, stmt, absAp.getPlainValue(), resWAliases,
-                            getManager().getICFG().getMethodOf(stmt), abs);
+                    for (Unit pred : manager.getICFG().getPredsOf(stmt))
+                        aliasing.computeAliases(d1, (Stmt) pred, absAp.getPlainValue(), resWAliases,
+                            getManager().getICFG().getMethodOf(pred), abs);
                 }
 
-                if (!killSource.value /*&& !absAp.equals(ap)*/)
-                    killSource.value = abs != source;
+                if (!killSource.value && absAp.equals(ap))
+                    killSource.value = source != abs;
             }
             res = resWAliases;
         }
+
+        if (res != null)
+            for (Abstraction abs : res)
+                if (abs != source)
+                    abs.setCorrespondingCallSite(stmt);
 
         return res;
     }
