@@ -116,20 +116,6 @@ public class BackwardsAliasProblem extends AbstractInfoflowProblem {
                         final Value leftVal = BaseSelector.selectBase(leftOp, false);
                         final Value rightVal = BaseSelector.selectBase(rightOp, false);
 
-//                        boolean leftSideMatches = Aliasing.baseMatches(leftOp, source);
-//                        if (!leftSideMatches) {
-//                             Taint is not on the left side, so it needs to be kept
-//                            res.add(source);
-                            // We can give it back to the backwards infoflow
-//                            for (Unit u : manager.getICFG().getPredsOf(assignStmt))
-//                                manager.getForwardSolver()
-//                                        .processEdge(new PathEdge<Unit, Abstraction>(d1, u, source.getActiveCopy()));
-//                        }
-//                        else {
-//                            // At this statement the taint is overwritten
-//                            manager.getForwardSolver().processEdge(new PathEdge<Unit, Abstraction>(d1, srcUnit, source.getActiveCopy()));
-//                        }
-
                         AccessPath ap = source.getAccessPath();
                         Value sourceBase = ap.getPlainValue();
                         boolean handoverLeftValue = false;
@@ -166,8 +152,7 @@ public class BackwardsAliasProblem extends AbstractInfoflowProblem {
                             manager.getForwardSolver().processEdge(new PathEdge<Unit, Abstraction>(d1, srcUnit, source.getActiveCopy()));
                         }
 
-                        boolean leftSideOverwritten = Aliasing.baseMatchesStrict(leftOp, source) && !source.dependsOnCutAP()
-                                                        && !(leftOp instanceof ArrayRef);
+                        boolean leftSideOverwritten = Aliasing.baseMatchesStrict(leftOp, source) && !(leftOp instanceof ArrayRef);
                         if (leftSideOverwritten)
                             return null;
                         else res.add(source);
@@ -205,19 +190,6 @@ public class BackwardsAliasProblem extends AbstractInfoflowProblem {
                                         ap = mappedAp;
 //                                    leftType = ap.getFirstFieldType();
                                     }
-//                                    else if (source.dependsOnCutAP() || isCircularType(instRef)) {
-//                                        addLeftValue = true;
-//                                        cutFirstFieldLeft = true;
-//                                    }
-                                    // We actually can't know better. See HeapTests#separatedTreeTest
-//                                    else if (ap.isInstanceFieldRef()) {
-//                                        addLeftValue = true;
-////                                        cutFirstFieldLeft = true;
-//                                    }
-//                                    else if (ap.getTaintSubFields() && ap.getFieldCount() == 0) {
-//                                        addLeftValue = true;
-//                                        createNewVal = true;
-//                                    }
                                 }
                             } else if (rightVal == sourceBase) {
                                 addLeftValue = true;
@@ -551,10 +523,6 @@ public class BackwardsAliasProblem extends AbstractInfoflowProblem {
                         }
 
                         if (res.isEmpty()) {
-                            // last occurence of this taint, so go back
-//                            for (Unit u : manager.getICFG().getPredsOf(exitStmt))
-//                                manager.getForwardSolver()
-//                                        .processEdge(new PathEdge<Unit, Abstraction>(calleeD1, u, source.getActiveCopy()));
                             return null;
                         } else {
                             for (Abstraction abs : res) {
@@ -608,9 +576,6 @@ public class BackwardsAliasProblem extends AbstractInfoflowProblem {
                         // Therefore we turn around here.
                         if (source.getTurnUnit() == callSite || manager.getICFG().getCalleesOfCallAt(callSite).stream()
                                 .anyMatch(m -> manager.getICFG().getMethodOf(source.getTurnUnit()) == m)) {
-//                            for (Unit u : interproceduralCFG().getPredsOf(callSite))
-//                                manager.getForwardSolver()
-//                                        .processEdge(new PathEdge<Unit, Abstraction>(d1, u, source.getActiveCopy()));
 
                             return notifyOutFlowHandlers(callSite, d1, source, null,
                                     TaintPropagationHandler.FlowFunctionType.CallToReturnFlowFunction);

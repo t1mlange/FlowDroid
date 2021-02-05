@@ -330,7 +330,7 @@ public class Abstraction implements Cloneable, FastSolverLinkedNode<Abstraction,
 	@Override
 	public String toString() {
 		return (isAbstractionActive() ? "" : "_") + accessPath.toString() + " | "
-				+ (activationUnit == null ? "" : activationUnit.toString())
+				+ (turnUnit != null || activationUnit == null ? "" : activationUnit.toString())
 				+ (turnUnit == null ? "" : turnUnit.toString()) + ">>";
 	}
 
@@ -358,14 +358,6 @@ public class Abstraction implements Cloneable, FastSolverLinkedNode<Abstraction,
 		return aliasingFlag;
 	}
 
-	public Unit getSkipUnit() {
-		return this.skipUnit;
-	}
-
-	public void setSkipUnit(Unit skipUnit) {
-		this.skipUnit = skipUnit;
-	}
-
 	public Abstraction getActiveCopy() {
 		if (this.isAbstractionActive())
 			return this;
@@ -373,7 +365,6 @@ public class Abstraction implements Cloneable, FastSolverLinkedNode<Abstraction,
 		Abstraction a = clone();
 		a.sourceContext = null;
 		a.activationUnit = null;
-		a.skipUnit = this.skipUnit;
 		return a;
 	}
 

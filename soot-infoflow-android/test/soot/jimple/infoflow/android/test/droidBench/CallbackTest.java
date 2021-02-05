@@ -42,7 +42,7 @@ public class CallbackTest extends JUnitTests {
 	public void runTestButton2() throws IOException, XmlPullParserException {
 		InfoflowResults res = analyzeAPKFile("Callbacks/Button2.apk");
 		Assert.assertNotNull(res);
-		Assert.assertEquals(4, res.size()); // 3 + (strong alias update not
+		Assert.assertEquals(3, res.size()); // 3 + (strong alias update not
 											// supported)
 	}
 

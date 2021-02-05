@@ -65,7 +65,7 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                     TaintPropagationHandler.FlowFunctionType.NormalFlowFunction);
 
                         Set<Abstraction> res = computeTargetsInternal(d1, source.isAbstractionActive() ? source : source.getActiveCopy());
-                        if (DEBUG_PRINT && !ONLY_CALLS && manager.getICFG().getMethodOf(srcUnit).toString().contains("append(java"))
+                        if (DEBUG_PRINT && !ONLY_CALLS)
                             System.out.println("Normal" + "\n" + "In: " + source.toString() + "\n" + "Stmt: " + srcUnit.toString() + "\n" + "Out: " + (res == null ? "[]" : res.toString()) + "\n" + "---------------------------------------");
 
                         return notifyOutFlowHandlers(srcUnit, d1, source, res,
@@ -100,7 +100,7 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
 
                         AccessPath ap = source.getAccessPath();
                         Local sourceBase = ap.getPlainValue();
-                        boolean keepSource = source.dependsOnCutAP();
+                        boolean keepSource = false;
                         // Statements such as c = a + b with the taint c can produce multiple taints because we can not
                         // decide which one originated from a source at this point.
                         for (Value rightVal : rightVals) {
@@ -276,11 +276,6 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                     // as we do not know in which field the tainted value lies.
                                     keepSource = true;
                                 }
-//                                    else if ((isCircularTypeMatch(leftVal, source) || source.dependsOnCutAP())) {
-//                                        addRightValue = true;
-//                                        cutFirstField = true;
-//                                    }
-//                                }
                             } else if (leftVal instanceof ArrayRef) {
                                 // If we don't track arrays or just the length is tainted we have nothing to do.
                                 if (!getManager().getConfig().getEnableArrayTracking()
@@ -336,11 +331,7 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                 if (rightOp instanceof AnyNewExpr)
                                     continue;
 
-                                AccessPath newAp;
-//                                if (createNewValRight)
-//                                    newAp = manager.getAccessPathFactory().createAccessPath(rightVal, true);
-//                                else
-                                    newAp = manager.getAccessPathFactory().copyWithNewValue(ap,
+                                AccessPath newAp = manager.getAccessPathFactory().copyWithNewValue(ap,
                                             rightVal, rightType, cutFirstField);
                                 Abstraction newAbs = source.deriveNewAbstraction(newAp, assignStmt);
                                 if (newAbs != null) {

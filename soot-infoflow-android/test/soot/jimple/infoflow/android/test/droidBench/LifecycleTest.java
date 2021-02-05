@@ -172,9 +172,15 @@ public class LifecycleTest extends JUnitTests {
 	}
 
 	@Test(timeout = 300000)
-	
 	public void runTestServiceEventSequence2() throws IOException, XmlPullParserException {
 		InfoflowResults res = analyzeAPKFile("Lifecycle/ServiceEventSequence2.apk");
+		Assert.assertNotNull(res);
+		Assert.assertEquals(1, res.size());
+	}
+
+	@Test(timeout = 300000)
+	public void runTestServiceEventSequence3() throws IOException, XmlPullParserException {
+		InfoflowResults res = analyzeAPKFile("Lifecycle/ServiceEventSequence3.apk");
 		Assert.assertNotNull(res);
 		Assert.assertEquals(1, res.size());
 	}
