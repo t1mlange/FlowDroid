@@ -12,6 +12,7 @@ import soot.jimple.infoflow.memory.ISolverTerminationReason;
 import soot.jimple.infoflow.results.BackwardsInfoflowResults;
 import soot.jimple.infoflow.results.InfoflowResults;
 import soot.jimple.infoflow.solver.executors.InterruptableExecutor;
+import soot.jimple.infoflow.util.SystemClassHandler;
 
 public abstract class ConcurrentAbstractionPathBuilder extends AbstractAbstractionPathBuilder {
 

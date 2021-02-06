@@ -25,6 +25,8 @@ import org.slf4j.LoggerFactory;
 import heros.solver.Pair;
 import soot.jimple.InvokeExpr;
 import soot.jimple.Stmt;
+import soot.jimple.infoflow.InfoflowConfiguration;
+import soot.jimple.infoflow.InfoflowManager;
 import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.data.AccessPath;
 import soot.jimple.infoflow.sourcesSinks.definitions.ISourceSinkDefinition;
@@ -149,23 +151,33 @@ public class InfoflowResults {
 	public Pair<ResultSourceInfo, ResultSinkInfo> addResult(ISourceSinkDefinition sinkDefinition, AccessPath sink,
 															Stmt sinkStmt, ISourceSinkDefinition sourceDefinition, AccessPath source, Stmt sourceStmt, Object userData,
 															List<Abstraction> propagationPath) {
+		return addResult(sinkDefinition, sink, sinkStmt, sourceDefinition, source, sourceStmt, userData, propagationPath, null);
+	}
+		public Pair<ResultSourceInfo, ResultSinkInfo> addResult(ISourceSinkDefinition sinkDefinition, AccessPath sink,
+															Stmt sinkStmt, ISourceSinkDefinition sourceDefinition, AccessPath source, Stmt sourceStmt, Object userData,
+															List<Abstraction> propagationPath, InfoflowManager manager) {
 		// Get the statements and the access paths from the abstractions
 		List<Stmt> stmtPath = null;
 		List<AccessPath> apPath = null;
+		List<Stmt> csPath = null;
 		if (propagationPath != null) {
 			stmtPath = new ArrayList<>(propagationPath.size());
 			apPath = new ArrayList<>(propagationPath.size());
+			if (!InfoflowConfiguration.getPathAgnosticResults())
+				csPath = new ArrayList<>(propagationPath.size());
 			for (Abstraction pathAbs : propagationPath) {
 				if (pathAbs.getCurrentStmt() != null) {
 					stmtPath.add(pathAbs.getCurrentStmt());
 					apPath.add(pathAbs.getAccessPath());
+					if (csPath != null)
+						csPath.add(pathAbs.getCorrespondingCallSite());
 				}
 			}
 		}
 
 		// Add the result
 		return addResult(sinkDefinition, sink, sinkStmt, sourceDefinition, source, sourceStmt, userData, stmtPath,
-				apPath);
+				apPath, csPath, manager);
 	}
 
 	/**
@@ -188,9 +200,15 @@ public class InfoflowResults {
 	 */
 	public Pair<ResultSourceInfo, ResultSinkInfo> addResult(ISourceSinkDefinition sinkDefinition, AccessPath sink,
 															Stmt sinkStmt, ISourceSinkDefinition sourceDefinition, AccessPath source, Stmt sourceStmt, Object userData,
-															List<Stmt> propagationPath, List<AccessPath> propagationAccessPath) {
+															List<Stmt> propagationPath, List<AccessPath> propagationAccessPath, List<Stmt> propagationCallSites) {
+		return addResult(sinkDefinition, sink, sinkStmt, sourceDefinition, source, sourceStmt, userData, propagationPath, propagationAccessPath, propagationCallSites, null);
+	}
+	public Pair<ResultSourceInfo, ResultSinkInfo> addResult(ISourceSinkDefinition sinkDefinition, AccessPath sink,
+															Stmt sinkStmt, ISourceSinkDefinition sourceDefinition, AccessPath source, Stmt sourceStmt, Object userData,
+															List<Stmt> propagationPath, List<AccessPath> propagationAccessPath, List<Stmt> propagationCallSites,
+															InfoflowManager manager) {
 		ResultSourceInfo sourceObj = new ResultSourceInfo(sourceDefinition, source, sourceStmt, userData,
-				propagationPath, propagationAccessPath);
+				propagationPath, propagationAccessPath, propagationCallSites);
 		ResultSinkInfo sinkObj = new ResultSinkInfo(sinkDefinition, sink, sinkStmt);
 
 		this.addResult(sinkObj, sourceObj);
@@ -221,7 +239,9 @@ public class InfoflowResults {
 					results = new ConcurrentHashMultiMap<>();
 			}
 		}
-		this.results.put(sink, source);
+		boolean put = this.results.put(sink, source);
+		if (!put)
+			logger.debug("Found two equal paths");
 	}
 
 	/**
