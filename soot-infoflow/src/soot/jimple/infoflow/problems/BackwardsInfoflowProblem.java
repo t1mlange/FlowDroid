@@ -30,7 +30,7 @@ import java.util.*;
  * @author Tim Lange
  */
 public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
-    private final static boolean DEBUG_PRINT = false;
+    private final static boolean DEBUG_PRINT = true;
     private final static boolean ONLY_CALLS = false;
 
     private final PropagationRuleManager propagationRules;
@@ -311,8 +311,10 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                     if (!manager.getTypeUtils().checkCast(ce.getCastType(), rightVal.getType()))
                                         return null;
                                 }
-                                // LengthExpr/RHS ArrayRef handled in ArrayPropagationRule
-                                addRightValue = !(rightOp instanceof LengthExpr || rightOp instanceof ArrayRef || rightOp instanceof NewArrayExpr);
+                                // LengthExpr/RHS ArrayRef and NewArrayExpr handled in ArrayPropagationRule.
+                                // We allow NewArrayExpr to pass for removing the source but not creating a new
+                                // taint below.
+                                addRightValue = !(rightOp instanceof LengthExpr || rightOp instanceof ArrayRef);
                             }
 
                             if (addRightValue) {
@@ -402,9 +404,6 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                             taintPropagationHandler.notifyFlowIn(stmt, source, manager,
                                     TaintPropagationHandler.FlowFunctionType.CallFlowFunction);
 
-                        if (callStmt.toString().contains("writeValue(java.lang.Object)"))
-                            d1=d1;
-
                         Set<Abstraction> res = computeTargetsInternal(d1, source.isAbstractionActive() ? source : source.getActiveCopy());
                         if (res != null) {
                             for (Abstraction abs : res)
@@ -478,7 +477,7 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                                     source.getAccessPath(), retVal, returnStmt.getOp().getType(), false);
                                             Abstraction abs = source.deriveNewAbstraction(ap, stmt);
                                             if (abs != null) {
-                                                if (isPrimitiveOrStringBase(abs))
+                                                if (isPrimitiveOrStringBase(source))
                                                     abs.setTurnUnit(stmt);
                                                 else
                                                     abs.setAliasingFlag((Stmt) callStmt);
@@ -828,18 +827,20 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                         if (res == null)
                             res = new HashSet<>();
 
-                        if (isExcluded(callee)) {
-                            if (source != zeroValue) {
-                                res.add(source);
-                            }
-                            return res;
-                        }
 
                         // If left side is tainted, the return value overwrites the taint
                         // CallFlow takes care of tainting the return value
                         if (callStmt instanceof AssignStmt
                                 && aliasing.mayAlias(((AssignStmt) callStmt).getLeftOp(), source.getAccessPath().getPlainValue()))
                             return res;
+
+
+                        // TODO: understand isExcluded
+                        if (isExcluded(callee)) {
+                            if (source != zeroValue)
+                                res.add(source);
+//                            return res;
+                        }
 
                         // If we do not know the callees, we can not reason
                         if (interproceduralCFG().getCalleesOfCallAt(callSite).isEmpty()) {

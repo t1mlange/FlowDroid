@@ -1025,13 +1025,13 @@ public class HeapTestCode {
 	}
 	
 	private class SeparatedTree {
-		public TreeElement left;
-		public TreeElement right;
+		private TreeElement left;
+		private TreeElement right;
 	}
 	
 	private class TreeElement {
-		public SeparatedTree child;
-		public String data;
+		private SeparatedTree child;
+		private String data;
 	}
 	
 	public void separatedTreeTest() {

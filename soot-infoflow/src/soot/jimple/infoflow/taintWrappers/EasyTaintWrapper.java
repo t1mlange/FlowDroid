@@ -343,7 +343,7 @@ public class EasyTaintWrapper extends AbstractTaintWrapper implements IReversibl
 		// We need to handle some API calls explicitly as they do not really fit the model of our rules
 		if (!taintedPath.isEmpty() && method.getDeclaringClass().getName().equals("java.lang.String")
 				&& subSig.equals("void getChars(int,int,char[],int)"))
-			return handleStringGetChars(stmt.getInvokeExpr(), taintedPath);
+			return handleInverseStringGetChars(stmt.getInvokeExpr(), taintedPath);
 
 		// If this is not one of the supported classes, we skip it
 		boolean isSupported = includeList == null || includeList.isEmpty()
