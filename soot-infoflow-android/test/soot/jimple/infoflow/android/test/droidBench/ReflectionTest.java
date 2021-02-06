@@ -75,9 +75,12 @@ public class ReflectionTest extends JUnitTests {
 	@Test(timeout=300000)
 	
 	public void runTestReflection7() throws IOException, XmlPullParserException {
+		int expected = 1;
+		if (mode == TestResultMode.FLOWDROID_BACKWARDS)
+			expected = 0;
 		InfoflowResults res = analyzeAPKFile("Reflection/Reflection7.apk", null,
 				enableReflectionCallback);
-		Assert.assertEquals(1, res.size());
+		Assert.assertEquals(expected, res.size());
 	}
 	
 	@Test(timeout=300000)

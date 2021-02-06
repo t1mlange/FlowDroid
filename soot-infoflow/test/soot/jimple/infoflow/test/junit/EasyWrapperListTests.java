@@ -186,7 +186,6 @@ public class EasyWrapperListTests extends JUnitTests {
     	IInfoflow infoflow = initInfoflow();
     	List<String> epoints = new ArrayList<String>();
     	epoints.add("<soot.jimple.infoflow.test.ListTestCode: void listToStringTest()>");
-//    	onlyForwards(infoflow, "EasyTaintWrapper seems to be not inversed accurately");
     	infoflow.setTaintWrapper(easyWrapper);
 		infoflow.computeInfoflow(appPath, libPath, epoints, sources, sinks);
 		checkInfoflow(infoflow, 1);	

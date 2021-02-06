@@ -71,6 +71,9 @@ public class EmulatorDetectionTest extends JUnitTests {
 	
 	@Test(timeout=300000)
 	public void runTestIMEI1() throws IOException, XmlPullParserException {
+		int expected = 2;
+		if (mode == TestResultMode.FLOWDROID_BACKWARDS)
+			expected = 0;
 		InfoflowResults res = analyzeAPKFile("EmulatorDetection/IMEI1.apk", true);
 		Assert.assertNotNull(res);
 		Assert.assertEquals(2, res.size());

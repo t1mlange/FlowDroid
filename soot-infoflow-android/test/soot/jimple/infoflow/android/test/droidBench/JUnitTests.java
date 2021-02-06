@@ -23,6 +23,13 @@ import soot.jimple.infoflow.results.InfoflowResults;
 import soot.jimple.infoflow.taintWrappers.EasyTaintWrapper;
 
 public class JUnitTests {
+	enum TestResultMode {
+		DROIDBENCH, // the actual expected values of droidbench
+		FLOWDROID_BACKWARDS, // the values from FlowDroid backwards analysis, use to test regressions/fixes
+		FLOWDROID_FORWARDS
+	}
+
+	protected final TestResultMode mode = TestResultMode.FLOWDROID_BACKWARDS;
 
 	/**
 	 * Analyzes the given APK file for data flows
