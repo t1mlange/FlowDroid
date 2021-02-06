@@ -359,20 +359,28 @@ public class EasyTaintWrapper extends AbstractTaintWrapper implements IReversibl
 			return Collections.singleton(taintedPath);
 
 		boolean taintedObj = false;
-		if (stmt instanceof DefinitionStmt && stmt.getInvokeExpr() instanceof InstanceInvokeExpr) {
-			DefinitionStmt def = (DefinitionStmt) stmt;
-			// If the return value is tainted, the base object needs to be tainted tainted
-			if (taintedPath.isEmpty() || def.getLeftOp().equals(taintedPath.getPlainValue())) {
-				// As we go backwards: If we have a taint, we guess it was wrongfully sent to this
-				// branch and kill it
+		if (stmt.containsInvokeExpr() && stmt.getInvokeExpr() instanceof InstanceInvokeExpr) {
+			InstanceInvokeExpr iiExpr = (InstanceInvokeExpr) stmt.getInvokeExpr();
+
+			if (iiExpr.getBase().equals(taintedPath.getPlainValue())) {
 				if (wrapType == MethodWrapType.KillTaint)
 					return Collections.emptySet();
 
-				taints.add(manager.getAccessPathFactory().createAccessPath(
-						((InstanceInvokeExpr) stmt.getInvokeExprBox().getValue()).getBase(), true));
-				// this slightly different behavior is needed e.g. for StringBuilder#append
-				// where the string builder and the params get tainted
-				taintedObj = true;
+				// If the base was tainted, one parameter could be responsible for this but we don't know,
+				// maybe it also was tainted before. So we have to keep it.
+				taints.add(taintedPath);
+			}
+
+			if (stmt instanceof DefinitionStmt) {
+				DefinitionStmt def = (DefinitionStmt) stmt;
+				// If the return value is tainted, the base object needs to be tainted
+				if (taintedPath.isEmpty() || def.getLeftOp().equals(taintedPath.getPlainValue())) {
+					taints.add(manager.getAccessPathFactory().createAccessPath(
+							((InstanceInvokeExpr) stmt.getInvokeExprBox().getValue()).getBase(), true));
+					// we also mark the base object as tainted to later on taint the parameters.
+					// This is needed for methods like StringBuilder#append
+					taintedObj = true;
+				}
 			}
 		}
 
@@ -396,13 +404,12 @@ public class EasyTaintWrapper extends AbstractTaintWrapper implements IReversibl
 			if (doTaint) {
 				// Overapproximation: we do not know which parameter is responsible for the tainted base object,
 				// So we have to taint all parameters.
-				for (Value param : stmt.getInvokeExpr().getArgs()) {
-					if (!(param instanceof Constant))
-						taints.add(manager.getAccessPathFactory().createAccessPath(param, true));
+				for (Value arg : stmt.getInvokeExpr().getArgs()) {
+					if (!(arg instanceof Constant))
+						taints.add(manager.getAccessPathFactory().createAccessPath(arg, true));
 				}
 
 				// If the return was tainted, it is now overwritten.
-				// If the base was tainted, one parameter was responsible for this.
 			}
 		}
 
