@@ -36,7 +36,7 @@ public class BasicTestCode {
 	}
 
 	private void calleeOverwriteNull(Location loc) {
-//		System.out.println(loc);
+		System.out.println(loc);
 		loc = null;
 	}
 	

@@ -813,7 +813,7 @@ public class HeapTestCode {
 		B b = new B();
 		b.attr.b = TelephonyManager.getDeviceId();
 		
-//		overwriteParameter(b);
+		overwriteParameter(b);
 		
 		ConnectionManager cm = new ConnectionManager();
 		cm.publish(b.attr.b);		

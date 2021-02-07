@@ -1297,7 +1297,7 @@ public class InfoflowConfiguration {
 	private CodeEliminationMode codeEliminationMode = CodeEliminationMode.PropagateConstants;
 	private StaticFieldTrackingMode staticFieldTrackingMode = StaticFieldTrackingMode.ContextFlowSensitive;
 	private SootIntegrationMode sootIntegrationMode = SootIntegrationMode.CreateNewInstance;
-	private DataFlowDirection dataFlowDirection;
+	private DataFlowDirection dataFlowDirection = DataFlowDirection.Forwards;
 
 	private boolean taintAnalysisEnabled = true;
 	private boolean incrementalResultReporting = false;
@@ -2088,6 +2088,7 @@ public class InfoflowConfiguration {
 		result = prime * result + ((aliasingAlgorithm == null) ? 0 : aliasingAlgorithm.hashCode());
 		result = prime * result + ((callgraphAlgorithm == null) ? 0 : callgraphAlgorithm.hashCode());
 		result = prime * result + ((codeEliminationMode == null) ? 0 : codeEliminationMode.hashCode());
+		result = prime * result + ((dataFlowDirection == null) ? 0 : dataFlowDirection.hashCode());
 		result = prime * result + (int) (dataFlowTimeout ^ (dataFlowTimeout >>> 32));
 		result = prime * result + (enableArraySizeTainting ? 1231 : 1237);
 		result = prime * result + (enableArrays ? 1231 : 1237);
@@ -2139,6 +2140,8 @@ public class InfoflowConfiguration {
 		if (callgraphAlgorithm != other.callgraphAlgorithm)
 			return false;
 		if (codeEliminationMode != other.codeEliminationMode)
+			return false;
+		if (dataFlowDirection != other.dataFlowDirection)
 			return false;
 		if (dataFlowTimeout != other.dataFlowTimeout)
 			return false;

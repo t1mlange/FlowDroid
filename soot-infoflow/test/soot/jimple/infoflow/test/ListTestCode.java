@@ -82,8 +82,8 @@ public class ListTestCode {
 		String tainted = TelephonyManager.getDeviceId();
 		List<String> list = new ArrayList<String>();
 		list.add(tainted);
-//		list.add("neutral");
-//
+		list.add("neutral");
+
 		Iterator<String> it = list.iterator();
 		String taintedElement = it.next();
 		ConnectionManager cm = new ConnectionManager();

@@ -766,7 +766,7 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 		if (!killIncomingTaint.value && (resAbs == null || resAbs.isEmpty())) {
 			// Is this method explicitly excluded?
 			if (!this.flows.isMethodExcluded(callee.getDeclaringClass().getName(), callee.getSubSignature())) {
-				wrapperMisses.incrementAndGet();
+//				wrapperMisses.incrementAndGet();
 
 				if (classSupported.value)
 					return Collections.singleton(taintedAbs);
@@ -833,7 +833,7 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 	 */
 	private Set<AccessPath> computeTaintsForMethod(Stmt stmt, Abstraction d1, Abstraction taintedAbs,
 			final SootMethod method, ByReferenceBoolean killIncomingTaint, ByReferenceBoolean classSupported) {
-		wrapperHits.incrementAndGet();
+//		wrapperHits.incrementAndGet();
 
 		// Get the cached data flows
 		ClassSummaries flowsInCallees = getFlowSummariesForMethod(stmt, method, taintedAbs, classSupported);
@@ -1840,13 +1840,17 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 	@Override
 	public boolean isExclusive(Stmt stmt, Abstraction taintedPath) {
 		// If we directly support the callee, we are exclusive in any case
-		if (supportsCallee(stmt))
+		if (supportsCallee(stmt)) {
+			wrapperHits.getAndIncrement();
 			return true;
+		}
 
 		// If the fallback wrapper supports the method and is exclusive for it,
 		// we are as well
-		if (fallbackWrapper != null && fallbackWrapper.isExclusive(stmt, taintedPath))
+		if (fallbackWrapper != null && fallbackWrapper.isExclusive(stmt, taintedPath)) {
+			wrapperHits.getAndIncrement();
 			return true;
+		}
 
 		// We may also be exclusive for a complete class
 		if (stmt.containsInvokeExpr()) {
@@ -1856,19 +1860,23 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 				// Are the class flows configured to be exclusive?
 				final String targetClassName = targetClass.getName();
 				ClassMethodSummaries cms = flows.getClassFlows(targetClassName);
-				if (cms != null && cms.isExclusiveForClass())
+				if (cms != null && cms.isExclusiveForClass()) {
+					wrapperHits.getAndIncrement();
 					return true;
+				}
 
 				// Check for classes excluded by meta data
 				ClassSummaries summaries = flows.getSummaries();
 				SummaryMetaData metaData = summaries.getMetaData();
 				if (metaData != null) {
-					if (metaData.isClassExclusive(targetClassName))
+					if (metaData.isClassExclusive(targetClassName)) {
+						wrapperHits.getAndIncrement();
 						return true;
+					}
 				}
 			}
 		}
-
+		wrapperMisses.getAndIncrement();
 		return false;
 	}
 

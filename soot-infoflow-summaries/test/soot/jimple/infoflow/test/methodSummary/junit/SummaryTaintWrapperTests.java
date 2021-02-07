@@ -23,6 +23,8 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import soot.jimple.infoflow.BackwardsInfoflow;
+import soot.jimple.infoflow.IInfoflow;
 import soot.jimple.infoflow.Infoflow;
 import soot.jimple.infoflow.InfoflowConfiguration;
 import soot.jimple.infoflow.config.IInfoflowConfig;
@@ -220,7 +222,7 @@ public class SummaryTaintWrapperTests {
 	}
 
 	private void testFlowForMethod(String m) {
-		Infoflow iFlow = null;
+		IInfoflow iFlow = null;
 		try {
 			iFlow = initInfoflow();
 			iFlow.getConfig().getAccessPathConfiguration().setAccessPathLength(3);
@@ -233,7 +235,7 @@ public class SummaryTaintWrapperTests {
 	}
 
 	private void testNoFlowForMethod(String m) {
-		Infoflow iFlow = null;
+		IInfoflow iFlow = null;
 		try {
 			iFlow = initInfoflow();
 			iFlow.computeInfoflow(appPath, libPath, new DefaultEntryPointCreator(Collections.singletonList(m)),
@@ -244,11 +246,12 @@ public class SummaryTaintWrapperTests {
 		checkNoInfoflow(iFlow);
 	}
 
-	private void checkNoInfoflow(Infoflow infoflow) {
-		assertTrue(!infoflow.isResultAvailable() || infoflow.getResults().size() == 0);
+	private void checkNoInfoflow(IInfoflow infoflow) {
+		assertFalse(infoflow.isResultAvailable());
+		assertEquals(0, infoflow.getResults().size());
 	}
 
-	private void checkInfoflow(Infoflow infoflow, int resultCount) {
+	private void checkInfoflow(IInfoflow infoflow, int resultCount) {
 		if (infoflow.isResultAvailable()) {
 			InfoflowResults map = infoflow.getResults();
 
@@ -261,8 +264,9 @@ public class SummaryTaintWrapperTests {
 		}
 	}
 
-	protected Infoflow initInfoflow() throws FileNotFoundException, XMLStreamException {
-		Infoflow result = new Infoflow();
+	protected IInfoflow initInfoflow() throws FileNotFoundException, XMLStreamException {
+		IInfoflow result = new BackwardsInfoflow();
+//		Infoflow result = new Infoflow();
 		result.getConfig().getAccessPathConfiguration().setUseRecursiveAccessPaths(false);
 		IInfoflowConfig testConfig = new IInfoflowConfig() {
 

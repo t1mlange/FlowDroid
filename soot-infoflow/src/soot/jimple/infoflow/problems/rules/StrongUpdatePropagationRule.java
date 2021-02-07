@@ -45,10 +45,10 @@ public class StrongUpdatePropagationRule extends AbstractTaintPropagationRule {
 
 		// If this is a newly created alias at this statement, we don't kill it right
 		// away
-//		if (!source.isAbstractionActive() && source.getCurrentStmt() == stmt)
-//			return null;
-//
-//		// If the statement has just been activated, we do not overwrite stuff
+		if (!source.isAbstractionActive() && source.getCurrentStmt() == stmt)
+			return null;
+
+		// If the statement has just been activated, we do not overwrite stuff
 		if (source.getPredecessor() != null && !source.getPredecessor().isAbstractionActive()
 				&& source.isAbstractionActive() && source.getPredecessor().getActivationUnit() == stmt
 				&& source.getAccessPath().equals(source.getPredecessor().getAccessPath()))
