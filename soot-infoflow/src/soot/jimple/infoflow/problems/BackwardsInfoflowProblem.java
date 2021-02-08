@@ -782,8 +782,8 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
 
                 final SootMethod callee = invExpr.getMethod();
 
-//                final boolean isSink = manager.getSourceSinkManager() != null
-//                        && manager.getSourceSinkManager().getSinkInfo(callStmt, manager, null) != null;
+                final boolean isSink = manager.getSourceSinkManager() != null
+                        && manager.getSourceSinkManager().getSinkInfo(callStmt, manager, null) != null;
 //                final boolean isSource = manager.getSourceSinkManager() != null
 //                        && manager.getSourceSinkManager().getSourceInfo(callStmt, manager) != null;
 
@@ -847,6 +847,12 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                             if (source != zeroValue)
                                 res.add(source);
                             return res;
+                        }
+
+                        // TODO: Wrong(?), but how to do better
+                        if (isSink && !manager.getConfig().getInspectSinks()) {
+                            if (source != zeroValue)
+                                res.add(source);
                         }
 
                         // Static values can be propagated over methods if

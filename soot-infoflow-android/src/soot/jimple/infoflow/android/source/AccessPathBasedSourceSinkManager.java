@@ -5,6 +5,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import soot.SootMethod;
+import soot.Unit;
 import soot.Value;
 import soot.jimple.*;
 import soot.jimple.infoflow.IInfoflow;
@@ -291,23 +293,36 @@ public class AccessPathBasedSourceSinkManager extends AndroidSourceSinkManager {
 
 		if (def instanceof MethodSourceSinkDefinition) {
 			MethodSourceSinkDefinition methodDef = (MethodSourceSinkDefinition) def;
-			if (methodDef.getCallType() == CallType.Return && sCallSite instanceof AssignStmt) {
-				AccessPath ap = manager.getAccessPathFactory().createAccessPath(((AssignStmt) sCallSite).getLeftOp(), true);
-				return new SourceInfo(def, ap);
-			}
+			if (methodDef.getCallType() == CallType.Return) {
+				Set<AccessPath> aps = new HashSet<>();
+					for (SootMethod dest : manager.getICFG().getCalleesOfCallAt(sCallSite)) {
+						if (!dest.hasActiveBody())
+							continue;
 
+						for (Unit unit : dest.getActiveBody().getUnits()) {
+							if (!(unit instanceof ReturnStmt))
+								continue;
+
+							for (AccessPathTuple apt : methodDef.getReturnValues()) {
+								if (apt.getSourceSinkType().isSink()) {
+									aps.add(apt.toAccessPath(((ReturnStmt) unit).getOp(), manager, false));
+							}
+						}
+					}
+				}
+				return new SourceInfo(def, aps);
+			}
 			// Check whether the base object matches our definition
-			if (sCallSite.getInvokeExpr() instanceof InstanceInvokeExpr && methodDef.getBaseObjects() != null) {
-				for (AccessPathTuple apt : methodDef.getBaseObjects())
+			else if (sCallSite.getInvokeExpr() instanceof InstanceInvokeExpr && methodDef.getBaseObjects() != null) {
+				for (AccessPathTuple apt : methodDef.getBaseObjects()) {
 					if (apt.getSourceSinkType().isSink()) {
-						AccessPath ap = manager.getAccessPathFactory()
-								.createAccessPath(((InstanceInvokeExpr) sCallSite.getInvokeExpr()).getBase(), true);
+						AccessPath ap = apt.toAccessPath(((InstanceInvokeExpr) sCallSite.getInvokeExpr()).getBase(), manager, true);
 						return new SourceInfo(def, ap);
 					}
+				}
 			}
-
 			// Check whether a parameter matches our definition
-			if (methodDef.getParameters() != null && methodDef.getParameters().length > 0) {
+			else if (methodDef.getParameters() != null && methodDef.getParameters().length > 0) {
 				Set<AccessPath> aps = new HashSet<>();
 				// Get the tainted parameter index
 				for (int i = 0; i < sCallSite.getInvokeExpr().getArgCount(); i++) {
@@ -317,13 +332,13 @@ public class AccessPathBasedSourceSinkManager extends AndroidSourceSinkManager {
 					if (methodDef.getParameters().length > i) {
 						for (AccessPathTuple apt : methodDef.getParameters()[i]) {
 							if (apt.getSourceSinkType().isSink()) {
-								AccessPath ap = manager.getAccessPathFactory().createAccessPath(sCallSite.getInvokeExpr().getArg(i), true);
+								AccessPath ap = apt.toAccessPath(sCallSite.getInvokeExpr().getArg(i), manager, true);
 								aps.add(ap);
 							}
 						}
-						return new SourceInfo(def, aps);
 					}
 				}
+				return new SourceInfo(def, aps);
 			}
 		} else if (def instanceof FieldSourceSinkDefinition) {
 			FieldSourceSinkDefinition fieldDef = (FieldSourceSinkDefinition) def;
@@ -345,7 +360,7 @@ public class AccessPathBasedSourceSinkManager extends AndroidSourceSinkManager {
 			for (AccessPathTuple apt : ssdef.getAccessPaths()) {
 				if (apt.getSourceSinkType().isSink()) {
 					apsTuple.add(apt);
-					aps.add(apt.toAccessPath(sCallSite.getFieldRef(), manager, false));
+					aps.add(apt.toAccessPath(sCallSite.getFieldRef(), manager, true));
 				}
 				return new SourceInfo(apDef.filter(apsTuple), aps);
 			}
