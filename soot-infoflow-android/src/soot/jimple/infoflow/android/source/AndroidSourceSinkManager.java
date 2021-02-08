@@ -427,8 +427,8 @@ public class AndroidSourceSinkManager extends BaseSourceSinkManager
 	}
 
 	@Override
-	protected ISourceSinkDefinition getSource(Stmt sCallSite, IInfoflowCFG cfg) {
-		ISourceSinkDefinition definition = super.getSource(sCallSite, cfg);
+	protected ISourceSinkDefinition getInverseSink(Stmt sCallSite, IInfoflowCFG cfg) {
+		ISourceSinkDefinition definition = super.getInverseSink(sCallSite, cfg);
 		if (definition != null)
 			return definition;
 
