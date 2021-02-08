@@ -125,8 +125,12 @@ public class GeneralJavaTest extends JUnitTests {
 
 	@Test(timeout=300000)
 	public void runTestStaticInitialization1() throws IOException, XmlPullParserException {
+		int expected = 1;
+		if (mode == TestResultMode.FLOWDROID_FORWARDS)
+			expected = 0;
+
 		InfoflowResults res = analyzeAPKFile("GeneralJava/StaticInitialization1.apk");
-		Assert.assertEquals(1, res.size());
+		Assert.assertEquals(expected, res.size());
 	}
 
 	@Test(timeout=300000)
