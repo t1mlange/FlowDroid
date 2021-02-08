@@ -247,8 +247,7 @@ public class SummaryTaintWrapperTests {
 	}
 
 	private void checkNoInfoflow(IInfoflow infoflow) {
-		assertFalse(infoflow.isResultAvailable());
-		assertEquals(0, infoflow.getResults().size());
+		assertTrue(!infoflow.isResultAvailable() || infoflow.getResults().size() == 0);
 	}
 
 	private void checkInfoflow(IInfoflow infoflow, int resultCount) {

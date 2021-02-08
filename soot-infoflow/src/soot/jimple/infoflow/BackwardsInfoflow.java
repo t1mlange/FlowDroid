@@ -1241,6 +1241,9 @@ public class BackwardsInfoflow extends AbstractInfoflow {
         // TODO: Split interface IInfoflow?
     }
 
+    protected void onTaintPropagationCompleted(IInfoflowSolver forwardSolver, IInfoflowSolver backwardSolver) {
+        //
+    }
     /**
      * Sets the factory to be used for creating memory managers
      *

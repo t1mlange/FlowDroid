@@ -36,6 +36,7 @@ import soot.jimple.InvokeExpr;
 import soot.jimple.ReturnStmt;
 import soot.jimple.StaticInvokeExpr;
 import soot.jimple.Stmt;
+import soot.jimple.infoflow.InfoflowConfiguration;
 import soot.jimple.infoflow.InfoflowManager;
 import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.data.AccessPath;
@@ -722,8 +723,11 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 		Type baseType = TypeUtils.getTypeFromString(t.getBaseType());
 
 		// A return value cannot be propagated into a method
-		if (t.isReturn())
-			throw new RuntimeException("Unsupported taint type");
+		if (t.isReturn()) {
+			if (manager.getConfig().getDataFlowDirection() == InfoflowConfiguration.DataFlowDirection.Forwards)
+				throw new RuntimeException("Unsupported taint type");
+			return null;
+		}
 
 		if (t.isParameter()) {
 			Local l = sm.getActiveBody().getParameterLocal(t.getParameterIndex());
@@ -1041,6 +1045,8 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 		}
 
 		AccessPath ap = createAccessPathInMethod(propagator.getTaint(), implementor);
+		if (ap == null)
+			return null;
 		Abstraction abs = new Abstraction(null, ap, null, null, false, false);
 
 		// We need to pop the last gap element off the stack
@@ -1490,6 +1496,8 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 	private boolean compareFields(Taint taintedPath, AbstractFlowSinkSource flowSource) {
 		// if we have x.f....fn and the source is x.f'.f1'...f'n+1 and we don't
 		// taint sub, we can't have a match
+		int tpLen = taintedPath.getAccessPathLength();
+		int flLen = flowSource.getAccessPathLength();
 		if (taintedPath.getAccessPathLength() < flowSource.getAccessPathLength()) {
 			if (!taintedPath.taintSubFields() || flowSource.isMatchStrict())
 				return false;

@@ -8,6 +8,7 @@ import heros.solver.PathEdge;
 import soot.*;
 import soot.baf.Inst;
 import soot.jimple.*;
+import soot.jimple.infoflow.AbstractInfoflow;
 import soot.jimple.infoflow.InfoflowConfiguration;
 import soot.jimple.infoflow.InfoflowManager;
 import soot.jimple.infoflow.aliasing.Aliasing;
@@ -594,7 +595,7 @@ public class BackwardsAliasProblem extends AbstractInfoflowProblem {
                     private Set<Abstraction> computeTargetsInternal(Abstraction d1, Abstraction source) {
                         // If excluded or we do not anything about the callee,
                         // we just pass the taint over the statement
-                        if (isExcluded(callee) || interproceduralCFG().getCalleesOfCallAt(callSite).isEmpty()) {
+                        if (interproceduralCFG().getCalleesOfCallAt(callSite).isEmpty()) {
                             return Collections.singleton(source);
                         }
 
@@ -620,6 +621,10 @@ public class BackwardsAliasProblem extends AbstractInfoflowProblem {
                                 }
                                 return passOnSet;
                             }
+                        }
+
+                        if (isExcluded(callee)) {
+                            return Collections.singleton(source);
                         }
 
                         // If static field is used, we do not pass it over

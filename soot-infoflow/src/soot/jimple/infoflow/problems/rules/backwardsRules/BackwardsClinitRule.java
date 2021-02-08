@@ -20,19 +20,16 @@ public class BackwardsClinitRule extends AbstractTaintPropagationRule {
         super(manager, zeroValue, results);
     }
 
-    private void propagateToClinit(Abstraction d1, Abstraction abs, Stmt stmt, SootClass declaringClass) {
-        Collection<SootMethod> callees = manager.getICFG().getCalleesOfCallAt(stmt);
-        // Look through all callees and find the clinit call
-        SootMethod callee = callees.stream().filter(c -> c.hasActiveBody() && c.getDeclaringClass() == declaringClass
-                && c.getSubSignature().equals("void <clinit>()")).findAny().orElse(null);
-
-        if (callee == null)
-            return;
-
+    private void propagateToClinit(Abstraction d1, Abstraction abs, SootMethod callee) {
         Collection<Unit> startPoints = manager.getICFG().getStartPointsOf(callee);
         // Most likely |startPoints|=1 but just to be safe
         for (Unit startPoint : startPoints)
             manager.getForwardSolver().processEdge(new PathEdge<>(d1, startPoint, abs));
+    }
+
+    private boolean containsStaticField(SootMethod callee, Abstraction abs) {
+        return manager.getICFG().isStaticFieldUsed(callee, abs.getAccessPath().getFirstField())
+                || manager.getICFG().isStaticFieldRead(callee, abs.getAccessPath().getFirstField());
     }
 
     @Override
@@ -46,16 +43,26 @@ public class BackwardsClinitRule extends AbstractTaintPropagationRule {
         if (aliasing == null)
             return null;
 
-        boolean leftSideMatches = Aliasing.baseMatches(BaseSelector.selectBase(assignStmt.getLeftOp(), false), source);
+        Collection<SootMethod> callees = manager.getICFG().getCalleesOfCallAt(stmt);
+        // Look through all callees and find the clinit call
+        SootMethod callee = callees.stream().filter(c -> c.hasActiveBody()
+                && c.getSubSignature().equals("void <clinit>()")).findAny().orElse(null);
 
+        // no clinit edge -> nothing to do
+        if (callee == null)
+            return null;
+
+        boolean leftSideMatches = Aliasing.baseMatches(BaseSelector.selectBase(assignStmt.getLeftOp(), false), source);
         Value rightOp = assignStmt.getRightOp();
         Value rightVal = BaseSelector.selectBase(assignStmt.getRightOp(), false);
-        if (rightOp instanceof StaticFieldRef && leftSideMatches) {
-            SootClass declaringClassOp = ((StaticFieldRef) rightVal).getFieldRef().declaringClass();
-            SootClass declaringClassMethod = manager.getICFG().getMethodOf(stmt).getDeclaringClass();
+        SootClass declaringClassMethod = manager.getICFG().getMethodOf(assignStmt).getDeclaringClass();
 
+        Abstraction newAbs = null;
+        if (leftSideMatches && rightOp instanceof StaticFieldRef) {
+            SootClass declaringClassOp = ((StaticFieldRef) rightOp).getField().getDeclaringClass();
             // If the static reference is from the same class
             // we will at least find the class NewExpr above.
+            // So we wait, maybe we'll find an overwrite
             if (declaringClassMethod == declaringClassOp)
                 return null;
 
@@ -64,19 +71,22 @@ public class BackwardsClinitRule extends AbstractTaintPropagationRule {
             // inherited from the default callgraph algorithm SPARK.
             AccessPath newAp = manager.getAccessPathFactory().copyWithNewValue(ap, rightVal,
                     rightVal.getType(), false);
-            Abstraction newAbs = source.deriveNewAbstraction(newAp, stmt);
-            if (newAbs != null) {
-                newAbs.setCorrespondingCallSite(assignStmt);
-                propagateToClinit(d1, newAbs, stmt, declaringClassOp);
-            }
-        } else if (rightOp instanceof NewExpr && ap.isStaticFieldRef()) {
+            newAbs = source.deriveNewAbstraction(newAp, stmt);
+        }
+        else if (ap.isStaticFieldRef() && rightOp instanceof NewExpr) {
             SootClass declaringClassOp = ((NewExpr) rightOp).getBaseType().getSootClass();
-            SootClass declaringClassTaint = ap.getFirstField().getDeclaringClass();
+            // The NewExpr is in its own class, so we find at least another NewExpr of this kind.
+//            if (declariassMethod == declaringClassOp)
+//                return null;ngCl
 
-            // If the taint is static and is a field of the instanciated
-            // class, this NewExpr might be the last occurence.
-            if (declaringClassTaint == declaringClassOp)
-                propagateToClinit(d1, source, stmt, declaringClassOp);
+            // In static blocks any statement can be inside also static field of other classes
+            // so we also have to look into it for a possible use.
+            newAbs = source.deriveNewAbstraction(source.getAccessPath(), stmt);
+        }
+
+        if (newAbs != null && containsStaticField(callee, newAbs)) {
+            newAbs.setCorrespondingCallSite(assignStmt);
+            propagateToClinit(d1, newAbs, callee);
         }
 
         return null;

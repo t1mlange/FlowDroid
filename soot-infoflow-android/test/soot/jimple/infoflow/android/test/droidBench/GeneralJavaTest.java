@@ -124,7 +124,6 @@ public class GeneralJavaTest extends JUnitTests {
 	}
 
 	@Test(timeout=300000)
-			// not supported yet in FlowDroid
 	public void runTestStaticInitialization1() throws IOException, XmlPullParserException {
 		InfoflowResults res = analyzeAPKFile("GeneralJava/StaticInitialization1.apk");
 		Assert.assertEquals(1, res.size());
@@ -134,7 +133,7 @@ public class GeneralJavaTest extends JUnitTests {
 	public void runTestStaticInitialization2() throws IOException, XmlPullParserException {
 		int expected = 1;
 		if (mode == TestResultMode.FLOWDROID_BACKWARDS)
-			expected = 0;
+			expected = 1;
 		InfoflowResults res = analyzeAPKFile("GeneralJava/StaticInitialization2.apk");
 		Assert.assertEquals(expected, res.size());
 	}
