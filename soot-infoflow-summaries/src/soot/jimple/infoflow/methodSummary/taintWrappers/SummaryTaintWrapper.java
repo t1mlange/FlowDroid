@@ -662,6 +662,9 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 		// If the taint is a return value, we taint the left side of the
 		// assignment
 		if (t.isReturn()) {
+			if (manager.getConfig().getDataFlowDirection() == InfoflowConfiguration.DataFlowDirection.Backwards)
+				return null;
+
 			// If the return value is not used, we can abort
 			if (!(stmt instanceof DefinitionStmt))
 				return null;
@@ -716,7 +719,7 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 	 * @param sm The method in which the access path shall be created
 	 * @return The access path derived from the given taint and method
 	 */
-	private AccessPath createAccessPathInMethod(Taint t, SootMethod sm) {
+	private Set<AccessPath> createAccessPathInMethod(Taint t, SootMethod sm) {
 		// Convert the taints to Soot objects
 		SootField[] fields = safeGetFields(t.getAccessPath());
 		Type[] types = safeGetTypes(t.getAccessPath(), fields);
@@ -726,19 +729,28 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 		if (t.isReturn()) {
 			if (manager.getConfig().getDataFlowDirection() == InfoflowConfiguration.DataFlowDirection.Forwards)
 				throw new RuntimeException("Unsupported taint type");
-			return null;
+
+			Set<AccessPath> aps = new HashSet<>();
+			for (Unit unit : sm.getActiveBody().getUnits()) {
+				if (!(unit instanceof ReturnStmt))
+					continue;
+
+				aps.add(manager.getAccessPathFactory().createAccessPath(((ReturnStmt) unit).getOp(), fields, baseType,
+						types, t.taintSubFields(), false, true, ArrayTaintType.ContentsAndLength));
+			}
+			return aps;
 		}
 
 		if (t.isParameter()) {
 			Local l = sm.getActiveBody().getParameterLocal(t.getParameterIndex());
-			return manager.getAccessPathFactory().createAccessPath(l, fields, baseType, types, true, false, true,
-					ArrayTaintType.ContentsAndLength);
+			return Collections.singleton(manager.getAccessPathFactory().createAccessPath(l, fields, baseType, types, true, false, true,
+					ArrayTaintType.ContentsAndLength));
 		}
 
 		if (t.isField() || t.isGapBaseObject()) {
 			Local l = sm.getActiveBody().getThisLocal();
-			return manager.getAccessPathFactory().createAccessPath(l, fields, baseType, types, true, false, true,
-					ArrayTaintType.ContentsAndLength);
+			return Collections.singleton(manager.getAccessPathFactory().createAccessPath(l, fields, baseType, types, true, false, true,
+					ArrayTaintType.ContentsAndLength));
 		}
 
 		throw new RuntimeException("Failed to convert taint " + t);
@@ -957,6 +969,8 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 						if (ap == null)
 							continue;
 						else {
+							if (ap.toString().contains("LinkedList"))
+								workList = workList;
 							if (res == null)
 								res = new HashSet<>();
 							res.add(ap);
@@ -1044,10 +1058,13 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 			}
 		}
 
-		AccessPath ap = createAccessPathInMethod(propagator.getTaint(), implementor);
-		if (ap == null)
+		Set<AccessPath> aps = createAccessPathInMethod(propagator.getTaint(), implementor);
+		aps.remove(null);
+		if (aps.isEmpty())
 			return null;
-		Abstraction abs = new Abstraction(null, ap, null, null, false, false);
+		Set<Abstraction> absSet = new HashSet<>();
+		aps.forEach(ap -> absSet.add(new Abstraction(null, ap, null, null, false, false)));
+		absSet.remove(null);
 
 		// We need to pop the last gap element off the stack
 		AccessPathPropagator parent = safePopParent(propagator);
@@ -1055,36 +1072,41 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 
 		// We might already have a summary for the callee
 		Set<AccessPathPropagator> outgoingTaints = null;
-		Set<Pair<Unit, Abstraction>> endSummary = manager.getForwardSolver().endSummary(implementor, abs);
-		if (endSummary != null && !endSummary.isEmpty()) {
-			for (Pair<Unit, Abstraction> pair : endSummary) {
-				if (outgoingTaints == null)
-					outgoingTaints = new HashSet<>();
+		for (Abstraction abs : absSet) {
+			Set<Pair<Unit, Abstraction>> endSummary = manager.getForwardSolver().endSummary(implementor, abs);
+			if (endSummary != null && !endSummary.isEmpty()) {
+				for (Pair<Unit, Abstraction> pair : endSummary) {
+					if (outgoingTaints == null)
+						outgoingTaints = new HashSet<>();
 
-				// Create the taint that corresponds to the access path leaving
-				// the user-code method
-				Set<Taint> newTaints = createTaintFromAccessPathOnReturn(pair.getO2().getAccessPath(),
-						(Stmt) pair.getO1(), propagator.getGap());
-				if (newTaints != null)
-					for (Taint newTaint : newTaints) {
-						AccessPathPropagator newPropagator = new AccessPathPropagator(newTaint, gap, parent,
-								propagator.getParent() == null ? null : propagator.getParent().getStmt(),
-								propagator.getParent() == null ? null : propagator.getParent().getD1(),
-								propagator.getParent() == null ? null : propagator.getParent().getD2());
-						outgoingTaints.add(newPropagator);
-					}
+					// Create the taint that corresponds to the access path leaving
+					// the user-code method
+					Set<Taint> newTaints = createTaintFromAccessPathOnReturn(pair.getO2().getAccessPath(),
+							(Stmt) pair.getO1(), propagator.getGap());
+					if (newTaints != null)
+						for (Taint newTaint : newTaints) {
+							AccessPathPropagator newPropagator = new AccessPathPropagator(newTaint, gap, parent,
+									propagator.getParent() == null ? null : propagator.getParent().getStmt(),
+									propagator.getParent() == null ? null : propagator.getParent().getD1(),
+									propagator.getParent() == null ? null : propagator.getParent().getD2());
+							outgoingTaints.add(newPropagator);
+						}
+				}
 			}
+		}
+		if (outgoingTaints != null)
 			return outgoingTaints;
-		}
 
-		// Create a new edge at the start point of the callee
-		for (Unit sP : manager.getICFG().getStartPointsOf(implementor)) {
-			PathEdge<Unit, Abstraction> edge = new PathEdge<>(abs, sP, abs);
-			manager.getForwardSolver().processEdge(edge);
-		}
+		for (Abstraction abs : absSet) {
+			// Create a new edge at the start point of the callee
+			for (Unit sP : manager.getICFG().getStartPointsOf(implementor)) {
+				PathEdge<Unit, Abstraction> edge = new PathEdge<>(abs, sP, abs);
+				manager.getForwardSolver().processEdge(edge);
+			}
 
-		// Register the new context so that we can get the taints back
-		this.userCodeTaints.put(new Pair<>(abs, implementor), propagator);
+			// Register the new context so that we can get the taints back
+			this.userCodeTaints.put(new Pair<>(abs, implementor), propagator);
+		}
 		return null;
 	}
 

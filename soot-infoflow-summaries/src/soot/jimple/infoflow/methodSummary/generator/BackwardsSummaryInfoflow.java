@@ -1,6 +1,7 @@
 package soot.jimple.infoflow.methodSummary.generator;
 
 import soot.jimple.infoflow.BackwardsInfoflow;
+import soot.jimple.infoflow.IInfoflow;
 import soot.jimple.infoflow.Infoflow;
 import soot.jimple.infoflow.InfoflowManager;
 import soot.jimple.infoflow.solver.IInfoflowSolver;
@@ -14,7 +15,7 @@ import java.util.Collection;
  * @author Steven Arzt
  *
  */
-public class BackwardsSummaryInfoflow extends BackwardsInfoflow {
+public class BackwardsSummaryInfoflow extends BackwardsInfoflow implements ISummaryInfoflow {
 
 	private InfoflowManager cachedManager = null;
 	private String libPath;
