@@ -30,12 +30,7 @@ import soot.Type;
 import soot.Unit;
 import soot.Value;
 import soot.VoidType;
-import soot.jimple.DefinitionStmt;
-import soot.jimple.InstanceInvokeExpr;
-import soot.jimple.InvokeExpr;
-import soot.jimple.ReturnStmt;
-import soot.jimple.StaticInvokeExpr;
-import soot.jimple.Stmt;
+import soot.jimple.*;
 import soot.jimple.infoflow.InfoflowConfiguration;
 import soot.jimple.infoflow.InfoflowManager;
 import soot.jimple.infoflow.data.Abstraction;
@@ -561,7 +556,7 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 	 *                            value of a method call, otherwise false
 	 * @return The set of taints derived from the given access path
 	 */
-	private Set<Taint> createTaintFromAccessPathOnCall(AccessPath ap, Stmt stmt, boolean matchReturnedValues) {
+	private Set<Taint> createTaintFromAccessPathOnCall(AccessPath ap, Stmt stmt, boolean matchReturnedValues, ByReferenceBoolean killIncomingSource) {
 		Value base = getMethodBase(stmt);
 		Set<Taint> newTaints = null;
 
@@ -588,6 +583,9 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 		if (matchReturnedValues && stmt instanceof DefinitionStmt) {
 			DefinitionStmt defStmt = (DefinitionStmt) stmt;
 			if (defStmt.getLeftOp() == ap.getPlainValue()) {
+				// retVals are killed backwards
+				if (killIncomingSource != null)
+					killIncomingSource.value = true;
 				if (newTaints == null)
 					newTaints = new HashSet<>();
 
@@ -867,7 +865,7 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 			return null;
 
 		// Create a level-0 propagator for the initially tainted access path
-		Set<Taint> taintsFromAP = createTaintFromAccessPathOnCall(taintedAbs.getAccessPath(), stmt, false);
+		Set<Taint> taintsFromAP = createTaintFromAccessPathOnCall(taintedAbs.getAccessPath(), stmt, false, null);
 		if (taintsFromAP == null || taintsFromAP.isEmpty())
 			return null;
 
@@ -1995,7 +1993,8 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 		}
 
 		// Create a level-0 propagator for the initially tainted access path
-		Set<Taint> taintsFromAP = createTaintFromAccessPathOnCall(taintedAbs.getAccessPath(), stmt, true);
+		ByReferenceBoolean killIncomingTaint = new ByReferenceBoolean();
+		Set<Taint> taintsFromAP = createTaintFromAccessPathOnCall(taintedAbs.getAccessPath(), stmt, true, killIncomingTaint);
 		if (taintsFromAP == null || taintsFromAP.isEmpty())
 			return Collections.emptySet();
 
@@ -2089,16 +2088,13 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 		}
 
 		// Create a level-0 propagator for the initially tainted access path
-		Set<Taint> taintsFromAP = createTaintFromAccessPathOnCall(taintedAbs.getAccessPath(), stmt, true);
+		ByReferenceBoolean killIncomingTaint = new ByReferenceBoolean();
+		Set<Taint> taintsFromAP = createTaintFromAccessPathOnCall(taintedAbs.getAccessPath(), stmt, true, killIncomingTaint);
 		if (taintsFromAP == null || taintsFromAP.isEmpty())
 			return Collections.emptySet();
 
 		Set<AccessPath> res = null;
 		for (String className : flowsInCallees.getClasses()) {
-			List<AccessPathPropagator> workList = new ArrayList<AccessPathPropagator>();
-			for (Taint taint : taintsFromAP)
-				workList.add(new AccessPathPropagator(taint, null, null, stmt, d1, taintedAbs, true));
-
 			// Get the flows in this class
 			ClassMethodSummaries classFlows = flowsInCallees.getClassSummaries(className);
 			if (classFlows == null)
@@ -2109,8 +2105,23 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 			if (flowsInCallee == null || flowsInCallee.isEmpty())
 				continue;
 
-			// Since we are scanning backwards, we need to reverse the flows
-//			flowsInCallee = flowsInCallee.reverse();
+			List<AccessPathPropagator> workList = new ArrayList<AccessPathPropagator>();
+			for (Taint taint : taintsFromAP) {
+				boolean killTaint = false;
+				if (!killIncomingTaint.value && flowsInCallee.hasClears()) {
+					for (MethodClear clear : flowsInCallee.getAllClears()) {
+						if (flowMatchesTaint(clear.getClearDefinition(), taint)) {
+							killTaint = true;
+							break;
+						}
+					}
+				}
+
+				if (killTaint)
+					killIncomingTaint.value = true;
+				else
+					workList.add(new AccessPathPropagator(taint, null, null, stmt, d1, taintedAbs, true));
+			}
 
 			// Apply the data flows until we reach a fixed point
 			Set<AccessPath> resCallee = applyFlowsIterative(flowsInCallee, workList);
@@ -2122,8 +2133,12 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 		}
 
 		// We always retain the incoming taint
-		if (res == null || res.isEmpty())
+		if (res == null || res.isEmpty()) {
+			// except it is overwritten
+			if (killIncomingTaint.value)
+				return null;
 			return Collections.singleton(taintedAbs);
+		}
 
 		// Create abstractions from the access paths
 		Set<Abstraction> resAbs = new HashSet<>(res.size() + 1);
