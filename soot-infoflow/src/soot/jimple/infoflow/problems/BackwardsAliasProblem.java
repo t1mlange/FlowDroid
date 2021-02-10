@@ -609,7 +609,6 @@ public class BackwardsAliasProblem extends AbstractInfoflowProblem {
                             if (wrapperAliases != null && !wrapperAliases.isEmpty()) {
                                 Set<Abstraction> passOnSet = new HashSet<>(wrapperAliases.size());
                                 for (Abstraction abs : wrapperAliases) {
-                                    if (assignStmt == null || assignStmt.getLeftOp() != abs.getAccessPath().getPlainValue()) {
                                         passOnSet.add(abs);
                                         if (abs != source)
                                             abs.setCorrespondingCallSite(callStmt);
@@ -617,7 +616,6 @@ public class BackwardsAliasProblem extends AbstractInfoflowProblem {
                                         for (Unit u : manager.getICFG().getPredsOf(callSite))
                                             manager.getForwardSolver()
                                                     .processEdge(new PathEdge<Unit, Abstraction>(d1, u, abs.getActiveCopy()));
-                                    }
                                 }
                                 return passOnSet;
                             }

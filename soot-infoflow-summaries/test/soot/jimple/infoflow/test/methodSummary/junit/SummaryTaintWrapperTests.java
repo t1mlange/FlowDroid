@@ -175,7 +175,7 @@ public class SummaryTaintWrapperTests {
 		testFlowForMethod("<soot.jimple.infoflow.test.methodSummary.ApiClassClient: void storeAliasInGapClass2()>");
 	}
 
-	@Test(timeout = 30000)
+	@Test
 	public void storeAliasInSummaryClass() {
 		testFlowForMethod("<soot.jimple.infoflow.test.methodSummary.ApiClassClient: void storeAliasInSummaryClass()>");
 	}
