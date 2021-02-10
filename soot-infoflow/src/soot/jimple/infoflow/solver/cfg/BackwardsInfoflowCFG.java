@@ -56,6 +56,11 @@ public class BackwardsInfoflowCFG extends InfoflowCFG {
 	}
 
 	@Override
+	public void notifyMethodChanged(SootMethod m) {
+		baseCFG.notifyMethodChanged(m);
+	}
+
+	@Override
 	public void purge() {
 		baseCFG.purge();
 		super.purge();

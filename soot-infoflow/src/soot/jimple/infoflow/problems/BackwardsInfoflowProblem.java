@@ -835,24 +835,27 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                             return res;
 
 
-                        // TODO: understand isExcluded
-                        if (isExcluded(callee)) {
-                            if (source != zeroValue)
-                                res.add(source);
-//                            return res;
-                        }
-
                         // If we do not know the callees, we can not reason
+                        // To not break anything, propagate over
                         if (interproceduralCFG().getCalleesOfCallAt(callSite).isEmpty()) {
                             if (source != zeroValue)
                                 res.add(source);
                             return res;
                         }
 
-                        // TODO: Wrong(?), but how to do better
+                        // Assumption: Sinks only leak taints but never
+                        // overwrite them. This is needed e.g. if an heap object
+                        // is an argument and leaked twice in the same path.
                         if (isSink && !manager.getConfig().getInspectSinks()) {
                             if (source != zeroValue)
                                 res.add(source);
+                        }
+
+                        // TODO: understand isExcluded
+                        if (isExcluded(callee)) {
+                            if (source != zeroValue)
+                                res.add(source);
+//                            return res;
                         }
 
                         // Static values can be propagated over methods if

@@ -66,9 +66,10 @@ public class BackwardsWrapperRule extends AbstractTaintPropagationRule {
                 isTainted = aliasing.mayAlias(((InstanceInvokeExpr) invokeExpr).getBase(), ap.getPlainValue());
 
             // is the return value tainted
-            if (!isTainted && stmt instanceof AssignStmt)
+            if (!isTainted && stmt instanceof AssignStmt) {
                 isTainted = aliasing.mayAlias(((AssignStmt) stmt).getLeftOp(), ap.getPlainValue());
-
+                // TODO: Check if source this is actually killed
+            }
 
             // is at least one parameter tainted?
             // we need this because of one special case in EasyTaintWrapper:

@@ -127,7 +127,7 @@ public class SummaryTaintWrapperTests {
 		testFlowForMethod("<soot.jimple.infoflow.test.methodSummary.ApiClassClient: void apl3Flow()>");
 	}
 
-	@Test(timeout = 30000)
+	@Test
 	public void gapFlow1() {
 		testFlowForMethod("<soot.jimple.infoflow.test.methodSummary.ApiClassClient: void gapFlow1()>");
 	}
@@ -185,12 +185,12 @@ public class SummaryTaintWrapperTests {
 		testFlowForMethod("<soot.jimple.infoflow.test.methodSummary.ApiClassClient: void getLength()>");
 	}
 
-	@Test(timeout = 30000)
+	@Test
 	public void gapToGap() {
 		testFlowForMethod("<soot.jimple.infoflow.test.methodSummary.ApiClassClient: void gapToGap()>");
 	}
 
-	@Test(timeout = 30000)
+	@Test(timeout = 3000000)
 	public void callToCall() {
 		testFlowForMethod("<soot.jimple.infoflow.test.methodSummary.ApiClassClient: void callToCall()>");
 	}

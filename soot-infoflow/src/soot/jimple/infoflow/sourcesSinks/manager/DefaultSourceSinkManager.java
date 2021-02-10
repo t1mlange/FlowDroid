@@ -19,10 +19,7 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 
 import heros.solver.IDESolver;
-import soot.Scene;
-import soot.SootClass;
-import soot.SootMethod;
-import soot.Value;
+import soot.*;
 import soot.jimple.*;
 import soot.jimple.infoflow.InfoflowManager;
 import soot.jimple.infoflow.data.AccessPath;
@@ -308,24 +305,23 @@ public class DefaultSourceSinkManager implements IReversibleSourceSinkManager {
 
 			if (!ap.isStaticFieldRef()) {
 				// Check if taint is an argument
-				for (Value arg : ie.getArgs()) {
-					if (arg == ap.getPlainValue()) {
-						if (ap.getTaintSubFields() || ap.isLocal())
-							return new SinkInfo(new MethodSourceSinkDefinition(smac));
-					}
-				}
-
-				// Check if base is tainted
-				if (ie instanceof InstanceInvokeExpr) {
-					if (((InstanceInvokeExpr) ie).getBase() == ap.getPlainValue())
-						return new SinkInfo(new MethodSourceSinkDefinition(smac));
-				}
+//				for (Value arg : ie.getArgs()) {
+//					if (arg == ap.getPlainValue()) {
+//						if (ap.getTaintSubFields() || ap.isLocal())
+//							return new SinkInfo(new MethodSourceSinkDefinition(smac));
+//					}
+//				}
 
 				// x = o.m(a1, ..., an)
 				// The return value came out of a source (in backwards -> sink)
 				// and the left side is tainted
 				if (sCallSite instanceof AssignStmt) {
 					if(((AssignStmt) sCallSite).getLeftOp() == ap.getPlainValue())
+						return new SinkInfo(new MethodSourceSinkDefinition(smac));
+				}
+				// Check if base is tainted
+				else if (ie instanceof InstanceInvokeExpr) {
+					if (((InstanceInvokeExpr) ie).getBase() == ap.getPlainValue())
 						return new SinkInfo(new MethodSourceSinkDefinition(smac));
 				}
 			}

@@ -662,6 +662,7 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 		// If the taint is a return value, we taint the left side of the
 		// assignment
 		if (t.isReturn()) {
+			// TODO
 			if (manager.getConfig().getDataFlowDirection() == InfoflowConfiguration.DataFlowDirection.Backwards)
 				return null;
 
@@ -729,8 +730,7 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 		if (t.isReturn()) {
 			if (manager.getConfig().getDataFlowDirection() == InfoflowConfiguration.DataFlowDirection.Forwards)
 				throw new RuntimeException("Unsupported taint type");
-
-			Set<AccessPath> aps = new HashSet<>();
+						Set<AccessPath> aps = new HashSet<>();
 			for (Unit unit : sm.getActiveBody().getUnits()) {
 				if (!(unit instanceof ReturnStmt))
 					continue;
@@ -739,6 +739,16 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 						types, t.taintSubFields(), false, true, ArrayTaintType.ContentsAndLength));
 			}
 			return aps;
+//			return null;
+//			Set<AccessPath> aps = new HashSet<>();
+//			for (Unit unit : sm.getActiveBody().getUnits()) {
+//				if (!(unit instanceof ReturnStmt))
+//					continue;
+//
+//				aps.add(manager.getAccessPathFactory().createAccessPath(((ReturnStmt) unit).getOp(), fields, baseType,
+//						types, t.taintSubFields(), false, true, ArrayTaintType.ContentsAndLength));
+//			}
+//			return aps;
 		}
 
 		if (t.isParameter()) {
@@ -911,8 +921,8 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 	 * @param flowsInCallee The flow summaries for the given callee
 	 * @param workList      The incoming propagators on which to apply the flow
 	 *                      summaries
-	 * @param aliasingQuery True if this query is for aliases, false if it is for
-	 *                      normal taint propagation.
+	 * @param reverseFlows True if flows should be applied reverse. Useful for back-
+	 *                     wards analysis
 	 * @return The set of outgoing access paths
 	 */
 	private Set<AccessPath> applyFlowsIterative(MethodSummaries flowsInCallee, List<AccessPathPropagator> workList) {
@@ -948,6 +958,8 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 
 			// Apply the flow summaries for other libraries
 			if (flowsInTarget != null && !flowsInTarget.isEmpty()) {
+				if (manager.getConfig().getDataFlowDirection() == InfoflowConfiguration.DataFlowDirection.Backwards)
+					flowsInTarget = flowsInTarget.reverse();
 				for (MethodFlow flow : flowsInTarget) {
 					// Apply the flow summary
 					AccessPathPropagator newPropagator = applyFlow(flow, curPropagator);
@@ -969,8 +981,6 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 						if (ap == null)
 							continue;
 						else {
-							if (ap.toString().contains("LinkedList"))
-								workList = workList;
 							if (res == null)
 								res = new HashSet<>();
 							res.add(ap);
@@ -1083,7 +1093,7 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 					// the user-code method
 					Set<Taint> newTaints = createTaintFromAccessPathOnReturn(pair.getO2().getAccessPath(),
 							(Stmt) pair.getO1(), propagator.getGap());
-					if (newTaints != null)
+					if (newTaints != null) {
 						for (Taint newTaint : newTaints) {
 							AccessPathPropagator newPropagator = new AccessPathPropagator(newTaint, gap, parent,
 									propagator.getParent() == null ? null : propagator.getParent().getStmt(),
@@ -1091,14 +1101,12 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 									propagator.getParent() == null ? null : propagator.getParent().getD2());
 							outgoingTaints.add(newPropagator);
 						}
+					}
 				}
+				continue;
 			}
-		}
-		if (outgoingTaints != null)
-			return outgoingTaints;
 
-		for (Abstraction abs : absSet) {
-			// Create a new edge at the start point of the callee
+			// if we don't have a summary, we need to inject the taints into the solver
 			for (Unit sP : manager.getICFG().getStartPointsOf(implementor)) {
 				PathEdge<Unit, Abstraction> edge = new PathEdge<>(abs, sP, abs);
 				manager.getForwardSolver().processEdge(edge);
@@ -1107,7 +1115,8 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 			// Register the new context so that we can get the taints back
 			this.userCodeTaints.put(new Pair<>(abs, implementor), propagator);
 		}
-		return null;
+
+		return outgoingTaints;
 	}
 
 	private AccessPathPropagator safePopParent(AccessPathPropagator curPropagator) {
@@ -1402,7 +1411,7 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 		if (newTaint == null)
 			return null;
 
-		AccessPathPropagator newPropagator = new AccessPathPropagator(newTaint, gap, parent, stmt, d1, d2);
+		AccessPathPropagator newPropagator = new AccessPathPropagator(newTaint, gap, parent, stmt, d1, d2, propagator.isInversePropagator());
 		return newPropagator;
 	}
 
@@ -2101,7 +2110,7 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 				continue;
 
 			// Since we are scanning backwards, we need to reverse the flows
-			flowsInCallee = flowsInCallee.reverse();
+//			flowsInCallee = flowsInCallee.reverse();
 
 			// Apply the data flows until we reach a fixed point
 			Set<AccessPath> resCallee = applyFlowsIterative(flowsInCallee, workList);
