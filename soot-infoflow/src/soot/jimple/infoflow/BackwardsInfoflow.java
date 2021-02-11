@@ -652,7 +652,7 @@ public class BackwardsInfoflow extends AbstractInfoflow {
      *                        if they are not sources
      */
      private void runAnalysis(ISourceSinkManager sourcesSinks, Set<String> additionalSeeds) {
-        final InfoflowPerformanceData performanceData = new InfoflowPerformanceData();
+        final InfoflowPerformanceData performanceData = createPerformanceDataClass();
         try {
             // Clear the data from previous runs
             results = new BackwardsInfoflowResults();
@@ -898,7 +898,7 @@ public class BackwardsInfoflow extends AbstractInfoflow {
                         performanceData.setTaintPropagationSeconds(0);
                     long beforeTaintPropagation = System.nanoTime();
 
-                    //onBeforeTaintPropagation(solver, backwardSolver);
+                    onBeforeTaintPropagation(solver, backwardSolver);
                     solver.solve();
 
                     // Not really nice, but sometimes Heros returns before all
@@ -1238,7 +1238,11 @@ public class BackwardsInfoflow extends AbstractInfoflow {
      */
     @Override
     public void setBackwardsPropagationHandler(TaintPropagationHandler handler) {
-        // TODO: Split interface IInfoflow?
+        this.backwardsPropagationHandler = handler;
+    }
+
+    protected void onBeforeTaintPropagation(IInfoflowSolver forwardSolver, IInfoflowSolver backwardSolver) {
+        //
     }
 
     protected void onTaintPropagationCompleted(IInfoflowSolver forwardSolver, IInfoflowSolver backwardSolver) {
@@ -1252,6 +1256,16 @@ public class BackwardsInfoflow extends AbstractInfoflow {
     @Override
     public void setMemoryManagerFactory(IMemoryManagerFactory factory) {
         this.memoryManagerFactory = memoryManagerFactory;
+    }
+
+    /**
+     * Factory method for creating the data object that will receive the data flow
+     * solver's performance data
+     *
+     * @return The data object for the performance data
+     */
+    protected InfoflowPerformanceData createPerformanceDataClass() {
+        return new InfoflowPerformanceData();
     }
 
     /**

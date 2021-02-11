@@ -182,8 +182,8 @@ public class WrapperListTests extends JUnitTests {
 
 	@Override
 	protected IInfoflow initInfoflow(boolean useTaintWrapper) {
-//		IInfoflow result = new BackwardsInfoflow();
-		IInfoflow result = new Infoflow();
+		IInfoflow result = new BackwardsInfoflow();
+//		IInfoflow result = new Infoflow();
 		WrapperListTestConfig testConfig = new WrapperListTestConfig();
 		result.setSootConfig(testConfig);
 		result.setTaintWrapper(wrapper);
