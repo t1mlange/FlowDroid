@@ -39,6 +39,10 @@ public class BackwardsStrongUpdatePropagationRule extends AbstractTaintPropagati
 		AssignStmt assignStmt = (AssignStmt) stmt;
 		Value leftOp = assignStmt.getLeftOp();
 
+		Aliasing aliasing = getAliasing();
+		if (aliasing == null)
+			return null;
+
 		// If this is a newly created alias at this statement, we don't kill it right
 		// away
 		if (source.getCurrentStmt() == stmt)
@@ -50,44 +54,36 @@ public class BackwardsStrongUpdatePropagationRule extends AbstractTaintPropagati
 			return null;
 
 		// We already handle the cases where it may aliases, so no need to go further
-		if (getAliasing().mayAlias(leftOp, source.getAccessPath().getPlainValue()))
+		if (aliasing.mayAlias(BaseSelector.selectBase(leftOp, false), source.getAccessPath().getPlainValue()))
 			return null;
-
-//		if (!(assignStmt.getRightOp() instanceof Constant))
-//			return null;
 
 		boolean addRightValue = false;
 		boolean cutFirstField = false;
 		Type type = null;
 		if (source.getAccessPath().isInstanceFieldRef()) {
-			// Data Propagation: x.f = y && x.f tainted --> no taint propagated
-			// Alias Propagation: Only kill the alias if we directly overwrite it,
-			// otherwise it might just be the creation of yet another alias
+			// Data Propagation: x.f = y && x.f tainted --> y propagated
 			if (leftOp instanceof InstanceFieldRef) {
 				InstanceFieldRef leftRef = (InstanceFieldRef) leftOp;
-				if (getAliasing().mustAlias((Local) leftRef.getBase(),
+				if (aliasing.mustAlias((Local) leftRef.getBase(),
 						source.getAccessPath().getPlainValue(), assignStmt)) {
-					if (getAliasing().mustAlias(leftRef.getField(), source.getAccessPath().getFirstField())) {
+					if (aliasing.mustAlias(leftRef.getField(), source.getAccessPath().getFirstField())) {
 						addRightValue = true;
 						cutFirstField = true;
 						type = leftRef.getField().getType();
 					}
 				}
 			}
-			// x = y && x.f tainted -> no taint propagated. This must only check the precise
-			// variable which gets replaced, but not any potential strong aliases
+			// x = y && x.f tainted -> y.f
 			else if (leftOp instanceof Local) {
-				if (getAliasing().mustAlias((Local) leftOp, source.getAccessPath().getPlainValue(), stmt)) {
+				if (aliasing.mustAlias((Local) leftOp, source.getAccessPath().getPlainValue(), stmt)) {
 					addRightValue = true;
-//					type = leftOp.getType();
 				}
 			}
 		}
-//		 X.f = y && X.f tainted -> no taint propagated. Kills are allowed even if
-//		 static field tracking is disabled
+//		 X.f = y && X.f tainted -> y
 		else if (source.getAccessPath().isStaticFieldRef() && leftOp instanceof StaticFieldRef) {
 			StaticFieldRef leftRef = (StaticFieldRef) leftOp;
-			if (getAliasing().mustAlias(leftRef.getField(), source.getAccessPath().getFirstField())) {
+			if (aliasing.mustAlias(leftRef.getField(), source.getAccessPath().getFirstField())) {
 				addRightValue = true;
 				cutFirstField = true;
 				type = leftRef.getField().getType();
@@ -96,18 +92,18 @@ public class BackwardsStrongUpdatePropagationRule extends AbstractTaintPropagati
 		// when the fields of an object are tainted, but the base object is overwritten
 		// then the fields should not be tainted any more
 		// x = y && x.f tainted -> no taint propagated
-		else if (source.getAccessPath().isLocal() && leftOp instanceof Local
-				&& getAliasing().mustAlias((Local) leftOp, source.getAccessPath().getPlainValue(), stmt)) {
-			addRightValue = true;
-//			type = assignStmt.getRightOp().getType();
+		else if (source.getAccessPath().isLocal() && leftOp instanceof Local) {
+			if (leftOp instanceof ArrayRef && source.getAccessPath().getArrayTaintType() != AccessPath.ArrayTaintType.Length) {
+				Value base = ((ArrayRef) leftOp).getBase();
+				if (base instanceof Local && aliasing.mustAlias((Local) base, source.getAccessPath().getPlainValue(), stmt)) {
+					addRightValue = true;
+					type = ((ArrayType) ((ArrayRef) leftOp).getBase().getType()).getElementType();
+				}
+			} else if (aliasing.mustAlias((Local) leftOp, source.getAccessPath().getPlainValue(), stmt)) {
+				addRightValue = true;
+			}
 		}
 
-		// if leftvalue contains the tainted value -> it is overwritten - remove taint:
-		// but not for arrayRefs:
-		// x[i] = y --> taint is preserved since we do not distinguish between elements
-		// of collections
-		// because we do not use a MUST-Alias analysis, we cannot delete aliases of
-		// taints
 		if (addRightValue) {
 			killSource.value = !(leftOp instanceof ArrayRef);
 
@@ -145,21 +141,21 @@ public class BackwardsStrongUpdatePropagationRule extends AbstractTaintPropagati
 			return null;
 
 		AssignStmt assignStmt = (AssignStmt) stmt;
-		Value left = assignStmt.getLeftOp();
+		Value leftOp = assignStmt.getLeftOp();
 
 		Aliasing aliasing = getAliasing();
 		if (aliasing == null)
 			return null;
 
-		// We already handle the cases where it may aliases, so no need to go further
-		if (aliasing.mayAlias(left, source.getAccessPath().getPlainValue()))
-			return null;
-
 		if (source.getAccessPath().isStaticFieldRef())
 			return null;
 
+		// We already handle the cases where it may aliases, so no need to go further
+		if (aliasing.mayAlias(BaseSelector.selectBase(leftOp, false), source.getAccessPath().getPlainValue()))
+			return null;
+
 		// we only taint the return statement(s) if left is tainted
-		if (aliasing.mustAlias((Local) left, source.getAccessPath().getPlainValue(), stmt)) {
+		if (aliasing.mustAlias((Local) leftOp, source.getAccessPath().getPlainValue(), stmt)) {
 			HashSet<Abstraction> res = new HashSet<>();
 			for (Unit unit : dest.getActiveBody().getUnits()) {
 				if (unit instanceof ReturnStmt) {
@@ -179,7 +175,7 @@ public class BackwardsStrongUpdatePropagationRule extends AbstractTaintPropagati
 							if (type instanceof PrimType || TypeUtils.isStringType(type))
 								abs.setTurnUnit(stmt);
 							else
-								abs.setAliasingFlag((Stmt) assignStmt);
+								abs.setAliasingFlag(stmt);
 
 							res.add(abs);
 						}
