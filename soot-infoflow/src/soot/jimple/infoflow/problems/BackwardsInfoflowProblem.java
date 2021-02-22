@@ -795,10 +795,6 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                             taintPropagationHandler.notifyFlowIn(callSite, source, manager,
                                     TaintPropagationHandler.FlowFunctionType.CallToReturnFlowFunction);
 
-                        if (callStmt.toString().contains("writeValue(java.lang.Object)"))
-                            d1=d1;
-
-
                         Set<Abstraction> res = computeTargetsInternal(d1, source.isAbstractionActive() ? source : source.getActiveCopy());
                         if (DEBUG_PRINT)
                             System.out.println("CallToReturn" + "\n" + "In: " + source.toString() + "\n" + "Stmt: " + callStmt.toString() + "\n" + "Out: " + (res == null ? "[]" : res.toString()) + "\n" + "---------------------------------------");
@@ -851,7 +847,6 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                 res.add(source);
                         }
 
-                        // TODO: understand isExcluded
                         if (isExcluded(callee)) {
                             if (source != zeroValue)
                                 res.add(source);
