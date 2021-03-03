@@ -10,15 +10,25 @@
  ******************************************************************************/
 package soot.jimple.infoflow.android.test.droidBench;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 
+import org.junit.BeforeClass;
+import org.junit.Rule;
+import org.junit.rules.TestWatcher;
+import org.junit.runner.Description;
 import org.xmlpull.v1.XmlPullParserException;
+
 
 import soot.jimple.infoflow.InfoflowConfiguration;
 import soot.jimple.infoflow.InfoflowConfiguration.ImplicitFlowMode;
 import soot.jimple.infoflow.android.InfoflowAndroidConfiguration;
 import soot.jimple.infoflow.android.SetupApplication;
+import soot.jimple.infoflow.methodSummary.data.provider.LazySummaryProvider;
+import soot.jimple.infoflow.methodSummary.taintWrappers.SummaryTaintWrapper;
+import soot.jimple.infoflow.results.InfoflowPerformanceData;
 import soot.jimple.infoflow.results.InfoflowResults;
 import soot.jimple.infoflow.taintWrappers.EasyTaintWrapper;
 
@@ -153,16 +163,94 @@ public class JUnitTests {
 		if (configCallback != null)
 			configCallback.configureAnalyzer(setupApplication.getConfig());
 
-		setupApplication.setTaintWrapper(new EasyTaintWrapper(taintWrapperFile));
 		setupApplication.getConfig().setEnableArraySizeTainting(true);
 
+		setupApplication.setTaintWrapper(new EasyTaintWrapper(taintWrapperFile));
+		configStr += "easy";
+//		try {
+//			setupApplication.setTaintWrapper(new SummaryTaintWrapper(new LazySummaryProvider("summariesManual")));
+//			configStr += "sum";
+//		} catch (Exception e) {
+//			System.out.println(e.getMessage());
+//		}
 		setupApplication.getConfig().setDataFlowDirection(InfoflowConfiguration.DataFlowDirection.Backwards);
+		configStr += "bw";
+//		configStr += "fw";
 
 		if (iccModel != null && iccModel.length() > 0) {
 			setupApplication.getConfig().getIccConfig().setIccModel(iccModel);
 		}
-
-		return setupApplication.runInfoflow("SourcesAndSinks.txt");
+		InfoflowResults results = setupApplication.runInfoflow("SourcesAndSinks.txt");
+		if (results != null)
+			performanceData = results.getPerformanceData();
+		return results;
 	}
 
+	InfoflowPerformanceData performanceData;
+	String configStr = "";
+
+	class TestResult {
+		String category;
+		String name;
+		long infoflowEdges = -1;
+		long aliasEdges = -1;
+
+		TestResult(String name, String category) {
+			this.name = name;
+			this.category = category;
+		}
+
+		void set(long infoflowEdges, long aliasEdges) {
+			this.infoflowEdges = infoflowEdges;
+			this.aliasEdges = aliasEdges;
+		}
+
+		@Override
+		public String toString() {
+			return category + "," + name + "," + infoflowEdges + "," + aliasEdges + "\n";
+		}
+	}
+
+	private static boolean log = true;
+
+	@Rule
+	public TestWatcher edgeEvaluation = new TestWatcher() {
+		@Override
+		protected void failed(Throwable e, Description description) {
+			if (!log)
+				return;
+			String category = description.getClassName().replace("soot.jimple.infoflow.android.test.droidBench.", "");
+			String name = description.getMethodName().replace("runTest", "");
+			TestResult tr = new TestResult(name, category);
+			tr.set(-1, -1);
+			dumpToFile(tr);
+		}
+
+		@Override
+		protected void succeeded(Description description) {
+			if (!log)
+				return;
+			String category = description.getClassName().replace("soot.jimple.infoflow.android.test.droidBench.", "");
+			String name = description.getMethodName().replace("runTest", "");
+
+			TestResult tr = new TestResult(name, category);
+
+			if (performanceData == null)
+				tr.set(-1, -1);
+			else
+				tr.set(performanceData.getInfoflowPropagationCount(), performanceData.getAliasPropagationCount());
+
+			dumpToFile(tr);
+		}
+
+		private void dumpToFile(TestResult tr) {
+			try (FileWriter fw = new FileWriter(configStr + ".txt", true)) {
+				BufferedWriter bw = new BufferedWriter(fw);
+				bw.write(tr.toString());
+				bw.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	};
 }

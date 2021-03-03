@@ -264,8 +264,8 @@ public class SummaryTaintWrapperTests {
 	}
 
 	protected IInfoflow initInfoflow() throws FileNotFoundException, XMLStreamException {
-		IInfoflow result = new BackwardsInfoflow();
-//		Infoflow result = new Infoflow();
+//		IInfoflow result = new BackwardsInfoflow();
+		Infoflow result = new Infoflow();
 		result.getConfig().getAccessPathConfiguration().setUseRecursiveAccessPaths(false);
 		IInfoflowConfig testConfig = new IInfoflowConfig() {
 

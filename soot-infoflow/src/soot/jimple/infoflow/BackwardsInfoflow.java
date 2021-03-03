@@ -935,7 +935,7 @@ public class BackwardsInfoflow extends AbstractInfoflow {
 
                     // Give derived classes a chance to do whatever they need before we remove stuff
                     // from memory
-//					onTaintPropagationCompleted(solver, backwardSolver);
+					onTaintPropagationCompleted(solver, backwardSolver);
 
                     // Get the result abstractions
                     Set<AbstractionAtSink> res = propagationResults.getResults();
@@ -972,6 +972,9 @@ public class BackwardsInfoflow extends AbstractInfoflow {
                     // the results set, the other abstractions can be killed
                     // now.
                     performanceData.updateMaxMemoryConsumption(getUsedMemory());
+                    performanceData.setInfoflowPropagationCount(solver.getPropagationCount());
+                    performanceData.setAliasPropagationCount(backwardSolver == null ? -1 : backwardSolver.getPropagationCount());
+
                     logger.info(String.format("Current memory consumption: %d MB", getUsedMemory()));
 
                     if (timeoutWatcher != null)

@@ -558,6 +558,8 @@ public class Infoflow extends AbstractInfoflow {
 					// the results set, the other abstractions can be killed
 					// now.
 					performanceData.updateMaxMemoryConsumption(getUsedMemory());
+					performanceData.setInfoflowPropagationCount(forwardSolver.getPropagationCount());
+					performanceData.setAliasPropagationCount(aliasingStrategy.getSolver() == null ? -1 : aliasingStrategy.getSolver().getPropagationCount());
 					logger.info(String.format("Current memory consumption: %d MB", getUsedMemory()));
 
 					if (timeoutWatcher != null)

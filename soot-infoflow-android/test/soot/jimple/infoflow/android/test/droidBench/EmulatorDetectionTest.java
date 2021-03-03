@@ -76,7 +76,7 @@ public class EmulatorDetectionTest extends JUnitTests {
 			expected = 0;
 		InfoflowResults res = analyzeAPKFile("EmulatorDetection/IMEI1.apk", true);
 		Assert.assertNotNull(res);
-		Assert.assertEquals(2, res.size());
+		Assert.assertEquals(expected, res.size());
 	}
 	
 	@Test(timeout=300000)

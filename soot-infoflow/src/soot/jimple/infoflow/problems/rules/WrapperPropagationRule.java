@@ -26,6 +26,7 @@ import soot.jimple.infoflow.util.TypeUtils;
  *
  */
 public class WrapperPropagationRule extends AbstractTaintPropagationRule {
+	private static boolean DEBUG_TW = true;
 
 	public WrapperPropagationRule(InfoflowManager manager, Abstraction zeroValue, TaintPropagationResults results) {
 		super(manager, zeroValue, results);
@@ -155,6 +156,12 @@ public class WrapperPropagationRule extends AbstractTaintPropagationRule {
 						killSource.value = true;
 					break;
 				}
+		}
+
+		if (DEBUG_TW && wrapperTaints != null) {
+			System.out.println(stmt.toString() + " 1->" + wrapperTaints.size() + " \n" +
+					source.toString() + "to\n" +
+					wrapperTaints.toString());
 		}
 		return wrapperTaints;
 	}
