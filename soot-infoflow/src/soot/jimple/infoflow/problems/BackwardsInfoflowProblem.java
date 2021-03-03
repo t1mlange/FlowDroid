@@ -55,7 +55,7 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
 
                 final Aliasing aliasing = manager.getAliasing();
                 if (aliasing == null)
-                    return null;
+                    return KillAll.v();
 
                 return new SolverNormalFlowFunction() {
                     @Override
@@ -374,7 +374,7 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
 
                 final Aliasing aliasing = manager.getAliasing();
                 if (aliasing == null)
-                    return null;
+                    return KillAll.v();
 
                 if (!(callStmt instanceof Stmt))
                     return KillAll.v();
@@ -589,7 +589,7 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
 
                 final Aliasing aliasing = manager.getAliasing();
                 if (aliasing == null)
-                    return null;
+                    return KillAll.v();
 
                 final Value[] paramLocals = new Value[callee.getParameterCount()];
                 for (int i = 0; i < callee.getParameterCount(); i++)
@@ -770,7 +770,7 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
 
                 final Aliasing aliasing = manager.getAliasing();
                 if (aliasing == null)
-                    return null;
+                    return KillAll.v();
 
                 final Stmt callStmt = (Stmt) callSite;
                 final InvokeExpr invExpr = callStmt.getInvokeExpr();

@@ -1305,6 +1305,8 @@ public class InfoflowConfiguration {
 	private double memoryThreshold = 0.9d;
 	private boolean oneSourceAtATime = false;
 
+	private static String baseDirectory = "";
+
 	/**
 	 * Merges the given configuration options into this configuration object
 	 * 
@@ -1347,6 +1349,8 @@ public class InfoflowConfiguration {
 		this.dataFlowTimeout = config.dataFlowTimeout;
 		this.memoryThreshold = config.memoryThreshold;
 		this.oneSourceAtATime = config.oneSourceAtATime;
+
+		this.baseDirectory = config.baseDirectory;
 	}
 
 	/**
@@ -2040,6 +2044,24 @@ public class InfoflowConfiguration {
 	 */
 	public AccessPathConfiguration getAccessPathConfiguration() {
 		return accessPathConfiguration;
+	}
+
+	/**
+	 * Gets the base directory used e.g. for SourcesSinks.xsd
+	 *
+	 * @return the base directory
+	 */
+	public static String getBaseDirectory() {
+		return baseDirectory;
+	}
+
+	/**
+	 * Sets the base directory used e.g. for SourcesSinks.xsd
+	 * 
+	 * @param baseDirectory path to the base directory as string
+	 */
+	public static void setBaseDirectory(String baseDirectory) {
+		InfoflowConfiguration.baseDirectory = baseDirectory;
 	}
 
 	/**

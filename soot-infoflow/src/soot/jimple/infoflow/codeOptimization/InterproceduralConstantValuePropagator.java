@@ -603,7 +603,6 @@ public class InterproceduralConstantValuePropagator extends SceneTransformer {
 	 *
 	 * @param method  The method to check
 	 * @param runList A set to receive all methods that have already been processed
-	 * @param cache   The cache in which to store the results
 	 * @return True if the given method or one of its transitive callees has
 	 *         side-effects or calls a sink method, otherwise false.
 	 */
@@ -691,7 +690,6 @@ public class InterproceduralConstantValuePropagator extends SceneTransformer {
 	 *
 	 * @param method  The method to check
 	 * @param runList A set to receive all methods that have already been processed
-	 * @param cache   The cache in which to store the results
 	 * @return True if the given method or one of its transitive callees has
 	 *         side-effects or calls a sink method, otherwise false.
 	 */

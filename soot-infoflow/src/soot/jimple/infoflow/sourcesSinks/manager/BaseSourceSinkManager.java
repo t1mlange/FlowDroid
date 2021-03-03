@@ -20,9 +20,7 @@ import com.google.common.cache.LoadingCache;
 import heros.solver.IDESolver;
 import heros.solver.Pair;
 import soot.*;
-import soot.baf.Inst;
 import soot.jimple.*;
-import soot.jimple.infoflow.IInfoflow;
 import soot.jimple.infoflow.InfoflowConfiguration;
 import soot.jimple.infoflow.InfoflowConfiguration.CallbackSourceMode;
 import soot.jimple.infoflow.InfoflowConfiguration.SourceSinkConfiguration;
@@ -31,6 +29,7 @@ import soot.jimple.infoflow.callbacks.CallbackDefinition;
 import soot.jimple.infoflow.data.AccessPath;
 import soot.jimple.infoflow.data.AccessPath.ArrayTaintType;
 import soot.jimple.infoflow.data.SootMethodAndClass;
+import soot.jimple.infoflow.entryPointCreators.SimulatedCodeElementTag;
 import soot.jimple.infoflow.solver.cfg.IInfoflowCFG;
 import soot.jimple.infoflow.sourcesSinks.definitions.AccessPathTuple;
 import soot.jimple.infoflow.sourcesSinks.definitions.FieldSourceSinkDefinition;
@@ -136,11 +135,6 @@ public abstract class BaseSourceSinkManager implements IReversibleSourceSinkMana
 	 * @param callbackMethods The list of callback methods whose parameters are
 	 *                        sources through which the application receives data
 	 *                        from the operating system
-	 * @param weakMatching    True for weak matching: If an entry in the list has no
-	 *                        return type, it matches arbitrary return types if the
-	 *                        rest of the method signature is compatible. False for
-	 *                        strong matching: The method signature in the code
-	 *                        exactly match the one in the list.
 	 * @param config          The configuration of the data flow analyzer
 	 */
 	public BaseSourceSinkManager(Set<? extends ISourceSinkDefinition> sources,
@@ -353,7 +347,7 @@ public abstract class BaseSourceSinkManager implements IReversibleSourceSinkMana
 			}
 
 			// Try the next class up the hierarchy
-			if (curClass.hasSuperclass() && curClass.isPhantom())
+			if (curClass.hasSuperclass() && (curClass.isPhantom() || callee.hasTag(SimulatedCodeElementTag.TAG_NAME)))
 				curClass = curClass.getSuperclass();
 			else
 				curClass = null;
@@ -364,6 +358,12 @@ public abstract class BaseSourceSinkManager implements IReversibleSourceSinkMana
 
 	@Override
 	public SinkInfo getSinkInfo(Stmt sCallSite, InfoflowManager manager, AccessPath ap) {
+		// Do not look for sinks in excluded methods
+		if (excludedMethods.contains(manager.getICFG().getMethodOf(sCallSite)))
+			return null;
+		if (sCallSite.hasTag(SimulatedCodeElementTag.TAG_NAME))
+			return null;
+
 		ISourceSinkDefinition def = getSinkDefinition(sCallSite, manager, ap);
 		return def == null ? null : new SinkInfo(def);
 	}
@@ -383,6 +383,8 @@ public abstract class BaseSourceSinkManager implements IReversibleSourceSinkMana
 		// Do not look for sources in excluded methods
 		if (excludedMethods.contains(manager.getICFG().getMethodOf(sCallSite)))
 			return null;
+		if (sCallSite.hasTag(SimulatedCodeElementTag.TAG_NAME))
+			return null;
 
 		ISourceSinkDefinition def = getSource(sCallSite, manager.getICFG());
 		return createSourceInfo(sCallSite, manager, def);
@@ -394,9 +396,10 @@ public abstract class BaseSourceSinkManager implements IReversibleSourceSinkMana
 			return null;
 		}
 
-		// TODO: next statement differs from forwards behavior
-		// 			we could do this at sinks, but this might differ from expected behavior
+		// This results in different behavior than in forwards search
 		if (excludedMethods.contains(manager.getICFG().getMethodOf(sCallSite)))
+			return null;
+		if (sCallSite.hasTag(SimulatedCodeElementTag.TAG_NAME))
 			return null;
 
 		ISourceSinkDefinition def = getInverseSink(sCallSite, manager.getICFG());
@@ -423,12 +426,13 @@ public abstract class BaseSourceSinkManager implements IReversibleSourceSinkMana
 		// Otherwise, if we have an instance invocation, we taint the base
 		// object
 		final InvokeExpr iexpr = sCallSite.getInvokeExpr();
-		if (sCallSite instanceof DefinitionStmt && iexpr.getMethod().getReturnType() != null) {
+		final Type returnType = iexpr.getMethod().getReturnType();
+		if (sCallSite instanceof DefinitionStmt && returnType != null && returnType != VoidType.v()) {
 			DefinitionStmt defStmt = (DefinitionStmt) sCallSite;
 			// no immutable aliases, we overwrite the return values as a whole
 			return new SourceInfo(def, manager.getAccessPathFactory().createAccessPath(defStmt.getLeftOp(), null, null,
 					null, true, false, true, ArrayTaintType.ContentsAndLength, false));
-		} else if (iexpr instanceof InstanceInvokeExpr && iexpr.getMethod().getReturnType() == VoidType.v()) {
+		} else if (iexpr instanceof InstanceInvokeExpr && returnType == VoidType.v()) {
 			InstanceInvokeExpr iinv = (InstanceInvokeExpr) sCallSite.getInvokeExpr();
 			return new SourceInfo(def, manager.getAccessPathFactory().createAccessPath(iinv.getBase(), true));
 		} else
@@ -576,7 +580,7 @@ public abstract class BaseSourceSinkManager implements IReversibleSourceSinkMana
 			// If the target method is in a phantom class, we scan the hierarchy
 			// upwards
 			// to see whether we have a sink definition for a parent class
-			if (callee.getDeclaringClass().isPhantom()) {
+			if (callee.getDeclaringClass().isPhantom() || callee.hasTag(SimulatedCodeElementTag.TAG_NAME)) {
 				def = findDefinitionInHierarchy(callee, this.sourceMethods);
 				if (def != null)
 					return def;
@@ -643,7 +647,7 @@ public abstract class BaseSourceSinkManager implements IReversibleSourceSinkMana
 			// If the target method is in a phantom class, we scan the hierarchy
 			// upwards to see whether we have a sink definition for a parent
 			// class
-			if (callee.getDeclaringClass().isPhantom()) {
+			if (callee.getDeclaringClass().isPhantom() || callee.hasTag(SimulatedCodeElementTag.TAG_NAME)) {
 				ISourceSinkDefinition def = findDefinitionInHierarchy(callee, this.sinkMethods);
 				if (def != null)
 					return def;

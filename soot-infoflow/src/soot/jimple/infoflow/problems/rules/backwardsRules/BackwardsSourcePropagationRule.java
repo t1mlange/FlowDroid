@@ -1,9 +1,6 @@
 package soot.jimple.infoflow.problems.rules.backwardsRules;
 
-import heros.solver.PathEdge;
-import soot.SootFieldRef;
 import soot.SootMethod;
-import soot.Unit;
 import soot.Value;
 import soot.jimple.*;
 import soot.jimple.infoflow.InfoflowManager;
@@ -14,7 +11,6 @@ import soot.jimple.infoflow.data.AccessPath;
 import soot.jimple.infoflow.problems.TaintPropagationResults;
 import soot.jimple.infoflow.problems.rules.AbstractTaintPropagationRule;
 import soot.jimple.infoflow.sourcesSinks.manager.IReversibleSourceSinkManager;
-import soot.jimple.infoflow.sourcesSinks.manager.ISourceSinkManager;
 import soot.jimple.infoflow.sourcesSinks.manager.SinkInfo;
 import soot.jimple.infoflow.util.BaseSelector;
 import soot.jimple.infoflow.util.ByReferenceBoolean;
@@ -146,9 +142,6 @@ public class BackwardsSourcePropagationRule extends AbstractTaintPropagationRule
 		if (!(manager.getSourceSinkManager() instanceof IReversibleSourceSinkManager))
 			return null;
 		final IReversibleSourceSinkManager ssm = (IReversibleSourceSinkManager) manager.getSourceSinkManager();
-
-		if (stmt.toString().contains("getDeviceId"))
-			d1=d1;
 
 		// We only report leaks for active taints, not for alias queries
 		if (source.isAbstractionActive() && !source.getAccessPath().isStaticFieldRef()) {

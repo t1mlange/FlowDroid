@@ -535,7 +535,7 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 	 * 
 	 * @param className The name of the class to load
 	 */
-	private void loadClass(String className) {
+	protected void loadClass(String className) {
 		SootClass sc = Scene.v().getSootClassUnsafe(className);
 		if (sc == null) {
 			sc = Scene.v().makeSootClass(className);
@@ -740,16 +740,6 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 						types, t.taintSubFields(), false, true, ArrayTaintType.ContentsAndLength));
 			}
 			return aps;
-//			return null;
-//			Set<AccessPath> aps = new HashSet<>();
-//			for (Unit unit : sm.getActiveBody().getUnits()) {
-//				if (!(unit instanceof ReturnStmt))
-//					continue;
-//
-//				aps.add(manager.getAccessPathFactory().createAccessPath(((ReturnStmt) unit).getOp(), fields, baseType,
-//						types, t.taintSubFields(), false, true, ArrayTaintType.ContentsAndLength));
-//			}
-//			return aps;
 		}
 
 		if (t.isParameter()) {
@@ -834,7 +824,7 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 	/**
 	 * Method that is called when no summary exists for a given method
 	 * 
-	 * @param incoming The incoming taint abstraction
+	 * @param method Method to be reported as missing
 	 */
 	protected void reportMissingMethod(SootMethod method) {
 		if (reportMissingSummaries
@@ -1737,10 +1727,13 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 
 		// Set the correct type. In case x -> b.x, the new type is not the type
 		// of b, but of the field x.
-		if (flowSink.hasAccessPath()) {
-			if (appendedFields != null)
-				appendedFields = appendedFields.updateFieldType(flowSink.getAccessPathLength() - 1, "" + newBaseType);
-			sBaseType = flowSink.getBaseType();
+		if (!flow.getIgnoreTypes()) {
+			if (flowSink.hasAccessPath()) {
+				if (appendedFields != null)
+					appendedFields = appendedFields.updateFieldType(flowSink.getAccessPathLength() - 1,
+							String.valueOf(newBaseType));
+				sBaseType = flowSink.getBaseType();
+			}
 		}
 
 		// Taint the correct fields
