@@ -18,6 +18,16 @@ import java.util.List;
  *
  */
 public class CustomTestCode {
+	private LList next(LList lst) {
+		return lst.next;
+	}
+
+	public void retFieldRef() {
+		LList l1 = new LList();
+		l1.next = new LList();
+		LList l2 = next(l1);
+	}
+
 	class LList {
 		LList next;
 		int data;

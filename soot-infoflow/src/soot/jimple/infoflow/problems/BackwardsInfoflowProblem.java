@@ -467,8 +467,7 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                     if (unit instanceof ReturnStmt) {
                                         ReturnStmt returnStmt = (ReturnStmt) unit;
                                         Value retVal = returnStmt.getOp();
-                                        // taint only if local variable or reference
-                                        if (retVal instanceof Local || retVal instanceof FieldRef) {
+                                        if (retVal instanceof Local) {
                                             // if types are incompatible, stop here
                                             if (!manager.getTypeUtils().checkCast(source.getAccessPath().getBaseType(), retVal.getType()))
                                                 continue;
@@ -479,8 +478,29 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                             if (abs != null) {
                                                 if (isPrimitiveOrStringBase(source))
                                                     abs.setTurnUnit(stmt);
-                                                else
-                                                    abs.setAliasingFlag((Stmt) callStmt);
+                                                else if (ie != null) {
+                                                    // A foo(A a) {
+                                                    //     return a;
+                                                    // }
+                                                    // A b = foo(a);
+                                                    // An alias is created using the returned value. If no assigments
+                                                    // happen inside the method, also no alias analysis is triggered.
+                                                    // Thus, here we trigger a manual alias analysis for all return
+                                                    // values which equal a param if the param is on the heap.
+                                                    for (int i = 0; i < paramLocals.length; i++) {
+                                                        if (paramLocals[i] != retVal || i >= ie.getArgCount())
+                                                            continue;
+
+                                                        Value arg = ie.getArg(i);
+                                                        AccessPath argAp = manager.getAccessPathFactory().copyWithNewValue(source.getAccessPath(), arg);
+                                                        Abstraction argAbs = source.deriveNewAbstraction(argAp, stmt);
+
+                                                        for (Unit pred : manager.getICFG().getPredsOf(callStmt)) {
+                                                            aliasing.computeAliases(d1, stmt, arg, Collections.singleton(argAbs),
+                                                                    manager.getICFG().getMethodOf(pred), argAbs);
+                                                        }
+                                                    }
+                                                }
 
                                                 res.add(abs);
                                             }
@@ -547,13 +567,6 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                 // (BytecodeTests.flowSensitivityTest1).
                                 if (interproceduralCFG().methodWritesValue(dest, paramLocals[i]))
                                     continue;
-
-//                                if (callStmt instanceof AssignStmt) {
-//                                    AssignStmt assignStmt = (AssignStmt) callStmt;
-//                                    Value leftOp = assignStmt.getLeftOp();
-//                                    if (aliasing.mayAlias(ie.getArg(i), leftOp))
-//                                        continue;
-//                                }
 
                                 // taint all parameters if reflective call site
                                 if (isReflectiveCallSite) {
@@ -703,7 +716,7 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
 
                                     if (!isReflectiveCallSite && aliasing.canHaveAliasesRightSide(callStmt, originalCallArg, abs)) {
                                         // see HeapTests#testAliases
-                                        // If two arguments are the same, we created an alias
+                                        // If two arguments are the same, we maybe missed one parameter
                                         // so we fully revisit the callSite using aliasing
                                         SootMethod caller = manager.getICFG().getMethodOf(callStmt);
                                         boolean foundDuplicate = false;
@@ -726,31 +739,6 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                                 }
                                             }
                                         }
-
-                                        // If the turn unit is inside the callee, no need
-                                        // for aliasing on the returned value
-                                        if (callee == manager.getICFG().getMethodOf(abs.getTurnUnit()))
-                                            abs.setAliasingFlag(null);
-
-                                        // Trigger alias on returned value
-                                        // See HeapTests#tripleAlias
-                                        if (abs.getAliasingFlag() == callStmt && callStmt instanceof AssignStmt
-                                                && aliasing.canHaveAliasesRightSide(callStmt, originalCallArg, abs)) {
-                                            abs.setAliasingFlag(null);
-
-                                            // Here we can skip the whole call site as we are searching for the
-                                            // returned value
-                                            for (Abstraction callerD1 : callerD1s) {
-                                                for (Unit pred : manager.getICFG().getPredsOf(callSite)) {
-                                                    aliasing.computeAliases(callerD1, (Stmt) pred, originalCallArg, res,
-                                                            interproceduralCFG().getMethodOf(pred), abs);
-                                                }
-                                            }
-                                        }
-                                    } else {
-                                        // just to be sure everything is cleaned up
-                                        if (abs.getAliasingFlag() == callStmt)
-                                            abs.setAliasingFlag(null);
                                     }
                                 }
                             }

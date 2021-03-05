@@ -186,8 +186,6 @@ public class Abstraction implements Cloneable, FastSolverLinkedNode<Abstraction,
 			exceptionThrown = original.exceptionThrown;
 			activationUnit = original.activationUnit;
 			turnUnit = original.turnUnit;
-			aliasingFlag = original.aliasingFlag;
-//			skipUnit = original.skipUnit;
 			assert activationUnit == null || flowSensitiveAliasing;
 
 			postdominators = original.postdominators == null ? null
@@ -348,14 +346,6 @@ public class Abstraction implements Cloneable, FastSolverLinkedNode<Abstraction,
 
 	public void setTurnUnit(Unit turnUnit) {
 		this.turnUnit = turnUnit;
-	}
-
-	private Stmt aliasingFlag = null;
-	public void setAliasingFlag(Stmt s) {
-		aliasingFlag = s;
-	}
-	public Stmt getAliasingFlag() {
-		return aliasingFlag;
 	}
 
 	public Abstraction getActiveCopy() {

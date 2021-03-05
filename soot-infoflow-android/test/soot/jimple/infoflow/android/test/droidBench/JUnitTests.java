@@ -167,12 +167,6 @@ public class JUnitTests {
 
 		setupApplication.setTaintWrapper(new EasyTaintWrapper(taintWrapperFile));
 		configStr += "easy";
-//		try {
-//			setupApplication.setTaintWrapper(new SummaryTaintWrapper(new LazySummaryProvider("summariesManual")));
-//			configStr += "sum";
-//		} catch (Exception e) {
-//			System.out.println(e.getMessage());
-//		}
 		setupApplication.getConfig().setDataFlowDirection(InfoflowConfiguration.DataFlowDirection.Backwards);
 		configStr += "bw";
 //		configStr += "fw";
