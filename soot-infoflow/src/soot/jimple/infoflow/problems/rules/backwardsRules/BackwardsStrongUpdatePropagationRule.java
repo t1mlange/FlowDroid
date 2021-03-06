@@ -174,9 +174,8 @@ public class BackwardsStrongUpdatePropagationRule extends AbstractTaintPropagati
 						if (abs != null) {
 							if (type instanceof PrimType || TypeUtils.isStringType(type))
 								abs.setTurnUnit(stmt);
-							else
-								abs.setAliasingFlag(stmt);
 
+							abs.setCorrespondingCallSite(stmt);
 							res.add(abs);
 						}
 					}
