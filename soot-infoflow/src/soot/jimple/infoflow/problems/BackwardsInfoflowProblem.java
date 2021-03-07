@@ -731,16 +731,10 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                             Value retOp = ((ReturnStmt) u).getOp();
 
                                             if (paramLocals[paramIndex] == retOp) {
-                                                AccessPath argAp = manager.getAccessPathFactory()
-                                                        .copyWithNewValue(source.getAccessPath(), originalCallArg);
-                                                Abstraction argAbs = source.deriveNewAbstraction(argAp, stmt);
-
-                                                if (argAbs != null) {
-                                                    for (Unit pred : manager.getICFG().getPredsOf(callStmt)) {
-                                                        for (Abstraction d1 : callerD1s) {
-                                                            aliasing.computeAliases(d1, stmt, originalCallArg, Collections.singleton(argAbs),
-                                                                    manager.getICFG().getMethodOf(pred), argAbs);
-                                                        }
+                                                for (Unit pred : manager.getICFG().getPredsOf(callStmt)) {
+                                                    for (Abstraction d1 : callerD1s) {
+                                                        aliasing.computeAliases(d1, stmt, originalCallArg, Collections.singleton(abs),
+                                                                manager.getICFG().getMethodOf(pred), abs);
                                                     }
                                                 }
                                             }
