@@ -110,8 +110,8 @@ public class BackwardsStrongUpdatePropagationRule extends AbstractTaintPropagati
 			Value rightOp = assignStmt.getRightOp();
 			if (rightOp instanceof Constant || rightOp instanceof AnyNewExpr)
 				return null;
-			Value rightVal = assignStmt.getRightOp();
 
+			Value rightVal = BaseSelector.selectBase(assignStmt.getRightOp(), true);
 			AccessPath newAp = manager.getAccessPathFactory().copyWithNewValue(source.getAccessPath(), rightVal,
 					type, cutFirstField);
 			Abstraction newAbs = source.deriveNewAbstraction(newAp, assignStmt);
