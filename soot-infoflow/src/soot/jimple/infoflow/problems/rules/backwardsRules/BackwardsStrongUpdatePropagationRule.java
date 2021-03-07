@@ -108,9 +108,9 @@ public class BackwardsStrongUpdatePropagationRule extends AbstractTaintPropagati
 			killSource.value = !(leftOp instanceof ArrayRef);
 
 			Value rightOp = assignStmt.getRightOp();
-			Value rightVal = BaseSelector.selectBase(assignStmt.getRightOp(), true);
-			if (rightVal instanceof Constant || rightOp instanceof AnyNewExpr)
+			if (rightOp instanceof Constant || rightOp instanceof AnyNewExpr)
 				return null;
+			Value rightVal = assignStmt.getRightOp();
 
 			AccessPath newAp = manager.getAccessPathFactory().copyWithNewValue(source.getAccessPath(), rightVal,
 					type, cutFirstField);

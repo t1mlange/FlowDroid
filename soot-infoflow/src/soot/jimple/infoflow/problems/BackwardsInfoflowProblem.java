@@ -30,7 +30,7 @@ import java.util.*;
  * @author Tim Lange
  */
 public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
-    private final static boolean DEBUG_PRINT = false;
+    private final static boolean DEBUG_PRINT = true;
     private final static boolean ONLY_CALLS = false;
 
     private final PropagationRuleManager propagationRules;
@@ -478,29 +478,6 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                             if (abs != null) {
                                                 if (isPrimitiveOrStringBase(source))
                                                     abs.setTurnUnit(stmt);
-                                                else if (ie != null) {
-                                                    // A foo(A a) {
-                                                    //     return a;
-                                                    // }
-                                                    // A b = foo(a);
-                                                    // An alias is created using the returned value. If no assigments
-                                                    // happen inside the method, also no alias analysis is triggered.
-                                                    // Thus, here we trigger a manual alias analysis for all return
-                                                    // values which equal a param if the param is on the heap.
-                                                    for (int i = 0; i < paramLocals.length; i++) {
-                                                        if (paramLocals[i] != retVal || i >= ie.getArgCount())
-                                                            continue;
-
-                                                        Value arg = ie.getArg(i);
-                                                        AccessPath argAp = manager.getAccessPathFactory().copyWithNewValue(source.getAccessPath(), arg);
-                                                        Abstraction argAbs = source.deriveNewAbstraction(argAp, stmt);
-
-                                                        for (Unit pred : manager.getICFG().getPredsOf(callStmt)) {
-                                                            aliasing.computeAliases(d1, stmt, arg, Collections.singleton(argAbs),
-                                                                    manager.getICFG().getMethodOf(pred), argAbs);
-                                                        }
-                                                    }
-                                                }
 
                                                 res.add(abs);
                                             }
@@ -735,6 +712,35 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                                     for (Abstraction d1 : callerD1s) {
                                                         aliasing.computeAliases(d1, callStmt, arg, res,
                                                                 caller, abs);
+                                                    }
+                                                }
+                                            }
+                                        }
+
+                                        // A foo(A a) {
+                                        //     return a;
+                                        // }
+                                        // A b = foo(a);
+                                        // An alias is created using the returned value. If no assignment
+                                        // happen inside the method, also no alias analysis is triggered.
+                                        // Thus, here we trigger a manual alias analysis for all return
+                                        // values which equal a param if the param is on the heap.
+                                        for (Unit u : callee.getActiveBody().getUnits()) {
+                                            if (!(u instanceof ReturnStmt))
+                                                continue;
+                                            Value retOp = ((ReturnStmt) u).getOp();
+
+                                            if (paramLocals[paramIndex] == retOp) {
+                                                AccessPath argAp = manager.getAccessPathFactory()
+                                                        .copyWithNewValue(source.getAccessPath(), originalCallArg);
+                                                Abstraction argAbs = source.deriveNewAbstraction(argAp, stmt);
+
+                                                if (argAbs != null) {
+                                                    for (Unit pred : manager.getICFG().getPredsOf(callStmt)) {
+                                                        for (Abstraction d1 : callerD1s) {
+                                                            aliasing.computeAliases(d1, stmt, originalCallArg, Collections.singleton(argAbs),
+                                                                    manager.getICFG().getMethodOf(pred), argAbs);
+                                                        }
                                                     }
                                                 }
                                             }

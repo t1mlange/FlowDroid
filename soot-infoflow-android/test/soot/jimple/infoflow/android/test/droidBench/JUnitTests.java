@@ -166,6 +166,11 @@ public class JUnitTests {
 		setupApplication.getConfig().setEnableArraySizeTainting(true);
 
 		setupApplication.setTaintWrapper(new EasyTaintWrapper(taintWrapperFile));
+//		try {
+//			setupApplication.setTaintWrapper(new SummaryTaintWrapper(new LazySummaryProvider("summariesManual")));
+//		} catch (Exception e) {
+//
+//		}
 		configStr += "easy";
 		setupApplication.getConfig().setDataFlowDirection(InfoflowConfiguration.DataFlowDirection.Backwards);
 		configStr += "bw";
