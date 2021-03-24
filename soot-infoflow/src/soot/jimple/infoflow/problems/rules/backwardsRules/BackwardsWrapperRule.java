@@ -24,7 +24,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class BackwardsWrapperRule extends AbstractTaintPropagationRule {
-    public static boolean DEBUG_TW = true;
+    public static boolean DEBUG_TW = false;
 
     public BackwardsWrapperRule(InfoflowManager manager, Abstraction zeroValue, TaintPropagationResults results) {
         super(manager, zeroValue, results);
@@ -61,6 +61,7 @@ public class BackwardsWrapperRule extends AbstractTaintPropagationRule {
 
         final AccessPath sourceAp = source.getAccessPath();
         boolean isTainted = false;
+        boolean retValTainted = false;
         if (!sourceAp.isStaticFieldRef() && !sourceAp.isEmpty()) {
             InvokeExpr invokeExpr = stmt.getInvokeExpr();
 
@@ -69,9 +70,10 @@ public class BackwardsWrapperRule extends AbstractTaintPropagationRule {
                 isTainted = aliasing.mayAlias(((InstanceInvokeExpr) invokeExpr).getBase(), sourceAp.getPlainValue());
 
             // is the return value tainted
-            if (!isTainted && stmt instanceof AssignStmt)
+            if (!isTainted && stmt instanceof AssignStmt) {
                 isTainted = aliasing.mayAlias(((AssignStmt) stmt).getLeftOp(), sourceAp.getPlainValue());
-
+                killSource.value = isTainted;
+            }
 
             // is at least one parameter tainted?
             // we need this because of one special case in EasyTaintWrapper:

@@ -378,7 +378,7 @@ public class EasyTaintWrapper extends AbstractTaintWrapper implements IReversibl
 					taints.add(manager.getAccessPathFactory().createAccessPath(
 							((InstanceInvokeExpr) stmt.getInvokeExprBox().getValue()).getBase(), true));
 					// we also mark the base object as tainted to later on taint the parameters.
-					// This is needed for methods like StringBuilder#append
+					// This is needed for methods like java.lang.String#concat
 					taintedObj = true;
 				}
 			}
@@ -402,7 +402,7 @@ public class EasyTaintWrapper extends AbstractTaintWrapper implements IReversibl
 			}
 
 			if (doTaint) {
-				// Overapproximation: we do not know which parameter is responsible for the tainted base object,
+				// We do not know which parameter is responsible for the tainted base object,
 				// So we have to taint all parameters.
 				for (Value arg : stmt.getInvokeExpr().getArgs()) {
 					if (!(arg instanceof Constant))
