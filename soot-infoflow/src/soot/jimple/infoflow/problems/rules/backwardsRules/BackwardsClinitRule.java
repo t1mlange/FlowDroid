@@ -52,7 +52,8 @@ public class BackwardsClinitRule extends AbstractTaintPropagationRule {
         if (callee == null)
             return null;
 
-        boolean leftSideMatches = Aliasing.baseMatches(BaseSelector.selectBase(assignStmt.getLeftOp(), false), source);
+        Value leftOp = assignStmt.getLeftOp();
+        boolean leftSideMatches = Aliasing.baseMatches(BaseSelector.selectBase(leftOp, false), source);
         Value rightOp = assignStmt.getRightOp();
         Value rightVal = BaseSelector.selectBase(assignStmt.getRightOp(), false);
         SootClass declaringClassMethod = manager.getICFG().getMethodOf(assignStmt).getDeclaringClass();
@@ -67,7 +68,7 @@ public class BackwardsClinitRule extends AbstractTaintPropagationRule {
                 return null;
 
             // This might be the last occurence of the declaring class of the static reference
-            // so we need the visit the clinit method too. This is an overapproximation
+            // so we need the visit the clinit method too. The clinit handling is an overapproximation
             // inherited from the default callgraph algorithm SPARK.
             AccessPath newAp = manager.getAccessPathFactory().copyWithNewValue(ap, rightVal,
                     rightVal.getType(), false);
@@ -76,8 +77,8 @@ public class BackwardsClinitRule extends AbstractTaintPropagationRule {
         else if (ap.isStaticFieldRef() && rightOp instanceof NewExpr) {
             SootClass declaringClassOp = ((NewExpr) rightOp).getBaseType().getSootClass();
             // The NewExpr is in its own class, so we find at least another NewExpr of this kind.
-//            if (declariassMethod == declaringClassOp)
-//                return null;ngCl
+            if (declaringClassMethod == declaringClassOp)
+                return null;
 
             // In static blocks any statement can be inside also static field of other classes
             // so we also have to look into it for a possible use.

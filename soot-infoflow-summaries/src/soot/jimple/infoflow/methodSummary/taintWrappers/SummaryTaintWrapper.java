@@ -16,20 +16,7 @@ import com.google.common.cache.LoadingCache;
 import heros.solver.IDESolver;
 import heros.solver.Pair;
 import heros.solver.PathEdge;
-import soot.ArrayType;
-import soot.FastHierarchy;
-import soot.Hierarchy;
-import soot.Local;
-import soot.PrimType;
-import soot.RefType;
-import soot.Scene;
-import soot.SootClass;
-import soot.SootField;
-import soot.SootMethod;
-import soot.Type;
-import soot.Unit;
-import soot.Value;
-import soot.VoidType;
+import soot.*;
 import soot.jimple.*;
 import soot.jimple.infoflow.InfoflowConfiguration;
 import soot.jimple.infoflow.InfoflowManager;
@@ -661,9 +648,8 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 		// If the taint is a return value, we taint the left side of the
 		// assignment
 		if (t.isReturn()) {
-//			 TODO: Why do we see return taints in backwards here
-//			if (manager.getConfig().getDataFlowDirection() == InfoflowConfiguration.DataFlowDirection.Backwards)
-//				return null;
+			// If flows are reversed, we go backwards and thus, it doesn't
+			// make sense to taint the left side
 			if (reverseFlows)
 				return null;
 
@@ -1566,7 +1552,8 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 		String fieldName = fieldSig.substring(fieldSig.lastIndexOf(" ") + 1);
 		fieldName = fieldName.substring(0, fieldName.length() - 1);
 
-		return Scene.v().makeFieldRef(sc, fieldName, TypeUtils.getTypeFromString(type), false).resolve();
+		SootFieldRef ref = Scene.v().makeFieldRef(sc, fieldName, TypeUtils.getTypeFromString(type), false);
+		return ref.resolve();
 	}
 
 	/**
@@ -2104,20 +2091,16 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 
 			List<AccessPathPropagator> workList = new ArrayList<AccessPathPropagator>();
 			for (Taint taint : taintsFromAP) {
-				boolean killTaint = false;
 				if (!killIncomingTaint.value && flowsInCallee.hasClears()) {
 					for (MethodClear clear : flowsInCallee.getAllClears()) {
 						if (flowMatchesTaint(clear.getClearDefinition(), taint)) {
-							killTaint = true;
+							killIncomingTaint.value = true;
 							break;
 						}
 					}
 				}
 
-				if (killTaint)
-					killIncomingTaint.value = true;
-				else
-					workList.add(new AccessPathPropagator(taint, null, null, stmt, d1, taintedAbs, true));
+				workList.add(new AccessPathPropagator(taint, null, null, stmt, d1, taintedAbs, true));
 			}
 
 			// Apply the data flows until we reach a fixed point
@@ -2139,7 +2122,8 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 
 		// Create abstractions from the access paths
 		Set<Abstraction> resAbs = new HashSet<>(res.size() + 1);
-		resAbs.add(taintedAbs);
+		if (!killIncomingTaint.value)
+			resAbs.add(taintedAbs);
 		for (AccessPath ap : res) {
 			Abstraction newAbs = taintedAbs.deriveNewAbstraction(ap, stmt);
 			newAbs.setCorrespondingCallSite(stmt);

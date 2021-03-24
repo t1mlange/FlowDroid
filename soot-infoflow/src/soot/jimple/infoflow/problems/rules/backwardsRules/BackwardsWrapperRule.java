@@ -24,7 +24,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class BackwardsWrapperRule extends AbstractTaintPropagationRule {
-    private static boolean DEBUG_TW = true;
+    public static boolean DEBUG_TW = true;
 
     public BackwardsWrapperRule(InfoflowManager manager, Abstraction zeroValue, TaintPropagationResults results) {
         super(manager, zeroValue, results);
@@ -72,6 +72,7 @@ public class BackwardsWrapperRule extends AbstractTaintPropagationRule {
             if (!isTainted && stmt instanceof AssignStmt)
                 isTainted = aliasing.mayAlias(((AssignStmt) stmt).getLeftOp(), sourceAp.getPlainValue());
 
+
             // is at least one parameter tainted?
             // we need this because of one special case in EasyTaintWrapper:
             // String.getChars(int srcBegin, int srcEnd, char[] dest, int destBegin)
@@ -87,7 +88,6 @@ public class BackwardsWrapperRule extends AbstractTaintPropagationRule {
         if (!isTainted)
             return null;
 
-        // This is the same as in (Forward)WrapperPropagationRule as sources/sinks are swapped in SourceSinkManager
         if (!getManager().getConfig().getInspectSources()) {
             final SourceInfo sourceInfo = manager.getSourceSinkManager() != null
                     ? manager.getSourceSinkManager().getSourceInfo(stmt, manager)
@@ -133,6 +133,9 @@ public class BackwardsWrapperRule extends AbstractTaintPropagationRule {
             for (Abstraction abs : res)
                 if (abs != source)
                     abs.setCorrespondingCallSite(stmt);
+
+        if (DEBUG_TW)
+            System.out.println("In: " + source.toString() + "\n" + "Stmt:" + stmt.toString() + "\n" + (res == null ? "[]" : res.toString()) + "\n");
 
         return res;
     }

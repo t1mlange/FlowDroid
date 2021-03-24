@@ -78,7 +78,6 @@ public class InFunctionTests extends JUnitTests {
 	@Test(timeout = 300000)
 	public void inFunctionTest4() {
 		IInfoflow infoflow = initInfoflow(true);
-		onlyForwards(infoflow, "Path builder seems to eliminate one result for backwards analysis.");
 		Assert.assertNotNull(infoflow.getTaintWrapper());
 
 		List<String> epoint = new ArrayList<String>();

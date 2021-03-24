@@ -165,16 +165,23 @@ public class JUnitTests {
 
 		setupApplication.getConfig().setEnableArraySizeTainting(true);
 
-		setupApplication.setTaintWrapper(new EasyTaintWrapper(taintWrapperFile));
-//		try {
-//			setupApplication.setTaintWrapper(new SummaryTaintWrapper(new LazySummaryProvider("summariesManual")));
-//		} catch (Exception e) {
-//
-//		}
-		configStr += "easy";
+		try {
+//			setupApplication.setTaintWrapper(new EasyTaintWrapper(taintWrapperFile));
+			setupApplication.setTaintWrapper(new SummaryTaintWrapper(new LazySummaryProvider("summariesManual")));
+		} catch (Exception e) {
+
+		}
 		setupApplication.getConfig().setDataFlowDirection(InfoflowConfiguration.DataFlowDirection.Backwards);
-		configStr += "bw";
-//		configStr += "fw";
+
+		if (setupApplication.getTaintWrapper() instanceof SummaryTaintWrapper)
+			configStr += "sum";
+		else
+			configStr += "easy";
+
+		if (setupApplication.getConfig().getDataFlowDirection() == InfoflowConfiguration.DataFlowDirection.Backwards)
+			configStr += "bw";
+		else
+			configStr += "fw";
 
 		if (iccModel != null && iccModel.length() > 0) {
 			setupApplication.getConfig().getIccConfig().setIccModel(iccModel);
@@ -221,7 +228,10 @@ public class JUnitTests {
 			String category = description.getClassName().replace("soot.jimple.infoflow.android.test.droidBench.", "");
 			String name = description.getMethodName().replace("runTest", "");
 			TestResult tr = new TestResult(name, category);
-			tr.set(-1, -1);
+			if (name.contains("IMEI1"))
+				tr.set(-1, -1);
+			else
+				tr.set(performanceData.getInfoflowPropagationCount(), performanceData.getAliasPropagationCount());
 			dumpToFile(tr);
 		}
 

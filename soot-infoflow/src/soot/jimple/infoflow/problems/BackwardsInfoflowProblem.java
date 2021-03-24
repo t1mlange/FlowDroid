@@ -30,7 +30,7 @@ import java.util.*;
  * @author Tim Lange
  */
 public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
-    private final static boolean DEBUG_PRINT = false;
+    private final static boolean DEBUG_PRINT = true;
     private final static boolean ONLY_CALLS = false;
 
     private final PropagationRuleManager propagationRules;
@@ -874,8 +874,11 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                         // Do not pass base if tainted
                         // CallFlow passes this into the callee
                         // unless the callee is native and can not be visited
+                        // The third condition represents a tainted reference without any fields tainted
+                        // of which the callee only can overwrite the reference to the object but not its contents
                         if (invExpr instanceof InstanceInvokeExpr
                                 && aliasing.mayAlias(((InstanceInvokeExpr) invExpr).getBase(), source.getAccessPath().getPlainValue())
+                                && (source.getAccessPath().getTaintSubFields() || source.getAccessPath().getFieldCount() > 0)
                                 && !callee.isNative())
                             return res;
 
