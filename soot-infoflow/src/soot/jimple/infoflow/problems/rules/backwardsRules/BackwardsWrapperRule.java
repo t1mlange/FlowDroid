@@ -83,7 +83,9 @@ public class BackwardsWrapperRule extends AbstractTaintPropagationRule {
                 if (wrapper instanceof EasyTaintWrapper && invokeExpr.getArgCount() >= 3)
                     isTainted = aliasing.mayAlias(invokeExpr.getArg(2), sourceAp.getPlainValue());
                 else
-                    isTainted = invokeExpr.getArgs().stream().anyMatch(arg -> aliasing.mayAlias(arg, sourceAp.getPlainValue()));
+                    isTainted = invokeExpr.getArgs().stream()
+                            .anyMatch(arg -> !(arg.getType() instanceof PrimType || TypeUtils.isStringType(arg.getType()))
+                                    && aliasing.mayAlias(arg, sourceAp.getPlainValue()));
             }
         }
 
