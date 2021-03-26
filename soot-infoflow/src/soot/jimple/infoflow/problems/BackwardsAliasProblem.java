@@ -84,11 +84,6 @@ public class BackwardsAliasProblem extends AbstractInfoflowProblem {
                         // TurnUnit is the sink. Below this stmt, the taint is not valid anymore
                         // Therefore we turn around here.
                         if (source.getTurnUnit() == srcUnit) {
-//                            for (Unit u : interproceduralCFG().getPredsOf(srcUnit))
-//                                manager.getForwardSolver()
-//                                        .processEdge(new PathEdge<Unit, Abstraction>(d1, u, source.getActiveCopy()));
-
-
                             return notifyOutFlowHandlers(srcUnit, d1, source, null,
                                     TaintPropagationHandler.FlowFunctionType.NormalFlowFunction);
                         }
@@ -490,7 +485,7 @@ public class BackwardsAliasProblem extends AbstractInfoflowProblem {
                             for (int i = 0; i < callee.getParameterCount(); i++) {
                                 if (source.getAccessPath().getPlainValue() != paramLocals[i])
                                     continue;
-                                if (isPrimtiveOrStringBase(source))
+                                if (isPrimitiveOrStringBase(source))
                                     continue;
 
                                 Value originalCallArg = ie.getArg(isReflectiveCallSite ? 1 : i);
@@ -641,9 +636,13 @@ public class BackwardsAliasProblem extends AbstractInfoflowProblem {
 
                             // Do not pass over reference parameters
                             // CallFlow passes this into the callee
-                            if (Arrays.stream(callArgs).anyMatch(arg -> !isPrimtiveOrStringBase(source)
-                                    && arg == source.getAccessPath().getPlainValue()))
+                            if (Arrays.stream(callArgs).anyMatch(arg -> !isPrimitiveOrStringBase(source)
+                                    && arg == source.getAccessPath().getPlainValue())) {
+                                // non standard source sink manager might need this
+                                if (isSource)
+                                    manager.getForwardSolver().processEdge(new PathEdge<>(d1, callSite, source.getActiveCopy()));
                                 return null;
+                            }
                         } else {
                             for (Value arg : callArgs) {
                                 if (arg == source.getAccessPath().getPlainValue()) {
@@ -663,9 +662,9 @@ public class BackwardsAliasProblem extends AbstractInfoflowProblem {
                 };
             }
 
-            private boolean isPrimtiveOrStringBase(Abstraction abs) {
+            private boolean isPrimitiveOrStringBase(Abstraction abs) {
                 Type t = abs.getAccessPath().getBaseType();
-                return t instanceof PrimType || TypeUtils.isStringType(t);
+                return t instanceof PrimType || (TypeUtils.isStringType(t) && !abs.getAccessPath().getCanHaveImmutableAliases());
             }
         };
     }

@@ -345,7 +345,8 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                         if (isPrimitiveOrStringBase(source)) {
                                             newAbs.setTurnUnit(srcUnit);
                                         } else if (leftVal instanceof FieldRef
-                                                && isPrimtiveOrStringType(((FieldRef) leftVal).getField().getType())) {
+                                                && isPrimitiveOrStringType(((FieldRef) leftVal).getField().getType())
+                                                && !ap.getCanHaveImmutableAliases()) {
                                             newAbs.setTurnUnit(srcUnit);
                                         } else {
                                             if (aliasing.canHaveAliasesRightSide(assignStmt, rightVal, newAbs)) {
@@ -906,9 +907,9 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
 
             private boolean isPrimitiveOrStringBase(Abstraction abs) {
                 Type t = abs.getAccessPath().getBaseType();
-                return t instanceof PrimType || TypeUtils.isStringType(t);
+                return t instanceof PrimType || (TypeUtils.isStringType(t) && !abs.getAccessPath().getCanHaveImmutableAliases());
             }
-            private boolean isPrimtiveOrStringType(Type t) {
+            private boolean isPrimitiveOrStringType(Type t) {
                 return t instanceof PrimType || TypeUtils.isStringType(t);
             }
         };
