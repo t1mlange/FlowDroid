@@ -666,7 +666,17 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 		// corresponding local
 		if (t.isParameter() && stmt.containsInvokeExpr()) {
 			InvokeExpr iexpr = stmt.getInvokeExpr();
-			Value paramVal = iexpr.getArg(t.getParameterIndex());
+			int paramIndex = t.getParameterIndex();
+
+			// If the caller is missing a corresponding argument
+			// then just quit here.
+			// Note that this can happen, e.g., because of the android lifecycle model
+			// where sometimes arguments/params get removed in native code which is
+			// not represented in the call-graph.
+			if (paramIndex >= iexpr.getArgCount())
+				return null;
+
+			Value paramVal = iexpr.getArg(paramIndex);
 			if (!AccessPath.canContainValue(paramVal))
 				return null;
 

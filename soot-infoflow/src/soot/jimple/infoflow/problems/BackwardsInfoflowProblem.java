@@ -151,11 +151,6 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                     createNewVal = true;
 //                                    leftType = leftVal.getType();
                                 }
-//                                    } else if ((isCircularTypeMatch(rightVal, source) ||source.dependsOnCutAP())
-//                                            && !(leftVal.getType() instanceof PrimType)) {
-//                                        addLeftValue = true;
-//                                        cutFirstFieldLeft = true;
-//                                    }
                             } else if (rightVal instanceof ArrayRef) {
                                 if (!getManager().getConfig().getEnableArrayTracking()
                                         || ap.getArrayTaintType() == AccessPath.ArrayTaintType.Length)
