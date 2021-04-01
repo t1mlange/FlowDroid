@@ -92,6 +92,16 @@ public interface IInfoflowCFG extends BiDiInterproceduralCFG<Unit, SootMethod> {
 	public UnitContainer getPostdominatorOf(Unit u);
 
 	/**
+	 * Gets the dominator of the given unit. If this unit is a conditional, the
+	 * dominator is the join point above both branches of the conditional.
+	 *
+	 * @param u
+	 *            The unit for which to get the postdominator.
+	 * @return The postdominator of the given unit
+	 */
+	public UnitContainer getDominatorOf(Unit u);
+
+	/**
 	 * Checks whether the given static field is read inside the given method or one
 	 * of its transitive callees.
 	 * 

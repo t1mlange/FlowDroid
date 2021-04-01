@@ -47,6 +47,7 @@ import soot.toolkits.exceptions.ThrowableSet;
 import soot.toolkits.graph.DirectedGraph;
 import soot.toolkits.graph.ExceptionalUnitGraph;
 import soot.toolkits.graph.ExceptionalUnitGraph.ExceptionDest;
+import soot.toolkits.graph.MHGDominatorsFinder;
 import soot.toolkits.graph.MHGPostDominatorsFinder;
 
 /**
@@ -68,6 +69,22 @@ public class InfoflowCFG implements IInfoflowCFG {
 	protected final Map<SootMethod, Boolean> methodSideEffects = new ConcurrentHashMap<SootMethod, Boolean>();
 
 	protected final BiDiInterproceduralCFG<Unit, SootMethod> delegate;
+
+	protected final LoadingCache<Unit, UnitContainer> unitsToDominator = IDESolver.DEFAULT_CACHE_BUILDER
+			.build(new CacheLoader<Unit, UnitContainer>() {
+				@Override
+				public UnitContainer load(Unit unit) throws Exception {
+					SootMethod method = getMethodOf(unit);
+					DirectedGraph<Unit> graph = delegate.getOrCreateUnitGraph(method);
+
+					MHGDominatorsFinder<Unit> dominatorFinder = new MHGDominatorsFinder<Unit>(graph);
+					Unit dom = dominatorFinder.getImmediateDominator(unit);
+					if (dom == null)
+						return new UnitContainer(method);
+					else
+						return new UnitContainer(dom);
+				}
+			});
 
 	protected final LoadingCache<Unit, UnitContainer> unitToPostdominator = IDESolver.DEFAULT_CACHE_BUILDER
 			.build(new CacheLoader<Unit, UnitContainer>() {
@@ -144,6 +161,11 @@ public class InfoflowCFG implements IInfoflowCFG {
 	@Override
 	public UnitContainer getPostdominatorOf(Unit u) {
 		return unitToPostdominator.getUnchecked(u);
+	}
+
+	@Override
+	public UnitContainer getDominatorOf(Unit u) {
+		return unitsToDominator.getUnchecked(u);
 	}
 
 	// delegate methods follow
@@ -601,6 +623,9 @@ public class InfoflowCFG implements IInfoflowCFG {
 
 		unitToPostdominator.invalidateAll();
 		unitToPostdominator.cleanUp();
+
+		unitsToDominator.invalidateAll();
+		unitsToDominator.cleanUp();
 	}
 
 }

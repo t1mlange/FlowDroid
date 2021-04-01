@@ -56,6 +56,16 @@ public class BackwardsInfoflowCFG extends InfoflowCFG {
 	}
 
 	@Override
+	public UnitContainer getDominatorOf(Unit u) {
+		return baseCFG.getDominatorOf(u);
+	}
+
+	@Override
+	public boolean isExceptionalEdgeBetween(Unit u1, Unit u2) {
+		return super.isExceptionalEdgeBetween(u2, u1);
+	}
+
+		@Override
 	public void notifyMethodChanged(SootMethod m) {
 		baseCFG.notifyMethodChanged(m);
 	}

@@ -29,7 +29,7 @@ import java.util.*;
  * @author Tim Lange
  */
 public class BackwardsAliasProblem extends AbstractInfoflowProblem {
-    private final static boolean DEBUG_PRINT = false;
+    private final static boolean DEBUG_PRINT = true;
 
     public BackwardsAliasProblem(InfoflowManager manager) {
         super(manager);

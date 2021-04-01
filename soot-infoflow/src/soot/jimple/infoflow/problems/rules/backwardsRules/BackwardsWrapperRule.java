@@ -20,6 +20,7 @@ import soot.jimple.infoflow.util.ByReferenceBoolean;
 import soot.jimple.infoflow.util.TypeUtils;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -61,19 +62,21 @@ public class BackwardsWrapperRule extends AbstractTaintPropagationRule {
 
         final AccessPath sourceAp = source.getAccessPath();
         boolean isTainted = false;
-        boolean retValTainted = false;
+        boolean missedReturnAlias = false;
         if (!sourceAp.isStaticFieldRef() && !sourceAp.isEmpty()) {
             InvokeExpr invokeExpr = stmt.getInvokeExpr();
 
-            // is the base object tainted
-            if (invokeExpr instanceof InstanceInvokeExpr)
-                isTainted = aliasing.mayAlias(((InstanceInvokeExpr) invokeExpr).getBase(), sourceAp.getPlainValue());
-
             // is the return value tainted
-            if (!isTainted && stmt instanceof AssignStmt) {
+            if (stmt instanceof AssignStmt) {
                 isTainted = aliasing.mayAlias(((AssignStmt) stmt).getLeftOp(), sourceAp.getPlainValue());
                 killSource.value = isTainted;
+                missedReturnAlias = !isTainted && aliasing.canHaveAliasesRightSide(stmt, ((AssignStmt) stmt).getLeftOp(), source);
             }
+
+            // is the base object tainted
+            if (!isTainted && invokeExpr instanceof InstanceInvokeExpr)
+                isTainted = aliasing.mayAlias(((InstanceInvokeExpr) invokeExpr).getBase(), sourceAp.getPlainValue());
+
 
             // is at least one parameter tainted?
             // we need this because of one special case in EasyTaintWrapper:
@@ -100,6 +103,12 @@ public class BackwardsWrapperRule extends AbstractTaintPropagationRule {
             if (sourceInfo != null)
                 return null;
         }
+
+        if (missedReturnAlias) {
+            aliasing.computeAliases(d1, stmt, sourceAp.getPlainValue(), Collections.singleton(source),
+                    getManager().getICFG().getMethodOf(stmt), source);
+        }
+
 
         Set<Abstraction> res = wrapper.getInverseTaintsForMethod(stmt, d1, source);
         if (res != null) {
