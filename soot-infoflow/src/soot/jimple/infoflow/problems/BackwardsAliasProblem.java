@@ -29,7 +29,7 @@ import java.util.*;
  * @author Tim Lange
  */
 public class BackwardsAliasProblem extends AbstractInfoflowProblem {
-    private final static boolean DEBUG_PRINT = true;
+    private final static boolean DEBUG_PRINT = false;
 
     public BackwardsAliasProblem(InfoflowManager manager) {
         super(manager);
@@ -570,8 +570,8 @@ public class BackwardsAliasProblem extends AbstractInfoflowProblem {
 
                         // TurnUnit is the sink. Below this stmt, the taint is not valid anymore
                         // Therefore we turn around here.
-                        if (source.getTurnUnit() == callSite || manager.getICFG().getCalleesOfCallAt(callSite).stream()
-                                .anyMatch(m -> manager.getICFG().getMethodOf(source.getTurnUnit()) == m)) {
+                        if (source.getTurnUnit() != null && (source.getTurnUnit() == callSite || manager.getICFG().getCalleesOfCallAt(callSite).stream()
+                                .anyMatch(m -> manager.getICFG().getMethodOf(source.getTurnUnit()) == m))) {
 
                             return notifyOutFlowHandlers(callSite, d1, source, null,
                                     TaintPropagationHandler.FlowFunctionType.CallToReturnFlowFunction);

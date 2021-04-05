@@ -55,6 +55,10 @@ public class BackwardsSinkPropagationRule extends AbstractTaintPropagationRule {
 					// Set the corresponding call site
 					if (stmt.containsInvokeExpr())
 						abs.setCorrespondingCallSite(stmt);
+
+					if (manager.getConfig().getImplicitFlowMode().trackControlFlowDependencies()) {
+						res.add(abs.deriveNewAbstractionWithDominator(manager.getICFG().getDominatorOf(stmt), null));
+					}
 				}
 				return res;
 			}

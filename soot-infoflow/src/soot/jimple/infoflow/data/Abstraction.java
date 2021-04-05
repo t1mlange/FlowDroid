@@ -75,6 +75,7 @@ public class Abstraction implements Cloneable, FastSolverLinkedNode<Abstraction,
 	 * branch. Do not use the synchronized Stack class here to avoid deadlocks.
 	 */
 	protected List<UnitContainer> postdominators = null;
+	protected UnitContainer dominator = null;
 	protected boolean isImplicit = false;
 
 	/**
@@ -108,6 +109,7 @@ public class Abstraction implements Cloneable, FastSolverLinkedNode<Abstraction,
 			result = prime * result + ((abs.activationUnit == null) ? 0 : abs.activationUnit.hashCode());
 			result = prime * result + ((abs.turnUnit == null) ? 0 : abs.turnUnit.hashCode());
 			result = prime * result + ((abs.postdominators == null) ? 0 : abs.postdominators.hashCode());
+			result = prime * result + ((abs.dominator == null) ? 0 : abs.dominator.hashCode());
 
 			abs.neighborHashCode = result;
 			return result;
@@ -190,6 +192,7 @@ public class Abstraction implements Cloneable, FastSolverLinkedNode<Abstraction,
 
 			postdominators = original.postdominators == null ? null
 					: new ArrayList<UnitContainer>(original.postdominators);
+			dominator = original.dominator;
 
 			dependsOnCutAP = original.dependsOnCutAP;
 			isImplicit = original.isImplicit;
@@ -223,20 +226,8 @@ public class Abstraction implements Cloneable, FastSolverLinkedNode<Abstraction,
 			return null;
 
 		a.postdominators = null;
+		a.dominator = null;
 		a.activationUnit = activationUnit;
-		a.dependsOnCutAP |= a.getAccessPath().isCutOffApproximation();
-		return a;
-	}
-
-	public Abstraction deriveActiveAbstraction(Stmt deactivationUnit) {
-		if (!flowSensitiveAliasing)
-			return this;
-
-		Abstraction a = deriveNewAbstractionMutable(accessPath, null);
-		if (a == null)
-			return null;
-
-		a.postdominators = null;
 		a.dependsOnCutAP |= a.getAccessPath().isCutOffApproximation();
 		return a;
 	}
@@ -429,6 +420,45 @@ public class Abstraction implements Cloneable, FastSolverLinkedNode<Abstraction,
 		return uc.getMethod() == sm;
 	}
 
+	public Abstraction deriveNewAbstractionWithDominator(UnitContainer dominator, Stmt stmt) {
+		Abstraction abs = deriveNewAbstractionMutable(accessPath, stmt);
+		if (abs == null)
+			return null;
+
+		abs.setDominator(dominator);
+		return abs;
+	}
+	public Abstraction deriveNewAbstractionWithDominator(UnitContainer dominator) {
+		return deriveNewAbstractionWithDominator(dominator, null);
+	}
+
+	public Abstraction deriveConditionalUpdate(Stmt stmt) {
+		return deriveNewAbstractionMutable(AccessPath.getEmptyAccessPath(), stmt);
+	}
+
+	public Abstraction deriveCondition(AccessPath ap, Stmt stmt)  {
+		Abstraction abs = deriveNewAbstractionMutable(ap, stmt);
+		if (abs == null)
+			return null;
+
+		abs.setDominator(null);
+		return abs;
+	}
+
+	public void setDominator(UnitContainer dominator) {
+		this.dominator = dominator;
+	}
+
+	public UnitContainer getDominator() {
+		return this.dominator;
+	}
+
+	public boolean isDominator(Unit u) {
+		if (dominator == null)
+			return false;
+		return dominator.getUnit() == u;
+	}
+
 	@Override
 	public Abstraction clone() {
 		Abstraction abs = new Abstraction(accessPath, this);
@@ -496,6 +526,11 @@ public class Abstraction implements Cloneable, FastSolverLinkedNode<Abstraction,
 				return false;
 		} else if (!postdominators.equals(other.postdominators))
 			return false;
+		if (dominator == null) {
+			if (other.dominator != null)
+				return false;
+		} else if (!dominator.equals(other.dominator))
+			return false;
 		if (this.dependsOnCutAP != other.dependsOnCutAP)
 			return false;
 		if (this.isImplicit != other.isImplicit)
@@ -518,6 +553,7 @@ public class Abstraction implements Cloneable, FastSolverLinkedNode<Abstraction,
 		result = prime * result + ((turnUnit == null) ? 0 : turnUnit.hashCode());
 		result = prime * result + (exceptionThrown ? 1231 : 1237);
 		result = prime * result + ((postdominators == null) ? 0 : postdominators.hashCode());
+		result = prime * result + ((dominator == null) ? 0 : dominator.hashCode());
 		result = prime * result + (dependsOnCutAP ? 1231 : 1237);
 		result = prime * result + (isImplicit ? 1231 : 1237);
 		this.hashCode = result;

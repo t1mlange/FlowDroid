@@ -679,30 +679,30 @@ public class BackwardsInfoflow extends AbstractInfoflow {
 			}
 
             // TODO: just debug things
-//            Chain<SootClass> classes = Scene.v().getClasses();
-//            for (SootClass c : classes) {
-//                if (!c.getName().startsWith("java")) {
-//                    if (c.getName().contains("Test") || c.getName().contains("Api") || c.getName().contains("de.test") || c.getName().startsWith("edu.mit") || c.getName().startsWith("de.ecspride")) {
-//                        String name = c.getName().replace("soot.jimple.infoflow.test.", "");
-//                        String baseClass = name.split("\\$")[0];
-//                        File dir = new File("/home/tim/Projects/FlowDroid/soot-infoflow/jimpleCode/" + baseClass);
-//                        boolean exists = dir.exists();
-//                        boolean cont = exists || dir.mkdir();
-//                        if (cont) {
-//                            File file = new File("/home/tim/Projects/FlowDroid/soot-infoflow/jimpleCode/" + baseClass + "/" + name + ".jimple");
-//                            PrintWriter writer;
-//                            try {
-//                                writer = new PrintWriter(file);
-//                                soot.Printer.v().printTo(c, writer);
-//                                writer.flush();
-//                                writer.close();
-//                            } catch (FileNotFoundException e) {
-//                                e.printStackTrace();
-//                            }
-//                        }
-//                    }
-//                }
-//            }
+            Chain<SootClass> classes = Scene.v().getClasses();
+            for (SootClass c : classes) {
+                if (!c.getName().startsWith("java")) {
+                    if (c.getName().contains("fraunhofera") || c.getName().contains("Test") || c.getName().contains("Api") || c.getName().contains("de.test") || c.getName().startsWith("edu.mit") || c.getName().startsWith("de.ecspride")) {
+                        String name = c.getName().replace("soot.jimple.infoflow.test.", "");
+                        String baseClass = name.split("\\$")[0];
+                        File dir = new File("/home/tim/Projects/FlowDroid/soot-infoflow/jimpleCode/" + baseClass);
+                        boolean exists = dir.exists();
+                        boolean cont = exists || dir.mkdir();
+                        if (cont) {
+                            File file = new File("/home/tim/Projects/FlowDroid/soot-infoflow/jimpleCode/" + baseClass + "/" + name + ".jimple");
+                            PrintWriter writer;
+                            try {
+                                writer = new PrintWriter(file);
+                                soot.Printer.v().printTo(c, writer);
+                                writer.flush();
+                                writer.close();
+                            } catch (FileNotFoundException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                }
+            }
 
             // After constant value propagation, we might find more call edges
             // for reflective method calls

@@ -1,9 +1,8 @@
 package soot.jimple.infoflow.problems.rules.backwardsRules;
 
-import soot.PrimType;
-import soot.RefType;
-import soot.SootMethod;
-import soot.Unit;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import soot.*;
 import soot.jimple.*;
 import soot.jimple.infoflow.InfoflowConfiguration;
 import soot.jimple.infoflow.InfoflowManager;
@@ -19,10 +18,11 @@ import soot.jimple.infoflow.taintWrappers.ITaintPropagationWrapper;
 import soot.jimple.infoflow.util.ByReferenceBoolean;
 import soot.jimple.infoflow.util.TypeUtils;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class BackwardsWrapperRule extends AbstractTaintPropagationRule {
     public static boolean DEBUG_TW = false;
@@ -63,12 +63,14 @@ public class BackwardsWrapperRule extends AbstractTaintPropagationRule {
         final AccessPath sourceAp = source.getAccessPath();
         boolean isTainted = false;
         boolean missedReturnAlias = false;
+        boolean retValTainted = false;
         if (!sourceAp.isStaticFieldRef() && !sourceAp.isEmpty()) {
             InvokeExpr invokeExpr = stmt.getInvokeExpr();
 
             // is the return value tainted
             if (stmt instanceof AssignStmt) {
                 isTainted = aliasing.mayAlias(((AssignStmt) stmt).getLeftOp(), sourceAp.getPlainValue());
+                retValTainted = isTainted;
                 killSource.value = isTainted;
                 missedReturnAlias = !isTainted && aliasing.canHaveAliasesRightSide(stmt, ((AssignStmt) stmt).getLeftOp(), source);
             }
@@ -113,26 +115,41 @@ public class BackwardsWrapperRule extends AbstractTaintPropagationRule {
         Set<Abstraction> res = wrapper.getInverseTaintsForMethod(stmt, d1, source);
         if (res != null) {
             Set<Abstraction> resWAliases = new HashSet<>(res);
+
             for (Abstraction abs : res) {
                 AccessPath absAp = abs.getAccessPath();
 
-                // no need to search for aliases if the access path didn't change
-                if (!absAp.equals(sourceAp)) {
-                    boolean isBasicString = TypeUtils.isStringType(absAp.getBaseType()) && !absAp.getCanHaveImmutableAliases()
-                            && !getAliasing().isStringConstructorCall(stmt);
-                    boolean taintsObjectValue = absAp.getBaseType() instanceof RefType && !isBasicString
-                            && absAp.getFieldCount() > 0;
-                    boolean taintsStaticField = getManager().getConfig()
-                            .getStaticFieldTrackingMode() != InfoflowConfiguration.StaticFieldTrackingMode.None
-                            && abs.getAccessPath().isStaticFieldRef()
-                            && !(absAp.getFirstFieldType() instanceof PrimType)
-                            && !(TypeUtils.isStringType(absAp.getFirstFieldType()));
+                boolean skipAliases = false;
+                // Compute if the statement aliases
+                if (retValTainted) {
+                    Value leftVal = ((AssignStmt) stmt).getLeftOp();
+                    skipAliases = isPrimitiveOrStringType(leftVal.getType(), abs);
+                    skipAliases = skipAliases || (leftVal instanceof FieldRef
+                            && isPrimitiveOrStringType(((FieldRef) leftVal).getField().getType(), abs));
+                }
 
-                    if (taintsObjectValue || taintsStaticField
-                            || aliasing.canHaveAliasesRightSide(stmt, abs.getAccessPath().getPlainValue(), abs)) {
-                        for (Unit pred : manager.getICFG().getPredsOf(stmt))
-                            aliasing.computeAliases(d1, (Stmt) pred, absAp.getPlainValue(), resWAliases,
-                                getManager().getICFG().getMethodOf(pred), abs);
+                if (skipAliases) {
+                    abs.setTurnUnit(stmt);
+                } else {
+                    // no need to search for aliases if the access path didn't change
+                    if (!absAp.equals(sourceAp) && !absAp.isEmpty() /*&& !returnsThisInstance(abs, stmt)*/) {
+                        boolean isBasicString = TypeUtils.isStringType(absAp.getBaseType()) && !absAp.getCanHaveImmutableAliases()
+                                && !getAliasing().isStringConstructorCall(stmt);
+                        boolean taintsObjectValue = absAp.getBaseType() instanceof RefType && !isBasicString
+                                && (absAp.getFieldCount() > 0 || absAp.getTaintSubFields());
+                        boolean taintsStaticField = getManager().getConfig()
+                                .getStaticFieldTrackingMode() != InfoflowConfiguration.StaticFieldTrackingMode.None
+                                && abs.getAccessPath().isStaticFieldRef()
+                                && !(absAp.getFirstFieldType() instanceof PrimType)
+                                && !(TypeUtils.isStringType(absAp.getFirstFieldType()));
+
+                        if (taintsObjectValue || taintsStaticField
+                                || aliasing.canHaveAliasesRightSide(stmt, abs.getAccessPath().getPlainValue(), abs)) {
+                            for (Unit pred : manager.getICFG().getPredsOf(stmt))
+                                aliasing.computeAliases(d1, (Stmt) pred, absAp.getPlainValue(), resWAliases,
+                                        getManager().getICFG().getMethodOf(pred), abs);
+                        } else
+                            abs.setTurnUnit(stmt);
                     }
                 }
 
@@ -151,6 +168,43 @@ public class BackwardsWrapperRule extends AbstractTaintPropagationRule {
             System.out.println("In: " + source.toString() + "\n" + "Stmt:" + stmt.toString() + "\n" + (res == null ? "[]" : res.toString()) + "\n");
 
         return res;
+    }
+
+    private boolean isPrimitiveOrStringType(Type t, Abstraction abs) {
+        return t instanceof PrimType || (TypeUtils.isStringType(t) && !abs.getAccessPath().getCanHaveImmutableAliases());
+    }
+
+    private static final Set<String> excludeList = parseExcludeList();
+    private static Set<String> parseExcludeList() {
+        try {
+            return Files.lines(Paths.get("BackwardsWrapperExcludeList.txt")).filter(p -> !p.startsWith("#")).collect(Collectors.toSet());
+        } catch (IOException e) {
+            return Collections.emptySet();
+        }
+    }
+
+    /**
+     * Optimization for StringBuilders/StringBuffers. Append and Insert always returns this.
+     * Jimple does not reuse locals, so we manually exclude them from the aliasing.
+     * @param abs
+     * @param callStmt
+     * @return
+     */
+    private boolean returnsThisInstance(Abstraction abs, Stmt callStmt) {
+//        if (!callStmt.containsInvokeExpr())
+//            return false;
+//        InvokeExpr ie = callStmt.getInvokeExpr();
+//
+//        if (ie instanceof InstanceInvokeExpr) {
+//            Value base = ((InstanceInvokeExpr) ie).getBase();
+//            if (!getAliasing().mayAlias(base, abs.getAccessPath().getPlainValue()))
+//                return false;
+//
+//            if (excludeList.contains(ie.getMethod().getSignature()))
+//                return true;
+//        }
+//
+        return false;
     }
 
     @Override

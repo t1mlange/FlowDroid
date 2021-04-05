@@ -543,6 +543,12 @@ public class InfoflowCFG implements IInfoflowCFG {
 	}
 
 	@Override
+	public Unit getConditionalBranch(Unit unit) {
+		// WARNING: STUB. This method is only needed backwards
+		return unit;
+	}
+
+	@Override
 	public boolean isReachable(Unit u) {
 		return delegate.isReachable(u);
 	}

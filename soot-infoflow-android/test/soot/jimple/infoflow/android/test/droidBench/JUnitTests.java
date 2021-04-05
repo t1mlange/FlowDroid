@@ -228,7 +228,7 @@ public class JUnitTests {
 			String category = description.getClassName().replace("soot.jimple.infoflow.android.test.droidBench.", "");
 			String name = description.getMethodName().replace("runTest", "");
 			TestResult tr = new TestResult(name, category);
-			if (name.contains("IMEI1"))
+			if (name.contains("IMEI1") || performanceData == null)
 				tr.set(-1, -1);
 			else
 				tr.set(performanceData.getInfoflowPropagationCount(), performanceData.getAliasPropagationCount());

@@ -40,7 +40,8 @@ public class BackwardsExceptionPropagationRule extends AbstractTaintPropagationR
 		if (stmt instanceof IdentityStmt) {
 			IdentityStmt id = (IdentityStmt) stmt;
 			if (id.getRightOp() instanceof CaughtExceptionRef &&
-                    aliasing.mayAlias(id.getLeftOp(), source.getAccessPath().getPlainValue())) {
+					(aliasing.mayAlias(id.getLeftOp(), source.getAccessPath().getPlainValue())
+					|| source.getAccessPath().isEmpty())) {
 				// Kill the old taint
 				killSource.value = true;
 

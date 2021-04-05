@@ -301,7 +301,7 @@ public class EasyTaintWrapper extends AbstractTaintWrapper implements IReversibl
 	public Set<Abstraction> getInverseTaintsForMethod(Stmt stmt, Abstraction d1, Abstraction taintedPath) {
 		// Compute the tainted access paths
 		Set<AccessPath> aps = getInverseTaintsForMethodInternal(stmt,
-				taintedPath.getAccessPath());
+				taintedPath);
 		if (aps == null || aps.isEmpty())
 			return null;
 
@@ -315,7 +315,8 @@ public class EasyTaintWrapper extends AbstractTaintWrapper implements IReversibl
 		return res;
 	}
 
-	public Set<AccessPath> getInverseTaintsForMethodInternal(Stmt stmt, AccessPath taintedPath) {
+	public Set<AccessPath> getInverseTaintsForMethodInternal(Stmt stmt, Abstraction taintedAbs) {
+		AccessPath taintedPath = taintedAbs.getAccessPath();
 		if (!stmt.containsInvokeExpr())
 			return null;
 
@@ -369,12 +370,16 @@ public class EasyTaintWrapper extends AbstractTaintWrapper implements IReversibl
 				// If the base was tainted, one parameter could be responsible for this but we don't know,
 				// maybe it also was tainted before. So we have to keep it.
 				taints.add(taintedPath);
+
+				if (wrapType == MethodWrapType.CreateTaint && taintedAbs.getDominator() != null
+						&& taintedAbs.getDominator().getUnit() != null)
+					taints.add(AccessPath.getEmptyAccessPath());
 			}
 
 			if (stmt instanceof DefinitionStmt) {
 				DefinitionStmt def = (DefinitionStmt) stmt;
 				// If the return value is tainted, the base object needs to be tainted
-				if (taintedPath.isEmpty() || def.getLeftOp().equals(taintedPath.getPlainValue())) {
+				if (def.getLeftOp().equals(taintedPath.getPlainValue())) {
 					taints.add(manager.getAccessPathFactory().createAccessPath(
 							((InstanceInvokeExpr) stmt.getInvokeExprBox().getValue()).getBase(), true));
 					// we also mark the base object as tainted to later on taint the parameters.
@@ -387,7 +392,7 @@ public class EasyTaintWrapper extends AbstractTaintWrapper implements IReversibl
 		// if base object is tainted, we need to taint all parameters
 		if (isSupported && wrapType == MethodWrapType.CreateTaint) {
 			// If we are inside a conditional, we always taint
-			boolean doTaint = taintedPath.isEmpty() || taintedObj;
+			boolean doTaint = taintedObj;
 
 			if (!doTaint) {
 				// Otherwise, we have to check whether we have a tainted base object

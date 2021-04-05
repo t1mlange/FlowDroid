@@ -4,7 +4,14 @@ import soot.SootField;
 import soot.SootMethod;
 import soot.Unit;
 import soot.Value;
+import soot.jimple.IfStmt;
+import soot.jimple.SwitchStmt;
 import soot.jimple.toolkits.ide.icfg.BackwardsInterproceduralCFG;
+import soot.toolkits.graph.DirectedGraph;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Inverse interprocedural control-flow graph for the infoflow solver
@@ -65,7 +72,33 @@ public class BackwardsInfoflowCFG extends InfoflowCFG {
 		return super.isExceptionalEdgeBetween(u2, u1);
 	}
 
-		@Override
+	@Override
+	public Unit getConditionalBranch(Unit unit) {
+	DirectedGraph<Unit> graph = getOrCreateUnitGraph(getMethodOf(unit));
+
+		List<Unit> worklist = new ArrayList<>(sameLevelPredecessors(graph, unit));
+		while (worklist.size() > 0) {
+			Unit item = worklist.remove(0);
+			if (item instanceof IfStmt || item instanceof SwitchStmt)
+				return item;
+
+			worklist.addAll(sameLevelPredecessors(graph, item));
+		}
+		return null;
+	}
+
+	private List<Unit> sameLevelPredecessors(DirectedGraph<Unit> graph, Unit u) {
+		List<Unit> preds = graph.getPredsOf(u);
+		if (preds.size() <= 1)
+			return preds;
+
+		UnitContainer dom = getDominatorOf(u);
+		if (dom.getUnit() != null)
+			return graph.getPredsOf(dom.getUnit());
+		return Collections.emptyList();
+	}
+
+	@Override
 	public void notifyMethodChanged(SootMethod m) {
 		baseCFG.notifyMethodChanged(m);
 	}

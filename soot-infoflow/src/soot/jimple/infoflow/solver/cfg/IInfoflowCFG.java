@@ -102,6 +102,15 @@ public interface IInfoflowCFG extends BiDiInterproceduralCFG<Unit, SootMethod> {
 	public UnitContainer getDominatorOf(Unit u);
 
 	/**
+	 * Reconstructs if the unit is inside a conditional.
+	 * Needed for implicit backwards on an unbalanced return into a method.
+	 *
+	 * @param unit The unit to start the search at
+	 * @return The same-level conditional
+	 */
+	public Unit getConditionalBranch(Unit unit);
+
+	/**
 	 * Checks whether the given static field is read inside the given method or one
 	 * of its transitive callees.
 	 * 

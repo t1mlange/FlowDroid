@@ -137,6 +137,9 @@ public class BackwardsStrongUpdatePropagationRule extends AbstractTaintPropagati
 	@Override
 	public Collection<Abstraction> propagateCallFlow(Abstraction d1, Abstraction source, Stmt stmt, SootMethod dest,
 													 ByReferenceBoolean killAll) {
+		if (source.getAccessPath().isEmpty())
+			return null;
+
 		if (!(stmt instanceof AssignStmt))
 			return null;
 

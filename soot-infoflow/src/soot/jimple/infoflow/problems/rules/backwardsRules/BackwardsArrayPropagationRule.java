@@ -44,6 +44,7 @@ public class BackwardsArrayPropagationRule extends AbstractTaintPropagationRule 
 		final Value leftVal = assignStmt.getLeftOp();
 		final Value rightVal = assignStmt.getRightOp();
 
+		Set<Abstraction> res = new HashSet<>();
 		// x = a.length -> a length tainted
 		if (rightVal instanceof LengthExpr) {
 			LengthExpr lengthExpr = (LengthExpr) rightVal;
@@ -71,22 +72,23 @@ public class BackwardsArrayPropagationRule extends AbstractTaintPropagationRule 
 			// y = x[i]
 			if (source.getAccessPath().getArrayTaintType() != ArrayTaintType.Length
 					&& aliasing.mayAlias(leftVal, source.getAccessPath().getPlainValue())) {
-				AccessPath ap;
 				// track index
+				AccessPath ap;
 				if (getManager().getConfig().getImplicitFlowMode().trackArrayAccesses()) {
 					ap = getManager().getAccessPathFactory().copyWithNewValue(source.getAccessPath(), rightIndex,
 							null, false, true, ArrayTaintType.Contents);
+					newAbs = source.deriveNewAbstraction(ap, assignStmt);
+					res.add(newAbs);
 				}
 				// taint whole array
-				else {
-					// We add one layer
-					Type baseType = source.getAccessPath().getBaseType();
-					Type targetType = TypeUtils.buildArrayOrAddDimension(baseType, baseType.getArrayType());
+				// We add one layer
+				Type baseType = source.getAccessPath().getBaseType();
+				Type targetType = TypeUtils.buildArrayOrAddDimension(baseType, baseType.getArrayType());
 
-					// Create the new taint abstraction
-					ap = getManager().getAccessPathFactory().copyWithNewValue(source.getAccessPath(), rightBase,
-							targetType, false, true, ArrayTaintType.Contents);
-				}
+				// Create the new taint abstraction
+				ap = getManager().getAccessPathFactory().copyWithNewValue(source.getAccessPath(), rightBase,
+						targetType, false, true, ArrayTaintType.Contents);
+
 				newAbs = source.deriveNewAbstraction(ap, assignStmt);
 			}
 		}
@@ -96,7 +98,6 @@ public class BackwardsArrayPropagationRule extends AbstractTaintPropagationRule 
 
 		// We have to keep the source if leftval is an array
 		killSource.value = !(leftVal instanceof ArrayRef);
-		Set<Abstraction> res = new HashSet<>();
 		res.add(newAbs);
 
 		if (aliasing.canHaveAliases(assignStmt, leftVal, newAbs))

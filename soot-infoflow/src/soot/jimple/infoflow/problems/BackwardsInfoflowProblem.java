@@ -13,6 +13,7 @@ import soot.jimple.infoflow.data.AccessPath;
 import soot.jimple.infoflow.handlers.TaintPropagationHandler;
 import soot.jimple.infoflow.problems.rules.IPropagationRuleManagerFactory;
 import soot.jimple.infoflow.problems.rules.PropagationRuleManager;
+import soot.jimple.infoflow.solver.cfg.IInfoflowCFG;
 import soot.jimple.infoflow.solver.functions.SolverCallFlowFunction;
 import soot.jimple.infoflow.solver.functions.SolverCallToReturnFlowFunction;
 import soot.jimple.infoflow.solver.functions.SolverNormalFlowFunction;
@@ -84,6 +85,10 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                         // On killAll, we do not propagate anything and can stop here
                         if (killAll.value)
                             return null;
+
+                        // Shortcut: propagate implicit taint over the statement.
+                        if (source.getAccessPath().isEmpty() && !killSource.value)
+                            return res;
 
                         // Instanciate res in case the RuleManager did return null
                         if (res == null)
@@ -319,6 +324,11 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                 if (!keepSource)
                                     res.remove(source);
 
+                                boolean isImplicit = source.getDominator() != null
+                                        && source.getDominator().getUnit() != null;
+                                if (isImplicit)
+                                    res.add(source.deriveConditionalUpdate(assignStmt));
+
                                 if (rightVal instanceof Constant)
                                     continue;
 
@@ -351,9 +361,25 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                             }
                                         }
                                     }
+
+                                    if (manager.getConfig().getImplicitFlowMode().trackControlFlowDependencies()
+                                            && !source.getAccessPath().isEmpty()) {
+                                        IInfoflowCFG.UnitContainer dom = manager.getICFG().getDominatorOf(srcUnit);
+                                        if (newAbs.getDominator() == null)
+                                            res.add(newAbs.deriveNewAbstractionWithDominator(dom));
+                                    }
                                 }
                             }
                         }
+
+
+
+//                        if (manager.getConfig().getImplicitFlowMode().trackControlFlowDependencies()) {
+//                            IInfoflowCFG.UnitContainer dom = manager.getICFG().getDominatorOf(assignStmt);
+//                            for (Abstraction abs : res) {
+//                                abs.pushDominator(dom);
+//                            }
+//                        }
 
                         return res;
                     }
@@ -399,6 +425,10 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                         if (taintPropagationHandler != null)
                             taintPropagationHandler.notifyFlowIn(stmt, source, manager,
                                     TaintPropagationHandler.FlowFunctionType.CallFlowFunction);
+
+
+                        if (stmt.toString().contains("$stack5 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(java.lang.String)>($stack4)"))
+                            source=source;
 
                         Set<Abstraction> res = computeTargetsInternal(d1, source.isAbstractionActive() ? source : source.getActiveCopy());
                         if (res != null) {
@@ -457,8 +487,11 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                             AssignStmt assignStmt = (AssignStmt) callStmt;
                             Value left = assignStmt.getLeftOp();
 
+                            boolean isImplicit = source.getDominator() != null
+                                    && source.getDominator().getUnit() != null;
+
                             // we only taint the return statement(s) if x is tainted
-                            if (aliasing.mayAlias(left, source.getAccessPath().getPlainValue())) {
+                            if (aliasing.mayAlias(left, source.getAccessPath().getPlainValue()) && !isImplicit) {
                                 for (Unit unit : dest.getActiveBody().getUnits()) {
                                     if (unit instanceof ReturnStmt) {
                                         ReturnStmt returnStmt = (ReturnStmt) unit;
@@ -476,6 +509,15 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                                     abs.setTurnUnit(stmt);
 
                                                 res.add(abs);
+                                                if (manager.getConfig().getImplicitFlowMode().trackControlFlowDependencies()) {
+//                                                    IInfoflowCFG.UnitContainer uc = manager.getICFG().getDominatorOf(returnStmt);
+                                                    Unit condUnit = manager.getICFG().getConditionalBranch(returnStmt);
+                                                    if (condUnit != null) {
+                                                        Abstraction interRet = abs.deriveNewAbstractionWithDominator(new IInfoflowCFG.UnitContainer(condUnit));
+                                                        res.add(interRet);
+                                                    }
+//                                                    res.add(abs.deriveNewAbstractionWithDominator(uc));
+                                                }
                                             }
                                         }
                                     }
@@ -625,7 +667,7 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                         if (res == null)
                             res = new HashSet<>();
 
-                        // Static fields get propagated unchaged
+                        // Static fields get propagated unchanged
                         if (manager.getConfig().getStaticFieldTrackingMode()
                                 != InfoflowConfiguration.StaticFieldTrackingMode.None
                                 && source.getAccessPath().isStaticFieldRef()) {
@@ -741,6 +783,16 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                         }
 
                         setCallSite(source, res, (Stmt) callSite);
+
+                        if (manager.getConfig().getImplicitFlowMode().trackControlFlowDependencies()) {
+                            IInfoflowCFG.UnitContainer dominator = manager.getICFG().getDominatorOf(callSite);
+                            if (dominator.getUnit() != returnSite) {
+                                for (Abstraction abs : res) {
+                                    res.add(abs.deriveNewAbstractionWithDominator(dominator));
+                                }
+                            }
+                        }
+
                         return res;
                     }
                 };
@@ -811,8 +863,14 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                         // If left side is tainted, the return value overwrites the taint
                         // CallFlow takes care of tainting the return value
                         if (callStmt instanceof AssignStmt
-                                && aliasing.mayAlias(((AssignStmt) callStmt).getLeftOp(), source.getAccessPath().getPlainValue()))
+                                && aliasing.mayAlias(((AssignStmt) callStmt).getLeftOp(), source.getAccessPath().getPlainValue())) {
+                            boolean isImplicit = source.getDominator() != null
+                                    && source.getDominator().getUnit() != null;
+                            if (isImplicit) {
+                                res.add(source.deriveConditionalUpdate(callStmt));
+                            }
                             return res;
+                        }
 
 
                         // If we do not know the callees, we can not reason

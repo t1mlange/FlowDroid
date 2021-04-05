@@ -38,8 +38,8 @@ public class BackwardPropagationRuleManagerFactory implements IPropagationRuleMa
 		if (manager.getConfig().getStopAfterFirstKFlows() > 0)
 			ruleList.add(new StopAfterFirstKFlowsPropagationRule(manager, zeroValue, results));
 
-//		if (manager.getConfig().getImplicitFlowMode().trackControlFlowDependencies())
-//			ruleList.add(new ImplicitPropagtionRule(manager, zeroValue, results));
+		if (manager.getConfig().getImplicitFlowMode().trackControlFlowDependencies())
+			ruleList.add(new BackwardsImplicitFlowRule(manager, zeroValue, results));
 
 		return new PropagationRuleManager(manager, zeroValue, results,
 				ruleList.toArray(new ITaintPropagationRule[0]));
