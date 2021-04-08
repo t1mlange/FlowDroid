@@ -10,15 +10,8 @@
  ******************************************************************************/
 package soot.jimple.infoflow.solver.cfg;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.google.common.cache.CacheLoader;
@@ -40,6 +33,7 @@ import soot.jimple.InvokeExpr;
 import soot.jimple.StaticFieldRef;
 import soot.jimple.Stmt;
 import soot.jimple.VirtualInvokeExpr;
+import soot.jimple.infoflow.data.UnitWithContext;
 import soot.jimple.toolkits.callgraph.Edge;
 import soot.jimple.toolkits.ide.icfg.BiDiInterproceduralCFG;
 import soot.jimple.toolkits.ide.icfg.JimpleBasedInterproceduralCFG;
@@ -543,9 +537,13 @@ public class InfoflowCFG implements IInfoflowCFG {
 	}
 
 	@Override
-	public Unit getConditionalBranch(Unit unit) {
-		// WARNING: STUB. This method is only needed backwards
-		return unit;
+	public Unit getConditionalBranchIntraprocedural(Unit callSite) {
+		return null;
+	}
+
+	@Override
+	public List<Unit> getConditionalBranchesInterprocedural(Unit unit) {
+		return null;
 	}
 
 	@Override

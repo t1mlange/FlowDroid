@@ -5,12 +5,14 @@
 package soot.jimple.infoflow.solver.cfg;
 
 import java.util.Collection;
+import java.util.List;
 
 import soot.SootField;
 import soot.SootMethod;
 import soot.Unit;
 import soot.Value;
 import soot.jimple.InvokeExpr;
+import soot.jimple.infoflow.data.UnitWithContext;
 import soot.jimple.toolkits.ide.icfg.BiDiInterproceduralCFG;
 
 public interface IInfoflowCFG extends BiDiInterproceduralCFG<Unit, SootMethod> {
@@ -105,15 +107,24 @@ public interface IInfoflowCFG extends BiDiInterproceduralCFG<Unit, SootMethod> {
 	 * Reconstructs if the unit is inside a conditional.
 	 * Needed for implicit backwards on an unbalanced return into a method.
 	 *
-	 * @param unit The unit to start the search at
+	 * @param callSite The unit to start the search at
 	 * @return The same-level conditional
 	 */
-	public Unit getConditionalBranch(Unit unit);
+	public Unit getConditionalBranchIntraprocedural(Unit callSite);
+
+	/**
+	 * Reconstructs the conditionals a taint could possibly reach.
+	 * Needed for implicit backward flows to model sink calls inside a callee
+	 *
+	 * @param unit start unit, possibly a sink
+	 * @return List of units with the context appended
+	 */
+	public List<Unit> getConditionalBranchesInterprocedural(Unit unit);
 
 	/**
 	 * Checks whether the given static field is read inside the given method or one
 	 * of its transitive callees.
-	 * 
+	 *
 	 * @param method
 	 *            The method to check
 	 * @param variable

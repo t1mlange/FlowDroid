@@ -86,13 +86,16 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                         if (killAll.value)
                             return null;
 
-                        // Shortcut: propagate implicit taint over the statement.
-                        if (source.getAccessPath().isEmpty() && !killSource.value)
-                            return res;
-
                         // Instanciate res in case the RuleManager did return null
                         if (res == null)
                             res = new HashSet<>();
+
+                        // Shortcut: propagate implicit taint over the statement.
+                        if (source.getAccessPath().isEmpty()) {
+                            if (killSource.value)
+                                res.remove(source);
+                            return res;
+                        }
 
                         if (!(srcUnit instanceof AssignStmt))
                             return res;
@@ -324,8 +327,7 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                 if (!keepSource)
                                     res.remove(source);
 
-                                boolean isImplicit = source.getDominator() != null
-                                        && source.getDominator().getUnit() != null;
+                                boolean isImplicit = source.getDominator() != null;
                                 if (isImplicit)
                                     res.add(source.deriveConditionalUpdate(assignStmt));
 
@@ -365,21 +367,12 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                     if (manager.getConfig().getImplicitFlowMode().trackControlFlowDependencies()
                                             && !source.getAccessPath().isEmpty()) {
                                         IInfoflowCFG.UnitContainer dom = manager.getICFG().getDominatorOf(srcUnit);
-                                        if (newAbs.getDominator() == null)
-                                            res.add(newAbs.deriveNewAbstractionWithDominator(dom));
+                                        if (newAbs.getDominator() == null && dom.getUnit() != null)
+                                            res.add(newAbs.deriveNewAbstractionWithDominator(dom.getUnit()));
                                     }
                                 }
                             }
                         }
-
-
-
-//                        if (manager.getConfig().getImplicitFlowMode().trackControlFlowDependencies()) {
-//                            IInfoflowCFG.UnitContainer dom = manager.getICFG().getDominatorOf(assignStmt);
-//                            for (Abstraction abs : res) {
-//                                abs.pushDominator(dom);
-//                            }
-//                        }
 
                         return res;
                     }
@@ -487,8 +480,7 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                             AssignStmt assignStmt = (AssignStmt) callStmt;
                             Value left = assignStmt.getLeftOp();
 
-                            boolean isImplicit = source.getDominator() != null
-                                    && source.getDominator().getUnit() != null;
+                            boolean isImplicit = source.getDominator() != null;
 
                             // we only taint the return statement(s) if x is tainted
                             if (aliasing.mayAlias(left, source.getAccessPath().getPlainValue()) && !isImplicit) {
@@ -511,12 +503,11 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                                 res.add(abs);
                                                 if (manager.getConfig().getImplicitFlowMode().trackControlFlowDependencies()) {
 //                                                    IInfoflowCFG.UnitContainer uc = manager.getICFG().getDominatorOf(returnStmt);
-                                                    Unit condUnit = manager.getICFG().getConditionalBranch(returnStmt);
+                                                    Unit condUnit = manager.getICFG().getConditionalBranchIntraprocedural(returnStmt);
                                                     if (condUnit != null) {
-                                                        Abstraction interRet = abs.deriveNewAbstractionWithDominator(new IInfoflowCFG.UnitContainer(condUnit));
+                                                        Abstraction interRet = abs.deriveNewAbstractionWithDominator(condUnit);
                                                         res.add(interRet);
                                                     }
-//                                                    res.add(abs.deriveNewAbstractionWithDominator(uc));
                                                 }
                                             }
                                         }
@@ -785,10 +776,12 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                         setCallSite(source, res, (Stmt) callSite);
 
                         if (manager.getConfig().getImplicitFlowMode().trackControlFlowDependencies()) {
-                            IInfoflowCFG.UnitContainer dominator = manager.getICFG().getDominatorOf(callSite);
-                            if (dominator.getUnit() != returnSite) {
+                            Unit condUnit = manager.getICFG().getConditionalBranchIntraprocedural(callSite);
+                            if (condUnit != null) {
                                 for (Abstraction abs : res) {
-                                    res.add(abs.deriveNewAbstractionWithDominator(dominator));
+                                    if (abs.getAccessPath().isEmpty())
+                                        continue;
+                                    res.add(abs.deriveNewAbstractionWithDominator(condUnit));
                                 }
                             }
                         }
@@ -864,8 +857,7 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                         // CallFlow takes care of tainting the return value
                         if (callStmt instanceof AssignStmt
                                 && aliasing.mayAlias(((AssignStmt) callStmt).getLeftOp(), source.getAccessPath().getPlainValue())) {
-                            boolean isImplicit = source.getDominator() != null
-                                    && source.getDominator().getUnit() != null;
+                            boolean isImplicit = source.getDominator() != null;
                             if (isImplicit) {
                                 res.add(source.deriveConditionalUpdate(callStmt));
                             }

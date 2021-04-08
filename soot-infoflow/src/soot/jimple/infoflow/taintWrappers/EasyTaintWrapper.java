@@ -372,7 +372,7 @@ public class EasyTaintWrapper extends AbstractTaintWrapper implements IReversibl
 				taints.add(taintedPath);
 
 				if (wrapType == MethodWrapType.CreateTaint && taintedAbs.getDominator() != null
-						&& taintedAbs.getDominator().getUnit() != null)
+						&& taintedAbs.getDominator() != null)
 					taints.add(AccessPath.getEmptyAccessPath());
 			}
 

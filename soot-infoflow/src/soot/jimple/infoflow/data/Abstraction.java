@@ -75,7 +75,7 @@ public class Abstraction implements Cloneable, FastSolverLinkedNode<Abstraction,
 	 * branch. Do not use the synchronized Stack class here to avoid deadlocks.
 	 */
 	protected List<UnitContainer> postdominators = null;
-	protected UnitContainer dominator = null;
+	protected Unit dominator = null;
 	protected boolean isImplicit = false;
 
 	/**
@@ -420,7 +420,7 @@ public class Abstraction implements Cloneable, FastSolverLinkedNode<Abstraction,
 		return uc.getMethod() == sm;
 	}
 
-	public Abstraction deriveNewAbstractionWithDominator(UnitContainer dominator, Stmt stmt) {
+	public Abstraction deriveNewAbstractionWithDominator(Unit dominator, Stmt stmt) {
 		Abstraction abs = deriveNewAbstractionMutable(accessPath, stmt);
 		if (abs == null)
 			return null;
@@ -428,7 +428,7 @@ public class Abstraction implements Cloneable, FastSolverLinkedNode<Abstraction,
 		abs.setDominator(dominator);
 		return abs;
 	}
-	public Abstraction deriveNewAbstractionWithDominator(UnitContainer dominator) {
+	public Abstraction deriveNewAbstractionWithDominator(Unit dominator) {
 		return deriveNewAbstractionWithDominator(dominator, null);
 	}
 
@@ -440,23 +440,23 @@ public class Abstraction implements Cloneable, FastSolverLinkedNode<Abstraction,
 		Abstraction abs = deriveNewAbstractionMutable(ap, stmt);
 		if (abs == null)
 			return null;
-
+		abs.setTurnUnit(stmt);
 		abs.setDominator(null);
 		return abs;
 	}
 
-	public void setDominator(UnitContainer dominator) {
+	public void setDominator(Unit dominator) {
 		this.dominator = dominator;
 	}
 
-	public UnitContainer getDominator() {
+	public Unit getDominator() {
 		return this.dominator;
 	}
 
 	public boolean isDominator(Unit u) {
 		if (dominator == null)
 			return false;
-		return dominator.getUnit() == u;
+		return dominator == u;
 	}
 
 	@Override
