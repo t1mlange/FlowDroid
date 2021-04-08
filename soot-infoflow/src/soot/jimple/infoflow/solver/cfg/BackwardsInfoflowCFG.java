@@ -13,6 +13,7 @@ import soot.jimple.toolkits.ide.icfg.BackwardsInterproceduralCFG;
 import soot.toolkits.graph.DirectedGraph;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Inverse interprocedural control-flow graph for the infoflow solver
@@ -122,7 +123,6 @@ public class BackwardsInfoflowCFG extends InfoflowCFG {
 		worklist.removeIf(doneSet::contains);
 		doneSet.addAll(worklist);
 		// firstRun prevents taking the queried statement as a call site
-		boolean firstRun = true;
 		while (worklist.size() > 0) {
 			Unit item = worklist.remove(0);
 
@@ -130,8 +130,8 @@ public class BackwardsInfoflowCFG extends InfoflowCFG {
 				conditionals.add(item);
 
 			// call sites
-			if (!firstRun && item instanceof Stmt && ((Stmt) item).containsInvokeExpr()) {
-				List<Unit> entryPoints = new ArrayList<>(getPredsOfCallAt(item));
+			if (item instanceof Stmt && ((Stmt) item).containsInvokeExpr()) {
+				List<Unit> entryPoints = getPredsOf(item).stream().filter(pred -> getMethodOf(pred) != sm).collect(Collectors.toList());
 				entryPoints.removeIf(doneSet::contains);
 				for (Unit entryPoint : entryPoints) {
 					getConditionalsRecursive(entryPoint, conditionals, doneSet);
@@ -150,7 +150,6 @@ public class BackwardsInfoflowCFG extends InfoflowCFG {
 			preds.removeIf(doneSet::contains);
 			worklist.addAll(preds);
 			doneSet.addAll(preds);
-			firstRun = false;
 		}
 	}
 

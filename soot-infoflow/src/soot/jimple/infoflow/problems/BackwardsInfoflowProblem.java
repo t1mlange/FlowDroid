@@ -776,12 +776,20 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                         setCallSite(source, res, (Stmt) callSite);
 
                         if (manager.getConfig().getImplicitFlowMode().trackControlFlowDependencies()) {
-                            Unit condUnit = manager.getICFG().getConditionalBranchIntraprocedural(callSite);
-                            if (condUnit != null) {
+//                            Unit condUnit = manager.getICFG().getConditionalBranchIntraprocedural(callSite);
+//                            if (condUnit != null) {
+//                                for (Abstraction abs : res) {
+//                                    if (abs.getAccessPath().isEmpty())
+//                                        continue;
+//                                    res.add(abs.deriveNewAbstractionWithDominator(condUnit));
+//                                }
+//                            }
+                            IInfoflowCFG.UnitContainer dominator = manager.getICFG().getDominatorOf(callSite);
+                            if (dominator.getUnit() != null) {
                                 for (Abstraction abs : res) {
                                     if (abs.getAccessPath().isEmpty())
                                         continue;
-                                    res.add(abs.deriveNewAbstractionWithDominator(condUnit));
+                                    res.add(abs.deriveNewAbstractionWithDominator(dominator.getUnit()));
                                 }
                             }
                         }
