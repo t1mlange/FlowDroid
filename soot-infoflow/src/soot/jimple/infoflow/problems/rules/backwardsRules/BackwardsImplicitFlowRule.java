@@ -95,9 +95,11 @@ public class BackwardsImplicitFlowRule extends AbstractTaintPropagationRule {
         if (!source.getAccessPath().isEmpty() && source.isAbstractionActive()
                 && source.getPredecessor() != null && !source.getPredecessor().isAbstractionActive()) {
             // We maybe turned around inside a conditional, so we reconstruct the condition dominator
-            Unit condUnit = manager.getICFG().getConditionalBranchIntraprocedural(stmt);
-            // No conditional on the intraprocedural path -> no need to search for one
-            if (condUnit != null) {
+            // Also, we lost track of the dominators in the alias search. Thus, this is interprocedural.
+            // See ImplicitTests#conditionalAliasingTest
+            List<Unit> condUnits = manager.getICFG().getConditionalBranchesInterprocedural(stmt);
+            // No condition path -> no need to search for one
+            for (Unit condUnit : condUnits) {
                 Abstraction abs = source.deriveNewAbstractionWithDominator(condUnit);
                 if (abs != null)
                     manager.getForwardSolver().processEdge(new PathEdge<>(d1, stmt, abs));

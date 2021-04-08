@@ -106,7 +106,7 @@ public class BackwardsInfoflowCFG extends InfoflowCFG {
 	}
 
 	/**
-	 * Finds all possible conditionals recursive
+	 * Finds all possible interprocedural conditionals recursive
 	 * @param unit start unit
 	 * @param conditionals result list
 	 * @param doneSet already processed units
