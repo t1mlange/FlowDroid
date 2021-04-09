@@ -144,7 +144,7 @@ public class BackwardsSourcePropagationRule extends AbstractTaintPropagationRule
 		final IReversibleSourceSinkManager ssm = (IReversibleSourceSinkManager) manager.getSourceSinkManager();
 
 		// We only report leaks for active taints, not for alias queries
-		if (source.isAbstractionActive() && !source.getAccessPath().isStaticFieldRef()) {
+		if (source.isAbstractionActive() && !source.getAccessPath().isStaticFieldRef() && !source.getAccessPath().isEmpty()) {
 			// Is the taint even visible inside the callee?
 			if (!stmt.containsInvokeExpr() || isTaintVisibleInCallee(stmt, source)) {
 				// Get the sink descriptor

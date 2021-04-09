@@ -155,8 +155,18 @@ public class BackwardsInfoflowCFG extends InfoflowCFG {
 
 	private List<Unit> sameLevelPredecessors(DirectedGraph<Unit> graph, Unit u) {
 		List<Unit> preds = graph.getPredsOf(u);
-		if (preds.size() <= 1)
-			return preds;
+		if (preds.size() <= 1) {
+			if (preds.size() == 0)
+				return preds;
+			// maybe we encountered an if with no body
+			Unit pred = preds.get(0);
+			if (!pred.branches())
+				return preds;
+
+			UnitContainer postdom = getPostdominatorOf(pred);
+			if (postdom.getUnit() != u)
+				return preds;
+		}
 
 		UnitContainer dom = getDominatorOf(u);
 		if (dom.getUnit() != null)

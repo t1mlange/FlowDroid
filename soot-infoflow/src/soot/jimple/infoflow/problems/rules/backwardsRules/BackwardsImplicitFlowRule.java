@@ -160,32 +160,32 @@ public class BackwardsImplicitFlowRule extends AbstractTaintPropagationRule {
     @Override
     public Collection<Abstraction> propagateCallToReturnFlow(Abstraction d1, Abstraction source, Stmt stmt, ByReferenceBoolean killSource, ByReferenceBoolean killAll) {
         // Every call to a sink inside a conditional is considered a taint
-//        if (source == getZeroValue() && manager.getSourceSinkManager() instanceof IReversibleSourceSinkManager) {
-//            killSource.value = true;
-//            IReversibleSourceSinkManager ssm = (IReversibleSourceSinkManager) manager.getSourceSinkManager();
-//
-//            SourceInfo sink = ssm.getInverseSinkInfo(stmt, manager);
-//            if (sink != null) {
-//                HashSet<Abstraction> res = new HashSet<>();
-//                SootMethod sm = manager.getICFG().getMethodOf(stmt);
-//
-//                List<Unit> condUnits = manager.getICFG().getConditionalBranchesInterprocedural(stmt);
-//                for (Unit condUnit : condUnits) {
-//                    Abstraction abs = new Abstraction(sink.getDefinition(), AccessPath.getEmptyAccessPath(), stmt,
-//                            sink.getUserData(), false, false);
-//                    abs.setDominator(condUnit);
-//                    res.add(abs);
-//                }
-//
-//                if (!sm.isStatic()) {
-//                    AccessPath thisAp = manager.getAccessPathFactory().createAccessPath(sm.getActiveBody().getThisLocal(), false);
-//                    Abstraction thisTaint = new Abstraction(sink.getDefinition(), thisAp, stmt, sink.getUserData(), false, false);
-//                    res.add(thisTaint);
-//                }
-//
-//                return res;
-//            }
-//        }
+        if (source == getZeroValue() && manager.getSourceSinkManager() instanceof IReversibleSourceSinkManager) {
+            killSource.value = true;
+            IReversibleSourceSinkManager ssm = (IReversibleSourceSinkManager) manager.getSourceSinkManager();
+
+            SourceInfo sink = ssm.getInverseSinkInfo(stmt, manager);
+            if (sink != null) {
+                HashSet<Abstraction> res = new HashSet<>();
+                SootMethod sm = manager.getICFG().getMethodOf(stmt);
+
+                List<Unit> condUnits = manager.getICFG().getConditionalBranchesInterprocedural(stmt);
+                for (Unit condUnit : condUnits) {
+                    Abstraction abs = new Abstraction(sink.getDefinition(), AccessPath.getEmptyAccessPath(), stmt,
+                            sink.getUserData(), false, false);
+                    abs.setDominator(condUnit);
+                    res.add(abs);
+                }
+
+                if (!sm.isStatic()) {
+                    AccessPath thisAp = manager.getAccessPathFactory().createAccessPath(sm.getActiveBody().getThisLocal(), false);
+                    Abstraction thisTaint = new Abstraction(sink.getDefinition(), thisAp, stmt, sink.getUserData(), false, false);
+                    res.add(thisTaint);
+                }
+
+                return res;
+            }
+        }
 
         if (source == getZeroValue())
             return null;
@@ -196,6 +196,9 @@ public class BackwardsImplicitFlowRule extends AbstractTaintPropagationRule {
             return null;
         }
 
+        if (source.getAccessPath().isEmpty())
+            return null;
+
         UnitContainer dominator = manager.getICFG().getDominatorOf(stmt);
         // Taint enters a conditional branch
         // Only handle cases where the taint is not part of the statement
@@ -204,7 +207,8 @@ public class BackwardsImplicitFlowRule extends AbstractTaintPropagationRule {
                 source.getAccessPath().getPlainValue());
         taintAffectedByStatement |= stmt.containsInvokeExpr() && stmt.getInvokeExpr().getArgs().stream()
                 .anyMatch(a -> getAliasing().mayAlias(source.getAccessPath().getPlainValue(), a));
-        if (dominator.getUnit() != null && !taintAffectedByStatement) {
+        List<Unit> succs = manager.getICFG().getSuccsOf(stmt);
+        if (dominator.getUnit() != null && !taintAffectedByStatement && succs.size() > 1) {
             Abstraction abs = source.deriveNewAbstractionWithDominator(dominator.getUnit(), stmt);
             return Collections.singleton(abs);
         }
