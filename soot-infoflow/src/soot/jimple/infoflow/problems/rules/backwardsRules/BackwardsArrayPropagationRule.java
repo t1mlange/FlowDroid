@@ -75,8 +75,7 @@ public class BackwardsArrayPropagationRule extends AbstractTaintPropagationRule 
 				// track index
 				AccessPath ap;
 				if (getManager().getConfig().getImplicitFlowMode().trackArrayAccesses()) {
-					ap = getManager().getAccessPathFactory().copyWithNewValue(source.getAccessPath(), rightIndex,
-							null, false, true, ArrayTaintType.Contents);
+					ap = getManager().getAccessPathFactory().createAccessPath(rightIndex, false);
 					newAbs = source.deriveNewAbstraction(ap, assignStmt);
 					res.add(newAbs);
 				}

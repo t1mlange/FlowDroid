@@ -31,7 +31,7 @@ import java.util.*;
  * @author Tim Lange
  */
 public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
-    private final static boolean DEBUG_PRINT = true;
+    private final static boolean DEBUG_PRINT = false;
     private final static boolean ONLY_CALLS = false;
 
     private final PropagationRuleManager propagationRules;
@@ -419,10 +419,6 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                             taintPropagationHandler.notifyFlowIn(stmt, source, manager,
                                     TaintPropagationHandler.FlowFunctionType.CallFlowFunction);
 
-
-                        if (stmt.toString().contains("$stack5 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(java.lang.String)>($stack4)"))
-                            source=source;
-
                         Set<Abstraction> res = computeTargetsInternal(d1, source.isAbstractionActive() ? source : source.getActiveCopy());
                         if (res != null) {
                             for (Abstraction abs : res)
@@ -436,8 +432,6 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                     }
 
                     private Set<Abstraction> computeTargetsInternal(Abstraction d1, Abstraction source) {
-                        if (source.toString().startsWith("$z0"))
-                            d1=d1;
                         // Respect user settings
                         if (manager.getConfig().getStopAfterFirstFlow() && !results.isEmpty())
                             return null;
