@@ -126,3 +126,10 @@ ThreadingTest,AsyncTask1,22,2
 ThreadingTest,JavaThread1,34,7
 ThreadingTest,JavaThread2,62,10
 ThreadingTest,Looper1,49,3
+ImplicitFlowTest,ImplicitFlow6,18,0
+ImplicitFlowTest,ImplicitFlow6,18,0
+ImplicitFlowTest,ImplicitFlow6,18,0
+ImplicitFlowTest,ImplicitFlow6,18,0
+ImplicitFlowTest,ImplicitFlow6,18,0
+ImplicitFlowTest,ImplicitFlow6,18,0
+ImplicitFlowTest,ImplicitFlow6,18,0

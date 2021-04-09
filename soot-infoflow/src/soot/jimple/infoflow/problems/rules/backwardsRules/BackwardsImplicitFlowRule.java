@@ -136,6 +136,8 @@ public class BackwardsImplicitFlowRule extends AbstractTaintPropagationRule {
 
     @Override
     public Collection<Abstraction> propagateCallFlow(Abstraction d1, Abstraction source, Stmt stmt, SootMethod dest, ByReferenceBoolean killAll) {
+        assert !source.getAccessPath().isEmpty() || source.getDominator() != null;
+
         if (source == getZeroValue())
             return null;
 
@@ -158,32 +160,32 @@ public class BackwardsImplicitFlowRule extends AbstractTaintPropagationRule {
     @Override
     public Collection<Abstraction> propagateCallToReturnFlow(Abstraction d1, Abstraction source, Stmt stmt, ByReferenceBoolean killSource, ByReferenceBoolean killAll) {
         // Every call to a sink inside a conditional is considered a taint
-        if (source == getZeroValue() && manager.getSourceSinkManager() instanceof IReversibleSourceSinkManager) {
-            killSource.value = true;
-            IReversibleSourceSinkManager ssm = (IReversibleSourceSinkManager) manager.getSourceSinkManager();
-
-            SourceInfo sink = ssm.getInverseSinkInfo(stmt, manager);
-            if (sink != null) {
-                HashSet<Abstraction> res = new HashSet<>();
-                SootMethod sm = manager.getICFG().getMethodOf(stmt);
-
-                List<Unit> condUnits = manager.getICFG().getConditionalBranchesInterprocedural(stmt);
-                for (Unit condUnit : condUnits) {
-                    Abstraction abs = new Abstraction(sink.getDefinition(), AccessPath.getEmptyAccessPath(), stmt,
-                            sink.getUserData(), false, false);
-                    abs.setDominator(condUnit);
-                    res.add(abs);
-                }
-
-                if (!sm.isStatic()) {
-                    AccessPath thisAp = manager.getAccessPathFactory().createAccessPath(sm.getActiveBody().getThisLocal(), false);
-                    Abstraction thisTaint = new Abstraction(sink.getDefinition(), thisAp, stmt, sink.getUserData(), false, false);
-                    res.add(thisTaint);
-                }
-
-                return res;
-            }
-        }
+//        if (source == getZeroValue() && manager.getSourceSinkManager() instanceof IReversibleSourceSinkManager) {
+//            killSource.value = true;
+//            IReversibleSourceSinkManager ssm = (IReversibleSourceSinkManager) manager.getSourceSinkManager();
+//
+//            SourceInfo sink = ssm.getInverseSinkInfo(stmt, manager);
+//            if (sink != null) {
+//                HashSet<Abstraction> res = new HashSet<>();
+//                SootMethod sm = manager.getICFG().getMethodOf(stmt);
+//
+//                List<Unit> condUnits = manager.getICFG().getConditionalBranchesInterprocedural(stmt);
+//                for (Unit condUnit : condUnits) {
+//                    Abstraction abs = new Abstraction(sink.getDefinition(), AccessPath.getEmptyAccessPath(), stmt,
+//                            sink.getUserData(), false, false);
+//                    abs.setDominator(condUnit);
+//                    res.add(abs);
+//                }
+//
+//                if (!sm.isStatic()) {
+//                    AccessPath thisAp = manager.getAccessPathFactory().createAccessPath(sm.getActiveBody().getThisLocal(), false);
+//                    Abstraction thisTaint = new Abstraction(sink.getDefinition(), thisAp, stmt, sink.getUserData(), false, false);
+//                    res.add(thisTaint);
+//                }
+//
+//                return res;
+//            }
+//        }
 
         if (source == getZeroValue())
             return null;
@@ -194,38 +196,33 @@ public class BackwardsImplicitFlowRule extends AbstractTaintPropagationRule {
             return null;
         }
 
+        UnitContainer dominator = manager.getICFG().getDominatorOf(stmt);
+        // Taint enters a conditional branch
+        // Only handle cases where the taint is not part of the statement
+        // Other cases are in the core flow functions to prevent code duplication
+        boolean taintAffectedByStatement = stmt instanceof DefinitionStmt && getAliasing().mayAlias(((DefinitionStmt) stmt).getLeftOp(),
+                source.getAccessPath().getPlainValue());
+        taintAffectedByStatement |= stmt.containsInvokeExpr() && stmt.getInvokeExpr().getArgs().stream()
+                .anyMatch(a -> getAliasing().mayAlias(source.getAccessPath().getPlainValue(), a));
+        if (dominator.getUnit() != null && !taintAffectedByStatement) {
+            Abstraction abs = source.deriveNewAbstractionWithDominator(dominator.getUnit(), stmt);
+            return Collections.singleton(abs);
+        }
+
         return null;
     }
 
     @Override
     public Collection<Abstraction> propagateReturnFlow(Collection<Abstraction> callerD1s, Abstraction source, Stmt stmt, Stmt retSite, Stmt callSite, ByReferenceBoolean killAll) {
+        assert !source.getAccessPath().isEmpty() || source.getDominator() != null;
+
         if (source == getZeroValue())
             return null;
 
         if (source.getAccessPath().isEmpty()) {
-            if (source.getDominator() == null) {
-                // This signals a sink call in the statement or an update
-                // which we couldn't reason about.
-//                HashSet<Abstraction> res = new HashSet<>();
-//                // This taint catches a return into a conditonal branch
-//                List<Unit> condUnit = manager.getICFG().getConditionalBranches(callSite);
-//                if (condUnit != null) {
-//                    Abstraction intraRet = source.deriveNewAbstractionWithDominator(new UnitContainer(condUnit.get(0)), stmt);
-//                    intraRet.setCorrespondingCallSite(callSite);
-//                    res.add(intraRet);
-//                }
-//
-//                // This signals for transitive callers
-//                Abstraction interRet = source.deriveNewAbstraction(source.getAccessPath(), stmt);
-//                interRet.setCorrespondingCallSite(callSite);
-//                res.add(interRet);
-
-                return null;
-            } else {
-                // Derived from a conditional taint inside the callee
-                // Already has the right dominator
-                return Collections.singleton(source.deriveNewAbstraction(source.getAccessPath(), stmt));
-            }
+            // Derived from a conditional taint inside the callee
+            // Already has the right dominator
+            return Collections.singleton(source.deriveNewAbstraction(source.getAccessPath(), stmt));
         }
 
         SootMethod callee = manager.getICFG().getMethodOf(stmt);

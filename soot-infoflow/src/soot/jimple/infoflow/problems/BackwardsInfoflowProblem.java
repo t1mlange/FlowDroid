@@ -436,6 +436,8 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                     }
 
                     private Set<Abstraction> computeTargetsInternal(Abstraction d1, Abstraction source) {
+                        if (source.toString().startsWith("$z0"))
+                            d1=d1;
                         // Respect user settings
                         if (manager.getConfig().getStopAfterFirstFlow() && !results.isEmpty())
                             return null;
@@ -509,6 +511,15 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                                         res.add(interRet);
                                                     }
                                                 }
+                                            }
+                                        } else if (retVal instanceof Constant
+                                                && manager.getConfig().getImplicitFlowMode().trackControlFlowDependencies()) {
+                                            Abstraction abs = source.deriveConditionalUpdate(stmt);
+                                            abs.setTurnUnit(stmt);
+                                            Unit condUnit = manager.getICFG().getConditionalBranchIntraprocedural(returnStmt);
+                                            if (condUnit != null) {
+                                                Abstraction intraRet = abs.deriveNewAbstractionWithDominator(condUnit);
+                                                res.add(intraRet);
                                             }
                                         }
                                     }
