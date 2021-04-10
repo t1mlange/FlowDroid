@@ -1210,6 +1210,7 @@ public class Infoflow extends AbstractInfoflow {
 					if (getConfig().getLogSourcesAndSinks())
 						collectedSources.add(s);
 					logger.debug("Source found: {} in {}", u, m.getSignature());
+					foundStartingPointHandler(m, s);
 				}
 				if (sourcesSinks.getSinkInfo(s, manager, null) != null) {
 					sinkCount++;
@@ -1221,6 +1222,10 @@ public class Infoflow extends AbstractInfoflow {
 
 		}
 		return sinkCount;
+	}
+
+	protected void foundStartingPointHandler(SootMethod sm, Stmt stmt) {
+		// Do nothing
 	}
 
 	@Override

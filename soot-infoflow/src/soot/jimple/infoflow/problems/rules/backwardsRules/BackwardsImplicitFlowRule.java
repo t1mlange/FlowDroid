@@ -35,7 +35,6 @@ public class BackwardsImplicitFlowRule extends AbstractTaintPropagationRule {
 
         // We leave a conditional and taint the condition
         if (source.isDominator(stmt)) {
-
             // never let empty ap out of conditional
             if (!source.getAccessPath().isEmpty()) {
                 killAll.value = true;

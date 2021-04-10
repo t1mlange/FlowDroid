@@ -434,6 +434,7 @@ public class BackwardsInfoflow extends AbstractInfoflow {
                     if (getConfig().getLogSourcesAndSinks())
                         collectedSinks.add(s);
                     logger.info("Sink found: {} in {}", u, m.getSignature());
+                    foundStartingPointHandler(m, s);
                 }
                 if (ssm.getInverseSourceInfo(s, manager, null) != null) {
                     sourceCount++;
@@ -444,6 +445,10 @@ public class BackwardsInfoflow extends AbstractInfoflow {
             }
         }
         return sourceCount;
+    }
+
+    protected void foundStartingPointHandler(SootMethod sm, Stmt stmt) {
+        // Do nothing
     }
 
     /**
