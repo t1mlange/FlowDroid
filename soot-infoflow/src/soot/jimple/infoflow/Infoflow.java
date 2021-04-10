@@ -420,6 +420,9 @@ public class Infoflow extends AbstractInfoflow {
 					for (SootMethod sm : getMethodsForSeeds(iCfg))
 						sinkCount += scanMethodForSourcesSinks(sourcesSinks, forwardProblem, sm);
 
+					if (config.isStopAfterSourcesSinks())
+						return;
+
 					// We optionally also allow additional seeds to be specified
 					if (additionalSeeds != null)
 						for (String meth : additionalSeeds) {

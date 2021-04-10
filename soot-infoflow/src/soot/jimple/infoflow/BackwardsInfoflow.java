@@ -828,6 +828,8 @@ public class BackwardsInfoflow extends AbstractInfoflow {
 
                     for (SootMethod sm : getMethodsForSeeds(iCfg))
                         sourceCount += scanMethodForSourcesSinks(sourcesSinks, infoflowProblem, sm);
+                    if (config.isStopAfterSourcesSinks())
+                        return;
 
                     // We optionally also allow additional seeds to be specified
                     if (additionalSeeds != null)

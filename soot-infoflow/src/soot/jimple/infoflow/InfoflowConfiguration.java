@@ -1300,6 +1300,7 @@ public class InfoflowConfiguration {
 	private DataFlowDirection dataFlowDirection = DataFlowDirection.Forwards;
 
 	private boolean taintAnalysisEnabled = true;
+	private boolean stopAfterSourcesSinks = false;
 	private boolean incrementalResultReporting = false;
 	private long dataFlowTimeout = 0;
 	private double memoryThreshold = 0.9d;
@@ -1917,6 +1918,13 @@ public class InfoflowConfiguration {
 	 */
 	public void setTaintAnalysisEnabled(boolean taintAnalysisEnabled) {
 		this.taintAnalysisEnabled = taintAnalysisEnabled;
+	}
+
+	public void setStopAfterSourcesSinks(boolean stopAfterSourcesSinks) {
+		this.stopAfterSourcesSinks = stopAfterSourcesSinks;
+	}
+	public boolean isStopAfterSourcesSinks() {
+		return this.stopAfterSourcesSinks;
 	}
 
 	/**
