@@ -636,6 +636,10 @@ public class BackwardsInfoflow extends AbstractInfoflow {
                 taintWrapper, hierarchy, new AccessPathFactory(config), globalTaintManager);
     }
 
+    protected void finishedSourceSinkHandler() {
+
+    }
+
     protected void runAnalysis(ISourceSinkManager sourcesSinks) {
         runAnalysis(sourcesSinks, null);
     }
@@ -834,26 +838,35 @@ public class BackwardsInfoflow extends AbstractInfoflow {
                         int prop = 0;
                         int callee = 0;
                         int caller = 0;
+                        int runtime = 0;
                         for (Stmt source : collectedSources) {
                             SootMethod sourceMethod = iCfg.getMethodOf(source);
                             SourceAnalysis sourceAnalysis = new SourceAnalysis(iCfg.getOrCreateUnitGraph(sourceMethod), sourceMethod, source);
                             prop += sourceAnalysis.getPropagations();
                             callee += sourceAnalysis.getFlowsIntoCallee();
                             caller += sourceAnalysis.getFlowsIntoCaller();
+                            runtime += sourceAnalysis.getRuntime();
                         }
+//                        System.out.println(String.format("Sources: %s Propagations, %s Callee Flows, %s Caller Flows in %s micros", prop, callee, caller, runtime));
+
                         prop = 0;
                         callee = 0;
                         caller = 0;
+                        runtime = 0;
                         for (Stmt sink : collectedSinks) {
                             SootMethod sinkMethod = iCfg.getMethodOf(sink);
                             SinkAnalysis sinkAnalysis = new SinkAnalysis(iCfg.getOrCreateUnitGraph(sinkMethod), sinkMethod, sink);
                             prop += sinkAnalysis.getPropagations();
                             callee += sinkAnalysis.getFlowsIntoCallee();
                             caller += sinkAnalysis.getFlowsIntoCaller();
+                            runtime += sinkAnalysis.getRuntime();
                         }
+//                        System.out.println(String.format("Sinks: %s Propagations, %s Callee Flows, %s Caller Flows in %s micros", prop, callee, caller, runtime));
                     }
-                    if (config.isStopAfterSourcesSinks())
+                    if (config.isStopAfterSourcesSinks()) {
+                        finishedSourceSinkHandler();
                         return;
+                    }
 
                     // We optionally also allow additional seeds to be specified
                     if (additionalSeeds != null)

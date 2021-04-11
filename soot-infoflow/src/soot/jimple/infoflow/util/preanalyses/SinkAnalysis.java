@@ -21,13 +21,16 @@ public class SinkAnalysis extends BackwardFlowAnalysis<Unit, FlowSet<Local>> {
     int flowsIntoCallee = 0;
     int flowsIntoCaller = 0;
     int propagations = 0;
+    int runtime;
 
     public SinkAnalysis(DirectedGraph<Unit> graph, SootMethod method, Stmt sink) {
         super(graph);
         this.doAnalysis();
         this.method = method;
         this.sink = sink;
+        long timeBefore = System.nanoTime();
         doAnalysis();
+        this.runtime = (int) Math.round((System.nanoTime() - timeBefore) / 1E3);
     }
 
     private Local getLocal(Value value) {
@@ -131,8 +134,8 @@ public class SinkAnalysis extends BackwardFlowAnalysis<Unit, FlowSet<Local>> {
                 }
             }
             // this
-            Local thisLocal = method.getActiveBody().getThisLocal();
-            if (inSet.contains(thisLocal)) {
+            Local thisLocal = method.isStatic() ? null : method.getActiveBody().getThisLocal();
+            if (thisLocal != null && inSet.contains(thisLocal)) {
                 flowsIntoCaller++;
                 outSet.remove(thisLocal);
             }
@@ -163,5 +166,8 @@ public class SinkAnalysis extends BackwardFlowAnalysis<Unit, FlowSet<Local>> {
     }
     public int getPropagations() {
         return propagations;
+    }
+    public int getRuntime() {
+        return runtime;
     }
 }

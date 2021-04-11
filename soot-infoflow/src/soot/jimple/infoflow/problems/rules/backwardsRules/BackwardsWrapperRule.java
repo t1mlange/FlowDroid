@@ -11,13 +11,12 @@ import soot.jimple.infoflow.problems.TaintPropagationResults;
 import soot.jimple.infoflow.problems.rules.AbstractTaintPropagationRule;
 import soot.jimple.infoflow.sourcesSinks.manager.IReversibleSourceSinkManager;
 import soot.jimple.infoflow.sourcesSinks.manager.SinkInfo;
-import soot.jimple.infoflow.sourcesSinks.manager.SourceInfo;
 import soot.jimple.infoflow.taintWrappers.EasyTaintWrapper;
 import soot.jimple.infoflow.taintWrappers.IReversibleTaintWrapper;
 import soot.jimple.infoflow.taintWrappers.ITaintPropagationWrapper;
 import soot.jimple.infoflow.util.ByReferenceBoolean;
 import soot.jimple.infoflow.util.TypeUtils;
-import sun.java2d.opengl.GLXSurfaceData;
+import soot.jimple.infoflow.util.preanalyses.SingleLiveVariableAnalysis;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -133,7 +132,7 @@ public class BackwardsWrapperRule extends AbstractTaintPropagationRule {
                     abs.setTurnUnit(stmt);
                 } else {
                     // no need to search for aliases if the access path didn't change
-                    if (!absAp.equals(sourceAp) && !absAp.isEmpty() && (retValTainted && !canOmitAliasing(abs, stmt))) {
+                    if (!absAp.equals(sourceAp) && !absAp.isEmpty() && (retValTainted && canOmitAliasing(abs, stmt))) {
                         boolean isBasicString = TypeUtils.isStringType(absAp.getBaseType()) && !absAp.getCanHaveImmutableAliases()
                                 && !getAliasing().isStringConstructorCall(stmt);
                         boolean taintsObjectValue = absAp.getBaseType() instanceof RefType && !isBasicString
@@ -202,6 +201,8 @@ public class BackwardsWrapperRule extends AbstractTaintPropagationRule {
             return false;
         InstanceInvokeExpr ie = (InstanceInvokeExpr) assignStmt.getRightOp();
 
+        if (!(ie.getBase() instanceof Local))
+            return false;
         if (ie.getBase() == assignStmt.getLeftOp())
             return false;
         if (!getAliasing().mayAlias(ie.getBase(), abs.getAccessPath().getPlainValue()))
@@ -210,7 +211,14 @@ public class BackwardsWrapperRule extends AbstractTaintPropagationRule {
         if (!excludeList.contains(ie.getMethod().getSignature()))
             return false;
 
-        return !manager.getICFG().isReadInBetween(callStmt, abs.getTurnUnit(), ie.getBase());
+        SootMethod sm = manager.getICFG().getMethodOf(callStmt);
+        // We can only reason about intraprocedural
+        if (manager.getICFG().getMethodOf(abs.getTurnUnit()) != sm)
+            return false;
+
+        SingleLiveVariableAnalysis slva = new SingleLiveVariableAnalysis(manager.getICFG().getOrCreateUnitGraph(sm), (Local) ie.getBase(), abs.getTurnUnit());
+//        System.out.println("Spent " + slva.getRuntimeInMicroseconds() + "micros in live variables");
+        return slva.canOmitAlias(callStmt);
     }
 
     @Override

@@ -612,35 +612,6 @@ public class InfoflowCFG implements IInfoflowCFG {
 	}
 
 	@Override
-	public boolean isReadInBetween(Unit start, Unit end, Value value) {
-		SootMethod sm = getMethodOf(start);
-		if (sm != getMethodOf(end))
-			return false;
-
-		DirectedGraph<Unit> graph = getOrCreateUnitGraph(sm);
-		List<Unit> worklist = new ArrayList<>(graph.getSuccsOf(start));
-		Set<Unit> doneSet = new HashSet<>(worklist);
-		while (!worklist.isEmpty()) {
-			Unit item = worklist.remove(0);
-			if (item == end)
-				return false;
-
-			for (ValueBox use : item.getUseBoxes()) {
-				if (use.getValue() == value)
-					return true;
-			}
-
-			for (Unit succ : graph.getSuccsOf(item)) {
-				if (!doneSet.contains(succ))
-					worklist.add(succ);
-			}
-			doneSet.addAll(graph.getSuccsOf(item));
-		}
-
-		return false;
-	}
-
-	@Override
 	public void purge() {
 		methodSideEffects.clear();
 		staticFieldUses.clear();

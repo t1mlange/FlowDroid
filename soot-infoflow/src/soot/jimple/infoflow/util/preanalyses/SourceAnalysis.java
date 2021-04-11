@@ -20,12 +20,16 @@ public class SourceAnalysis extends ForwardFlowAnalysis<Unit, FlowSet<Local>> {
     int flowsIntoCallee = 0;
     int flowsIntoCaller = 0;
     int propagations = 0;
+    int runtime ;
 
     public SourceAnalysis(DirectedGraph<Unit> graph, SootMethod method, Stmt source) {
         super(graph);
         this.method = method;
         this.source = source;
+
+        long timeBefore = System.nanoTime();
         doAnalysis();
+        this.runtime = (int) Math.round((System.nanoTime() - timeBefore) / 1E3);
     }
 
     private Local getLocal(Value value) {
@@ -133,8 +137,8 @@ public class SourceAnalysis extends ForwardFlowAnalysis<Unit, FlowSet<Local>> {
                 }
             }
             // this
-            Local thisLocal = method.getActiveBody().getThisLocal();
-            if (inSet.contains(thisLocal)) {
+            Local thisLocal = method.isStatic() ? null : method.getActiveBody().getThisLocal();
+            if (thisLocal != null && inSet.contains(thisLocal)) {
                 flowsIntoCaller++;
                 outSet.remove(thisLocal);
             }
@@ -165,5 +169,8 @@ public class SourceAnalysis extends ForwardFlowAnalysis<Unit, FlowSet<Local>> {
     }
     public int getPropagations() {
         return propagations;
+    }
+    public int getRuntime() {
+        return runtime;
     }
 }

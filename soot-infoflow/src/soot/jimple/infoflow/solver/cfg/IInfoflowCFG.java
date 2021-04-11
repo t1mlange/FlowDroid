@@ -246,20 +246,9 @@ public interface IInfoflowCFG extends BiDiInterproceduralCFG<Unit, SootMethod> {
 	 */
 	public boolean isReflectiveCallSite(InvokeExpr iexpr);
 
-
 	/**
-	 * Checks whether the value is read between two units of the same method
-	 * @param start start point, exclusive
-	 * @param end end point, exclusive
-	 * @param value value to search for
-	 * @return True if read in between
+	 * Clears all caches and temporary data from memory. This method has no effect
+	 * on the functional behavior of the class.
 	 */
-	public boolean isReadInBetween(Unit start, Unit end, Value value);
-
-		/**
-         * Clears all caches and temporary data from memory. This method has no effect
-         * on the functional behavior of the class.
-         */
 	public void purge();
-
 }
