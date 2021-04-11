@@ -4,6 +4,7 @@ import heros.solver.PathEdge;
 import soot.*;
 import soot.jimple.*;
 import soot.jimple.infoflow.InfoflowManager;
+import soot.jimple.infoflow.aliasing.Aliasing;
 import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.data.AccessPath;
 import soot.jimple.infoflow.problems.TaintPropagationResults;
@@ -29,8 +30,6 @@ public class BackwardsImplicitFlowRule extends AbstractTaintPropagationRule {
     public Collection<Abstraction> propagateNormalFlow(Abstraction d1, Abstraction source, Stmt stmt, Stmt destStmt, ByReferenceBoolean killSource, ByReferenceBoolean killAll) {
         assert !source.getAccessPath().isEmpty() || source.getDominator() != null;
 
-        if (source.getDominator() != null && source.getDominator().toString().contains("x0"))
-            d1=d1;
         if (source == getZeroValue())
             return null;
 
@@ -120,19 +119,6 @@ public class BackwardsImplicitFlowRule extends AbstractTaintPropagationRule {
             return null;
         }
 
-
-        if (source.getExceptionThrown() && stmt instanceof ThrowStmt) {
-            Unit condUnit = manager.getICFG().getConditionalBranchIntraprocedural(stmt);
-            // No conditional on the intraprocedural path -> no need to search for one
-            if (condUnit != null) {
-                AccessPath ap = manager.getAccessPathFactory().createAccessPath(((ThrowStmt) stmt).getOp(), false);
-                Abstraction absCatch = source.deriveNewAbstractionOnCatch(ap);
-                Abstraction abs = absCatch.deriveNewAbstractionWithDominator(condUnit);
-                return Collections.singleton(abs);
-            }
-            return null;
-        }
-
         // Taint enters a conditional branch
         // Only handle cases where the taint is not part of the statement
         // Other cases are in the core flow functions to prevent code duplication
@@ -152,6 +138,9 @@ public class BackwardsImplicitFlowRule extends AbstractTaintPropagationRule {
         assert !source.getAccessPath().isEmpty() || source.getDominator() != null;
 
         if (source == getZeroValue())
+            return null;
+        Aliasing aliasing = getAliasing();
+        if (aliasing == null)
             return null;
 
         // Make sure no conditional taint leaves the conditional branch
@@ -175,6 +164,35 @@ public class BackwardsImplicitFlowRule extends AbstractTaintPropagationRule {
         if (source.getAccessPath().isEmpty()) {
             killAll.value = true;
             return null;
+        }
+
+        // Taint constant return values
+        if (stmt instanceof AssignStmt) {
+            AssignStmt assignStmt = (AssignStmt) stmt;
+            Value left = assignStmt.getLeftOp();
+
+            boolean isImplicit = source.getDominator() != null;
+
+            if (aliasing.mayAlias(left, source.getAccessPath().getPlainValue()) && !isImplicit) {
+                Set<Abstraction> res = new HashSet<>();
+                for (Unit unit : dest.getActiveBody().getUnits()) {
+                    if (unit instanceof ReturnStmt) {
+                        ReturnStmt returnStmt = (ReturnStmt) unit;
+                        Value retVal = returnStmt.getOp();
+
+                        if (retVal instanceof Constant) {
+                            Abstraction abs = source.deriveConditionalUpdate(stmt);
+                            abs.setTurnUnit(stmt);
+                            Unit condUnit = manager.getICFG().getConditionalBranchIntraprocedural(returnStmt);
+                            if (condUnit != null) {
+                                Abstraction intraRet = abs.deriveNewAbstractionWithDominator(condUnit);
+                                res.add(intraRet);
+                            }
+                        }
+                    }
+                }
+                return res;
+            }
         }
 
         return null;
@@ -231,20 +249,7 @@ public class BackwardsImplicitFlowRule extends AbstractTaintPropagationRule {
         if (source.getAccessPath().isEmpty())
             return null;
 
-        UnitContainer dominator = manager.getICFG().getDominatorOf(stmt);
-        // Taint enters a conditional branch
-        // Only handle cases where the taint is not part of the statement
-        // Other cases are in the core flow functions to prevent code duplication
-        boolean taintAffectedByStatement = stmt instanceof DefinitionStmt && getAliasing().mayAlias(((DefinitionStmt) stmt).getLeftOp(),
-                source.getAccessPath().getPlainValue());
-        taintAffectedByStatement |= stmt.containsInvokeExpr() && stmt.getInvokeExpr().getArgs().stream()
-                .anyMatch(a -> getAliasing().mayAlias(source.getAccessPath().getPlainValue(), a));
-        List<Unit> succs = manager.getICFG().getSuccsOf(stmt);
-        if (dominator.getUnit() != null && !taintAffectedByStatement && succs.size() > 1) {
-            Abstraction abs = source.deriveNewAbstractionWithDominator(dominator.getUnit(), stmt);
-            return Collections.singleton(abs);
-        }
-
+        // Taint entering a conditional is inside the main flow functions
         return null;
     }
 

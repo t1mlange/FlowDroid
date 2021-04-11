@@ -31,7 +31,7 @@ import java.util.*;
  * @author Tim Lange
  */
 public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
-    private final static boolean DEBUG_PRINT = true;
+    private final static boolean DEBUG_PRINT = false;
     private final static boolean ONLY_CALLS = false;
 
     private final PropagationRuleManager propagationRules;
@@ -347,14 +347,8 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                             == InfoflowConfiguration.StaticFieldTrackingMode.ContextFlowInsensitive)
                                         manager.getGlobalTaintManager().addToGlobalTaintState(newAbs);
                                     else {
+                                        enterConditional(newAbs, assignStmt, destUnit);
                                         res.add(newAbs);
-
-                                        if (newAbs.getDominator() == null && manager.getConfig().getImplicitFlowMode().trackControlFlowDependencies()
-                                                && !source.getAccessPath().isEmpty()) {
-                                            IInfoflowCFG.UnitContainer dom = manager.getICFG().getDominatorOf(srcUnit);
-                                            if (dom.getUnit() != null && dom.getUnit() != destUnit)
-                                                newAbs.setDominator(dom.getUnit());
-                                        }
 
                                         if (isPrimitiveOrStringBase(source)) {
                                             newAbs.setTurnUnit(srcUnit);
@@ -505,15 +499,6 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
 
                                                 res.add(abs);
                                             }
-                                        } else if (retVal instanceof Constant
-                                                && manager.getConfig().getImplicitFlowMode().trackControlFlowDependencies()) {
-                                            Abstraction abs = source.deriveConditionalUpdate(stmt);
-                                            abs.setTurnUnit(stmt);
-                                            Unit condUnit = manager.getICFG().getConditionalBranchIntraprocedural(returnStmt);
-                                            if (condUnit != null) {
-                                                Abstraction intraRet = abs.deriveNewAbstractionWithDominator(condUnit);
-                                                res.add(intraRet);
-                                            }
                                         }
                                     }
                                 }
@@ -604,15 +589,6 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                 };
             }
 
-            private void enterConditional(Abstraction abs, Unit callSite, Unit returnSite) {
-                if (!manager.getConfig().getImplicitFlowMode().trackControlFlowDependencies() || abs.getDominator() != null)
-                    return;
-                IInfoflowCFG.UnitContainer dom = manager.getICFG().getDominatorOf(callSite);
-                if (dom.getUnit() != null && dom.getUnit() != returnSite) {
-                    abs.setDominator(dom.getUnit());
-                }
-            }
-
             @Override
             public FlowFunction<Abstraction> getReturnFlowFunction(Unit callSite, SootMethod callee, Unit
                     exitSite, Unit returnSite) {
@@ -667,6 +643,10 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                     (Stmt) exitSite, (Stmt) returnSite, (Stmt) callSite, killAll);
                         if (killAll.value)
                             return null;
+
+                        // Already handled in the rule
+                        if (source.getAccessPath().isEmpty())
+                            return res;
 
                         if (res == null)
                             res = new HashSet<>();
@@ -863,9 +843,8 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                         if (callStmt instanceof AssignStmt
                                 && aliasing.mayAlias(((AssignStmt) callStmt).getLeftOp(), source.getAccessPath().getPlainValue())) {
                             boolean isImplicit = source.getDominator() != null;
-                            if (isImplicit) {
+                            if (isImplicit)
                                 res.add(source.deriveConditionalUpdate(callStmt));
-                            }
                             return res;
                         }
 
@@ -881,15 +860,17 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                         // Assumption: Sinks only leak taints but never
                         // overwrite them. This is needed e.g. if an heap object
                         // is an argument and leaked twice in the same path.
+                        // See also Android Source Sink Tests
                         if (isSink && !manager.getConfig().getInspectSinks()) {
                             if (source != zeroValue)
                                 res.add(source);
                         }
 
+                        // If method is excluded, add the taint to not
+                        // break anything
                         if (isExcluded(callee)) {
                             if (source != zeroValue)
                                 res.add(source);
-//                            return res;
                         }
 
                         // Static values can be propagated over methods if
@@ -909,6 +890,7 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
 
                                         // Compute the aliases
                                         for (Abstraction abs : nativeAbs) {
+                                            enterConditional(abs, callStmt, returnSite);
                                             if (abs.getAccessPath().isStaticFieldRef() || aliasing.canHaveAliasesRightSide(
                                                     callStmt, abs.getAccessPath().getPlainValue(), abs)) {
                                                 for (Unit pred : manager.getICFG().getPredsOf(callStmt))
@@ -943,6 +925,16 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                             res.add(source);
 
                         setCallSite(source, res, callStmt);
+
+                        if (manager.getConfig().getImplicitFlowMode().trackControlFlowDependencies()
+                                && source.getDominator() == null && res.contains(source)) {
+                            IInfoflowCFG.UnitContainer dom = manager.getICFG().getDominatorOf(callSite);
+                            if (dom.getUnit() != null && dom.getUnit() != returnSite) {
+                                res.remove(source);
+                                res.add(source.deriveNewAbstractionWithDominator(dom.getUnit()));
+                            }
+                        }
+
                         return res;
                     }
                 };
@@ -952,6 +944,22 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                 for (Abstraction abs : set) {
                     if (!abs.equals(source))
                         abs.setCorrespondingCallSite(callStmt);
+                }
+            }
+
+            /**
+             * Sets the dominator if the taint enters a conditional
+             *
+             * @param abs target abstraction
+             * @param stmt Current statement
+             * @param destStmt Destination statement
+             */
+            private void enterConditional(Abstraction abs, Unit stmt, Unit destStmt) {
+                if (!manager.getConfig().getImplicitFlowMode().trackControlFlowDependencies() || abs.getDominator() != null)
+                    return;
+                IInfoflowCFG.UnitContainer dom = manager.getICFG().getDominatorOf(stmt);
+                if (dom.getUnit() != null && dom.getUnit() != destStmt) {
+                    abs.setDominator(dom.getUnit());
                 }
             }
 

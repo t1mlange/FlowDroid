@@ -59,8 +59,15 @@ public class BackwardsExceptionPropagationRule extends AbstractTaintPropagationR
 			// Taint the thrown value
 			AccessPath ap = manager.getAccessPathFactory().copyWithNewValue(source.getAccessPath(),
 					((ThrowStmt) stmt).getOp());
-			if (ap != null)
-				return Collections.singleton(source.deriveNewAbstractionOnCatch(ap));
+			if (ap != null) {
+				Abstraction abs = source.deriveNewAbstractionOnCatch(ap);
+				if (manager.getConfig().getImplicitFlowMode().trackControlFlowDependencies() && abs.getDominator() == null) {
+					Unit condUnit = manager.getICFG().getConditionalBranchIntraprocedural(stmt);
+					if (condUnit != null)
+						abs.setDominator(condUnit);
+				}
+				return Collections.singleton(abs);
+			}
 		}
 
 		return null;

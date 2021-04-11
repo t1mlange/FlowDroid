@@ -9,12 +9,15 @@ import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.data.AccessPath;
 import soot.jimple.infoflow.problems.TaintPropagationResults;
 import soot.jimple.infoflow.problems.rules.AbstractTaintPropagationRule;
+import soot.jimple.infoflow.sourcesSinks.manager.IReversibleSourceSinkManager;
+import soot.jimple.infoflow.sourcesSinks.manager.SinkInfo;
 import soot.jimple.infoflow.sourcesSinks.manager.SourceInfo;
 import soot.jimple.infoflow.taintWrappers.EasyTaintWrapper;
 import soot.jimple.infoflow.taintWrappers.IReversibleTaintWrapper;
 import soot.jimple.infoflow.taintWrappers.ITaintPropagationWrapper;
 import soot.jimple.infoflow.util.ByReferenceBoolean;
 import soot.jimple.infoflow.util.TypeUtils;
+import sun.java2d.opengl.GLXSurfaceData;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -95,10 +98,10 @@ public class BackwardsWrapperRule extends AbstractTaintPropagationRule {
         if (!isTainted)
             return null;
 
-        if (!getManager().getConfig().getInspectSources()) {
-            final SourceInfo sourceInfo = manager.getSourceSinkManager() != null
-                    ? manager.getSourceSinkManager().getSourceInfo(stmt, manager)
-                    : null;
+        if (!getManager().getConfig().getInspectSources() && manager.getSourceSinkManager() != null
+                && manager.getSourceSinkManager() instanceof IReversibleSourceSinkManager) {
+            final SinkInfo sourceInfo = ((IReversibleSourceSinkManager) manager.getSourceSinkManager())
+                    .getInverseSourceInfo(stmt, manager, null);
 
             if (sourceInfo != null)
                 return null;
