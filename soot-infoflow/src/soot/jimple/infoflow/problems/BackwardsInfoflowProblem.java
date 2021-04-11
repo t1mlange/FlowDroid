@@ -31,7 +31,7 @@ import java.util.*;
  * @author Tim Lange
  */
 public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
-    private final static boolean DEBUG_PRINT = false;
+    private final static boolean DEBUG_PRINT = true;
     private final static boolean ONLY_CALLS = false;
 
     private final PropagationRuleManager propagationRules;
@@ -349,6 +349,13 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                     else {
                                         res.add(newAbs);
 
+                                        if (newAbs.getDominator() == null && manager.getConfig().getImplicitFlowMode().trackControlFlowDependencies()
+                                                && !source.getAccessPath().isEmpty()) {
+                                            IInfoflowCFG.UnitContainer dom = manager.getICFG().getDominatorOf(srcUnit);
+                                            if (dom.getUnit() != null && dom.getUnit() != destUnit)
+                                                newAbs.setDominator(dom.getUnit());
+                                        }
+
                                         if (isPrimitiveOrStringBase(source)) {
                                             newAbs.setTurnUnit(srcUnit);
                                         } else if (leftVal instanceof FieldRef
@@ -362,13 +369,6 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                                         interproceduralCFG().getMethodOf(pred), newAbs);
                                             }
                                         }
-                                    }
-
-                                    if (manager.getConfig().getImplicitFlowMode().trackControlFlowDependencies()
-                                            && !source.getAccessPath().isEmpty()) {
-                                        IInfoflowCFG.UnitContainer dom = manager.getICFG().getDominatorOf(srcUnit);
-                                        if (newAbs.getDominator() == null && dom.getUnit() != null)
-                                            res.add(newAbs.deriveNewAbstractionWithDominator(dom.getUnit()));
                                     }
                                 }
                             }
@@ -496,15 +496,14 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                                 if (isPrimitiveOrStringBase(source))
                                                     abs.setTurnUnit(stmt);
 
-                                                res.add(abs);
-                                                if (manager.getConfig().getImplicitFlowMode().trackControlFlowDependencies()) {
-//                                                    IInfoflowCFG.UnitContainer uc = manager.getICFG().getDominatorOf(returnStmt);
+                                                if (abs.getDominator() == null && manager.getConfig().getImplicitFlowMode().trackControlFlowDependencies()) {
                                                     Unit condUnit = manager.getICFG().getConditionalBranchIntraprocedural(returnStmt);
                                                     if (condUnit != null) {
-                                                        Abstraction interRet = abs.deriveNewAbstractionWithDominator(condUnit);
-                                                        res.add(interRet);
+                                                        abs.setDominator(condUnit);
                                                     }
                                                 }
+
+                                                res.add(abs);
                                             }
                                         } else if (retVal instanceof Constant
                                                 && manager.getConfig().getImplicitFlowMode().trackControlFlowDependencies()) {
@@ -605,6 +604,15 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                 };
             }
 
+            private void enterConditional(Abstraction abs, Unit callSite, Unit returnSite) {
+                if (!manager.getConfig().getImplicitFlowMode().trackControlFlowDependencies() || abs.getDominator() != null)
+                    return;
+                IInfoflowCFG.UnitContainer dom = manager.getICFG().getDominatorOf(callSite);
+                if (dom.getUnit() != null && dom.getUnit() != returnSite) {
+                    abs.setDominator(dom.getUnit());
+                }
+            }
+
             @Override
             public FlowFunction<Abstraction> getReturnFlowFunction(Unit callSite, SootMethod callee, Unit
                     exitSite, Unit returnSite) {
@@ -655,7 +663,7 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                         Set<Abstraction> res = null;
                         ByReferenceBoolean killAll = new ByReferenceBoolean();
                         if (propagationRules != null)
-                            res = propagationRules.applyReturnFlowFunction(callerD1s, source,
+                            res = propagationRules.applyReturnFlowFunction(callerD1s, calleeD1, source,
                                     (Stmt) exitSite, (Stmt) returnSite, (Stmt) callSite, killAll);
                         if (killAll.value)
                             return null;
@@ -689,6 +697,7 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                                     : source.getAccessPath().getBaseType(), false);
                                     Abstraction abs = source.deriveNewAbstraction(ap, (Stmt) exitStmt);
                                     if (abs != null) {
+                                        enterConditional(abs, callSite, returnSite);
                                         res.add(abs);
                                     }
                                 }
@@ -702,6 +711,7 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                         ie.getArg(0));
                                 Abstraction abs = source.deriveNewAbstraction(ap, exitStmt);
                                 if (abs != null) {
+                                    enterConditional(abs, callSite, returnSite);
                                     res.add(abs);
                                 }
                             }
@@ -723,6 +733,7 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                         false);
                                 Abstraction abs = source.deriveNewAbstraction(ap, exitStmt);
                                 if (abs != null) {
+                                    enterConditional(abs, callSite, returnSite);
                                     res.add(abs);
 
                                     if (!isReflectiveCallSite && aliasing.canHaveAliasesRightSide(callStmt, originalCallArg, abs)) {
@@ -779,25 +790,6 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                         }
 
                         setCallSite(source, res, (Stmt) callSite);
-
-                        if (manager.getConfig().getImplicitFlowMode().trackControlFlowDependencies()) {
-//                            Unit condUnit = manager.getICFG().getConditionalBranchIntraprocedural(callSite);
-//                            if (condUnit != null) {
-//                                for (Abstraction abs : res) {
-//                                    if (abs.getAccessPath().isEmpty())
-//                                        continue;
-//                                    res.add(abs.deriveNewAbstractionWithDominator(condUnit));
-//                                }
-//                            }
-                            IInfoflowCFG.UnitContainer dominator = manager.getICFG().getDominatorOf(callSite);
-                            if (dominator.getUnit() != null) {
-                                for (Abstraction abs : res) {
-                                    if (abs.getAccessPath().isEmpty())
-                                        continue;
-                                    res.add(abs.deriveNewAbstractionWithDominator(dominator.getUnit()));
-                                }
-                            }
-                        }
 
                         return res;
                     }

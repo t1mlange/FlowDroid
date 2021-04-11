@@ -421,6 +421,9 @@ public class Abstraction implements Cloneable, FastSolverLinkedNode<Abstraction,
 	}
 
 	public Abstraction deriveNewAbstractionWithDominator(Unit dominator, Stmt stmt) {
+		if (this.dominator != null)
+			return this;
+
 		Abstraction abs = deriveNewAbstractionMutable(accessPath, stmt);
 		if (abs == null)
 			return null;
@@ -441,6 +444,14 @@ public class Abstraction implements Cloneable, FastSolverLinkedNode<Abstraction,
 		if (abs == null)
 			return null;
 		abs.setTurnUnit(stmt);
+		abs.setDominator(null);
+		return abs;
+	}
+
+	public Abstraction removeDominator(Stmt stmt) {
+		Abstraction abs = deriveNewAbstraction(accessPath, stmt);
+		if (abs == null)
+			return null;
 		abs.setDominator(null);
 		return abs;
 	}

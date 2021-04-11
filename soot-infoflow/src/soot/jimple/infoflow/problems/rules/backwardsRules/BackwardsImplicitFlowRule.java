@@ -6,7 +6,6 @@ import soot.jimple.*;
 import soot.jimple.infoflow.InfoflowManager;
 import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.data.AccessPath;
-import soot.jimple.infoflow.data.UnitWithContext;
 import soot.jimple.infoflow.problems.TaintPropagationResults;
 import soot.jimple.infoflow.problems.rules.AbstractTaintPropagationRule;
 import soot.jimple.infoflow.solver.cfg.IInfoflowCFG.UnitContainer;
@@ -30,6 +29,8 @@ public class BackwardsImplicitFlowRule extends AbstractTaintPropagationRule {
     public Collection<Abstraction> propagateNormalFlow(Abstraction d1, Abstraction source, Stmt stmt, Stmt destStmt, ByReferenceBoolean killSource, ByReferenceBoolean killAll) {
         assert !source.getAccessPath().isEmpty() || source.getDominator() != null;
 
+        if (source.getDominator() != null && source.getDominator().toString().contains("x0"))
+            d1=d1;
         if (source == getZeroValue())
             return null;
 
@@ -37,9 +38,20 @@ public class BackwardsImplicitFlowRule extends AbstractTaintPropagationRule {
         if (source.isDominator(stmt)) {
             // never let empty ap out of conditional
             if (!source.getAccessPath().isEmpty()) {
+                // A non-empty ap means the taint entered the conditional
+                // and is now exiting it. The dominator needs to be removed.
+                // We do not want to pollute the main flow functions, so we
+                // chose to killAll and inject the taint again.
+                Abstraction abs = source.removeDominator(stmt);
+                if (abs != null)
+                    manager.getForwardSolver().processEdge(new PathEdge<>(d1, stmt, abs));
+
                 killAll.value = true;
                 return null;
             }
+
+            // If an empty taint reached the end of a conditional,
+            // we had an update inside and need to taint the condition.
             killSource.value = true;
 
             Value condition;
@@ -75,7 +87,9 @@ public class BackwardsImplicitFlowRule extends AbstractTaintPropagationRule {
             }
         }
 
-        if (manager.getICFG().isExceptionalEdgeBetween(stmt, destStmt) && source.getAccessPath().isEmpty()) {
+        // All exceptional edges are considered implicit
+        if (source.getAccessPath().isEmpty() && manager.getICFG().isExceptionalEdgeBetween(stmt, destStmt)) {
+            // We look forward and taint the left side of the next statement if possible
             if (destStmt instanceof AssignStmt) {
                 AccessPath ap = manager.getAccessPathFactory().createAccessPath(((AssignStmt) destStmt).getLeftOp(), false);
                 Abstraction abs = source.deriveNewAbstraction(ap, stmt);
@@ -91,10 +105,10 @@ public class BackwardsImplicitFlowRule extends AbstractTaintPropagationRule {
 
         UnitContainer dominator = manager.getICFG().getDominatorOf(stmt);
         // When a taint which just has been handed over
-        if (!source.getAccessPath().isEmpty() && source.isAbstractionActive()
-                && source.getPredecessor() != null && !source.getPredecessor().isAbstractionActive()) {
+        if (source.isAbstractionActive() && source.getPredecessor() != null
+                && !source.getPredecessor().isAbstractionActive()) {
             // We maybe turned around inside a conditional, so we reconstruct the condition dominator
-            // Also, we lost track of the dominators in the alias search. Thus, this is interprocedural.
+            // Also, we lost track of the dominators in the alias search. Thus, we derive interprocedural wildcards.
             // See ImplicitTests#conditionalAliasingTest
             List<Unit> condUnits = manager.getICFG().getConditionalBranchesInterprocedural(stmt);
             // No condition path -> no need to search for one
@@ -104,7 +118,6 @@ public class BackwardsImplicitFlowRule extends AbstractTaintPropagationRule {
                     manager.getForwardSolver().processEdge(new PathEdge<>(d1, stmt, abs));
             }
             return null;
-//            return Collections.singleton(source.deriveConditionalUpdate(stmt));
         }
 
 
@@ -126,6 +139,7 @@ public class BackwardsImplicitFlowRule extends AbstractTaintPropagationRule {
         boolean taintAffectedByStatement = stmt instanceof DefinitionStmt && getAliasing().mayAlias(((DefinitionStmt) stmt).getLeftOp(),
                 source.getAccessPath().getPlainValue());
         if (dominator.getUnit() != null && dominator.getUnit() != destStmt && !taintAffectedByStatement) {
+            killSource.value = true;
             Abstraction abs = source.deriveNewAbstractionWithDominator(dominator.getUnit(), stmt);
             return Collections.singleton(abs);
         }
@@ -141,8 +155,18 @@ public class BackwardsImplicitFlowRule extends AbstractTaintPropagationRule {
             return null;
 
         // Make sure no conditional taint leaves the conditional branch
+        // Kill conditional taints leaving the branch
         if (source.isDominator(stmt)) {
             killAll.value = true;
+            if (!source.getAccessPath().isEmpty()) {
+                // A non-empty ap means the taint entered the conditional
+                // and is now exiting it. The dominator needs to be removed.
+                // We do not want to pollute the main flow functions, so we
+                // chose to killAll and inject the taint again.
+                Abstraction abs = source.removeDominator(stmt);
+                if (abs != null)
+                    manager.getForwardSolver().processEdge(new PathEdge<>(d1, stmt, abs));
+            }
             return null;
         }
 
@@ -192,6 +216,15 @@ public class BackwardsImplicitFlowRule extends AbstractTaintPropagationRule {
         // Kill conditional taints leaving the branch
         if (source.isDominator(stmt)) {
             killAll.value = true;
+            if (!source.getAccessPath().isEmpty()) {
+                // A non-empty ap means the taint entered the conditional
+                // and is now exiting it. The dominator needs to be removed.
+                // We do not want to pollute the main flow functions, so we
+                // chose to killAll and inject the taint again.
+                Abstraction abs = source.removeDominator(stmt);
+                if (abs != null)
+                    manager.getForwardSolver().processEdge(new PathEdge<>(d1, stmt, abs));
+            }
             return null;
         }
 
@@ -216,11 +249,25 @@ public class BackwardsImplicitFlowRule extends AbstractTaintPropagationRule {
     }
 
     @Override
-    public Collection<Abstraction> propagateReturnFlow(Collection<Abstraction> callerD1s, Abstraction source, Stmt stmt, Stmt retSite, Stmt callSite, ByReferenceBoolean killAll) {
+    public Collection<Abstraction> propagateReturnFlow(Collection<Abstraction> callerD1s, Abstraction calleeD1, Abstraction source, Stmt stmt, Stmt retSite, Stmt callSite, ByReferenceBoolean killAll) {
         assert !source.getAccessPath().isEmpty() || source.getDominator() != null;
 
         if (source == getZeroValue())
             return null;
+
+        if (source.isDominator(stmt)) {
+            killAll.value = true;
+            if (!source.getAccessPath().isEmpty()) {
+                // A non-empty ap means the taint entered the conditional
+                // and is now exiting it. The dominator needs to be removed.
+                // We do not want to pollute the main flow functions, so we
+                // chose to killAll and inject the taint again.
+                Abstraction abs = source.removeDominator(stmt);
+                if (abs != null)
+                    manager.getForwardSolver().processEdge(new PathEdge<>(calleeD1, stmt, abs));
+            }
+            return null;
+        }
 
         if (source.getAccessPath().isEmpty()) {
             // Derived from a conditional taint inside the callee
@@ -233,20 +280,20 @@ public class BackwardsImplicitFlowRule extends AbstractTaintPropagationRule {
         InvokeExpr ie = callSite.containsInvokeExpr() ? callSite.getInvokeExpr() : null;
         // In the callee, a parameter influenced a sink. If the argument was an constant
         // we need another implicit taint
-//        if (ie != null) {
-//            for (int i = 0; i < params.size() && i < ie.getArgCount(); i++) {
-//                if (getAliasing().mayAlias(source.getAccessPath().getPlainValue(), params.get(i))
-//                        && ie.getArg(i) instanceof Constant) {
-//                    HashSet<Abstraction> res = new HashSet<>();
-//                    Unit condUnit = manager.getICFG().getConditionalBranchIntraprocedural(callSite);
-//                    if (condUnit != null) {
-//                        Abstraction intraRet = source.deriveNewAbstractionWithDominator(condUnit, stmt);
-//                        intraRet.setCorrespondingCallSite(callSite);
-//                        return Collections.singleton(intraRet);
-//                    }
-//                }
-//            }
-//        }
+        if (ie != null) {
+            for (int i = 0; i < params.size() && i < ie.getArgCount(); i++) {
+                if (getAliasing().mayAlias(source.getAccessPath().getPlainValue(), params.get(i))
+                        && ie.getArg(i) instanceof Constant) {
+                    HashSet<Abstraction> res = new HashSet<>();
+                    Unit condUnit = manager.getICFG().getConditionalBranchIntraprocedural(callSite);
+                    if (condUnit != null) {
+                        Abstraction intraRet = source.deriveNewAbstractionWithDominator(condUnit, stmt);
+                        intraRet.setCorrespondingCallSite(callSite);
+                        return Collections.singleton(intraRet);
+                    }
+                }
+            }
+        }
 
         return null;
     }

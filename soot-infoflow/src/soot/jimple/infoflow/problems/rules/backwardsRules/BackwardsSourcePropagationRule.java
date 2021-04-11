@@ -168,8 +168,8 @@ public class BackwardsSourcePropagationRule extends AbstractTaintPropagationRule
 	}
 
 	@Override
-	public Collection<Abstraction> propagateReturnFlow(Collection<Abstraction> callerD1s, Abstraction source, Stmt stmt,
-			Stmt retSite, Stmt callSite, ByReferenceBoolean killAll) {
+	public Collection<Abstraction> propagateReturnFlow(Collection<Abstraction> callerD1s, Abstraction calleeD1, Abstraction source, Stmt stmt,
+                                                       Stmt retSite, Stmt callSite, ByReferenceBoolean killAll) {
 		// If we are in the kill state, we stop the analysis
 		if (killAll != null)
 			killAll.value |= killState;

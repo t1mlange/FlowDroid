@@ -1,9 +1,7 @@
 package soot.jimple.infoflow.problems.rules;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import soot.SootMethod;
@@ -192,6 +190,7 @@ public class PropagationRuleManager {
 	 * 
 	 * @param callerD1s
 	 *            The context abstraction at the caller side
+	 * @param calleeD1
 	 * @param source
 	 *            The incoming taint to propagate over the given statement
 	 * @param stmt
@@ -206,11 +205,11 @@ public class PropagationRuleManager {
 	 *            killed, i.e., nothing shall be propagated
 	 * @return The collection of outgoing taints
 	 */
-	public Set<Abstraction> applyReturnFlowFunction(Collection<Abstraction> callerD1s, Abstraction source, Stmt stmt,
+	public Set<Abstraction> applyReturnFlowFunction(Collection<Abstraction> callerD1s, Abstraction calleeD1, Abstraction source, Stmt stmt,
 			Stmt retSite, Stmt callSite, ByReferenceBoolean killAll) {
 		Set<Abstraction> res = null;
 		for (ITaintPropagationRule rule : rules) {
-			Collection<Abstraction> ruleOut = rule.propagateReturnFlow(callerD1s, source, stmt, retSite, callSite,
+			Collection<Abstraction> ruleOut = rule.propagateReturnFlow(callerD1s, calleeD1, source, stmt, retSite, callSite,
 					killAll);
 			if (killAll != null && killAll.value)
 				return null;

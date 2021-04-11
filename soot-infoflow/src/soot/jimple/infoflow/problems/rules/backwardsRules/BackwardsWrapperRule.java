@@ -1,7 +1,5 @@
 package soot.jimple.infoflow.problems.rules.backwardsRules;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import soot.*;
 import soot.jimple.*;
 import soot.jimple.infoflow.InfoflowConfiguration;
@@ -213,7 +211,7 @@ public class BackwardsWrapperRule extends AbstractTaintPropagationRule {
     }
 
     @Override
-    public Collection<Abstraction> propagateReturnFlow(Collection<Abstraction> callerD1s, Abstraction source, Stmt stmt, Stmt retSite, Stmt callSite, ByReferenceBoolean killAll) {
+    public Collection<Abstraction> propagateReturnFlow(Collection<Abstraction> callerD1s, Abstraction calleeD1, Abstraction source, Stmt stmt, Stmt retSite, Stmt callSite, ByReferenceBoolean killAll) {
         return null;
     }
 }

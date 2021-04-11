@@ -76,6 +76,7 @@ public class BackwardsAliasProblem extends AbstractInfoflowProblem {
                     public Set<Abstraction> computeTargets(Abstraction d1, Abstraction source) {
                         if (source == getZeroValue())
                             return null;
+                        assert !source.getAccessPath().isEmpty();
 
                         if (taintPropagationHandler != null)
                             taintPropagationHandler.notifyFlowIn(srcUnit, source, manager,

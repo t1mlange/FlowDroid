@@ -2,7 +2,6 @@ package soot.jimple.infoflow.problems.rules.backwardsRules;
 
 import heros.solver.PathEdge;
 import soot.*;
-import soot.grimp.NewInvokeExpr;
 import soot.jimple.*;
 import soot.jimple.infoflow.InfoflowManager;
 import soot.jimple.infoflow.aliasing.Aliasing;
@@ -104,7 +103,7 @@ public class BackwardsClinitRule extends AbstractTaintPropagationRule {
     }
 
     @Override
-    public Collection<Abstraction> propagateReturnFlow(Collection<Abstraction> callerD1s, Abstraction source, Stmt stmt, Stmt retSite, Stmt callSite, ByReferenceBoolean killAll) {
+    public Collection<Abstraction> propagateReturnFlow(Collection<Abstraction> callerD1s, Abstraction calleeD1, Abstraction source, Stmt stmt, Stmt retSite, Stmt callSite, ByReferenceBoolean killAll) {
         // This kills all taints returning from the manual injection of the edge to clinit.
         Stmt callStmt = source.getCorrespondingCallSite();
         if (manager.getICFG().getMethodOf(stmt).getSubSignature().equals("void <clinit>()")

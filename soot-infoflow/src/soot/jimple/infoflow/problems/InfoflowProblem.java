@@ -509,11 +509,11 @@ public class InfoflowProblem extends AbstractInfoflowProblem {
 					@Override
 					public Set<Abstraction> computeTargets(Abstraction source, Abstraction d1,
 							Collection<Abstraction> callerD1s) {
-						Set<Abstraction> res = computeTargetsInternal(source, callerD1s);
+						Set<Abstraction> res = computeTargetsInternal(source, d1, callerD1s);
 						return notifyOutFlowHandlers(exitStmt, d1, source, res, FlowFunctionType.ReturnFlowFunction);
 					}
 
-					private Set<Abstraction> computeTargetsInternal(Abstraction source,
+					private Set<Abstraction> computeTargetsInternal(Abstraction source, Abstraction calleeD1,
 							Collection<Abstraction> callerD1s) {
 						if (manager.getConfig().getStopAfterFirstFlow() && !results.isEmpty())
 							return null;
@@ -548,8 +548,8 @@ public class InfoflowProblem extends AbstractInfoflowProblem {
 								return null;
 
 						ByReferenceBoolean killAll = new ByReferenceBoolean();
-						Set<Abstraction> res = propagationRules.applyReturnFlowFunction(callerD1s, newSource,
-								(Stmt) exitStmt, (Stmt) retSite, (Stmt) callSite, killAll);
+						Set<Abstraction> res = propagationRules.applyReturnFlowFunction(callerD1s, calleeD1,
+								newSource, (Stmt) exitStmt, (Stmt) retSite, (Stmt) callSite, killAll);
 						if (killAll.value)
 							return null;
 						if (res == null)
