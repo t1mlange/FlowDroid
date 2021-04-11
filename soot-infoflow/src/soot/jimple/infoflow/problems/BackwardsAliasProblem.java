@@ -425,7 +425,6 @@ public class BackwardsAliasProblem extends AbstractInfoflowProblem {
                         if (manager.getConfig().getStaticFieldTrackingMode()
                                 != InfoflowConfiguration.StaticFieldTrackingMode.None
                                 && source.getAccessPath().isStaticFieldRef()) {
-                            registerActivationCallSite(callSite, callee, source);
                             res.add(source);
                             return res;
                         }
@@ -442,7 +441,6 @@ public class BackwardsAliasProblem extends AbstractInfoflowProblem {
                                         .copyWithNewValue(source.getAccessPath(), leftOp);
                                 Abstraction abs = checkAbstraction(source.deriveNewAbstraction(ap, (Stmt) exitStmt));
                                 if (abs != null) {
-                                    registerActivationCallSite(callSite, callee, abs);
                                     res.add(abs);
                                 }
                             }
@@ -465,7 +463,6 @@ public class BackwardsAliasProblem extends AbstractInfoflowProblem {
                                                     : source.getAccessPath().getBaseType(),false);
                                     Abstraction abs = checkAbstraction(source.deriveNewAbstraction(ap, (Stmt) exitStmt));
                                     if (abs != null) {
-                                        registerActivationCallSite(callSite, callee, abs);
                                         res.add(abs);
                                     }
                                 }
@@ -478,7 +475,6 @@ public class BackwardsAliasProblem extends AbstractInfoflowProblem {
                                     thisLocal);
                             Abstraction abs = checkAbstraction(source.deriveNewAbstraction(ap, callStmt));
                             if (abs != null) {
-                                registerActivationCallSite(callSite, callee, source);
                                 res.add(abs);
                             }
                         } else if (ie != null) {
@@ -512,7 +508,6 @@ public class BackwardsAliasProblem extends AbstractInfoflowProblem {
                                         false);
                                 Abstraction abs = checkAbstraction(source.deriveNewAbstraction(ap, (Stmt) exitStmt));
                                 if (abs != null) {
-                                    registerActivationCallSite(callSite, callee, abs);
                                     res.add(abs);
                                 }
                             }

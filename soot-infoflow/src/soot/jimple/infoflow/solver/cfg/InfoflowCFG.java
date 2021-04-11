@@ -38,11 +38,8 @@ import soot.jimple.toolkits.callgraph.Edge;
 import soot.jimple.toolkits.ide.icfg.BiDiInterproceduralCFG;
 import soot.jimple.toolkits.ide.icfg.JimpleBasedInterproceduralCFG;
 import soot.toolkits.exceptions.ThrowableSet;
-import soot.toolkits.graph.DirectedGraph;
-import soot.toolkits.graph.ExceptionalUnitGraph;
+import soot.toolkits.graph.*;
 import soot.toolkits.graph.ExceptionalUnitGraph.ExceptionDest;
-import soot.toolkits.graph.MHGDominatorsFinder;
-import soot.toolkits.graph.MHGPostDominatorsFinder;
 
 /**
  * Interprocedural control-flow graph for the infoflow solver
@@ -611,6 +608,35 @@ public class InfoflowCFG implements IInfoflowCFG {
 					if (viexpr.getMethod().getName().equals("invoke"))
 						return true;
 		}
+		return false;
+	}
+
+	@Override
+	public boolean isReadInBetween(Unit start, Unit end, Value value) {
+		SootMethod sm = getMethodOf(start);
+		if (sm != getMethodOf(end))
+			return false;
+
+		DirectedGraph<Unit> graph = getOrCreateUnitGraph(sm);
+		List<Unit> worklist = new ArrayList<>(graph.getSuccsOf(start));
+		Set<Unit> doneSet = new HashSet<>(worklist);
+		while (!worklist.isEmpty()) {
+			Unit item = worklist.remove(0);
+			if (item == end)
+				return false;
+
+			for (ValueBox use : item.getUseBoxes()) {
+				if (use.getValue() == value)
+					return true;
+			}
+
+			for (Unit succ : graph.getSuccsOf(item)) {
+				if (!doneSet.contains(succ))
+					worklist.add(succ);
+			}
+			doneSet.addAll(graph.getSuccsOf(item));
+		}
+
 		return false;
 	}
 

@@ -128,11 +128,11 @@ public class BackwardsWrapperRule extends AbstractTaintPropagationRule {
                             && isPrimitiveOrStringType(((FieldRef) leftVal).getField().getType(), abs));
                 }
 
-                if (skipAliases) {
+                if (skipAliases || source.getAccessPath().isEmpty()) {
                     abs.setTurnUnit(stmt);
                 } else {
                     // no need to search for aliases if the access path didn't change
-                    if (!absAp.equals(sourceAp) && !absAp.isEmpty() /*&& !returnsThisInstance(abs, stmt)*/) {
+                    if (!absAp.equals(sourceAp) && !absAp.isEmpty() && (retValTainted && !canOmitAliasing(abs, stmt))) {
                         boolean isBasicString = TypeUtils.isStringType(absAp.getBaseType()) && !absAp.getCanHaveImmutableAliases()
                                 && !getAliasing().isStringConstructorCall(stmt);
                         boolean taintsObjectValue = absAp.getBaseType() instanceof RefType && !isBasicString
@@ -184,27 +184,32 @@ public class BackwardsWrapperRule extends AbstractTaintPropagationRule {
     }
 
     /**
-     * Optimization for StringBuilders/StringBuffers. Append and Insert always returns this.
-     * Jimple does not reuse locals, so we manually exclude them from the aliasing.
-     * @param abs
-     * @param callStmt
-     * @return
+     * Optimization for StringBuilders/StringBuffers. Both return this for easy chaining. But Jimple does
+     * not reuse the local sometimes. Thus, if at certain methods the local is not reused, we first do an
+     * easier check whether an alias search is actually needed to save some edges to maintain our advantage
+     * for strict right-to-left ordered assignments.
+     * @param abs Abstraction
+     * @param callStmt Statement
+     * @return True if the aliasing search can be omitted
      */
-    private boolean returnsThisInstance(Abstraction abs, Stmt callStmt) {
-//        if (!callStmt.containsInvokeExpr())
-//            return false;
-//        InvokeExpr ie = callStmt.getInvokeExpr();
-//
-//        if (ie instanceof InstanceInvokeExpr) {
-//            Value base = ((InstanceInvokeExpr) ie).getBase();
-//            if (!getAliasing().mayAlias(base, abs.getAccessPath().getPlainValue()))
-//                return false;
-//
-//            if (excludeList.contains(ie.getMethod().getSignature()))
-//                return true;
-//        }
-//
-        return false;
+    private boolean canOmitAliasing(Abstraction abs, Stmt callStmt) {
+        if (!(callStmt instanceof AssignStmt))
+            return false;
+        AssignStmt assignStmt = (AssignStmt) callStmt;
+
+        if (!(assignStmt.getRightOp() instanceof InstanceInvokeExpr))
+            return false;
+        InstanceInvokeExpr ie = (InstanceInvokeExpr) assignStmt.getRightOp();
+
+        if (ie.getBase() == assignStmt.getLeftOp())
+            return false;
+        if (!getAliasing().mayAlias(ie.getBase(), abs.getAccessPath().getPlainValue()))
+            return false;
+
+        if (!excludeList.contains(ie.getMethod().getSignature()))
+            return false;
+
+        return !manager.getICFG().isReadInBetween(callStmt, abs.getTurnUnit(), ie.getBase());
     }
 
     @Override
