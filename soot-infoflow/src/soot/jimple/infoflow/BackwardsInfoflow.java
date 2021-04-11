@@ -52,6 +52,8 @@ import soot.jimple.infoflow.threading.DefaultExecutorFactory;
 import soot.jimple.infoflow.threading.IExecutorFactory;
 import soot.jimple.infoflow.util.SootMethodRepresentationParser;
 import soot.jimple.infoflow.util.SystemClassHandler;
+import soot.jimple.infoflow.util.preanalyses.SinkAnalysis;
+import soot.jimple.infoflow.util.preanalyses.SourceAnalysis;
 import soot.jimple.toolkits.callgraph.ReachableMethods;
 import soot.options.Options;
 import soot.util.Chain;
@@ -828,6 +830,28 @@ public class BackwardsInfoflow extends AbstractInfoflow {
 
                     for (SootMethod sm : getMethodsForSeeds(iCfg))
                         sourceCount += scanMethodForSourcesSinks(sourcesSinks, infoflowProblem, sm);
+                    if (config.getLogSourcesAndSinks()) {
+                        int prop = 0;
+                        int callee = 0;
+                        int caller = 0;
+                        for (Stmt source : collectedSources) {
+                            SootMethod sourceMethod = iCfg.getMethodOf(source);
+                            SourceAnalysis sourceAnalysis = new SourceAnalysis(iCfg.getOrCreateUnitGraph(sourceMethod), sourceMethod, source);
+                            prop += sourceAnalysis.getPropagations();
+                            callee += sourceAnalysis.getFlowsIntoCallee();
+                            caller += sourceAnalysis.getFlowsIntoCaller();
+                        }
+                        prop = 0;
+                        callee = 0;
+                        caller = 0;
+                        for (Stmt sink : collectedSinks) {
+                            SootMethod sinkMethod = iCfg.getMethodOf(sink);
+                            SinkAnalysis sinkAnalysis = new SinkAnalysis(iCfg.getOrCreateUnitGraph(sinkMethod), sinkMethod, sink);
+                            prop += sinkAnalysis.getPropagations();
+                            callee += sinkAnalysis.getFlowsIntoCallee();
+                            caller += sinkAnalysis.getFlowsIntoCaller();
+                        }
+                    }
                     if (config.isStopAfterSourcesSinks())
                         return;
 
