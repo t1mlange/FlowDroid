@@ -150,7 +150,7 @@ public abstract class JUnitTests {
 			}
 
 		}
-		result.getConfig().setLogSourcesAndSinks(true);
+//		result.getConfig().setLogSourcesAndSinks(true);
 
 		return result;
 	}

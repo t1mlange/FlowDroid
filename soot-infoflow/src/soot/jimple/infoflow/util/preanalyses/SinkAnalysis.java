@@ -54,8 +54,7 @@ public class SinkAnalysis extends BackwardFlowAnalysis<Unit, FlowSet<Local>> {
 
     @Override
     protected void flowThrough(FlowSet<Local> inSet, Unit unit, FlowSet<Local> outSet) {
-        if ((this.timeBefore / 1E9) > 60) {
-            outSet.clear();
+        if (((System.nanoTime() - timeBefore) / 1E9) > 60) {
             return;
         }
 
