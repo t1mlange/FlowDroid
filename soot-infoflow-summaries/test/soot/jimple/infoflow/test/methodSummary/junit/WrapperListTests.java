@@ -129,7 +129,7 @@ public class WrapperListTests extends JUnitTests {
 		IInfoflow infoflow = initInfoflow();
 		List<String> epoints = new ArrayList<String>();
 		epoints.add("<soot.jimple.infoflow.test.methodSummary.ListTestCode: void linkedListSubListTest()>");
-//		infoflow.setTaintWrapper(wrapper);
+		infoflow.setTaintWrapper(wrapper);
 		infoflow.computeInfoflow(appPath, libPath, epoints, sources, sinks);
 		checkInfoflow(infoflow, 1);
 	}

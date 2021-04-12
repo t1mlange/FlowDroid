@@ -648,11 +648,6 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 		// If the taint is a return value, we taint the left side of the
 		// assignment
 		if (t.isReturn()) {
-			// If flows are reversed, we go backwards and thus, it doesn't
-			// make sense to taint the left side
-			if (reverseFlows)
-				return null;
-
 			// If the return value is not used, we can abort
 			if (!(stmt instanceof DefinitionStmt))
 				return null;
@@ -918,7 +913,6 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 		while (!workList.isEmpty()) {
 			final AccessPathPropagator curPropagator = workList.remove(0);
 			final GapDefinition curGap = curPropagator.getGap();
-
 			// Make sure we don't have invalid data
 			if (curGap != null && curPropagator.getParent() == null)
 				throw new RuntimeException("Gap flow without parent detected");
@@ -1012,6 +1006,8 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 		// There cannot be any flows to the return values of
 		// gaps
 		if (flow.source().getGap() != null && flow.source().getType() == SourceSinkType.Return)
+			return null;
+		if (flow.sink().getGap() != null && flow.sink().getType() == SourceSinkType.Return)
 			return null;
 
 		// Reverse the flow if necessary

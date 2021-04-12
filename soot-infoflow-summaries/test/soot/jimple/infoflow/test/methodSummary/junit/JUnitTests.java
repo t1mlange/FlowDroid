@@ -134,8 +134,8 @@ public abstract class JUnitTests {
 	}
 
 	protected IInfoflow initInfoflow(boolean useTaintWrapper) {
-		IInfoflow result = new BackwardsInfoflow();
-//		Infoflow result = new Infoflow();
+//		IInfoflow result = new BackwardsInfoflow();
+		Infoflow result = new Infoflow();
 		ConfigForTest testConfig = new ConfigForTest();
 		result.setSootConfig(testConfig);
 		if (useTaintWrapper) {

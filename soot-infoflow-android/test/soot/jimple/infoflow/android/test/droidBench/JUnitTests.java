@@ -166,8 +166,8 @@ public class JUnitTests {
 		setupApplication.getConfig().setEnableArraySizeTainting(true);
 
 		try {
-			setupApplication.setTaintWrapper(new EasyTaintWrapper(taintWrapperFile));
-//			setupApplication.setTaintWrapper(new SummaryTaintWrapper(new LazySummaryProvider("summariesManual")));
+//			setupApplication.setTaintWrapper(new EasyTaintWrapper(taintWrapperFile));
+			setupApplication.setTaintWrapper(new SummaryTaintWrapper(new LazySummaryProvider("summariesManual")));
 		} catch (Exception e) {
 
 		}

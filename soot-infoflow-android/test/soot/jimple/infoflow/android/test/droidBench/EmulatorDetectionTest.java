@@ -81,14 +81,14 @@ public class EmulatorDetectionTest extends JUnitTests {
 	
 	@Test(timeout=300000)
 	public void runTestIP1() throws IOException, XmlPullParserException {
-		InfoflowResults res = analyzeAPKFile("EmulatorDetection/IP1.apk", true);
+		InfoflowResults res = analyzeAPKFile("EmulatorDetection/IP1.apk");
 		Assert.assertNotNull(res);
 		Assert.assertEquals(1, res.size());
 	}
 	
 	@Test(timeout=300000)
 	public void runTestPI1() throws IOException, XmlPullParserException {
-		InfoflowResults res = analyzeAPKFile("EmulatorDetection/PI1.apk", true);
+		InfoflowResults res = analyzeAPKFile("EmulatorDetection/PI1.apk");
 		Assert.assertNotNull(res);
 		Assert.assertEquals(1, res.size());
 	}
