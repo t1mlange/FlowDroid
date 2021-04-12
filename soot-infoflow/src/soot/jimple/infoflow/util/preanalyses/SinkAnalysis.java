@@ -167,6 +167,8 @@ public class SinkAnalysis extends BackwardFlowAnalysis<Unit, FlowSet<Local>> {
     public int getPropagations() {
         return propagations;
     }
+    public int getTaintNumInSets() { return unitToBeforeFlow.values().stream().mapToInt(FlowSet::size).sum(); }
+    public int getTaintNumOutSets() { return unitToAfterFlow.values().stream().mapToInt(FlowSet::size).sum(); }
     public int getRuntime() {
         return runtime;
     }
