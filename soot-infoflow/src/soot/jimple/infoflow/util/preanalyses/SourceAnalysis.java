@@ -20,14 +20,15 @@ public class SourceAnalysis extends ForwardFlowAnalysis<Unit, FlowSet<Local>> {
     int flowsIntoCallee = 0;
     int flowsIntoCaller = 0;
     int propagations = 0;
-    int runtime ;
+    int runtime;
+    long timeBefore;
 
     public SourceAnalysis(DirectedGraph<Unit> graph, SootMethod method, Stmt source) {
         super(graph);
         this.method = method;
         this.source = source;
 
-        long timeBefore = System.nanoTime();
+        this.timeBefore = System.nanoTime();
         doAnalysis();
         this.runtime = (int) Math.round((System.nanoTime() - timeBefore) / 1E3);
     }
@@ -48,6 +49,10 @@ public class SourceAnalysis extends ForwardFlowAnalysis<Unit, FlowSet<Local>> {
 
     @Override
     protected void flowThrough(FlowSet<Local> inSet, Unit unit, FlowSet<Local> outSet) {
+        if ((this.timeBefore / 1E9) > 60) {
+            outSet.clear();
+            return;
+        }
         assert !inSet.contains(null);
         if (!(unit instanceof Stmt))
             return;

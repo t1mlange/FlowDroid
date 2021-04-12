@@ -22,13 +22,14 @@ public class SinkAnalysis extends BackwardFlowAnalysis<Unit, FlowSet<Local>> {
     int flowsIntoCaller = 0;
     int propagations = 0;
     int runtime;
+    long timeBefore;
 
     public SinkAnalysis(DirectedGraph<Unit> graph, SootMethod method, Stmt sink) {
         super(graph);
         this.doAnalysis();
         this.method = method;
         this.sink = sink;
-        long timeBefore = System.nanoTime();
+        this.timeBefore = System.nanoTime();
         doAnalysis();
         this.runtime = (int) Math.round((System.nanoTime() - timeBefore) / 1E3);
     }
@@ -53,6 +54,11 @@ public class SinkAnalysis extends BackwardFlowAnalysis<Unit, FlowSet<Local>> {
 
     @Override
     protected void flowThrough(FlowSet<Local> inSet, Unit unit, FlowSet<Local> outSet) {
+        if ((this.timeBefore / 1E9) > 60) {
+            outSet.clear();
+            return;
+        }
+
         assert !inSet.contains(null);
         if (!(unit instanceof Stmt))
             return;
