@@ -162,12 +162,11 @@ public class JUnitTests {
 		// Make sure to apply the settings before we calculate entry points
 		if (configCallback != null)
 			configCallback.configureAnalyzer(setupApplication.getConfig());
-
 		setupApplication.getConfig().setEnableArraySizeTainting(true);
 
 		try {
-//			setupApplication.setTaintWrapper(new EasyTaintWrapper(taintWrapperFile));
-			setupApplication.setTaintWrapper(new SummaryTaintWrapper(new LazySummaryProvider("summariesManual")));
+			setupApplication.setTaintWrapper(new EasyTaintWrapper(taintWrapperFile));
+//			setupApplication.setTaintWrapper(new SummaryTaintWrapper(new LazySummaryProvider("summariesManual")));
 		} catch (Exception e) {
 
 		}
@@ -189,6 +188,15 @@ public class JUnitTests {
 		InfoflowResults results = setupApplication.runInfoflow("SourcesAndSinks.txt");
 		if (results != null)
 			performanceData = results.getPerformanceData();
+
+//		try (FileWriter fw = new FileWriter("sourcesink.txt", true)) {
+//			BufferedWriter bw = new BufferedWriter(fw);
+//			bw.write(fileName + " " + setupApplication.getCollectedSources().size() + ":" + setupApplication.getCollectedSinks().size() + "\n");
+//			bw.close();
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//		}
+
 		return results;
 	}
 
@@ -217,7 +225,7 @@ public class JUnitTests {
 		}
 	}
 
-	private static boolean log = true;
+	private final static boolean log = false;
 
 	@Rule
 	public TestWatcher edgeEvaluation = new TestWatcher() {

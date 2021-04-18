@@ -5,6 +5,8 @@ import soot.*;
 import soot.jimple.*;
 import soot.jimple.infoflow.InfoflowManager;
 import soot.jimple.infoflow.aliasing.Aliasing;
+import soot.jimple.infoflow.collect.ConcurrentHashSet;
+import soot.jimple.infoflow.collect.MyConcurrentHashMap;
 import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.data.AccessPath;
 import soot.jimple.infoflow.problems.TaintPropagationResults;
@@ -22,6 +24,8 @@ import java.util.*;
  * @author Tim Lange
  */
 public class BackwardsImplicitFlowRule extends AbstractTaintPropagationRule {
+    private final MyConcurrentHashMap<Unit, Set<Abstraction>> implicitTargets = new MyConcurrentHashMap<Unit, Set<Abstraction>>();
+
     public BackwardsImplicitFlowRule(InfoflowManager manager, Abstraction zeroValue, TaintPropagationResults results) {
         super(manager, zeroValue, results);
     }
@@ -159,6 +163,12 @@ public class BackwardsImplicitFlowRule extends AbstractTaintPropagationRule {
             return null;
         }
 
+        if (implicitTargets.containsKey(stmt) && (d1 == null || implicitTargets.get(stmt).contains(d1))) {
+            if (killAll != null)
+                killAll.value = true;
+            return null;
+        }
+
         // We do not propagate empty taints into methods
         // because backward no taints are derived from empty taints.
         if (source.getAccessPath().isEmpty()) {
@@ -224,6 +234,8 @@ public class BackwardsImplicitFlowRule extends AbstractTaintPropagationRule {
                     res.add(thisTaint);
                 }
 
+                System.out.println(res.size());
+
                 return res;
             }
         }
@@ -244,6 +256,22 @@ public class BackwardsImplicitFlowRule extends AbstractTaintPropagationRule {
                     manager.getForwardSolver().processEdge(new PathEdge<>(d1, stmt, abs));
             }
             return null;
+        }
+
+        // Conditional update
+        if (stmt instanceof AssignStmt
+                && getAliasing().mayAlias(((AssignStmt) stmt).getLeftOp(), source.getAccessPath().getPlainValue())) {
+            boolean isImplicit = source.getDominator() != null;
+            if (isImplicit) {
+//                if (d1 != null) {
+//                    Set<Abstraction> callSites = implicitTargets.putIfAbsentElseGet(stmt,
+//                            new ConcurrentHashSet<Abstraction>());
+//                    callSites.add(d1);
+//                }
+
+                killSource.value = true;
+                return Collections.singleton(source.deriveConditionalUpdate(stmt));
+            }
         }
 
         if (source.getAccessPath().isEmpty())

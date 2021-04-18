@@ -842,9 +842,6 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                         // CallFlow takes care of tainting the return value
                         if (callStmt instanceof AssignStmt
                                 && aliasing.mayAlias(((AssignStmt) callStmt).getLeftOp(), source.getAccessPath().getPlainValue())) {
-                            boolean isImplicit = source.getDominator() != null;
-                            if (isImplicit)
-                                res.add(source.deriveConditionalUpdate(callStmt));
                             return res;
                         }
 

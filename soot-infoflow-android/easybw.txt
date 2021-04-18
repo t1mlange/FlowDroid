@@ -46,13 +46,13 @@ EmulatorDetectionTest,PlayStore2,4,0
 EmulatorDetectionTest,File1,4,0
 EmulatorDetectionTest,IMEI1,422,1
 EmulatorDetectionTest,Contacts1,200,19
-EmulatorDetectionTest,VoiceMail1,239,14
+EmulatorDetectionTest,VoiceMail1,4,0
 EmulatorDetectionTest,DeviceId1,6,0
 EmulatorDetectionTest,ContentProvider1,8,0
-EmulatorDetectionTest,Sensors1,2335,212
+EmulatorDetectionTest,Sensors1,4,0
 EmulatorDetectionTest,IP1,29,0
 EmulatorDetectionTest,PI1,4,0
-EmulatorDetectionTest,SubscriberId1,711,16
+EmulatorDetectionTest,SubscriberId1,4,0
 EmulatorDetectionTest,Bluetooth1,4,0
 EmulatorDetectionTest,Build1,4,0
 FieldAndObjectSensitivityTest,FieldSensitivity1,25,3
@@ -88,7 +88,7 @@ GeneralJavaTest,Exceptions5,16,0
 GeneralJavaTest,Exceptions6,23,0
 GeneralJavaTest,Exceptions7,6,0
 GeneralJavaTest,Clone1,12,4
-ImplicitFlowTest,ImplicitFlow1,3314,11
+ImplicitFlowTest,ImplicitFlow1,3315,11
 ImplicitFlowTest,ImplicitFlow2,991,3
 ImplicitFlowTest,ImplicitFlow3,1023,20
 ImplicitFlowTest,ImplicitFlow4,1864,12
@@ -108,7 +108,7 @@ LifecycleTest,ServiceLifecycle2,89,21
 LifecycleTest,ActivitySavedState1,7,0
 LifecycleTest,AsynchronousEventOrdering1,16,0
 LifecycleTest,EventOrdering1,30,0
-LifecycleTest,ActivityEventSequence1,73,0
+LifecycleTest,ActivityEventSequence1,72,0
 LifecycleTest,ActivityEventSequence2,77,0
 LifecycleTest,ActivityEventSequence3,156,0
 LifecycleTest,BroadcastReceiverLifecycle1,4,0
