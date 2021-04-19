@@ -25,12 +25,17 @@ public class SBBenchmarkCode {
         SerializedObject(String str) {
             this.str = str;
         }
+
+        public String getStr() {
+            return this.str;
+        }
     }
 
     public void JSONTest() {
         String tainted = TelephonyManager.getDeviceId();
         SerializedObject obj = new SerializedObject(tainted);
-        JSONObject jsonO = new JSONObject(obj, new String[] { "i", "str", "d" }.toString());
+        JSONObject jsonO = new JSONObject();
+        jsonO.put("str", obj.getStr());
         ConnectionManager cm = new ConnectionManager();
         cm.publish(jsonO.toString());
     }
