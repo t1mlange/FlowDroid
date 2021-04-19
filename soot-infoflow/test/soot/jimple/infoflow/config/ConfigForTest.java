@@ -13,6 +13,7 @@ package soot.jimple.infoflow.config;
 import java.util.LinkedList;
 import java.util.List;
 
+import soot.JastAddJ.Opt;
 import soot.jimple.infoflow.InfoflowConfiguration;
 import soot.options.Options;
 
@@ -40,6 +41,7 @@ public class ConfigForTest implements IInfoflowConfig {
 		includeList.add("securibench.*");
 		Options.v().set_no_bodies_for_excluded(true);
 		Options.v().set_allow_phantom_refs(true);
+		Options.v().set_soot_classpath(Options.v().soot_classpath() + ":" + System.getProperty("user.home") + ".m2/repository/org/json/json/20210307/json-20210307.jar");
 		options.set_include(includeList);
 		options.set_output_format(Options.output_format_none);
 		Options.v().setPhaseOption("jb", "use-original-names:true");

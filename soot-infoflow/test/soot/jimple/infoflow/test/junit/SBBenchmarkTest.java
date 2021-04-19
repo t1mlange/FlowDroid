@@ -10,21 +10,13 @@
  ******************************************************************************/
 package soot.jimple.infoflow.test.junit;
 
-import org.junit.Assert;
 import org.junit.Test;
 import soot.jimple.infoflow.IInfoflow;
-import soot.jimple.infoflow.InfoflowConfiguration;
-import soot.jimple.infoflow.config.IInfoflowConfig;
 import soot.jimple.infoflow.taintWrappers.EasyTaintWrapper;
-import soot.options.Options;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
-
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 /**
  * covers taint propagation for Strings, String functions such as concat,
@@ -39,12 +31,23 @@ public class SBBenchmarkTest extends JUnitTests {
 	@Test(timeout = 600000)
 	public void appendTest() {
 		IInfoflow infoflow = initInfoflow();
-//		infoflow.getConfig().setAliasingAlgorithm(InfoflowConfiguration.AliasingAlgorithm.None);
 		try {
 			infoflow.setTaintWrapper(new EasyTaintWrapper(new File("EasyTaintWrapperSource.txt")));
 		} catch (Exception e) {}
 		List<String> epoints = new ArrayList<String>();
 		epoints.add("<soot.jimple.infoflow.test.SBBenchmarkCode: void appendTest()>");
+		infoflow.computeInfoflow(appPath, libPath, epoints, sources, sinks);
+		checkInfoflow(infoflow, 1);
+	}
+
+	@Test(timeout = 600000)
+	public void JSONTest() {
+		IInfoflow infoflow = initInfoflow();
+		try {
+			infoflow.setTaintWrapper(new EasyTaintWrapper(new File("EasyTaintWrapperSource.txt")));
+		} catch (Exception e) {}
+		List<String> epoints = new ArrayList<String>();
+		epoints.add("<soot.jimple.infoflow.test.SBBenchmarkCode: void JSONTest()>");
 		infoflow.computeInfoflow(appPath, libPath, epoints, sources, sinks);
 		checkInfoflow(infoflow, 1);
 	}
