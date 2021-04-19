@@ -110,6 +110,8 @@ public class BackwardsWrapperRule extends AbstractTaintPropagationRule {
         if (res != null) {
             Set<Abstraction> resWAliases = new HashSet<>(res);
 
+            SootMethod sm = manager.getICFG().getMethodOf(stmt);
+            boolean intraTurnUnit = manager.getICFG().getMethodOf(source.getTurnUnit()) == sm;
             for (Abstraction abs : res) {
                 AccessPath absAp = abs.getAccessPath();
 
@@ -137,7 +139,7 @@ public class BackwardsWrapperRule extends AbstractTaintPropagationRule {
                 }
 
                 // no need to search for aliases if the access path didn't change
-                if (!absAp.equals(sourceAp) && !absAp.isEmpty() && !(retValTainted && canOmitAliasing(abs, stmt))) {
+                if (!absAp.equals(sourceAp) && !absAp.isEmpty() && !(retValTainted && intraTurnUnit && canOmitAliasing(abs, stmt, sm))) {
                     boolean isBasicString = TypeUtils.isStringType(absAp.getBaseType()) && !absAp.getCanHaveImmutableAliases()
                             && !getAliasing().isStringConstructorCall(stmt);
                     boolean taintsObjectValue = absAp.getBaseType() instanceof RefType && !isBasicString
@@ -197,7 +199,7 @@ public class BackwardsWrapperRule extends AbstractTaintPropagationRule {
      * @param callStmt Statement
      * @return True if the aliasing search can be omitted
      */
-    private boolean canOmitAliasing(Abstraction abs, Stmt callStmt) {
+    private boolean canOmitAliasing(Abstraction abs, Stmt callStmt, SootMethod sm) {
 //        if (disable)
 //            return false;
         if (!(callStmt instanceof AssignStmt))
@@ -208,19 +210,12 @@ public class BackwardsWrapperRule extends AbstractTaintPropagationRule {
             return false;
         InstanceInvokeExpr ie = (InstanceInvokeExpr) assignStmt.getRightOp();
 
-        if (!(ie.getBase() instanceof Local))
-            return false;
         if (ie.getBase() == assignStmt.getLeftOp())
             return false;
         if (!getAliasing().mayAlias(ie.getBase(), abs.getAccessPath().getPlainValue()))
             return false;
 
         if (!excludeList.contains(ie.getMethod().getSignature()))
-            return false;
-
-        SootMethod sm = manager.getICFG().getMethodOf(callStmt);
-        // We can only reason about intraprocedural
-        if (manager.getICFG().getMethodOf(abs.getTurnUnit()) != sm)
             return false;
 
         SingleLiveVariableAnalysis slva = new SingleLiveVariableAnalysis(manager.getICFG().getOrCreateUnitGraph(sm), (Local) ie.getBase(), abs.getTurnUnit());
@@ -231,10 +226,8 @@ public class BackwardsWrapperRule extends AbstractTaintPropagationRule {
             hits++;
         else
             misses++;
-        if (misses > 220) {
-            System.out.println(runtime);
-            System.out.println(hits + ":" + misses);
-        }
+        System.out.println(runtime);
+        System.out.println(hits + ":" + misses);
         return canOmit;
     }
 

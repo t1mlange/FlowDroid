@@ -12,6 +12,7 @@ package soot.jimple.infoflow.test.junit;
 
 import org.junit.Test;
 import soot.jimple.infoflow.IInfoflow;
+import soot.jimple.infoflow.InfoflowConfiguration;
 import soot.jimple.infoflow.taintWrappers.EasyTaintWrapper;
 
 import java.io.File;
@@ -43,6 +44,9 @@ public class SBBenchmarkTest extends JUnitTests {
 	@Test(timeout = 600000)
 	public void JSONTest() {
 		IInfoflow infoflow = initInfoflow();
+		infoflow.getConfig().setEnableArraySizeTainting(false);
+		infoflow.getConfig().setStaticFieldTrackingMode(InfoflowConfiguration.StaticFieldTrackingMode.None);
+		infoflow.getConfig().setStopAfterFirstFlow(true);
 		try {
 			infoflow.setTaintWrapper(new EasyTaintWrapper(new File("EasyTaintWrapperSource.txt")));
 		} catch (Exception e) {}
