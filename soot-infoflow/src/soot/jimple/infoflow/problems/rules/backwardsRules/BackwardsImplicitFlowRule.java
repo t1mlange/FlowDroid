@@ -193,8 +193,8 @@ public class BackwardsImplicitFlowRule extends AbstractTaintPropagationRule {
                         if (retVal instanceof Constant) {
                             Abstraction abs = source.deriveConditionalUpdate(stmt);
                             abs.setTurnUnit(stmt);
-                            Unit condUnit = manager.getICFG().getConditionalBranchIntraprocedural(returnStmt);
-                            if (condUnit != null) {
+                            List<Unit> condUnits = manager.getICFG().getConditionalBranchIntraprocedural(returnStmt);
+                            for (Unit condUnit : condUnits) {
                                 Abstraction intraRet = abs.deriveNewAbstractionWithDominator(condUnit);
                                 res.add(intraRet);
                             }
@@ -317,13 +317,14 @@ public class BackwardsImplicitFlowRule extends AbstractTaintPropagationRule {
             for (int i = 0; i < params.size() && i < ie.getArgCount(); i++) {
                 if (getAliasing().mayAlias(source.getAccessPath().getPlainValue(), params.get(i))
                         && ie.getArg(i) instanceof Constant) {
+                    List<Unit> condUnits = manager.getICFG().getConditionalBranchIntraprocedural(callSite);
                     HashSet<Abstraction> res = new HashSet<>();
-                    Unit condUnit = manager.getICFG().getConditionalBranchIntraprocedural(callSite);
-                    if (condUnit != null) {
+                    for (Unit condUnit : condUnits) {
                         Abstraction intraRet = source.deriveNewAbstractionWithDominator(condUnit, stmt);
                         intraRet.setCorrespondingCallSite(callSite);
-                        return Collections.singleton(intraRet);
+                        res.add(intraRet);
                     }
+                    return res;
                 }
             }
         }

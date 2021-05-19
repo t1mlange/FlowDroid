@@ -12,7 +12,6 @@ import soot.SootMethod;
 import soot.Unit;
 import soot.Value;
 import soot.jimple.InvokeExpr;
-import soot.jimple.infoflow.data.UnitWithContext;
 import soot.jimple.toolkits.ide.icfg.BiDiInterproceduralCFG;
 
 public interface IInfoflowCFG extends BiDiInterproceduralCFG<Unit, SootMethod> {
@@ -110,7 +109,7 @@ public interface IInfoflowCFG extends BiDiInterproceduralCFG<Unit, SootMethod> {
 	 * @param callSite The unit to start the search at
 	 * @return The same-level conditional
 	 */
-	public Unit getConditionalBranchIntraprocedural(Unit callSite);
+	public List<Unit> getConditionalBranchIntraprocedural(Unit callSite);
 
 	/**
 	 * Reconstructs the conditionals a taint could possibly reach.

@@ -33,7 +33,6 @@ import soot.jimple.InvokeExpr;
 import soot.jimple.StaticFieldRef;
 import soot.jimple.Stmt;
 import soot.jimple.VirtualInvokeExpr;
-import soot.jimple.infoflow.data.UnitWithContext;
 import soot.jimple.toolkits.callgraph.Edge;
 import soot.jimple.toolkits.ide.icfg.BiDiInterproceduralCFG;
 import soot.jimple.toolkits.ide.icfg.JimpleBasedInterproceduralCFG;
@@ -534,7 +533,7 @@ public class InfoflowCFG implements IInfoflowCFG {
 	}
 
 	@Override
-	public Unit getConditionalBranchIntraprocedural(Unit callSite) {
+	public List<Unit> getConditionalBranchIntraprocedural(Unit callSite) {
 		return null;
 	}
 

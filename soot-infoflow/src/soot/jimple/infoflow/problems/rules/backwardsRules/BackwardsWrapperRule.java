@@ -111,7 +111,7 @@ public class BackwardsWrapperRule extends AbstractTaintPropagationRule {
             Set<Abstraction> resWAliases = new HashSet<>(res);
 
             SootMethod sm = manager.getICFG().getMethodOf(stmt);
-            boolean intraTurnUnit = manager.getICFG().getMethodOf(source.getTurnUnit()) == sm;
+            boolean intraTurnUnit = source.getTurnUnit() != null && manager.getICFG().getMethodOf(source.getTurnUnit()) == sm;
             for (Abstraction abs : res) {
                 AccessPath absAp = abs.getAccessPath();
 

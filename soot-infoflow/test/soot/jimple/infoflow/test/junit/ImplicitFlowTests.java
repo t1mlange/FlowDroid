@@ -680,4 +680,14 @@ public class ImplicitFlowTests extends JUnitTests {
 		negativeCheckInfoflow(infoflow);
 	}
 
+	@Test(timeout = 300000)
+	public void nestedIfTest() {
+		IInfoflow infoflow = initInfoflow();
+		infoflow.getConfig().setInspectSinks(false);
+
+		List<String> epoints = new ArrayList<String>();
+		epoints.add("<soot.jimple.infoflow.test.ImplicitFlowTestCode: void nestedIfTest()>");
+		infoflow.computeInfoflow(appPath, libPath, epoints, sources, sinks);
+		checkInfoflow(infoflow, 1);
+	}
 }

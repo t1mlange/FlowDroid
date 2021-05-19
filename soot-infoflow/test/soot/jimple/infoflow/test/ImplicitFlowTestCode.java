@@ -649,4 +649,24 @@ public class ImplicitFlowTestCode {
 		}
 	}
 
+	public void nestedIfTest() {
+		int i = constantReturnInIf();
+		ConnectionManager cm = new ConnectionManager();
+		cm.publish(i);
+	}
+
+	private int return42() {
+		return 42;
+	}
+
+	private int constantReturnInIf() {
+		int tainted = TelephonyManager.getIMEI();
+		int notTainted = return42();
+		if (tainted > 42) {
+			if (notTainted == 42) {
+				return 42;
+			}
+		}
+		return 0;
+	}
 }

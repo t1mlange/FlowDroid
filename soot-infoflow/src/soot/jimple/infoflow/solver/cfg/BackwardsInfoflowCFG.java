@@ -8,7 +8,6 @@ import soot.Value;
 import soot.jimple.IfStmt;
 import soot.jimple.Stmt;
 import soot.jimple.SwitchStmt;
-import soot.jimple.infoflow.data.UnitWithContext;
 import soot.jimple.toolkits.ide.icfg.BackwardsInterproceduralCFG;
 import soot.toolkits.graph.DirectedGraph;
 
@@ -75,7 +74,7 @@ public class BackwardsInfoflowCFG extends InfoflowCFG {
 	}
 
 	@Override
-	public Unit getConditionalBranchIntraprocedural(Unit unit) {
+	public List<Unit> getConditionalBranchIntraprocedural(Unit unit) {
 		SootMethod sm = getMethodOf(unit);
 		// Exclude the dummy method
 		if (sm.getDeclaringClass().getName().equals("dummyMainClass") && sm.getName().equals("dummy"))
@@ -84,17 +83,19 @@ public class BackwardsInfoflowCFG extends InfoflowCFG {
 		DirectedGraph<Unit> graph = getOrCreateUnitGraph(sm);
 		List<Unit> worklist = new ArrayList<>(sameLevelPredecessors(graph, unit));
 		Set<Unit> doneSet = new HashSet<>();
+		List<Unit> conditionals = new ArrayList<>();
 		while (worklist.size() > 0) {
 			Unit item = worklist.remove(0);
 			doneSet.add(item);
-			if (item instanceof IfStmt || item instanceof SwitchStmt)
-				return item;
+			if (item instanceof IfStmt || item instanceof SwitchStmt) {
+				conditionals.add(item);
+			}
 
 			List<Unit> preds = sameLevelPredecessors(graph, item);
 			preds.removeIf(doneSet::contains);
 			worklist.addAll(preds);
 		}
-		return null;
+		return conditionals;
 	}
 
 	@Override

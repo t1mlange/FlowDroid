@@ -31,7 +31,7 @@ import java.util.*;
  * @author Tim Lange
  */
 public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
-    private final static boolean DEBUG_PRINT = false;
+    private final static boolean DEBUG_PRINT = true;
     private final static boolean ONLY_CALLS = false;
 
     private final PropagationRuleManager propagationRules;
@@ -491,9 +491,11 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
                                                     abs.setTurnUnit(stmt);
 
                                                 if (abs.getDominator() == null && manager.getConfig().getImplicitFlowMode().trackControlFlowDependencies()) {
-                                                    Unit condUnit = manager.getICFG().getConditionalBranchIntraprocedural(returnStmt);
-                                                    if (condUnit != null) {
-                                                        abs.setDominator(condUnit);
+                                                    List<Unit> condUnits = manager.getICFG().getConditionalBranchIntraprocedural(returnStmt);
+                                                    if (condUnits.size() >= 1) {
+                                                        abs.setDominator(condUnits.get(0));
+                                                        for (int i = 1; i < condUnits.size(); i++)
+                                                            res.add(abs.deriveNewAbstractionWithDominator(condUnits.get(i)));
                                                     }
                                                 }
 

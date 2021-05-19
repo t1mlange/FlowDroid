@@ -1,5 +1,6 @@
 package soot.jimple.infoflow.problems.rules.backwardsRules;
 
+import fj.Hash;
 import soot.SootMethod;
 import soot.Unit;
 import soot.Value;
@@ -15,6 +16,7 @@ import soot.jimple.infoflow.util.ByReferenceBoolean;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 
 /**
  * Rule for propagating exceptional data flows
@@ -62,9 +64,15 @@ public class BackwardsExceptionPropagationRule extends AbstractTaintPropagationR
 			if (ap != null) {
 				Abstraction abs = source.deriveNewAbstractionOnCatch(ap);
 				if (manager.getConfig().getImplicitFlowMode().trackControlFlowDependencies() && abs.getDominator() == null) {
-					Unit condUnit = manager.getICFG().getConditionalBranchIntraprocedural(stmt);
-					if (condUnit != null)
-						abs.setDominator(condUnit);
+					HashSet<Abstraction> res = new HashSet<>();
+					res.add(abs);
+					List<Unit> condUnits = manager.getICFG().getConditionalBranchIntraprocedural(stmt);
+					if (condUnits.size() >= 1) {
+						abs.setDominator(condUnits.get(0));
+						for (int i = 1; i < condUnits.size(); i++)
+							res.add(abs.deriveNewAbstractionWithDominator(condUnits.get(i)));
+					}
+					return res;
 				}
 				return Collections.singleton(abs);
 			}
