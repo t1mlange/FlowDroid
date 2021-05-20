@@ -662,8 +662,10 @@ public class ImplicitFlowTestCode {
 	private int constantReturnInIf() {
 		int tainted = TelephonyManager.getIMEI();
 		int notTainted = return42();
+		int x = 0;
 		if (tainted > 42) {
 			if (notTainted == 42) {
+				return42();
 				return 42;
 			}
 		}

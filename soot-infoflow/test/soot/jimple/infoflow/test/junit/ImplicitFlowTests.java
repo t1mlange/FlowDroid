@@ -684,6 +684,7 @@ public class ImplicitFlowTests extends JUnitTests {
 	public void nestedIfTest() {
 		IInfoflow infoflow = initInfoflow();
 		infoflow.getConfig().setInspectSinks(false);
+		infoflow.getConfig().setCodeEliminationMode(InfoflowConfiguration.CodeEliminationMode.NoCodeElimination);
 
 		List<String> epoints = new ArrayList<String>();
 		epoints.add("<soot.jimple.infoflow.test.ImplicitFlowTestCode: void nestedIfTest()>");

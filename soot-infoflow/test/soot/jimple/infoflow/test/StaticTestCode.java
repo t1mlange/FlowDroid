@@ -17,8 +17,7 @@ import soot.jimple.infoflow.test.utilclasses.ClassWithStatic;
 public class StaticTestCode {
 	public static String im;
 	public void staticInitTest(){
-		String tainted1 = TelephonyManager.getDeviceId();
-		im = tainted1;
+		im = TelephonyManager.getDeviceId();
 		StaticInitClass1 st = new StaticInitClass1();
 		st.printFalse();
 	}

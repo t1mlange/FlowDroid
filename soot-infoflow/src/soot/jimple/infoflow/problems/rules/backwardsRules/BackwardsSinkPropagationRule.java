@@ -1,6 +1,7 @@
 package soot.jimple.infoflow.problems.rules.backwardsRules;
 
 import soot.SootMethod;
+import soot.Unit;
 import soot.jimple.Stmt;
 import soot.jimple.infoflow.InfoflowManager;
 import soot.jimple.infoflow.data.Abstraction;
@@ -11,9 +12,7 @@ import soot.jimple.infoflow.sourcesSinks.manager.IReversibleSourceSinkManager;
 import soot.jimple.infoflow.sourcesSinks.manager.SourceInfo;
 import soot.jimple.infoflow.util.ByReferenceBoolean;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Rule to introduce unconditional taints at sinks
@@ -42,12 +41,18 @@ public class BackwardsSinkPropagationRule extends AbstractTaintPropagationRule {
 
 			// Is this a source?
 			if (sinkInfo != null && !sinkInfo.getAccessPaths().isEmpty()) {
+				// Do not introduce taints inside exclusive methods
+				Optional<Unit> caller = manager.getICFG().getCallersOf(manager.getICFG().getMethodOf(stmt)).stream().findAny();
+				if (caller.isPresent() && manager.getTaintWrapper().isExclusive((Stmt) caller.get(), zeroValue))
+					return null;
+
 				Set<Abstraction> res = new HashSet<>();
 				for (AccessPath ap : sinkInfo.getAccessPaths()) {
 					// Create the new taint abstraction
 					Abstraction abs = new Abstraction(sinkInfo.getDefinition(), ap, stmt, sinkInfo.getUserData(),
 							false, false);
 					abs.setTurnUnit(stmt);
+
 					res.add(abs);
 
 					// Set the corresponding call site

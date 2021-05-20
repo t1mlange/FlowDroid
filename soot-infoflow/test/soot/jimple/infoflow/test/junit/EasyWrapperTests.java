@@ -41,8 +41,8 @@ public class EasyWrapperTests extends JUnitTests {
 		wrapper.setAlwaysModelEqualsHashCode(true);
 		
 		IInfoflow infoflow = initInfoflow();
-		onlyForwards(infoflow, "EasyTaintWrapper marks equals/hashcode as exclusive. If we start inside one," +
-				"exclusive won't get checked.");
+//		onlyForwards(infoflow, "EasyTaintWrapper marks equals/hashcode as exclusive. If we start inside one," +
+//				"exclusive won't get checked.");
     	List<String> epoints = new ArrayList<String>();
     	epoints.add("<soot.jimple.infoflow.test.EasyWrapperTestCode: void equalsTest()>");
     	infoflow.setTaintWrapper(wrapper);
@@ -56,8 +56,8 @@ public class EasyWrapperTests extends JUnitTests {
 		wrapper.setAlwaysModelEqualsHashCode(true);
 		
 		IInfoflow infoflow = initInfoflow();
-		onlyForwards(infoflow, "EasyTaintWrapper marks equals/hashcode as exclusive. If we start inside one," +
-				"exclusive won't get checked.");
+//		onlyForwards(infoflow, "EasyTaintWrapper marks equals/hashcode as exclusive. If we start inside one," +
+//				"exclusive won't get checked.");
 		List<String> epoints = new ArrayList<String>();
     	epoints.add("<soot.jimple.infoflow.test.EasyWrapperTestCode: void hashCodeTest()>");
     	infoflow.setTaintWrapper(wrapper);
