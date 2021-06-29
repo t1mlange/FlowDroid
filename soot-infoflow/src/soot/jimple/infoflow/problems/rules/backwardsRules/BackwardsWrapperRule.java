@@ -186,10 +186,6 @@ public class BackwardsWrapperRule extends AbstractTaintPropagationRule {
         }
     }
 
-    int hits = 0;
-    int misses = 0;
-    boolean disable = true;
-    int runtime = 0;
     /**
      * Optimization for StringBuilders/StringBuffers. Both return this for easy chaining. But Jimple does
      * not reuse the local sometimes. Thus, if at certain methods the local is not reused, we first do an
@@ -200,8 +196,6 @@ public class BackwardsWrapperRule extends AbstractTaintPropagationRule {
      * @return True if the aliasing search can be omitted
      */
     private boolean canOmitAliasing(Abstraction abs, Stmt callStmt, SootMethod sm) {
-//        if (disable)
-//            return false;
         if (!(callStmt instanceof AssignStmt))
             return false;
         AssignStmt assignStmt = (AssignStmt) callStmt;
@@ -219,16 +213,7 @@ public class BackwardsWrapperRule extends AbstractTaintPropagationRule {
             return false;
 
         SingleLiveVariableAnalysis slva = new SingleLiveVariableAnalysis(manager.getICFG().getOrCreateUnitGraph(sm), (Local) ie.getBase(), abs.getTurnUnit());
-//        System.out.println("Spent " + slva.getRuntimeInMicroseconds() + "micros in live variables");
-        boolean canOmit = slva.canOmitAlias(callStmt);
-        runtime += slva.getRuntimeInMicroseconds();
-        if (canOmit)
-            hits++;
-        else
-            misses++;
-        System.out.println(runtime);
-        System.out.println(hits + ":" + misses);
-        return canOmit;
+        return slva.canOmitAlias(callStmt);
     }
 
     @Override
