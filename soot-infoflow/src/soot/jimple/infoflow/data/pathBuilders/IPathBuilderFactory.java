@@ -1,7 +1,6 @@
 package soot.jimple.infoflow.data.pathBuilders;
 
 import soot.jimple.infoflow.InfoflowManager;
-import soot.jimple.infoflow.results.InfoflowResults;
 import soot.jimple.infoflow.solver.executors.InterruptableExecutor;
 
 /**
