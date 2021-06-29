@@ -39,11 +39,11 @@ public class JUnitTests {
 		FLOWDROID_FORWARDS
 	}
 
-	protected final TestResultMode mode = TestResultMode.FLOWDROID_BACKWARDS;
+	protected final TestResultMode mode = TestResultMode.FLOWDROID_FORWARDS;
 
 	/**
 	 * Analyzes the given APK file for data flows
-	 * 
+	 *
 	 * @param fileName The full path and file name of the APK file to analyze
 	 * @return The data leaks found in the given APK file
 	 * @throws IOException            Thrown if the given APK file or any other
@@ -57,7 +57,7 @@ public class JUnitTests {
 
 	/**
 	 * Analyzes the given APK file for data flows
-	 * 
+	 *
 	 * @param fileName The full path and file name of the APK file to analyze
 	 * @param iccModel The full path and file name of the ICC model to use
 	 * @return The data leaks found in the given APK file
@@ -72,7 +72,7 @@ public class JUnitTests {
 
 	/**
 	 * Analyzes the given APK file for data flows
-	 * 
+	 *
 	 * @param fileName            The full path and file name of the APK file to
 	 *                            analyze
 	 * @param enableImplicitFlows True if implicit flows shall be tracked, otherwise
@@ -98,7 +98,7 @@ public class JUnitTests {
 
 	/**
 	 * Interface that allows test cases to configure the analyzer for DroidBench
-	 * 
+	 *
 	 * @author Steven Arzt
 	 *
 	 */
@@ -107,7 +107,7 @@ public class JUnitTests {
 		/**
 		 * Method that is called to give the test case the chance to change the analyzer
 		 * configuration
-		 * 
+		 *
 		 * @param config The configuration object used by the analyzer
 		 */
 		public void configureAnalyzer(InfoflowAndroidConfiguration config);
@@ -116,7 +116,7 @@ public class JUnitTests {
 
 	/**
 	 * Analyzes the given APK file for data flows
-	 * 
+	 *
 	 * @param fileName       The full path and file name of the APK file to analyze
 	 * @param iccModel       The full path and file name of the ICC model to use
 	 * @param configCallback A callback that is invoked to allow the test case to
@@ -164,110 +164,14 @@ public class JUnitTests {
 			configCallback.configureAnalyzer(setupApplication.getConfig());
 		setupApplication.getConfig().setEnableArraySizeTainting(true);
 
-		try {
-			setupApplication.setTaintWrapper(new EasyTaintWrapper(taintWrapperFile));
-//			setupApplication.setTaintWrapper(new SummaryTaintWrapper(new LazySummaryProvider("summariesManual")));
-		} catch (Exception e) {
+		setupApplication.setTaintWrapper(new EasyTaintWrapper(taintWrapperFile));
 
-		}
-		setupApplication.getConfig().setDataFlowDirection(InfoflowConfiguration.DataFlowDirection.Backwards);
-
-		if (setupApplication.getTaintWrapper() instanceof SummaryTaintWrapper)
-			configStr += "sum";
-		else
-			configStr += "easy";
-
-		if (setupApplication.getConfig().getDataFlowDirection() == InfoflowConfiguration.DataFlowDirection.Backwards)
-			configStr += "bw";
-		else
-			configStr += "fw";
+		if (mode == TestResultMode.FLOWDROID_BACKWARDS)
+			setupApplication.getConfig().setDataFlowDirection(InfoflowConfiguration.DataFlowDirection.Backwards);
 
 		if (iccModel != null && iccModel.length() > 0) {
 			setupApplication.getConfig().getIccConfig().setIccModel(iccModel);
 		}
-		InfoflowResults results = setupApplication.runInfoflow("SourcesAndSinks.txt");
-		if (results != null)
-			performanceData = results.getPerformanceData();
-
-//		try (FileWriter fw = new FileWriter("sourcesink.txt", true)) {
-//			BufferedWriter bw = new BufferedWriter(fw);
-//			bw.write(fileName + " " + setupApplication.getCollectedSources().size() + ":" + setupApplication.getCollectedSinks().size() + "\n");
-//			bw.close();
-//		} catch (IOException e) {
-//			e.printStackTrace();
-//		}
-
-		return results;
+		return  setupApplication.runInfoflow("SourcesAndSinks.txt");
 	}
-
-	InfoflowPerformanceData performanceData;
-	String configStr = "";
-
-	class TestResult {
-		String category;
-		String name;
-		long infoflowEdges = -1;
-		long aliasEdges = -1;
-
-		TestResult(String name, String category) {
-			this.name = name;
-			this.category = category;
-		}
-
-		void set(long infoflowEdges, long aliasEdges) {
-			this.infoflowEdges = infoflowEdges;
-			this.aliasEdges = aliasEdges;
-		}
-
-		@Override
-		public String toString() {
-			return category + "," + name + "," + infoflowEdges + "," + aliasEdges + "\n";
-		}
-	}
-
-	private final static boolean log = false;
-
-	@Rule
-	public TestWatcher edgeEvaluation = new TestWatcher() {
-		@Override
-		protected void failed(Throwable e, Description description) {
-			if (!log)
-				return;
-			String category = description.getClassName().replace("soot.jimple.infoflow.android.test.droidBench.", "");
-			String name = description.getMethodName().replace("runTest", "");
-			TestResult tr = new TestResult(name, category);
-			if (name.contains("IMEI1") || performanceData == null)
-				tr.set(-1, -1);
-			else
-				tr.set(performanceData.getInfoflowPropagationCount(), performanceData.getAliasPropagationCount());
-			dumpToFile(tr);
-		}
-
-		@Override
-		protected void succeeded(Description description) {
-			if (!log)
-				return;
-			String category = description.getClassName().replace("soot.jimple.infoflow.android.test.droidBench.", "");
-			String name = description.getMethodName().replace("runTest", "");
-
-			TestResult tr = new TestResult(name, category);
-
-			if (performanceData == null)
-				tr.set(-1, -1);
-			else
-				tr.set(performanceData.getInfoflowPropagationCount(), performanceData.getAliasPropagationCount());
-
-			dumpToFile(tr);
-		}
-
-		private void dumpToFile(TestResult tr) {
-			try (FileWriter fw = new FileWriter(configStr + ".txt", true)) {
-				BufferedWriter bw = new BufferedWriter(fw);
-				bw.write(tr.toString());
-				bw.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-	};
 }

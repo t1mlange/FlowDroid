@@ -34,7 +34,7 @@ public class LifecycleTest extends JUnitTests {
 	 // Test case broken?
 	public void runTestActivityEventSequence2() throws IOException, XmlPullParserException {
 		int expected = 1;
-		if (mode == TestResultMode.FLOWDROID_BACKWARDS)
+		if (mode == TestResultMode.FLOWDROID_BACKWARDS || mode == TestResultMode.FLOWDROID_FORWARDS)
 			expected = 0;
 		InfoflowResults res = analyzeAPKFile("Lifecycle/ActivityEventSequence2.apk");
 		Assert.assertNotNull(res);
@@ -45,7 +45,7 @@ public class LifecycleTest extends JUnitTests {
 	
 	public void runTestActivityEventSequence3() throws IOException, XmlPullParserException {
 		int expected = 1;
-		if (mode == TestResultMode.FLOWDROID_BACKWARDS)
+		if (mode == TestResultMode.FLOWDROID_BACKWARDS || mode == TestResultMode.FLOWDROID_FORWARDS)
 			expected = 0;
 		InfoflowResults res = analyzeAPKFile("Lifecycle/ActivityEventSequence3.apk");
 		Assert.assertNotNull(res);
@@ -107,7 +107,7 @@ public class LifecycleTest extends JUnitTests {
 	@Test(timeout = 300000)
 	public void runTestApplicationLifecycle2() throws IOException, XmlPullParserException {
 		int expected = 2;
-		if (mode == TestResultMode.FLOWDROID_BACKWARDS)
+		if (mode == TestResultMode.FLOWDROID_BACKWARDS || mode == TestResultMode.FLOWDROID_FORWARDS)
 			expected = 1;
 		InfoflowResults res = analyzeAPKFile("Lifecycle/ApplicationLifecycle2.apk");
 		Assert.assertNotNull(res);
@@ -139,7 +139,7 @@ public class LifecycleTest extends JUnitTests {
 	@Test(timeout = 300000)
 	public void runTestBroadcastReceiverLifecycle2() throws IOException, XmlPullParserException {
 		int expected = 1;
-		if (mode == TestResultMode.FLOWDROID_BACKWARDS)
+		if (mode == TestResultMode.FLOWDROID_BACKWARDS || mode == TestResultMode.FLOWDROID_FORWARDS)
 			expected = 2;
 		InfoflowResults res = analyzeAPKFile("Lifecycle/BroadcastReceiverLifecycle2.apk");
 		Assert.assertNotNull(res);
@@ -163,7 +163,7 @@ public class LifecycleTest extends JUnitTests {
 	@Test(timeout = 300000)
 	public void runTestFragmentLifecycle1() throws IOException, XmlPullParserException {
 		int expected = 0;
-		if (mode == TestResultMode.FLOWDROID_BACKWARDS)
+		if (mode == TestResultMode.FLOWDROID_BACKWARDS || mode == TestResultMode.FLOWDROID_FORWARDS)
 			expected = 1;
 		InfoflowResults res = analyzeAPKFile("Lifecycle/FragmentLifecycle1.apk");
 		Assert.assertNotNull(res);
@@ -174,7 +174,7 @@ public class LifecycleTest extends JUnitTests {
 	 // not supported yet
 	public void runTestFragmentLifecycle2() throws IOException, XmlPullParserException {
 		int expected = 1;
-		if (mode == TestResultMode.FLOWDROID_BACKWARDS)
+		if (mode == TestResultMode.FLOWDROID_BACKWARDS || mode == TestResultMode.FLOWDROID_FORWARDS)
 			expected = 0;
 		InfoflowResults res = analyzeAPKFile("Lifecycle/FragmentLifecycle2.apk");
 		Assert.assertNotNull(res);
@@ -185,7 +185,7 @@ public class LifecycleTest extends JUnitTests {
 	
 	public void runTestServiceEventSequence1() throws IOException, XmlPullParserException {
 		int expected = 1;
-		if (mode == TestResultMode.FLOWDROID_BACKWARDS)
+		if (mode == TestResultMode.FLOWDROID_BACKWARDS || mode == TestResultMode.FLOWDROID_FORWARDS)
 			expected = 0;
 		InfoflowResults res = analyzeAPKFile("Lifecycle/ServiceEventSequence1.apk");
 		Assert.assertNotNull(res);
@@ -195,7 +195,7 @@ public class LifecycleTest extends JUnitTests {
 	@Test(timeout = 300000)
 	public void runTestServiceEventSequence2() throws IOException, XmlPullParserException {
 		int expected = 1;
-		if (mode == TestResultMode.FLOWDROID_BACKWARDS)
+		if (mode == TestResultMode.FLOWDROID_BACKWARDS || mode == TestResultMode.FLOWDROID_FORWARDS)
 			expected = 0;
 		InfoflowResults res = analyzeAPKFile("Lifecycle/ServiceEventSequence2.apk");
 		Assert.assertNotNull(res);
@@ -205,7 +205,7 @@ public class LifecycleTest extends JUnitTests {
 	@Test(timeout = 300000)
 	public void runTestServiceEventSequence3() throws IOException, XmlPullParserException {
 		int expected = 1;
-		if (mode == TestResultMode.FLOWDROID_BACKWARDS)
+		if (mode == TestResultMode.FLOWDROID_BACKWARDS || mode == TestResultMode.FLOWDROID_FORWARDS)
 			expected = 0;
 		InfoflowResults res = analyzeAPKFile("Lifecycle/ServiceEventSequence3.apk");
 		Assert.assertNotNull(res);

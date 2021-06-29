@@ -41,7 +41,7 @@ public class CallbackTest extends JUnitTests {
 	@Test(timeout = 300000)
 	public void runTestButton2() throws IOException, XmlPullParserException {
 		int expected = 3;
-		if (mode == TestResultMode.FLOWDROID_BACKWARDS)
+		if (mode == TestResultMode.FLOWDROID_BACKWARDS || mode == TestResultMode.FLOWDROID_FORWARDS)
 			expected = 4;
 		InfoflowResults res = analyzeAPKFile("Callbacks/Button2.apk");
 		Assert.assertNotNull(res);
@@ -138,7 +138,7 @@ public class CallbackTest extends JUnitTests {
 	 // Unregistering callbacks is not supported
 	public void runTestUnregister1() throws IOException, XmlPullParserException {
 		int expected = 0;
-		if (mode == TestResultMode.FLOWDROID_BACKWARDS)
+		if (mode == TestResultMode.FLOWDROID_BACKWARDS || mode == TestResultMode.FLOWDROID_FORWARDS)
 			expected = 1;
 		InfoflowResults res = analyzeAPKFile("Callbacks/Unregister1.apk");
 		Assert.assertNotNull(res);

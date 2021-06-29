@@ -76,7 +76,7 @@ public class ReflectionTest extends JUnitTests {
 	
 	public void runTestReflection7() throws IOException, XmlPullParserException {
 		int expected = 1;
-		if (mode == TestResultMode.FLOWDROID_BACKWARDS)
+		if (mode == TestResultMode.FLOWDROID_BACKWARDS || mode == TestResultMode.FLOWDROID_FORWARDS)
 			expected = 0;
 		InfoflowResults res = analyzeAPKFile("Reflection/Reflection7.apk", null,
 				enableReflectionCallback);

@@ -23,7 +23,7 @@ public class ArrayAndListTest extends JUnitTests {
 	@Test(timeout=300000)
 	public void runTestArrayAccess1() throws IOException, XmlPullParserException {
 		int expected = 0;
-		if (mode == TestResultMode.FLOWDROID_BACKWARDS)
+		if (mode == TestResultMode.FLOWDROID_BACKWARDS || mode == TestResultMode.FLOWDROID_FORWARDS)
 			expected = 1;
 
 		InfoflowResults res = analyzeAPKFile("ArraysAndLists/ArrayAccess1.apk");
@@ -34,7 +34,7 @@ public class ArrayAndListTest extends JUnitTests {
 	@Test(timeout=300000)
 	public void runTestArrayAccess2() throws IOException, XmlPullParserException {
 		int expected = 0;
-		if (mode == TestResultMode.FLOWDROID_BACKWARDS)
+		if (mode == TestResultMode.FLOWDROID_BACKWARDS || mode == TestResultMode.FLOWDROID_FORWARDS)
 			expected = 1;
 
 		InfoflowResults res = analyzeAPKFile("ArraysAndLists/ArrayAccess2.apk");
@@ -79,7 +79,7 @@ public class ArrayAndListTest extends JUnitTests {
 	
 	public void runTestHashMapAccess1() throws IOException, XmlPullParserException {
 		int expected = 0;
-		if (mode == TestResultMode.FLOWDROID_BACKWARDS)
+		if (mode == TestResultMode.FLOWDROID_BACKWARDS || mode == TestResultMode.FLOWDROID_FORWARDS)
 			expected = 1;
 		InfoflowResults res = analyzeAPKFile("ArraysAndLists/HashMapAccess1.apk");
 		Assert.assertEquals(expected, res.size());
@@ -88,7 +88,7 @@ public class ArrayAndListTest extends JUnitTests {
 	@Test(timeout=300000)
 	public void runTestListAccess1() throws IOException, XmlPullParserException {
 		int expected = 0;
-		if (mode == TestResultMode.FLOWDROID_BACKWARDS)
+		if (mode == TestResultMode.FLOWDROID_BACKWARDS || mode == TestResultMode.FLOWDROID_FORWARDS)
 			expected = 1;
 
 		InfoflowResults res = analyzeAPKFile("ArraysAndLists/ListAccess1.apk");

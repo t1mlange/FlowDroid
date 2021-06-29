@@ -87,7 +87,7 @@ public class AndroidSpecificTest extends JUnitTests {
 	 // not supported, would require taint tracking via files
 	public void runTestPrivateDataLeak3() throws IOException, XmlPullParserException {
 		int expected = 2;
-		if (mode == TestResultMode.FLOWDROID_BACKWARDS)
+		if (mode == TestResultMode.FLOWDROID_BACKWARDS || mode == TestResultMode.FLOWDROID_FORWARDS)
 			expected = 1;
 
 		InfoflowResults res = analyzeAPKFile("AndroidSpecific/PrivateDataLeak3.apk");

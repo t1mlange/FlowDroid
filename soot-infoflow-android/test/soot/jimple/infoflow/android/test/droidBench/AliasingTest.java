@@ -31,7 +31,7 @@ public class AliasingTest extends JUnitTests {
 	 // not yet supported
 	public void runTestMerge1() throws IOException, XmlPullParserException {
 		int expected = 0;
-		if (mode == TestResultMode.FLOWDROID_BACKWARDS)
+		if (mode == TestResultMode.FLOWDROID_BACKWARDS || mode == TestResultMode.FLOWDROID_FORWARDS)
 			expected = 1;
 
 		InfoflowResults res = analyzeAPKFile("Aliasing/Merge1.apk");

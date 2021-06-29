@@ -37,7 +37,7 @@ public class GeneralJavaTest extends JUnitTests {
 	 // requires StubDroid
 	public void runTestSerialization1() throws IOException, XmlPullParserException {
 		int expected = 1;
-		if (mode == TestResultMode.FLOWDROID_BACKWARDS)
+		if (mode == TestResultMode.FLOWDROID_BACKWARDS || mode == TestResultMode.FLOWDROID_FORWARDS)
 			expected = 0;
 		InfoflowResults res = analyzeAPKFile("GeneralJava/Serialization1.apk");
 		Assert.assertEquals(expected, res.size());
@@ -72,7 +72,7 @@ public class GeneralJavaTest extends JUnitTests {
 			// not supported yet, would require condition evaluation
 	public void runTestExceptions3() throws IOException, XmlPullParserException {
 		int expected = 0;
-		if (mode == TestResultMode.FLOWDROID_BACKWARDS)
+		if (mode == TestResultMode.FLOWDROID_BACKWARDS || mode == TestResultMode.FLOWDROID_FORWARDS)
 			expected = 1;
 
 		InfoflowResults res = analyzeAPKFile("GeneralJava/Exceptions3.apk");
@@ -136,7 +136,7 @@ public class GeneralJavaTest extends JUnitTests {
 	@Test(timeout=300000)
 	public void runTestStaticInitialization2() throws IOException, XmlPullParserException {
 		int expected = 1;
-		if (mode == TestResultMode.FLOWDROID_BACKWARDS)
+		if (mode == TestResultMode.FLOWDROID_BACKWARDS || mode == TestResultMode.FLOWDROID_FORWARDS)
 			expected = 1;
 		InfoflowResults res = analyzeAPKFile("GeneralJava/StaticInitialization2.apk");
 		Assert.assertEquals(expected, res.size());
@@ -146,7 +146,7 @@ public class GeneralJavaTest extends JUnitTests {
 			// not supported yet in FlowDroid
 	public void runTestStaticInitialization3() throws IOException, XmlPullParserException {
 		int expected = 1;
-		if (mode == TestResultMode.FLOWDROID_BACKWARDS)
+		if (mode == TestResultMode.FLOWDROID_BACKWARDS || mode == TestResultMode.FLOWDROID_FORWARDS)
 			expected = 0;
 		InfoflowResults res = analyzeAPKFile("GeneralJava/StaticInitialization3.apk");
 		Assert.assertEquals(expected, res.size());
@@ -156,7 +156,7 @@ public class GeneralJavaTest extends JUnitTests {
 			// needs complex library summaries
 	public void runTestStringFormatter1() throws IOException, XmlPullParserException {
 		int expected = 1;
-		if (mode == TestResultMode.FLOWDROID_BACKWARDS)
+		if (mode == TestResultMode.FLOWDROID_BACKWARDS || mode == TestResultMode.FLOWDROID_FORWARDS)
 			expected = 0;
 		InfoflowResults res = analyzeAPKFile("GeneralJava/StringFormatter1.apk");
 		Assert.assertEquals(expected, res.size());
@@ -177,7 +177,7 @@ public class GeneralJavaTest extends JUnitTests {
 	@Test(timeout=300000)
 	public void runTestStringToOutputStream1() throws IOException, XmlPullParserException {
 		int expected = 1;
-		if (mode == TestResultMode.FLOWDROID_BACKWARDS)
+		if (mode == TestResultMode.FLOWDROID_BACKWARDS || mode == TestResultMode.FLOWDROID_FORWARDS)
 			expected = 2;
 		InfoflowResults res = analyzeAPKFile("GeneralJava/StringToOutputStream1.apk");
 		Assert.assertEquals(expected, res.size());	// Log + File
@@ -194,7 +194,7 @@ public class GeneralJavaTest extends JUnitTests {
 			// TODO: produces false positives, need to check
 	public void runTestVirtualDispatch1() throws IOException, XmlPullParserException {
 		int expected = 1;
-		if (mode == TestResultMode.FLOWDROID_BACKWARDS)
+		if (mode == TestResultMode.FLOWDROID_BACKWARDS || mode == TestResultMode.FLOWDROID_FORWARDS)
 			expected = 2;
 		InfoflowResults res = analyzeAPKFile("GeneralJava/VirtualDispatch1.apk");
 		Assert.assertEquals(expected, res.size());
@@ -203,7 +203,7 @@ public class GeneralJavaTest extends JUnitTests {
 	@Test(timeout=300000)
 	public void runTestVirtualDispatch2() throws IOException, XmlPullParserException {
 		int expected = 1;
-		if (mode == TestResultMode.FLOWDROID_BACKWARDS)
+		if (mode == TestResultMode.FLOWDROID_BACKWARDS || mode == TestResultMode.FLOWDROID_FORWARDS)
 			expected = 2;
 		InfoflowResults res = analyzeAPKFile("GeneralJava/VirtualDispatch2.apk");
 		Assert.assertEquals(expected, res.size());  // normally 1, +1 for context-insensitive CFG
@@ -213,7 +213,7 @@ public class GeneralJavaTest extends JUnitTests {
 			// TODO: SPARK issue, maybe context-insensitive CFG
 	public void runTestVirtualDispatch3() throws IOException, XmlPullParserException {
 		int expected = 0;
-		if (mode == TestResultMode.FLOWDROID_BACKWARDS)
+		if (mode == TestResultMode.FLOWDROID_BACKWARDS || mode == TestResultMode.FLOWDROID_FORWARDS)
 			expected = 1;
 		InfoflowResults res = analyzeAPKFile("GeneralJava/VirtualDispatch3.apk");
 		if (res != null)
