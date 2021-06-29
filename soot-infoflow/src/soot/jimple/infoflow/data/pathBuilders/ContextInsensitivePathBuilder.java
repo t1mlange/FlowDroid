@@ -9,7 +9,6 @@ import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.data.AbstractionAtSink;
 import soot.jimple.infoflow.data.SourceContext;
 import soot.jimple.infoflow.data.SourceContextAndPath;
-import soot.jimple.infoflow.results.InfoflowResults;
 import soot.jimple.infoflow.solver.executors.InterruptableExecutor;
 
 /**

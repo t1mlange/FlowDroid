@@ -7,7 +7,6 @@ import java.util.concurrent.TimeUnit;
 import soot.jimple.infoflow.InfoflowConfiguration.PathBuildingAlgorithm;
 import soot.jimple.infoflow.InfoflowConfiguration.PathConfiguration;
 import soot.jimple.infoflow.InfoflowManager;
-import soot.jimple.infoflow.results.InfoflowResults;
 import soot.jimple.infoflow.solver.executors.InterruptableExecutor;
 
 /**
