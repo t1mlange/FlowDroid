@@ -61,43 +61,6 @@ public class EasyWrapperTestCode {
 		System.out.println("Hello World " + a.hashCode());
 	}
 
-	private class A2 {
-		String data;
-
-		@Override
-		public boolean equals(Object other) {
-			data = TelephonyManager.getDeviceId();
-			return super.equals(other);
-		}
-
-		@Override
-		public int hashCode() {
-			data = TelephonyManager.getDeviceId();
-			return super.hashCode();
-		}
-
-		public String getConstant() {
-			return "Hello World";
-		}
-	}
-
-	public void equalsTestBW() {
-		A2 a2 = new A2();
-		if (a2.equals(null)) {
-			System.out.println("Hello World");
-			ConnectionManager cm = new ConnectionManager();
-			cm.publish(a2.data);
-		}
-	}
-
-	public void hashCodeTestBW() {
-		A2 a2 = new A2();
-		System.out.println("Hello World " + a2.hashCode());
-		ConnectionManager cm = new ConnectionManager();
-		cm.publish(a2.data);
-	}
-
-
 	private class B {	
 		String data;
 		

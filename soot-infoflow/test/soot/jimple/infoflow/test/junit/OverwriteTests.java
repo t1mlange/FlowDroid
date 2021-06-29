@@ -52,7 +52,7 @@ public class OverwriteTests extends JUnitTests {
 
 	@Test(timeout = 300000)
 	public void returnOverwriteTest() {
-		IInfoflow infoflow = initInfoflow(false);
+		IInfoflow infoflow = initInfoflow();
 		List<String> epoints = new ArrayList<String>();
 		epoints.add("<soot.jimple.infoflow.test.OverwriteTestCode: void returnOverwrite()>");
 		infoflow.computeInfoflow(appPath, libPath, epoints, sources, sinks);

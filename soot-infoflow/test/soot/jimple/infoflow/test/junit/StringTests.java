@@ -257,7 +257,7 @@ public class StringTests extends JUnitTests {
 
 	@Test(timeout = 600000)
 	public void stringBuilderTest5() {
-		IInfoflow infoflow = initInfoflow(false);
+		IInfoflow infoflow = initInfoflow();
 		List<String> epoints = new ArrayList<String>();
 		epoints.add("<soot.jimple.infoflow.test.StringTestCode: void methodStringBuilder5()>");
 		infoflow.computeInfoflow(appPath, libPath, epoints, sources, sinks);
