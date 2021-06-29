@@ -599,21 +599,22 @@ public class BackwardsInfoflow extends AbstractInfoflow {
 
                 aliasingStrategy = new BackwardsFlowSensitiveAliasStrategy(manager, aliasSolver);
                 break;
-            case PtsBased:
-                aliasProblem = null;
-                aliasSolver = null;
-                aliasingStrategy = new PtsBasedAliasStrategy(manager);
-                break;
             case None:
                 aliasProblem = null;
                 aliasSolver = null;
                 aliasingStrategy = new NullAliasStrategy();
                 break;
-            case Lazy:
-                aliasProblem = null;
-                aliasSolver = null;
-                aliasingStrategy = new LazyAliasingStrategy(manager);
-                break;
+            // TODO: currently not supported
+//            case PtsBased:
+//                aliasProblem = null;
+//                aliasSolver = null;
+//                aliasingStrategy = new PtsBasedAliasStrategy(manager);
+//                break;
+//            case Lazy:
+//                aliasProblem = null;
+//                aliasSolver = null;
+//                aliasingStrategy = new LazyAliasingStrategy(manager);
+//                break;
             default:
                 throw new RuntimeException("Unsupported aliasing algorithm");
         }
@@ -688,32 +689,6 @@ public class BackwardsInfoflow extends AbstractInfoflow {
 				eliminateDeadCode(sourcesSinks);
 				logger.info("Dead code elimination took " + (System.nanoTime() - currentMillis) / 1E9 + " seconds");
 			}
-
-            // TODO: just debug things
-            Chain<SootClass> classes = Scene.v().getClasses();
-            for (SootClass c : classes) {
-                if (!c.getName().startsWith("java")) {
-                    if (c.getName().contains("fraunhofera") || c.getName().contains("Test") || c.getName().contains("Api") || c.getName().contains("de.test") || c.getName().startsWith("edu.mit") || c.getName().startsWith("de.ecspride")) {
-                        String name = c.getName().replace("soot.jimple.infoflow.test.", "");
-                        String baseClass = name.split("\\$")[0];
-                        File dir = new File("/home/tim/Projects/FlowDroid/soot-infoflow/jimpleCode/" + baseClass);
-                        boolean exists = dir.exists();
-                        boolean cont = exists || dir.mkdir();
-                        if (cont) {
-                            File file = new File("/home/tim/Projects/FlowDroid/soot-infoflow/jimpleCode/" + baseClass + "/" + name + ".jimple");
-                            PrintWriter writer;
-                            try {
-                                writer = new PrintWriter(file);
-                                soot.Printer.v().printTo(c, writer);
-                                writer.flush();
-                                writer.close();
-                            } catch (FileNotFoundException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    }
-                }
-            }
 
             // After constant value propagation, we might find more call edges
             // for reflective method calls
@@ -803,7 +778,6 @@ public class BackwardsInfoflow extends AbstractInfoflow {
 
                 memoryWatcher.addSolver((IMemoryBoundedSolver) solver);
                 manager.setForwardSolver(solver);
-//                manager.setBackwardSolver(backwardSolver);
                 if (aliasingStrategy.getSolver() != null)
                     aliasingStrategy.getSolver().getTabulationProblem().getManager().setForwardSolver(solver);
                 solvers.add(solver);
@@ -834,39 +808,6 @@ public class BackwardsInfoflow extends AbstractInfoflow {
 
                     for (SootMethod sm : getMethodsForSeeds(iCfg))
                         sourceCount += scanMethodForSourcesSinks(sourcesSinks, infoflowProblem, sm);
-                    if (config.getLogSourcesAndSinks()) {
-                        int prop = 0;
-                        int callee = 0;
-                        int caller = 0;
-                        int runtime = 0;
-                        for (Stmt source : collectedSources) {
-                            SootMethod sourceMethod = iCfg.getMethodOf(source);
-                            SourceAnalysis sourceAnalysis = new SourceAnalysis(iCfg.getOrCreateUnitGraph(sourceMethod), sourceMethod, source);
-                            prop += sourceAnalysis.getPropagations();
-                            callee += sourceAnalysis.getFlowsIntoCallee();
-                            caller += sourceAnalysis.getFlowsIntoCaller();
-                            runtime += sourceAnalysis.getRuntime();
-                        }
-//                        System.out.println(String.format("Sources: %s Propagations, %s Callee Flows, %s Caller Flows in %s micros", prop, callee, caller, runtime));
-
-                        prop = 0;
-                        callee = 0;
-                        caller = 0;
-                        runtime = 0;
-                        for (Stmt sink : collectedSinks) {
-                            SootMethod sinkMethod = iCfg.getMethodOf(sink);
-                            SinkAnalysis sinkAnalysis = new SinkAnalysis(iCfg.getOrCreateUnitGraph(sinkMethod), sinkMethod, sink);
-                            prop += sinkAnalysis.getPropagations();
-                            callee += sinkAnalysis.getFlowsIntoCallee();
-                            caller += sinkAnalysis.getFlowsIntoCaller();
-                            runtime += sinkAnalysis.getRuntime();
-                        }
-//                        System.out.println(String.format("Sinks: %s Propagations, %s Callee Flows, %s Caller Flows in %s micros", prop, callee, caller, runtime));
-                    }
-                    if (config.isStopAfterSourcesSinks()) {
-                        finishedSourceSinkHandler();
-                        return;
-                    }
 
                     // We optionally also allow additional seeds to be specified
                     if (additionalSeeds != null)

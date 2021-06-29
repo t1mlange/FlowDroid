@@ -1920,12 +1920,6 @@ public class InfoflowConfiguration {
 		this.taintAnalysisEnabled = taintAnalysisEnabled;
 	}
 
-	public void setStopAfterSourcesSinks(boolean stopAfterSourcesSinks) {
-		this.stopAfterSourcesSinks = stopAfterSourcesSinks;
-	}
-	public boolean isStopAfterSourcesSinks() {
-		return this.stopAfterSourcesSinks;
-	}
 
 	/**
 	 * Gets whether the data flow results shall be reported incrementally instead of
