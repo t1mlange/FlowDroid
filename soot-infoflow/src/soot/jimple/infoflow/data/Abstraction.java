@@ -58,11 +58,6 @@ public class Abstraction implements Cloneable, FastSolverLinkedNode<Abstraction,
 	 */
 	protected Unit turnUnit = null;
 	/**
-	 * Unit/Stmt which indicates where the alias search originated from; tells the backwards analysis
-	 * to not derive new taints at this statement
-	 */
-	protected Unit skipUnit = null;
-	/**
 	 * taint is thrown by an exception (is set to false when it reaches the
 	 * catch-Stmt)
 	 */
@@ -160,7 +155,6 @@ public class Abstraction implements Cloneable, FastSolverLinkedNode<Abstraction,
 		this.accessPath = apToTaint;
 		this.activationUnit = null;
 		this.turnUnit = null;
-		this.skipUnit = null;
 		this.exceptionThrown = exceptionThrown;
 
 		this.neighbors = null;
@@ -181,7 +175,6 @@ public class Abstraction implements Cloneable, FastSolverLinkedNode<Abstraction,
 			exceptionThrown = false;
 			activationUnit = null;
 			turnUnit = null;
-			skipUnit = null;
 			isImplicit = false;
 		} else {
 			sourceContext = original.sourceContext;
