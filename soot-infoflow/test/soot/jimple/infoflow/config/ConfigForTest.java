@@ -13,7 +13,6 @@ package soot.jimple.infoflow.config;
 import java.util.LinkedList;
 import java.util.List;
 
-import soot.JastAddJ.Opt;
 import soot.jimple.infoflow.InfoflowConfiguration;
 import soot.options.Options;
 
