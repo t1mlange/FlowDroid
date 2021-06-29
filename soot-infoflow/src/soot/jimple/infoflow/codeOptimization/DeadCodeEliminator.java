@@ -55,13 +55,11 @@ public class DeadCodeEliminator implements ICodeOptimizer {
 				continue;
 
 			List<Unit> callSites = getCallsInMethod(method);
-			Body oldBody = (Body) method.retrieveActiveBody().clone();
 
 			ConstantPropagatorAndFolder.v().transform(method.getActiveBody());
 			DeadAssignmentEliminator.v().transform(method.getActiveBody());
 
 			// Remove the dead callgraph edges
-
 			removeDeadCallgraphEdges(method, callSites);
 		}
 
@@ -91,7 +89,6 @@ public class DeadCodeEliminator implements ICodeOptimizer {
 			// Delete all dead code. We need to be careful and patch the cfg so
 			// that it does not retain edges for call statements we have deleted
 			List<Unit> callSites = getCallsInMethod(method);
-			Body oldBody = (Body) method.retrieveActiveBody().clone();
 			UnreachableCodeEliminator.v().transform(method.getActiveBody());
 			removeDeadCallgraphEdges(method, callSites);
 		}
@@ -110,14 +107,11 @@ public class DeadCodeEliminator implements ICodeOptimizer {
 	 */
 	static void removeDeadCallgraphEdges(SootMethod method, List<Unit> oldCallSites) {
 		List<Unit> newCallSites = getCallsInMethod(method);
-		if (oldCallSites != null) {
-			for (Unit u : oldCallSites) {
-				if (newCallSites == null || !newCallSites.contains(u)) {
-					// Remove all outgoing edges
+		if (oldCallSites != null)
+			for (Unit u : oldCallSites)
+				if (newCallSites == null || !newCallSites.contains(u))
 					Scene.v().getCallGraph().removeAllEdgesOutOf(u);
-				}
-			}
-		}
+
 	}
 
 	/**
