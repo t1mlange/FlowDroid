@@ -43,7 +43,8 @@ public class BackwardsSinkPropagationRule extends AbstractTaintPropagationRule {
 			if (sinkInfo != null && !sinkInfo.getAccessPaths().isEmpty()) {
 				// Do not introduce taints inside exclusive methods
 				Optional<Unit> caller = manager.getICFG().getCallersOf(manager.getICFG().getMethodOf(stmt)).stream().findAny();
-				if (caller.isPresent() && manager.getTaintWrapper().isExclusive((Stmt) caller.get(), zeroValue))
+				if (caller.isPresent() && manager.getTaintWrapper() != null &&
+						manager.getTaintWrapper().isExclusive((Stmt) caller.get(), zeroValue))
 					return null;
 
 				Set<Abstraction> res = new HashSet<>();
