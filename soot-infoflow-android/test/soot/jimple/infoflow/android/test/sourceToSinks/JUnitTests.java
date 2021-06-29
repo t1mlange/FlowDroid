@@ -66,7 +66,7 @@ public class JUnitTests {
 				enableStaticFields ? StaticFieldTrackingMode.ContextFlowSensitive : StaticFieldTrackingMode.None);
 		setupApplication.getConfig().setFlowSensitiveAliasing(flowSensitiveAliasing);
 
-		setupApplication.getConfig().setDataFlowDirection(InfoflowConfiguration.DataFlowDirection.Backwards);
+//		setupApplication.getConfig().setDataFlowDirection(InfoflowConfiguration.DataFlowDirection.Backwards);
 
 		return setupApplication.runInfoflow(xmlFileName);
 	}

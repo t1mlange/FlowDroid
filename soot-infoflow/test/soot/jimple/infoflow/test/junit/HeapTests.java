@@ -1053,42 +1053,6 @@ public class HeapTests extends JUnitTests {
 
 			};
 		}
-//		else if (infoflow instanceof BackwardsInfoflow) {
-//			ssm = new BackwardsSSM(null, null) {
-//				@Override
-//				public SinkInfo getSinkInfo(Stmt sCallSite, InfoflowManager manager, AccessPath ap) {
-//					if (sCallSite instanceof AssignStmt) {
-//						AssignStmt assignStmt = (AssignStmt) sCallSite;
-//						if (assignStmt.getRightOp().toString().contains("taintedBySourceSinkManager")) {
-//							SootMethod sm = manager.getICFG().getMethodOf(assignStmt);
-//							return new SinkInfo(new MethodSourceSinkDefinition(new SootMethodAndClass(sm)));
-//						}
-//						else
-//							return null;
-//					}
-//					return null;
-//				}
-//
-//				@Override
-//				public SourceInfo getSourceInfo(Stmt sCallSite, InfoflowManager manager) {
-//					if (sCallSite.containsInvokeExpr()) {
-//						SootMethod sm = sCallSite.getInvokeExpr().getMethod();
-//						if (sm.getSignature().equals(sinkMethod)) {
-//							Value firstParam = sCallSite.getInvokeExpr().getArg(0);
-//							return new SourceInfo(null,
-//									manager.getAccessPathFactory().createAccessPath(firstParam, true));
-//						}
-//					}
-//					return null;
-//				}
-//
-//				@Override
-//				public void initialize() {
-//					//
-//				}
-//
-//			};
-//		}
 		infoflow.computeInfoflow(appPath, libPath, new DefaultEntryPointCreator(epoints), ssm);
 
 		Assert.assertTrue(infoflow.isResultAvailable());

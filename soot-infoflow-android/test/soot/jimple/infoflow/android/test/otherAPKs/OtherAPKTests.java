@@ -32,11 +32,4 @@ public class OtherAPKTests extends JUnitTests {
 				("testAPKs/ReturnParameterTest.apk", false, false, false);
 		Assert.assertTrue(res == null || res.isEmpty());
 	}
-
-	@Test
-	public void runSBTest() throws IOException, XmlPullParserException {
-		InfoflowResults res = analyzeAPKFile
-				("testAPKs/sbtest.apk", false, false, true);
-		Assert.assertTrue(res != null || res.size() == 1);
-	}
 }

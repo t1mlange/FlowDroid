@@ -10,25 +10,15 @@
  ******************************************************************************/
 package soot.jimple.infoflow.android.test.droidBench;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.rules.TestWatcher;
-import org.junit.runner.Description;
 import org.xmlpull.v1.XmlPullParserException;
-
 
 import soot.jimple.infoflow.InfoflowConfiguration;
 import soot.jimple.infoflow.InfoflowConfiguration.ImplicitFlowMode;
 import soot.jimple.infoflow.android.InfoflowAndroidConfiguration;
 import soot.jimple.infoflow.android.SetupApplication;
-import soot.jimple.infoflow.methodSummary.data.provider.LazySummaryProvider;
-import soot.jimple.infoflow.methodSummary.taintWrappers.SummaryTaintWrapper;
-import soot.jimple.infoflow.results.InfoflowPerformanceData;
 import soot.jimple.infoflow.results.InfoflowResults;
 import soot.jimple.infoflow.taintWrappers.EasyTaintWrapper;
 

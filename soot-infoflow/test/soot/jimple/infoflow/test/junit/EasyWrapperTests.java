@@ -41,8 +41,6 @@ public class EasyWrapperTests extends JUnitTests {
 		wrapper.setAlwaysModelEqualsHashCode(true);
 		
 		IInfoflow infoflow = initInfoflow();
-//		onlyForwards(infoflow, "EasyTaintWrapper marks equals/hashcode as exclusive. If we start inside one," +
-//				"exclusive won't get checked.");
     	List<String> epoints = new ArrayList<String>();
     	epoints.add("<soot.jimple.infoflow.test.EasyWrapperTestCode: void equalsTest()>");
     	infoflow.setTaintWrapper(wrapper);
@@ -56,44 +54,12 @@ public class EasyWrapperTests extends JUnitTests {
 		wrapper.setAlwaysModelEqualsHashCode(true);
 		
 		IInfoflow infoflow = initInfoflow();
-//		onlyForwards(infoflow, "EasyTaintWrapper marks equals/hashcode as exclusive. If we start inside one," +
-//				"exclusive won't get checked.");
 		List<String> epoints = new ArrayList<String>();
     	epoints.add("<soot.jimple.infoflow.test.EasyWrapperTestCode: void hashCodeTest()>");
     	infoflow.setTaintWrapper(wrapper);
 		infoflow.computeInfoflow(appPath, libPath, epoints, sources, sinks);
 		negativeCheckInfoflow(infoflow);
     }
-
-	@Test(timeout=300000)
-	public void equalsTestBW(){
-		EasyTaintWrapper wrapper = easyWrapper.clone();
-		wrapper.setAlwaysModelEqualsHashCode(true);
-
-		IInfoflow infoflow = initInfoflow();
-		onlyBackwards(infoflow, "EasyTaintWrapper marks equals/hashcode as exclusive. If we start inside one," +
-				"exclusive won't get checked.");
-		List<String> epoints = new ArrayList<String>();
-		epoints.add("<soot.jimple.infoflow.test.EasyWrapperTestCode: void equalsTestBW()>");
-		infoflow.setTaintWrapper(wrapper);
-		infoflow.computeInfoflow(appPath, libPath, epoints, sources, sinks);
-		negativeCheckInfoflow(infoflow);
-	}
-
-	@Test(timeout=300000)
-	public void hashcodeTestBW(){
-		EasyTaintWrapper wrapper = easyWrapper.clone();
-		wrapper.setAlwaysModelEqualsHashCode(true);
-
-		IInfoflow infoflow = initInfoflow();
-		onlyBackwards(infoflow, "EasyTaintWrapper marks equals/hashcode as exclusive. If we start inside one," +
-				"exclusive won't get checked.");
-		List<String> epoints = new ArrayList<String>();
-		epoints.add("<soot.jimple.infoflow.test.EasyWrapperTestCode: void hashcodeTestBW()>");
-		infoflow.setTaintWrapper(wrapper);
-		infoflow.computeInfoflow(appPath, libPath, epoints, sources, sinks);
-		negativeCheckInfoflow(infoflow);
-	}
 
 	@Test(timeout=300000)
     public void equalsTest2(){
