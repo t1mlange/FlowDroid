@@ -1300,7 +1300,6 @@ public class InfoflowConfiguration {
 	private DataFlowDirection dataFlowDirection = DataFlowDirection.Forwards;
 
 	private boolean taintAnalysisEnabled = true;
-	private boolean stopAfterSourcesSinks = false;
 	private boolean incrementalResultReporting = false;
 	private long dataFlowTimeout = 0;
 	private double memoryThreshold = 0.9d;
