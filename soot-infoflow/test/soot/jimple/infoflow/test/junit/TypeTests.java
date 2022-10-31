@@ -92,6 +92,7 @@ public abstract class TypeTests extends JUnitTests {
 	@Test(timeout = 300000)
 	public void callTargetTest1() {
 		IInfoflow infoflow = initInfoflow();
+		infoflow.getConfig().getPathConfiguration().setPathReconstructionMode(PathReconstructionMode.Fast);
 		List<String> epoints = new ArrayList<String>();
 		epoints.add("<soot.jimple.infoflow.test.TypeTestCode: void callTargetTest1()>");
 		infoflow.computeInfoflow(appPath, libPath, epoints, sources, sinks);
@@ -121,6 +122,7 @@ public abstract class TypeTests extends JUnitTests {
 	public void callTargetTest1Reduced() {
 		IInfoflow infoflow = initInfoflow();
 		List<String> epoints = new ArrayList<String>();
+		infoflow.getConfig().getPathConfiguration().setPathReconstructionMode(PathReconstructionMode.Fast);
 		epoints.add("<soot.jimple.infoflow.test.TypeTestCode: void callTargetTest1Reduced()>");
 		infoflow.computeInfoflow(appPath, libPath, epoints, sources, sinks);
 		checkInfoflow(infoflow, 1);

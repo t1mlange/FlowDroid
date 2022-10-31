@@ -196,6 +196,20 @@ public class TypeTestCode {
 		cm.publish(b.data);
 	}
 
+	class clazz {
+		int i;
+
+		void leak() {
+			ConnectionManager cm = new ConnectionManager();
+			cm.publish(i);
+		}
+
+	}
+
+	A callee(A a) {
+		return a;
+	}
+
 	public void callTargetTest3() {
 		A b2 = new B2();
 		b2.leak();
@@ -206,12 +220,53 @@ public class TypeTestCode {
 		b.leak();
 	}
 
+	class Iref {
+		int i;
+	}
+
+	class Root {
+		int i;
+
+		int id(int i) {
+			Iref ir = new Iref();
+			Iref ir2 = ir;
+			ir.i = i;
+			return ir2.i;
+		}
+
+		void leak() {
+			return;
+		}
+	}
+	class C1 extends Root {
+		void leak() {
+			ConnectionManager cm = new ConnectionManager();
+			i = id(i);
+			cm.publish(i);
+		}
+	}
+	class C2 extends Root {
+		void leak() {
+			ConnectionManager cm = new ConnectionManager();
+			i = id(i);
+			cm.publish(i);
+		}
+	}
+
+
 	public void callTargetTest1Reduced() {
-		ConnectionManager cm = new ConnectionManager();
-		StringBuilder sb = new StringBuilder();
-		String tainted = TelephonyManager.getDeviceId();
-		sb.append(tainted);
-		cm.publish(sb.toString());
+		Root r1 = new C1();
+		r1.leak();
+
+		Root r2 = new C2();
+		r2.i = TelephonyManager.getIMEI();
+		r2.leak();
+
+//		ConnectionManager cm = new ConnectionManager();
+//		StringBuilder sb = new StringBuilder();
+//		String tainted = TelephonyManager.getDeviceId();
+//		sb.append(tainted);
+//		cm.publish(sb.toString());
 	}
 
 	public void arrayObjectCastTest() {

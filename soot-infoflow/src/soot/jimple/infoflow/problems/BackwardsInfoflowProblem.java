@@ -669,6 +669,9 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
 						if (killAll.value)
 							return null;
 
+//						if (calleeD1.getCurrentStmt() != null && calleeD1.getCurrentStmt() != callStmt)
+//							return null;
+
 						// Already handled in the rule
 						if (source.getAccessPath().isEmpty())
 							return res;
@@ -682,6 +685,7 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
 								&& source.getAccessPath().isStaticFieldRef()) {
 							res.add(source);
 						}
+
 
 						// o.m(a1, ..., an)
 						// map o.f to this.f
@@ -793,6 +797,32 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
 								}
 							}
 						}
+
+//						if (!res.isEmpty() && returnSite.toString().contains("append")) {
+//							Abstraction leaf = source;
+//							while (leaf.getPredecessor() != null)
+//								leaf = leaf.getPredecessor();
+//							if (manager.getICFG().getMethodOf(callSite).toString().contains("$B:")
+//									&& manager.getICFG().getMethodOf(leaf.getCurrentStmt()).toString().contains("$B2:")
+//									) {
+//								System.out.println(manager.getICFG().getMethodOf(callSite) + " +++ " + manager.getICFG().getMethodOf(leaf.getCurrentStmt()));
+//
+//								leaf = source;
+//								while (leaf.getPredecessor() != null) {
+//									if (leaf.getCurrentStmt() != null)
+//										System.out.println("Curr: " + leaf.getCurrentStmt() + " @ " + manager.getICFG().getMethodOf(leaf.getCurrentStmt()));
+//									if (leaf.getCorrespondingCallSite() != null)
+//										System.out.println("Callsite: " + leaf.getCorrespondingCallSite() + " @ " + manager.getICFG().getMethodOf(leaf.getCorrespondingCallSite()));
+//									leaf = leaf.getPredecessor();
+//								}
+//								System.out.println("FU");
+//							}
+//						}
+
+						for (Abstraction abs : res)
+							if (abs != source)
+								abs.setCorrespondingCallSite(callStmt);
+
 						return res;
 					}
 				};

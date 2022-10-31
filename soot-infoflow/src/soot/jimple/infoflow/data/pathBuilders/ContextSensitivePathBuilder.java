@@ -1,6 +1,7 @@
 package soot.jimple.infoflow.data.pathBuilders;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.ThreadFactory;
@@ -18,6 +19,7 @@ import soot.jimple.infoflow.results.InfoflowResults;
 import soot.jimple.infoflow.results.ResultSinkInfo;
 import soot.jimple.infoflow.results.ResultSourceInfo;
 import soot.jimple.infoflow.solver.executors.InterruptableExecutor;
+import soot.jimple.infoflow.util.extensiblelist.ExtensibleList;
 
 /**
  * Class for reconstructing abstraction paths from sinks to source. This builder
@@ -72,6 +74,7 @@ public class ContextSensitivePathBuilder extends ConcurrentAbstractionPathBuilde
 		public void run() {
 			final Set<SourceContextAndPath> paths = pathCache.get(abstraction);
 			final Abstraction pred = abstraction.getPredecessor();
+//			System.out.println(abstraction);
 
 			if (pred != null && paths != null) {
 				for (SourceContextAndPath scap : paths) {

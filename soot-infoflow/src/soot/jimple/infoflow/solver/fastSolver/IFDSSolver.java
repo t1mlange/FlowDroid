@@ -692,6 +692,7 @@ public class IFDSSolver<N, D extends FastSolverLinkedNode<D, N>, I extends BiDiI
 	protected boolean addIncoming(SootMethod m, D d3, N n, D d1, D d2) {
 		MyConcurrentHashMap<N, Map<D, D>> summaries = incoming.putIfAbsentElseGet(new Pair<SootMethod, D>(m, d3),
 				() -> new MyConcurrentHashMap<N, Map<D, D>>());
+
 		Map<D, D> set = summaries.putIfAbsentElseGet(n, () -> new ConcurrentHashMap<D, D>());
 		return set.put(d1, d2) == null;
 	}

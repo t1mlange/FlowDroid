@@ -95,7 +95,7 @@ public class SourceContextAndPath extends SourceContext implements Cloneable {
 
 		// If we don't track paths and have nothing to put on the stack, there
 		// is no need to create a new object
-		final boolean trackPath = pathConfig == null ? true : pathConfig.getPathReconstructionMode().reconstructPaths();
+		final boolean trackPath = pathConfig == null || pathConfig.getPathReconstructionMode().reconstructPaths();
 		if (abs.getCorrespondingCallSite() == null && !trackPath)
 			return this;
 
@@ -189,6 +189,20 @@ public class SourceContextAndPath extends SourceContext implements Cloneable {
 		if (scap.callStack.isEmpty())
 			scap.callStack = null;
 		return new Pair<>(scap, lastStmt);
+	}
+
+	public SourceContextAndPath pushToCallStack(Stmt stmt) {
+		final PathConfiguration pathConfig = config == null ? null : config.getPathConfiguration();
+
+		SourceContextAndPath scap = clone();
+		if (scap.callStack == null)
+			scap.callStack = new ExtensibleList<Stmt>();
+		else if (pathConfig != null && pathConfig.getMaxCallStackSize() > 0
+				&& scap.callStack.size() >= pathConfig.getMaxCallStackSize())
+			return null;
+		scap.callStack.add(stmt);
+
+		return scap;
 	}
 
 	/**

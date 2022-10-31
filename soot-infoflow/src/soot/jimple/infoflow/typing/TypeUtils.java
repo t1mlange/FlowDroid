@@ -100,11 +100,11 @@ public class TypeUtils {
 																// Object
 																// to
 																// String
-					|| manager.getHierarchy().canStoreType(sourceType, destType)) // cast-down,
-																					// i.e.
-																					// String
-																					// to
-																					// Object
+					|| hierarchy.canStoreType(sourceType, destType)) // cast-down,
+																	 // i.e.
+																	 // String
+																	 // to
+																	 // Object
 				return true;
 		}
 
