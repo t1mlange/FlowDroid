@@ -616,9 +616,21 @@ public class OtherTestCode {
 		doLeak(imei);
 	}
 
-	private void doLeak(String imei) {
+	private void doLeak(String param) {
 		ConnectionManager cm = new ConnectionManager();
-		cm.publish(imei);
+		cm.publish(param);
+	}
+
+	public void multiSinkTest3() {
+		int imei = TelephonyManager.getIMEI();
+		int res = imei + 42;
+		doLeak(res);
+		doLeak(res);
+	}
+
+	private void doLeak(int param) {
+		ConnectionManager cm = new ConnectionManager();
+		cm.publish(param);
 	}
 
 	public void skipOverObjectTest1() {
