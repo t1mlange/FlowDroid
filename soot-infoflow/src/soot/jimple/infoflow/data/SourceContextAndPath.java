@@ -64,6 +64,96 @@ public class SourceContextAndPath extends SourceContext implements Cloneable {
 		return reversePath;
 	}
 
+	public List<Stmt> getCallStack() {
+		if (callStack == null)
+			return null;
+
+		List<Stmt> reversePath = new ArrayList<>(callStack.size());
+		Iterator<Stmt> it = callStack.reverseIterator();
+		while (it.hasNext()) {
+			reversePath.add(it.next());
+		}
+		return reversePath;
+	}
+
+	public Abstraction getLastAbstraction() {
+		return path.getLast();
+	}
+
+	private <T> List<T> shallowCopy(List<T> lst) {
+		return lst.subList(0, lst.size());
+	}
+
+	private <T> void addRestTo(List<T> src1, List<T> src2, ExtensibleList<T> dst) {
+		List<T> thisAbs = shallowCopy(src1);
+		Collections.reverse(thisAbs);
+		List<T> otherAbs = shallowCopy(src2);
+		Collections.reverse(otherAbs);
+		Iterator<T> otherIt = otherAbs.iterator();
+		Iterator<T> thisIt = thisAbs.iterator();
+
+		while (thisIt.hasNext() && otherIt.hasNext()) {
+			T thisNext = thisIt.next();
+			T otherNext = otherIt.next();
+
+			// Loop till we have different elements
+			if (thisNext == otherNext)
+				continue;
+
+			dst.add(otherNext);
+			while (otherIt.hasNext())
+				dst.add(otherIt.next());
+			return;
+		}
+
+		// Because the call site noticed that src1 reaches src2, which is cached, there must be a common point.
+		assert false;
+	}
+
+	/**
+	 * Extends the taint propagation path of THIS with the additional abstractions from OTHER.
+	 *
+	 * @param other
+	 * @return The new taint propagation path
+	 */
+	public SourceContextAndPath extendPath(SourceContextAndPath other) {
+		if (this.path == null || other.path == null || other.path.size() <= this.path.size())
+			return null;
+
+		SourceContextAndPath extendedScap = clone();
+
+//		addRestTo(this.getAbstractionPath(), other.getAbstractionPath(), extendedScap.path);
+//		addRestTo(this.getCallStack(), other.getCallStack(), extendedScap.callStack);
+//		return extendedScap;
+
+		List<Abstraction> otherAbs = shallowCopy(other.getAbstractionPath());
+		Collections.reverse(otherAbs);
+		List<Abstraction> thisAbs = shallowCopy(this.getAbstractionPath());
+		Collections.reverse(thisAbs);
+		Iterator<Abstraction> otherIt = otherAbs.iterator();
+		Iterator<Abstraction> thisIt = thisAbs.iterator();
+//		System.out.println("Last " + System.identityHashCode(this.path.getLast()) + "\n2nd " + System.identityHashCode(this.path.getSecondLast()));
+//		while (it.hasNext()) {
+//			System.out.println(System.identityHashCode(it.next()));
+//		}
+
+		while (thisIt.hasNext() && otherIt.hasNext()) {
+			Abstraction thisNext = thisIt.next();
+			Abstraction otherNext = otherIt.next();
+
+			// Loop till we have different elements
+			if (thisNext == otherNext)
+				continue;
+
+			extendedScap.path.add(otherNext);
+			while (otherIt.hasNext())
+				extendedScap.path.add(otherIt.next());
+			return extendedScap;
+		}
+
+		return null;
+	}
+
 	/**
 	 * Extends the taint propagation path with the given abstraction
 	 * 
@@ -199,6 +289,12 @@ public class SourceContextAndPath extends SourceContext implements Cloneable {
 	 */
 	public boolean isCallStackEmpty() {
 		return this.callStack == null || this.callStack.isEmpty();
+	}
+
+	public void addToCallStack(Stmt stmt) {
+		if (this.callStack == null)
+			this.callStack = new ExtensibleList<>();
+		this.callStack.add(stmt);
 	}
 
 	public void setNeighborCounter(int counter) {
