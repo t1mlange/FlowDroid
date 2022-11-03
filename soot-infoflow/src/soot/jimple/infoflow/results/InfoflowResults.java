@@ -248,6 +248,7 @@ public class InfoflowResults {
 					results = new ConcurrentHashMultiMap<>();
 			}
 		}
+		System.out.println("Got here with " + System.identityHashCode(source));
 		boolean put = this.results.put(sink, source);
 		if (!put)
 			logger.debug("Found two equal paths");

@@ -58,6 +58,12 @@ public class ContextSensitivePathBuilder extends ConcurrentAbstractionPathBuilde
 		return executor;
 	}
 
+	enum ProcessingState {
+		INFEASIBLE,
+		CACHED,
+		NEW
+	}
+
 	/**
 	 * Task for tracking back the path from sink to source.
 	 * 
@@ -79,19 +85,37 @@ public class ContextSensitivePathBuilder extends ConcurrentAbstractionPathBuilde
 			if (pred != null && paths != null) {
 				for (SourceContextAndPath scap : paths) {
 					// Process the predecessor
-					if (processPredecessor(scap, pred)) {
-						// Schedule the predecessor
-						assert pathCache.containsKey(pred);
-						scheduleDependentTask(new SourceFindingTask(pred));
+					switch (processPredecessor(scap, pred)) {
+						case NEW:
+							scheduleDependentTask(new SourceFindingTask(pred));
+							break;
+						case CACHED:
+//							scheduleDependentTask(new SourceFindingTask(pred));
+							// Check whether the path ends in a sink
+							Set<SourceContextAndPath> predPaths = pathCache.get(pred);
+//							for (SourceContextAndPath predPath : predPaths) {
+//								SourceContextAndPath fullPath = scap.extendPath(predPath);
+//								checkForSource(fullPath.getLastAbstraction(), fullPath);
+//							}
+							break;
 					}
 
 					// Process the predecessor's neighbors
 					if (pred.getNeighbors() != null) {
 						for (Abstraction neighbor : pred.getNeighbors()) {
-							if (processPredecessor(scap, neighbor)) {
-								// Schedule the predecessor
-								assert pathCache.containsKey(neighbor);
-								scheduleDependentTask(new SourceFindingTask(neighbor));
+							switch (processPredecessor(scap, neighbor)) {
+								case NEW:
+									scheduleDependentTask(new SourceFindingTask(pred));
+									break;
+								case CACHED:
+//									scheduleDependentTask(new SourceFindingTask(pred));
+									// Check whether the path ends in a sink
+//									Set<SourceContextAndPath> predPaths = pathCache.get(pred);
+//									for (SourceContextAndPath predPath : predPaths) {
+//										SourceContextAndPath fullPath = scap.extendPath(predPath);
+//										checkForSource(fullPath.getLastAbstraction(), fullPath);
+//									}
+									break;
 							}
 						}
 					}
@@ -99,23 +123,22 @@ public class ContextSensitivePathBuilder extends ConcurrentAbstractionPathBuilde
 			}
 		}
 
-		private boolean processPredecessor(SourceContextAndPath scap, Abstraction pred) {
+		private ProcessingState processPredecessor(SourceContextAndPath scap, Abstraction pred) {
 			// Shortcut: If this a call-to-return node, we should not enter and
 			// immediately leave again for performance reasons.
 			if (pred.getCurrentStmt() != null && pred.getCurrentStmt() == pred.getCorrespondingCallSite()) {
 				SourceContextAndPath extendedScap = scap.extendPath(pred, config);
 				if (extendedScap == null)
-					return false;
+					return ProcessingState.INFEASIBLE;
 
 				checkForSource(pred, extendedScap);
-				return pathCache.put(pred, extendedScap);
-
+				return pathCache.put(pred, extendedScap) ? ProcessingState.NEW : ProcessingState.CACHED;
 			}
 
 			// If we enter a method, we put it on the stack
 			SourceContextAndPath extendedScap = scap.extendPath(pred, config);
 			if (extendedScap == null)
-				return false;
+				return ProcessingState.INFEASIBLE;
 
 			// Check if we are in the right context
 			switch (manager.getConfig().getDataFlowDirection()) {
@@ -128,7 +151,7 @@ public class ContextSensitivePathBuilder extends ConcurrentAbstractionPathBuilde
 						Stmt topCallStackItem = pathAndItem.getO2();
 						// Make sure that we don't follow an unrealizable path
 						if (topCallStackItem != pred.getCurrentStmt())
-							return false;
+							return ProcessingState.INFEASIBLE;
 
 						// We have returned from a function
 						extendedScap = pathAndItem.getO1();
@@ -145,7 +168,7 @@ public class ContextSensitivePathBuilder extends ConcurrentAbstractionPathBuilde
 						Stmt topCallStackItem = pathAndItem.getO2();
 						// Make sure that we don't follow an unrealizable path
 						if (topCallStackItem != pred.getCorrespondingCallSite())
-							return false;
+							return ProcessingState.INFEASIBLE;
 
 						// We have returned from a function
 						extendedScap = pathAndItem.getO1();
@@ -161,9 +184,9 @@ public class ContextSensitivePathBuilder extends ConcurrentAbstractionPathBuilde
 			if (maxPaths > 0) {
 				Set<SourceContextAndPath> existingPaths = pathCache.get(pred);
 				if (existingPaths != null && existingPaths.size() > maxPaths)
-					return false;
+					return ProcessingState.INFEASIBLE;
 			}
-			return pathCache.put(pred, extendedScap);
+			return pathCache.put(pred, extendedScap) ? ProcessingState.NEW : ProcessingState.CACHED;
 		}
 
 		@Override
@@ -207,6 +230,8 @@ public class ContextSensitivePathBuilder extends ConcurrentAbstractionPathBuilde
 
 		// If we have no predecessors, this must be a source
 		assert abs.getSourceContext() != null;
+
+		System.out.println(abs);
 
 		// A source should normally never have neighbors, but it can happen
 		// with ICCTA

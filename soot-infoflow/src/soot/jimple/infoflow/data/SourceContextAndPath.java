@@ -64,6 +64,41 @@ public class SourceContextAndPath extends SourceContext implements Cloneable {
 		return reversePath;
 	}
 
+	public List<Stmt> getCallStack() {
+		if (callStack == null)
+			return null;
+
+		List<Stmt> reversePath = new ArrayList<>(callStack.size());
+		Iterator<Stmt> it = callStack.reverseIterator();
+		while (it.hasNext()) {
+			reversePath.add(it.next());
+		}
+		return reversePath;
+	}
+
+	public Abstraction getLastAbstraction() {
+		return path.getLast();
+	}
+
+	public SourceContextAndPath extendPath(SourceContextAndPath other) {
+		SourceContextAndPath newScap = clone();
+
+		if (other != null) {
+			for (Abstraction abs : other.getAbstractionPath())
+				newScap.path.add(abs);
+
+			List<Stmt> stmts = other.getCallStack();
+			for (Stmt stmt : stmts)
+				newScap.callStack.add(stmt);
+
+			Abstraction abs = other.path.getLast();
+			this.neighborCounter = abs.getNeighbors() == null ? 0 : abs.getNeighbors().size();
+
+		}
+
+		return newScap;
+	}
+
 	/**
 	 * Extends the taint propagation path with the given abstraction
 	 * 
