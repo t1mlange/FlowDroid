@@ -56,14 +56,6 @@ public class ContextSensitivePathBuilder extends ConcurrentAbstractionPathBuilde
 		return executor;
 	}
 
-	enum ProcessingResult {
-		// Describes that the predecessor should be queued
-		NEW,
-		// Describes that the predecessor was already queued, but we might need to merge paths
-		CACHED,
-		// Describes that nothing further should be queued
-		INFEASIBLE_OR_MAX_PATHS_REACHED
-	}
 
 	/**
 	 * Task for tracking back the path from sink to source.
@@ -97,15 +89,39 @@ public class ContextSensitivePathBuilder extends ConcurrentAbstractionPathBuilde
 			}
 		}
 
+		/**
+		 * Uses the cached paths to extend the current path
+		 *
+		 * @param scap SourceContextAndPath of the current abstraction
+		 * @param cachedScap cached SourceContextAndPath to extend scap
+		 */
+		private void buildFullPathFromCache(SourceContextAndPath scap, SourceContextAndPath cachedScap) {
+			// Try to extend scap with cachedScap
+			SourceContextAndPath extendedScap = scap.extendPath(cachedScap);
+			if (extendedScap != null) {
+				Abstraction last = extendedScap.getLastAbstraction();
+				if (pathCache.put(last, extendedScap)) {
+					// If the new path wasn't seen before, queue it
+					scheduleDependentTask(new SourceFindingTask(last));
+				} else {
+					// Otherwise, try to build the path further using the cache
+					if (!checkForSource(last, extendedScap))
+						for (SourceContextAndPath preds : pathCache.get(last.getPredecessor()))
+							buildFullPathFromCache(extendedScap, preds);
+				}
+			}
+		}
+
 		private void processAndQueue(Abstraction pred, SourceContextAndPath scap) {
 			// Skip abstractions that don't contain any new information. This might
 			// be the case when a turn unit was added to the abstraction.
-			if (pred.getCorrespondingCallSite() == null && pred.getCurrentStmt() == null) {
+			if (pred.getCorrespondingCallSite() == null && pred.getCurrentStmt() == null && pred.getTurnUnit() != null) {
 				processAndQueue(pred.getPredecessor(), scap);
 				return;
 			}
 
-			switch (processPredecessor(scap, pred)) {
+			ProcessingResult p = processPredecessor(scap, pred);
+			switch (p.getResult()) {
 				case NEW:
 					// Schedule the predecessor
 					assert pathCache.containsKey(pred);
@@ -113,14 +129,7 @@ public class ContextSensitivePathBuilder extends ConcurrentAbstractionPathBuilde
 					break;
 				case CACHED:
 					// In case we already know the subpath, append it to the path and queue it
-					for (SourceContextAndPath predScap : pathCache.get(pred)) {
-						SourceContextAndPath extendedPath = scap.extendPath(predScap);
-						if (extendedPath != null) {
-							Abstraction last = extendedPath.getLastAbstraction();
-							if (pathCache.put(last, extendedPath))
-								scheduleDependentTask(new SourceFindingTask(last));
-						}
-					}
+					buildFullPathFromCache(scap, p.getScap());
 					break;
 				case INFEASIBLE_OR_MAX_PATHS_REACHED:
 					// Nothing to do
@@ -136,16 +145,16 @@ public class ContextSensitivePathBuilder extends ConcurrentAbstractionPathBuilde
 			if (pred.getCurrentStmt() != null && pred.getCurrentStmt() == pred.getCorrespondingCallSite()) {
 				SourceContextAndPath extendedScap = scap.extendPath(pred, config);
 				if (extendedScap == null)
-					return ProcessingResult.INFEASIBLE_OR_MAX_PATHS_REACHED;
+					return ProcessingResult.INFEASIBLE_OR_MAX_PATHS_REACHED();
 
 				checkForSource(pred, extendedScap);
-				return pathCache.put(pred, extendedScap) ? ProcessingResult.NEW : ProcessingResult.CACHED;
+				return pathCache.put(pred, extendedScap) ? ProcessingResult.NEW() : ProcessingResult.CACHED(extendedScap);
 			}
 
 			// If we enter a method, we put it on the stack
 			SourceContextAndPath extendedScap = scap.extendPath(pred, config);
 			if (extendedScap == null)
-				return ProcessingResult.INFEASIBLE_OR_MAX_PATHS_REACHED;
+				return ProcessingResult.INFEASIBLE_OR_MAX_PATHS_REACHED();
 
 			// Check if we are in the right context
 			switch (manager.getConfig().getDataFlowDirection()) {
@@ -158,7 +167,7 @@ public class ContextSensitivePathBuilder extends ConcurrentAbstractionPathBuilde
 						Stmt topCallStackItem = pathAndItem.getO2();
 						// Make sure that we don't follow an unrealizable path
 						if (topCallStackItem != pred.getCurrentStmt())
-							return ProcessingResult.INFEASIBLE_OR_MAX_PATHS_REACHED;
+							return ProcessingResult.INFEASIBLE_OR_MAX_PATHS_REACHED();
 
 						// We have returned from a function
 						extendedScap = pathAndItem.getO1();
@@ -175,7 +184,7 @@ public class ContextSensitivePathBuilder extends ConcurrentAbstractionPathBuilde
 						Stmt topCallStackItem = pathAndItem.getO2();
 						// Make sure that we don't follow an unrealizable path
 						if (topCallStackItem != pred.getCorrespondingCallSite())
-							return ProcessingResult.INFEASIBLE_OR_MAX_PATHS_REACHED;
+							return ProcessingResult.INFEASIBLE_OR_MAX_PATHS_REACHED();
 
 						// We have returned from a function
 						extendedScap = pathAndItem.getO1();
@@ -191,9 +200,9 @@ public class ContextSensitivePathBuilder extends ConcurrentAbstractionPathBuilde
 			if (maxPaths > 0) {
 				Set<SourceContextAndPath> existingPaths = pathCache.get(pred);
 				if (existingPaths != null && existingPaths.size() > maxPaths)
-					return ProcessingResult.INFEASIBLE_OR_MAX_PATHS_REACHED;
+					return ProcessingResult.INFEASIBLE_OR_MAX_PATHS_REACHED();
 			}
-			return pathCache.put(pred, extendedScap) ? ProcessingResult.NEW : ProcessingResult.CACHED;
+			return pathCache.put(pred, extendedScap) ? ProcessingResult.NEW() : ProcessingResult.CACHED(extendedScap);
 		}
 
 		@Override

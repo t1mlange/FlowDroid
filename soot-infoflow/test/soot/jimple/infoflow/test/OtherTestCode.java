@@ -623,8 +623,8 @@ public class OtherTestCode {
 
 	public void multiSinkTest3() {
 		int imei = TelephonyManager.getIMEI();
-		int res1 = imei + 42;
-		int res2 = res1 - 21;
+		int res2 = imei + 42;
+//		int res2 = res1 - 21;
 		doLeak(res2);
 		doLeak(res2);
 	}

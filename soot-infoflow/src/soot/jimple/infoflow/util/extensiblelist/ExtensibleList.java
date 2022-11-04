@@ -23,30 +23,8 @@ public class ExtensibleList<T> {
 	// LoggerFactory.getLogger(ExtensibleList.class);
 
 	private static class ExtensibleListIterator<T> implements Iterator<T> {
-		private ExtensibleList<T> list;
-		private ListIterator<T> it;
 
 		public ExtensibleListIterator(ExtensibleList<T> start, ListIterator<T> itStart) {
-
-		}
-
-		@Override
-		public boolean hasNext() {
-			return false;
-		}
-
-		@Override
-		public T next() {
-			if (!hasNext())
-				throw new ArrayIndexOutOfBoundsException("No more elements");
-
-			return it.next();
-		}
-	}
-
-	private static class ExtensibleListReverseIterator<T> implements Iterator<T> {
-
-		public ExtensibleListReverseIterator(ExtensibleList<T> start, ListIterator<T> itStart) {
 			this.list = start;
 			this.it = itStart;
 		}
@@ -88,7 +66,7 @@ public class ExtensibleList<T> {
 			return it.previous();
 		}
 
-		public boolean isSamePosition(ExtensibleListReverseIterator<T> it2) {
+		public boolean isSamePosition(ExtensibleListIterator<T> it2) {
 			return list.actualList == it2.list && it.previousIndex() == it2.it.previousIndex();
 		}
 
@@ -265,13 +243,13 @@ public class ExtensibleList<T> {
 	 * 
 	 * @return the iterator
 	 */
-	public ExtensibleListReverseIterator<T> reverseIterator() {
+	public ExtensibleListIterator<T> reverseIterator() {
 		final ListIterator<T> itStart;
 		if (actualList != null)
 			itStart = actualList.listIterator(actualList.size());
 		else
 			itStart = null;
-		return new ExtensibleListReverseIterator<T>(this, itStart);
+		return new ExtensibleListIterator<T>(this, itStart);
 	}
 
 	/**
@@ -281,13 +259,6 @@ public class ExtensibleList<T> {
 	 */
 	public T getLast() {
 		return (T) getOrRemoveLast(false);
-	}
-
-	public T getSecondLast() {
-		T last = (T) getOrRemoveLast(true);
-		T second = (T) getOrRemoveLast(false);
-		add(last);
-		return second;
 	}
 
 	/**
@@ -319,7 +290,7 @@ public class ExtensibleList<T> {
 							// may need it).
 							ExtensibleList<T> result = new ExtensibleList<>();
 							result.actualList = new ArrayList<T>(size);
-							ExtensibleListReverseIterator<T> it = reverseIterator();
+							ExtensibleListIterator<T> it = reverseIterator();
 							it.next(); // remove first element
 							while (it.hasNext()) {
 								T n = it.next();
@@ -392,8 +363,8 @@ public class ExtensibleList<T> {
 			}
 			return actualList.equals(other.actualList);
 		}
-		ExtensibleListReverseIterator<T> it1 = reverseIterator();
-		ExtensibleListReverseIterator<T> it2 = other.reverseIterator();
+		ExtensibleListIterator<T> it1 = reverseIterator();
+		ExtensibleListIterator<T> it2 = other.reverseIterator();
 		while (true) {
 			boolean i1 = it1.hasNext();
 			boolean i2 = it2.hasNext();
@@ -446,7 +417,7 @@ public class ExtensibleList<T> {
 	public ExtensibleList<T> addFirstSlow(T toAdd) {
 		ExtensibleList<T> list = new ExtensibleList<T>();
 		list.actualList = new LinkedList<T>();
-		ExtensibleListReverseIterator<T> it = reverseIterator();
+		ExtensibleListIterator<T> it = reverseIterator();
 		while (it.hasNext()) {
 			list.actualList.add(0, it.next());
 		}
@@ -459,7 +430,7 @@ public class ExtensibleList<T> {
 	@Override
 	public String toString() {
 		List<T> res = new ArrayList<T>();
-		ExtensibleListReverseIterator<T> it = reverseIterator();
+		ExtensibleListIterator<T> it = reverseIterator();
 		while (it.hasNext()) {
 			res.add(it.next());
 		}
