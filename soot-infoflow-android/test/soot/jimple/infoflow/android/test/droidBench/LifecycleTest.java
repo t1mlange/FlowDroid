@@ -31,11 +31,10 @@ public class LifecycleTest extends JUnitTests {
 	}
 
 	@Test(timeout = 300000)
-	 // Test case broken?
 	public void runTestActivityEventSequence2() throws IOException, XmlPullParserException {
 		int expected = 1;
 		if (mode == TestResultMode.FLOWDROID_BACKWARDS || mode == TestResultMode.FLOWDROID_FORWARDS)
-			expected = 0;
+			expected = 1;
 		InfoflowResults res = analyzeAPKFile("Lifecycle/ActivityEventSequence2.apk");
 		Assert.assertNotNull(res);
 		Assert.assertEquals(expected, res.size());
