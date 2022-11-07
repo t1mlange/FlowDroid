@@ -794,6 +794,18 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
 							}
 						}
 
+						if (!res.isEmpty() && returnSite.toString().contains("append")) {
+							Abstraction leaf = source;
+							while (leaf.getPredecessor() != null)
+								leaf = leaf.getPredecessor();
+							if (manager.getICFG().getMethodOf(callSite).toString().contains("$B:")
+									&& manager.getICFG().getMethodOf(leaf.getCurrentStmt()).toString().contains("$B2:")
+							) {
+								System.out.println("FF");
+//								return null;
+							}
+						}
+
 						for (Abstraction abs : res) {
 							if (abs != source)
 								abs.setCorrespondingCallSite(callStmt);

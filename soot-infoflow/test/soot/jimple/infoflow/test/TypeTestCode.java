@@ -72,7 +72,8 @@ public class TypeTestCode {
 		@Override
 		void leak() {
 			ConnectionManager cm = new ConnectionManager();
-			cm.publish("B: " + data);
+			StringBuilder sb = new StringBuilder(data);
+			cm.publish(data);
 		}
 	}
 
@@ -80,7 +81,8 @@ public class TypeTestCode {
 		@Override
 		void leak() {
 			ConnectionManager cm = new ConnectionManager();
-			cm.publish("B2: " + data);
+			StringBuilder sb = new StringBuilder(data);
+			cm.publish(data);
 		}
 	}
 
@@ -197,21 +199,25 @@ public class TypeTestCode {
 	}
 
 	public void callTargetTest3() {
-		A b2 = new B2();
-		b2.leak();
-		b2.data = TelephonyManager.getDeviceId();
+//		A b2 = new B2();
+//		callee(b2.data);
+//		b2.data = TelephonyManager.getDeviceId();
 
-		A b = new B();
-		b.data = TelephonyManager.getDeviceId();
-		b.leak();
+//		A b = new B();
+//		b.data = TelephonyManager.getDeviceId();
+		callee(TelephonyManager.getDeviceId());
+	}
+
+	private void callee(String data) {
+		ConnectionManager cm = new ConnectionManager();
+		cm.publish("A" + data);
 	}
 
 	public void callTargetTest1Reduced() {
 		ConnectionManager cm = new ConnectionManager();
-		StringBuilder sb = new StringBuilder();
 		String tainted = TelephonyManager.getDeviceId();
-		sb.append(tainted);
-		cm.publish(sb.toString());
+		callee(tainted);
+//		cm.publish("A" + tainted);
 	}
 
 	public void arrayObjectCastTest() {
