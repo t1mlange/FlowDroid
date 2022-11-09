@@ -21,15 +21,18 @@ import soot.jimple.infoflow.android.InfoflowAndroidConfiguration;
 import soot.jimple.infoflow.android.SetupApplication;
 import soot.jimple.infoflow.results.InfoflowResults;
 import soot.jimple.infoflow.taintWrappers.EasyTaintWrapper;
+import soot.jimple.infoflow.util.DebugFlowFunctionTaintPropagationHandler;
 
-public class JUnitTests {
-	enum TestResultMode {
+public abstract class JUnitTests {
+	protected enum TestResultMode {
 		DROIDBENCH, // the actual expected values of droidbench
 		FLOWDROID_BACKWARDS, // the values from FlowDroid backwards analysis, use to test regressions/fixes
-		FLOWDROID_FORWARDS
+		FLOWDROID_FORWARDS // the values from FlowDroid forwards analysis, use to test regressions/fixes
 	}
 
-	protected final TestResultMode mode = TestResultMode.FLOWDROID_FORWARDS;
+	protected final TestResultMode mode = getTestResultMode();
+
+	protected abstract TestResultMode getTestResultMode();
 
 	/**
 	 * Analyzes the given APK file for data flows
@@ -153,7 +156,6 @@ public class JUnitTests {
 		if (configCallback != null)
 			configCallback.configureAnalyzer(setupApplication.getConfig());
 		setupApplication.getConfig().setEnableArraySizeTainting(true);
-
 		setupApplication.setTaintWrapper(new EasyTaintWrapper(taintWrapperFile));
 
 		if (mode == TestResultMode.FLOWDROID_BACKWARDS)
