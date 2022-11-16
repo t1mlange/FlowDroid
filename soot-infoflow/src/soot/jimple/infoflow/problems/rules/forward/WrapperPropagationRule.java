@@ -91,6 +91,8 @@ public class WrapperPropagationRule extends AbstractTaintPropagationRule {
 				return null;
 		}
 
+		if (iStmt.toString().contains("virtualinvoke $r0.<edu.uta.ActivityEventSequence2: void onResume()>()"))
+			System.out.println("STOP");
 		Set<Abstraction> res = getManager().getTaintWrapper().getTaintsForMethod(iStmt, d1, source);
 		if (res != null) {
 			Set<Abstraction> resWithAliases = new HashSet<>(res);

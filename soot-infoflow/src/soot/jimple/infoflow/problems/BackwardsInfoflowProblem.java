@@ -211,6 +211,7 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
 								} else if (rightOp instanceof NewArrayExpr) {
 									createNewVal = true;
 								} else {
+									createNewVal = true;
 									if (!manager.getTypeUtils().checkCast(source.getAccessPath(), leftVal.getType()))
 										return null;
 								}

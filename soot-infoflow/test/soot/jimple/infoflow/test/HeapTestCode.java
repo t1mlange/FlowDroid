@@ -1543,4 +1543,15 @@ public class HeapTestCode {
 		cm.publish(j.f.str);
 	}
 
+	public void aliasWithOverwriteTest5() {
+		A a = new A();
+		A b = a;
+		a = null;
+		b = a;
+		b.i = TelephonyManager.getIMEI();
+
+		ConnectionManager cm = new ConnectionManager();
+		cm.publish(a.i);
+	}
+
 }

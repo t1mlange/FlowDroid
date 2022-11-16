@@ -1,6 +1,7 @@
 package soot.jimple.infoflow;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -98,6 +99,7 @@ import soot.jimple.infoflow.util.SystemClassHandler;
 import soot.jimple.toolkits.callgraph.ReachableMethods;
 import soot.jimple.toolkits.pointer.DumbPointerAnalysis;
 import soot.options.Options;
+import soot.util.Chain;
 
 /**
  * Abstract base class for all data/information flow analyses in FlowDroid
@@ -597,6 +599,31 @@ public abstract class AbstractInfoflow implements IInfoflow {
 				releaseCallgraph();
 				constructCallgraph();
 			}
+
+			Chain<SootClass> classes = Scene.v().getClasses();
+            for (SootClass c : classes) {
+                if (!c.getName().startsWith("java")) {
+                    if (c.getName().equals(dummyMainMethod.getDeclaringClass().getName()) || c.getName().contains("Test") || c.getName().contains("edu.uta") || c.getName().startsWith("edu.mit") || c.getName().startsWith("de.ecspride")) {
+                        String name = c.getName().replace("soot.jimple.infoflow.test.", "");
+                        String baseClass = name.split("\\$")[0];
+                        File dir = new File("/home/lange/Projects/FlowDroid/jimpleCode/" + baseClass);
+                        boolean exists = dir.exists();
+                        boolean cont = exists || dir.mkdir();
+                        if (cont) {
+                            File file = new File("/home/lange/Projects/FlowDroid/jimpleCode/" + baseClass + "/" + name + ".jimple");
+                            PrintWriter writer;
+                            try {
+                                writer = new PrintWriter(file);
+                                soot.Printer.v().printTo(c, writer);
+                                writer.flush();
+                                writer.close();
+                            } catch (FileNotFoundException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                }
+            }
 
 			if (config.getCallgraphAlgorithm() != CallgraphAlgorithm.OnDemand)
 				logger.info("Callgraph has {} edges", Scene.v().getCallGraph().size());

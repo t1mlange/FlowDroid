@@ -1,10 +1,6 @@
 package soot.jimple.infoflow.problems;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 import heros.FlowFunction;
 import heros.FlowFunctions;
@@ -19,22 +15,7 @@ import soot.SootMethod;
 import soot.Type;
 import soot.Unit;
 import soot.Value;
-import soot.jimple.ArrayRef;
-import soot.jimple.AssignStmt;
-import soot.jimple.BinopExpr;
-import soot.jimple.CastExpr;
-import soot.jimple.DefinitionStmt;
-import soot.jimple.FieldRef;
-import soot.jimple.IdentityStmt;
-import soot.jimple.InstanceFieldRef;
-import soot.jimple.InstanceInvokeExpr;
-import soot.jimple.InstanceOfExpr;
-import soot.jimple.InvokeExpr;
-import soot.jimple.NewArrayExpr;
-import soot.jimple.ReturnStmt;
-import soot.jimple.StaticFieldRef;
-import soot.jimple.Stmt;
-import soot.jimple.UnopExpr;
+import soot.jimple.*;
 import soot.jimple.infoflow.InfoflowConfiguration;
 import soot.jimple.infoflow.InfoflowManager;
 import soot.jimple.infoflow.aliasing.Aliasing;
@@ -109,6 +90,8 @@ public class BackwardsAliasProblem extends AbstractInfoflowProblem {
 						// TurnUnit is the sink. Below this stmt, the taint is not valid anymore
 						// Therefore we turn around here.
 						if (source.getTurnUnit() == srcUnit) {
+							if (source.getPassBackOnTurnUnit())
+								manager.getForwardSolver().processEdge(new PathEdge<>(d1, srcUnit, source.getActiveCopy()));
 							return notifyOutFlowHandlers(srcUnit, d1, source, null,
 									TaintPropagationHandler.FlowFunctionType.NormalFlowFunction);
 						}
@@ -168,17 +151,18 @@ public class BackwardsAliasProblem extends AbstractInfoflowProblem {
 							handoverLeftValue = true;
 						}
 
-						if (handoverLeftValue) {
-							// We found a missed path upwards
-							// inject same stmt in infoflow solver
-							manager.getForwardSolver()
-									.processEdge(new PathEdge<Unit, Abstraction>(d1, srcUnit, source.getActiveCopy()));
+						// We found a missed write, so we inject the same stmt in the infoflow solver.
+						// Bail out already here, if the rhs is a constant.
+						if (handoverLeftValue && !(rightVal instanceof Constant)) {
+							source.passBackOnTurnUnit();
+//							queryForwardEdge(srcUnit, d1, source);
 						}
 
-						boolean leftSideOverwritten = !(leftOp instanceof ArrayRef) && !(leftOp instanceof FieldRef)
-								&& Aliasing.baseMatches(leftOp, source);
+//						// We can not kill the left side for arrays because we do not track the indices.
+						boolean leftSideOverwritten = !(leftOp instanceof ArrayRef) && Aliasing.baseMatches(leftOp, source);
 						if (leftSideOverwritten)
 							return null;
+						// We can not kill any overwrites, because we search for the last write before the turn unit.
 						res.add(source);
 
 						// BinopExr & UnopExpr operands can not have aliases
@@ -408,10 +392,9 @@ public class BackwardsAliasProblem extends AbstractInfoflowProblem {
 							}
 						}
 
-						if (res != null) {
-							for (Abstraction d3 : res)
-								manager.getForwardSolver().injectContext(solver, dest, d3, callSite, source, d1);
-						}
+						for (Abstraction d3 : res)
+							manager.getForwardSolver().injectContext(solver, dest, d3, callSite, source, d1);
+
 						return res;
 					}
 				};
@@ -451,12 +434,12 @@ public class BackwardsAliasProblem extends AbstractInfoflowProblem {
 
 						// TurnUnit is the sink. Below this stmt, the taint is not valid anymore
 						// Therefore we turn around here.
-						if (source.getTurnUnit() == callSite) {
-							return notifyOutFlowHandlers(callSite, calleeD1, source, null,
-									TaintPropagationHandler.FlowFunctionType.ReturnFlowFunction);
-						}
+//						if (source.getTurnUnit() == callSite) {
+//							return notifyOutFlowHandlers(callSite, calleeD1, source, null,
+//									TaintPropagationHandler.FlowFunctionType.ReturnFlowFunction);
+//						}
 
-						Set<Abstraction> res = computeTargetsInternal(source);
+						Set<Abstraction> res = computeTargetsInternal(source, calleeD1);
 						if (DEBUG_PRINT)
 							System.out.println("Alias Return" + "\n" + "In: " + source.toString() + "\n" + "Stmt: "
 									+ callSite.toString() + "\n" + "Out: " + (res == null ? "[]" : res.toString())
@@ -466,7 +449,7 @@ public class BackwardsAliasProblem extends AbstractInfoflowProblem {
 								TaintPropagationHandler.FlowFunctionType.ReturnFlowFunction);
 					}
 
-					private Set<Abstraction> computeTargetsInternal(Abstraction source) {
+					private Set<Abstraction> computeTargetsInternal(Abstraction source, Abstraction calleeD1) {
 						HashSet<Abstraction> res = new HashSet<>();
 
 						// Static fields get propagated unchanged
@@ -561,6 +544,8 @@ public class BackwardsAliasProblem extends AbstractInfoflowProblem {
 						}
 
 						if (res.isEmpty()) {
+							if (source.getPassBackOnTurnUnit())
+								manager.getForwardSolver().processEdge(new PathEdge<>(calleeD1, exitStmt, source.getActiveCopy()));
 							return null;
 						} else {
 							for (Abstraction abs : res) {
@@ -610,7 +595,8 @@ public class BackwardsAliasProblem extends AbstractInfoflowProblem {
 						if (source.getTurnUnit() != null && (source.getTurnUnit() == callSite
 								|| manager.getICFG().getCalleesOfCallAt(callSite).stream()
 										.anyMatch(m -> manager.getICFG().getMethodOf(source.getTurnUnit()) == m))) {
-
+							if (source.getPassBackOnTurnUnit())
+								manager.getForwardSolver().processEdge(new PathEdge<>(d1, callSite, source.getActiveCopy()));
 							return notifyOutFlowHandlers(callSite, d1, source, null,
 									TaintPropagationHandler.FlowFunctionType.CallToReturnFlowFunction);
 						}
@@ -627,6 +613,20 @@ public class BackwardsAliasProblem extends AbstractInfoflowProblem {
 					}
 
 					private Set<Abstraction> computeTargetsInternal(Abstraction d1, Abstraction source) {
+						// x = o.m()
+						if (callStmt instanceof AssignStmt) {
+							AssignStmt assignStmt = (AssignStmt) callStmt;
+							Value left = assignStmt.getLeftOp();
+
+							if (Aliasing.baseMatches(left, source)) {
+								source.passBackOnTurnUnit();
+								return Collections.singleton(source);
+//								queryForwardEdge(callSite, d1, source);
+//								if (!(left.getType() instanceof ArrayRef))
+//									return null;
+							}
+						}
+
 						// If excluded or we do not anything about the callee,
 						// we just pass the taint over the statement
 						if (interproceduralCFG().getCalleesOfCallAt(callSite).isEmpty()) {
@@ -635,8 +635,7 @@ public class BackwardsAliasProblem extends AbstractInfoflowProblem {
 
 						if (taintWrapper != null) {
 							if (taintWrapper.isExclusive(callStmt, source)) {
-								manager.getForwardSolver().processEdge(
-										new PathEdge<Unit, Abstraction>(d1, callStmt, source.getActiveCopy()));
+								queryForwardEdge(callStmt, d1, source);
 							}
 
 							Set<Abstraction> wrapperAliases = taintWrapper.getAliasesForMethod(callStmt, d1, source);
@@ -648,8 +647,7 @@ public class BackwardsAliasProblem extends AbstractInfoflowProblem {
 										abs.setCorrespondingCallSite(callStmt);
 
 									for (Unit u : manager.getICFG().getPredsOf(callSite))
-										manager.getForwardSolver().processEdge(
-												new PathEdge<Unit, Abstraction>(d1, u, abs.getActiveCopy()));
+										queryForwardEdge(u, d1, abs);
 								}
 								return passOnSet;
 							}
@@ -682,8 +680,7 @@ public class BackwardsAliasProblem extends AbstractInfoflowProblem {
 									&& arg == source.getAccessPath().getPlainValue())) {
 								// non standard source sink manager might need this
 								if (isSource)
-									manager.getForwardSolver()
-											.processEdge(new PathEdge<>(d1, callSite, source.getActiveCopy()));
+									queryForwardEdge(callSite, d1, source);
 								return null;
 							}
 						} else {
@@ -694,8 +691,7 @@ public class BackwardsAliasProblem extends AbstractInfoflowProblem {
 									// the native stmt does not create a new alias but we notice that we
 									// missed this argument in the infoflow search.
 									Abstraction newSource = source.deriveNewAbstractionWithTurnUnit(callSite);
-									manager.getForwardSolver()
-											.processEdge(new PathEdge<>(d1, callSite, newSource.getActiveCopy()));
+									queryForwardEdge(callSite, d1, newSource);
 									return null;
 								}
 							}
@@ -710,6 +706,10 @@ public class BackwardsAliasProblem extends AbstractInfoflowProblem {
 				Type t = abs.getAccessPath().getBaseType();
 				return t instanceof PrimType
 						|| (TypeUtils.isStringType(t) && !abs.getAccessPath().getCanHaveImmutableAliases());
+			}
+
+			private void queryForwardEdge(Unit unit, Abstraction d1, Abstraction in) {
+//				manager.getForwardSolver().processEdge(new PathEdge<>(d1, unit, in.getActiveCopy()));
 			}
 		};
 	}

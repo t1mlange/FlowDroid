@@ -51,43 +51,45 @@ public class ContextSensitivityTests extends TestHelper {
 
 	@Test(timeout = 100000)
 	public void recursionTest1() {
-		String mSig = "<soot.jimple.infoflow.test.methodSummary.ContextSensitivity: java.lang.String recursionTest1(java.lang.String)>";
-		Set<MethodFlow> flow = createSummaries(mSig).getAllFlows();
+		while (true) {
+			String mSig = "<soot.jimple.infoflow.test.methodSummary.ContextSensitivity: java.lang.String recursionTest1(java.lang.String)>";
+			Set<MethodFlow> flow = createSummaries(mSig).getAllFlows();
 
-		// Field y to field z
-		assertTrue(containsFlow(flow, SourceSinkType.Field, -1, new String[] { FIELD_Y }, SourceSinkType.Field, -1,
-				new String[] { FIELD_Z }));
-		// Field x to field y
-		assertTrue(containsFlow(flow, SourceSinkType.Field, -1, new String[] { FIELD_Y }, SourceSinkType.Field, -1,
-				new String[] { FIELD_X }));
-		// Transitivity: Field x to field z
-		assertTrue(containsFlow(flow, SourceSinkType.Field, -1, new String[] { FIELD_X }, SourceSinkType.Field, -1,
-				new String[] { FIELD_Z }));
+			// Field y to field z
+			assertTrue(containsFlow(flow, SourceSinkType.Field, -1, new String[]{FIELD_Y}, SourceSinkType.Field, -1,
+					new String[]{FIELD_Z}));
+			// Field x to field y
+			assertTrue(containsFlow(flow, SourceSinkType.Field, -1, new String[]{FIELD_Y}, SourceSinkType.Field, -1,
+					new String[]{FIELD_X}));
+			// Transitivity: Field x to field z
+			assertTrue(containsFlow(flow, SourceSinkType.Field, -1, new String[]{FIELD_X}, SourceSinkType.Field, -1,
+					new String[]{FIELD_Z}));
 
-		// On first recursive call: Field y -> str -> Field x (no strong updates on
-		// fields)
-		assertTrue(containsFlow(flow, SourceSinkType.Field, -1, new String[] { FIELD_Y }, SourceSinkType.Field, -1,
-				new String[] { FIELD_X }));
+			// On first recursive call: Field y -> str -> Field x (no strong updates on
+			// fields)
+			assertTrue(containsFlow(flow, SourceSinkType.Field, -1, new String[]{FIELD_Y}, SourceSinkType.Field, -1,
+					new String[]{FIELD_X}));
 
-		// Parameter 0 to x
-		assertTrue(containsFlow(flow, Parameter, 0, null, SourceSinkType.Field, -1, new String[] { FIELD_X }));
-		// Transitivity: Parameter 0 to y
-		assertTrue(containsFlow(flow, Parameter, 0, null, SourceSinkType.Field, -1, new String[] { FIELD_Y }));
-		// Transitivity: Parameter 0 to z
-		assertTrue(containsFlow(flow, Parameter, 0, null, SourceSinkType.Field, -1, new String[] { FIELD_Z }));
+			// Parameter 0 to x
+			assertTrue(containsFlow(flow, Parameter, 0, null, SourceSinkType.Field, -1, new String[]{FIELD_X}));
+			// Transitivity: Parameter 0 to y
+			assertTrue(containsFlow(flow, Parameter, 0, null, SourceSinkType.Field, -1, new String[]{FIELD_Y}));
+			// Transitivity: Parameter 0 to z
+			assertTrue(containsFlow(flow, Parameter, 0, null, SourceSinkType.Field, -1, new String[]{FIELD_Z}));
 
-		// Parameter 0 to return value
-		assertTrue(containsFlow(flow, Parameter, 0, null, SourceSinkType.Return, null));
+			// Parameter 0 to return value
+			assertTrue(containsFlow(flow, Parameter, 0, null, SourceSinkType.Return, null));
 
-		// Fields to return value
-		assertTrue(containsFlow(flow, SourceSinkType.Field, -1, new String[] { FIELD_X }, SourceSinkType.Return, -1,
-				null));
-		assertTrue(containsFlow(flow, SourceSinkType.Field, -1, new String[] { FIELD_Y }, SourceSinkType.Return, -1,
-				null));
-		assertTrue(containsFlow(flow, SourceSinkType.Field, -1, new String[] { FIELD_Z }, SourceSinkType.Return, -1,
-				null));
+			// Fields to return value
+			assertTrue(containsFlow(flow, SourceSinkType.Field, -1, new String[]{FIELD_X}, SourceSinkType.Return, -1,
+					null));
+			assertTrue(containsFlow(flow, SourceSinkType.Field, -1, new String[]{FIELD_Y}, SourceSinkType.Return, -1,
+					null));
+			assertTrue(containsFlow(flow, SourceSinkType.Field, -1, new String[]{FIELD_Z}, SourceSinkType.Return, -1,
+					null));
 
-		assertEquals(11, flow.size());
+			assertEquals(11, flow.size());
+		}
 	}
 
 }

@@ -75,12 +75,14 @@ public abstract class WrapperListTests extends JUnitTests {
 
 	@Test
 	public void listsubListTest() {
-		IInfoflow infoflow = initInfoflow();
-		List<String> epoints = new ArrayList<String>();
-		epoints.add("<soot.jimple.infoflow.test.methodSummary.ListTestCode: void subListTest()>");
-		infoflow.setTaintWrapper(wrapper);
-		infoflow.computeInfoflow(appPath, libPath, epoints, sources, sinks);
-		checkInfoflow(infoflow, 1);
+		while (true) {
+			IInfoflow infoflow = initInfoflow();
+			List<String> epoints = new ArrayList<String>();
+			epoints.add("<soot.jimple.infoflow.test.methodSummary.ListTestCode: void subListTest()>");
+			infoflow.setTaintWrapper(wrapper);
+			infoflow.computeInfoflow(appPath, libPath, epoints, sources, sinks);
+			checkInfoflow(infoflow, 1);
+		}
 	}
 
 	@Test

@@ -58,6 +58,8 @@ public class Abstraction implements Cloneable, FastSolverLinkedNode<Abstraction,
 	 * backwards analysis
 	 */
 	protected Unit turnUnit = null;
+	protected boolean passBackAtTurnUnit = false;
+
 	/**
 	 * taint is thrown by an exception (is set to false when it reaches the
 	 * catch-Stmt)
@@ -156,6 +158,7 @@ public class Abstraction implements Cloneable, FastSolverLinkedNode<Abstraction,
 		this.accessPath = apToTaint;
 		this.activationUnit = null;
 		this.turnUnit = null;
+		this.passBackAtTurnUnit = false;
 		this.exceptionThrown = exceptionThrown;
 
 		this.neighbors = null;
@@ -176,12 +179,14 @@ public class Abstraction implements Cloneable, FastSolverLinkedNode<Abstraction,
 			exceptionThrown = false;
 			activationUnit = null;
 			turnUnit = null;
+			passBackAtTurnUnit = false;
 			isImplicit = false;
 		} else {
 			sourceContext = original.sourceContext;
 			exceptionThrown = original.exceptionThrown;
 			activationUnit = original.activationUnit;
 			turnUnit = original.turnUnit;
+			passBackAtTurnUnit = original.passBackAtTurnUnit;
 			assert activationUnit == null || flowSensitiveAliasing;
 
 			postdominators = original.postdominators == null ? null
@@ -337,7 +342,16 @@ public class Abstraction implements Cloneable, FastSolverLinkedNode<Abstraction,
 		a.sourceContext = null;
 		a.activationUnit = null;
 		a.turnUnit = turnUnit;
+		a.passBackAtTurnUnit = passBackAtTurnUnit;
 		return a;
+	}
+
+	public void passBackOnTurnUnit() {
+		passBackAtTurnUnit = true;
+	}
+
+	public boolean getPassBackOnTurnUnit() {
+		return passBackAtTurnUnit;
 	}
 
 	public Abstraction getActiveCopy() {
@@ -531,6 +545,8 @@ public class Abstraction implements Cloneable, FastSolverLinkedNode<Abstraction,
 				return false;
 		} else if (!turnUnit.equals(other.turnUnit))
 			return false;
+		if (this.passBackAtTurnUnit != other.passBackAtTurnUnit)
+			return false;
 		if (this.exceptionThrown != other.exceptionThrown)
 			return false;
 		if (postdominators == null) {
@@ -563,6 +579,7 @@ public class Abstraction implements Cloneable, FastSolverLinkedNode<Abstraction,
 		result = prime * result + ((accessPath == null) ? 0 : accessPath.hashCode());
 		result = prime * result + ((activationUnit == null) ? 0 : activationUnit.hashCode());
 		result = prime * result + ((turnUnit == null) ? 0 : turnUnit.hashCode());
+		result = prime * result + (passBackAtTurnUnit ? 1231 : 1237);
 		result = prime * result + (exceptionThrown ? 1231 : 1237);
 		result = prime * result + ((postdominators == null) ? 0 : postdominators.hashCode());
 		result = prime * result + ((dominator == null) ? 0 : dominator.hashCode());
