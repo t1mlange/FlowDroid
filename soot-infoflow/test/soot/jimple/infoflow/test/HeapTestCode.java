@@ -1543,4 +1543,12 @@ public class HeapTestCode {
 		cm.publish(j.f.str);
 	}
 
+
+	public void aliasPropagateNewTest() {
+		System.out.println("Hello World!");
+		A a = new A();
+		a.b = TelephonyManager.getDeviceId();
+		ConnectionManager cm = new ConnectionManager();
+		cm.publish(a.b);
+	}
 }

@@ -20,23 +20,19 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import soot.RefType;
-import soot.Scene;
-import soot.SootField;
-import soot.SootMethod;
-import soot.jimple.AssignStmt;
-import soot.jimple.DefinitionStmt;
-import soot.jimple.InstanceInvokeExpr;
-import soot.jimple.Stmt;
+import soot.*;
+import soot.jimple.*;
 import soot.jimple.infoflow.IInfoflow;
 import soot.jimple.infoflow.Infoflow;
 import soot.jimple.infoflow.InfoflowConfiguration.AliasingAlgorithm;
 import soot.jimple.infoflow.InfoflowConfiguration.PathReconstructionMode;
 import soot.jimple.infoflow.InfoflowManager;
+import soot.jimple.infoflow.aliasing.Aliasing;
 import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.data.AccessPath;
 import soot.jimple.infoflow.data.SootMethodAndClass;
 import soot.jimple.infoflow.entryPointCreators.DefaultEntryPointCreator;
+import soot.jimple.infoflow.handlers.TaintPropagationHandler;
 import soot.jimple.infoflow.results.InfoflowResults;
 import soot.jimple.infoflow.sourcesSinks.definitions.MethodSourceSinkDefinition;
 import soot.jimple.infoflow.sourcesSinks.manager.ISourceSinkManager;
@@ -45,6 +41,7 @@ import soot.jimple.infoflow.sourcesSinks.manager.SourceInfo;
 import soot.jimple.infoflow.taintWrappers.AbstractTaintWrapper;
 import soot.jimple.infoflow.taintWrappers.IReversibleTaintWrapper;
 import soot.jimple.infoflow.taintWrappers.ITaintPropagationWrapper;
+import soot.jimple.infoflow.util.DebugFlowFunctionTaintPropagationHandler;
 
 /**
  * tests aliasing of heap references
@@ -1229,4 +1226,31 @@ public abstract class HeapTests extends JUnitTests {
 		checkInfoflow(infoflow, 1);
 	}
 
+	private static class CheckNoFlowOverNewExpr implements TaintPropagationHandler {
+		@Override
+		public void notifyFlowIn(Unit stmt, Abstraction taint, InfoflowManager manager, FlowFunctionType type) {
+
+		}
+
+		@Override
+		public Set<Abstraction> notifyFlowOut(Unit stmt, Abstraction d1, Abstraction incoming, Set<Abstraction> outgoing, InfoflowManager manager, FlowFunctionType type) {
+			if (stmt instanceof AssignStmt) {
+				AssignStmt assign = (AssignStmt) stmt;
+				if (assign.getRightOp() instanceof NewExpr && Aliasing.baseMatches(assign.getLeftOp(), incoming)) {
+					Assert.assertEquals(0, outgoing.size());
+				}
+			}
+			return outgoing;
+		}
+	}
+
+	@Test(timeout = 300000)
+	public void aliasPropagateNewTest() {
+		IInfoflow infoflow = initInfoflow();
+		infoflow.setAliasPropagationHandler(new CheckNoFlowOverNewExpr());
+		List<String> epoints = new ArrayList<String>();
+		epoints.add("<soot.jimple.infoflow.test.HeapTestCode: void aliasPropagateNewTest()>");
+		infoflow.computeInfoflow(appPath, libPath, epoints, sources, sinks);
+		checkInfoflow(infoflow, 1);
+	}
 }
