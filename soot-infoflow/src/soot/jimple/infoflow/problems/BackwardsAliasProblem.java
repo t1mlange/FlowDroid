@@ -105,6 +105,7 @@ public class BackwardsAliasProblem extends AbstractInfoflowProblem {
 						// TurnUnit is the sink. Below this stmt, the taint is not valid anymore
 						// Therefore we turn around here.
 						if (source.getTurnUnit() == srcUnit) {
+							handOver(d1, srcUnit, source);
 							return notifyOutFlowHandlers(srcUnit, d1, source, null,
 									TaintPropagationHandler.FlowFunctionType.NormalFlowFunction);
 						}
@@ -162,20 +163,34 @@ public class BackwardsAliasProblem extends AbstractInfoflowProblem {
 								}
 							}
 						} else if (leftVal == sourceBase) {
-							handoverLeftValue = true;
+							handoverLeftValue = leftOp instanceof ArrayRef;
+							// ArrayRefs can't be overwritten because we don't track indices
+							// Also, if the LHS is a FieldRef and only the base matches, there's no overwrite either.
+							leftSideOverwritten = !handoverLeftValue && !(leftOp instanceof FieldRef);
 						}
+
+						if (leftSideOverwritten)
+							return null;
 
 						if (handoverLeftValue) {
 							// We found a missed path upwards
 							// inject same stmt in infoflow solver
-							handOver(d1, srcUnit, source);
+							handOverActive(d1, srcUnit, source);
+							if (!source.isAbstractionActive()) {
+								// We found a possible write to an alias we found in the taint analysis
+								res.add(source.deriveInactiveAbstraction(assignStmt));
+							} else {
+								// We found a write that happens later in the control-flow than the
+								// previous one.
+								res.add(source.getActiveCopy().deriveInactiveAbstraction(assignStmt));
+							}
 						}
 
-						leftSideOverwritten = !(leftOp instanceof ArrayRef) && !(leftOp instanceof FieldRef)
-								&& Aliasing.baseMatches(leftOp, source);
-						if (leftSideOverwritten)
-							return null;
 						res.add(source);
+						if (!source.isAbstractionActive())
+							return res;
+//						leftSideOverwritten = !(leftOp instanceof ArrayRef) && !(leftOp instanceof FieldRef)
+//								&& Aliasing.baseMatches(leftOp, source);
 
 						// BinopExr & UnopExpr operands can not have aliases
 						// as both only can have primitives on the right side
@@ -450,7 +465,7 @@ public class BackwardsAliasProblem extends AbstractInfoflowProblem {
 									TaintPropagationHandler.FlowFunctionType.ReturnFlowFunction);
 						}
 
-						Set<Abstraction> res = computeTargetsInternal(source);
+						Set<Abstraction> res = computeTargetsInternal(source, calleeD1);
 						if (DEBUG_PRINT)
 							System.out.println("Alias Return" + "\n" + "In: " + source.toString() + "\n" + "Stmt: "
 									+ callSite.toString() + "\n" + "Out: " + (res == null ? "[]" : res.toString())
@@ -460,7 +475,7 @@ public class BackwardsAliasProblem extends AbstractInfoflowProblem {
 								TaintPropagationHandler.FlowFunctionType.ReturnFlowFunction);
 					}
 
-					private Set<Abstraction> computeTargetsInternal(Abstraction source) {
+					private Set<Abstraction> computeTargetsInternal(Abstraction source, Abstraction calleeD1) {
 						HashSet<Abstraction> res = new HashSet<>();
 
 						// Static fields get propagated unchanged
@@ -555,6 +570,7 @@ public class BackwardsAliasProblem extends AbstractInfoflowProblem {
 						}
 
 						if (res.isEmpty()) {
+							handOver(calleeD1, exitStmt, source);
 							return null;
 						} else {
 							for (Abstraction abs : res) {
@@ -604,7 +620,7 @@ public class BackwardsAliasProblem extends AbstractInfoflowProblem {
 						if (source.getTurnUnit() != null && (source.getTurnUnit() == callSite
 								|| manager.getICFG().getCalleesOfCallAt(callSite).stream()
 										.anyMatch(m -> manager.getICFG().getMethodOf(source.getTurnUnit()) == m))) {
-
+							handOver(d1, callSite, source);
 							return notifyOutFlowHandlers(callSite, d1, source, null,
 									TaintPropagationHandler.FlowFunctionType.CallToReturnFlowFunction);
 						}
@@ -629,7 +645,7 @@ public class BackwardsAliasProblem extends AbstractInfoflowProblem {
 
 						if (taintWrapper != null) {
 							if (taintWrapper.isExclusive(callStmt, source)) {
-								handOver(d1, callSite, source);
+								handOverActive(d1, callSite, source);
 							}
 
 							Set<Abstraction> wrapperAliases = taintWrapper.getAliasesForMethod(callStmt, d1, source);
@@ -641,7 +657,7 @@ public class BackwardsAliasProblem extends AbstractInfoflowProblem {
 										abs.setCorrespondingCallSite(callStmt);
 
 									for (Unit u : manager.getICFG().getPredsOf(callSite))
-										handOver(d1, u, abs);
+										handOverActive(d1, u, abs);
 								}
 								return passOnSet;
 							}
@@ -674,10 +690,10 @@ public class BackwardsAliasProblem extends AbstractInfoflowProblem {
 									&& arg == source.getAccessPath().getPlainValue())) {
 								// non standard source sink manager might need this
 								if (isSource)
-									handOver(d1, callSite, source);
+									handOverActive(d1, callSite, source);
 								return null;
 							}
-						} else {
+						} else if (source.isAbstractionActive()) {
 							for (Value arg : callArgs) {
 								if (arg == source.getAccessPath().getPlainValue()) {
 									// well, this is sorta a mix of infoflow and alias search
@@ -685,7 +701,7 @@ public class BackwardsAliasProblem extends AbstractInfoflowProblem {
 									// the native stmt does not create a new alias but we notice that we
 									// missed this argument in the infoflow search.
 									Abstraction newSource = source.deriveNewAbstractionWithTurnUnit(callSite);
-									handOver(d1, callSite, newSource);
+									handOverActive(d1, callSite, newSource);
 									return null;
 								}
 							}
@@ -702,8 +718,30 @@ public class BackwardsAliasProblem extends AbstractInfoflowProblem {
 						|| (TypeUtils.isStringType(t) && !abs.getAccessPath().getCanHaveImmutableAliases());
 			}
 
-			private void handOver(Abstraction d1, Unit unit, Abstraction in) {
+			private void handOverActive(Abstraction d1, Unit unit, Abstraction in) {
 				in = in.getActiveCopy();
+
+				if (manager.getConfig().getImplicitFlowMode().trackControlFlowDependencies()) {
+					// We maybe turned around inside a conditional, so we reconstruct the condition
+					// dominator. Also, we lost track of the dominators in the alias search. Thus,
+					// we derive interprocedural wildcards.
+					// See ImplicitTests#conditionalAliasingTest
+					List<Unit> condUnits = manager.getOriginalICFG().getConditionalBranchesInterprocedural(unit);
+					// No condition path -> no need to search for one
+					for (Unit condUnit : condUnits) {
+						Abstraction abs = in.deriveNewAbstractionWithDominator(condUnit);
+						if (abs != null)
+							manager.getForwardSolver().processEdge(new PathEdge<>(d1, unit, abs));
+					}
+				} else {
+//					manager.getForwardSolver()
+//							.processEdge(new PathEdge<>(d1, unit, in));
+				}
+			}
+
+			private void handOver(Abstraction d1, Unit unit, Abstraction in) {
+				if (in.isAbstractionActive())
+					return;
 
 				if (manager.getConfig().getImplicitFlowMode().trackControlFlowDependencies()) {
 					// We maybe turned around inside a conditional, so we reconstruct the condition
