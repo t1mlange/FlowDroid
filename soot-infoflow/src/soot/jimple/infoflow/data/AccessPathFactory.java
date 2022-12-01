@@ -334,25 +334,30 @@ public class AccessPathFactory {
 			while (ei < fragments.length) {
 				final Type eiType = ei == 0 ? baseType : fragments[ei - 1].getFieldType();
 				int ej = ei;
-				while (ej < fragments.length) {
-					if (fragments[ej].getFieldType() == eiType || fragments[ej].getField().getType() == eiType) {
-						// The types match, f0...fi...fj maps back to an object of the same type as
-						// f0...fi. We must thus convert the access path to f0...fi-1[...fj]fj+1
-						AccessPathFragment[] newFragments = new AccessPathFragment[fragments.length - (ej - ei) - 1];
-						System.arraycopy(fragments, 0, newFragments, 0, ei);
-						if (fragments.length > ej)
-							System.arraycopy(fragments, ej + 1, newFragments, ei, fragments.length - ej - 1);
+				// Above, a.inner.this$0 chains got already reduced. Make sure not to reduce
+				// this$ fields here because they aren't a recursive data structure.
+				if (!fragments[ei].getField().getName().startsWith("this$"))
+					while (ej < fragments.length) {
+						if (fragments[ej].getFieldType() == eiType || fragments[ej].getField().getType() == eiType) {
+							// The types match, f0...fi...fj maps back to an object of the same type as
+							// f0...fi. We must thus convert the access path to f0...fi-1[...fj]fj+1
+							AccessPathFragment[] newFragments = new AccessPathFragment[fragments.length - (ej - ei) - 1];
+							System.arraycopy(fragments, 0, newFragments, 0, ei);
+							if (fragments.length > ej)
+								System.arraycopy(fragments, ej + 1, newFragments, ei, fragments.length - ej - 1);
 
-						// Register the base
-						AccessPathFragment[] base = new AccessPathFragment[ej - ei + 1];
-						System.arraycopy(fragments, ei, base, 0, base.length);
-						registerBase(eiType, base);
+//							System.out.println("Reduced from " + fragments[ej].toString() + " to " + fragments[ei].toString());
 
-						fragments = newFragments;
-						recursiveCutOff = true;
-					} else
-						ej++;
-				}
+							// Register the base
+							AccessPathFragment[] base = new AccessPathFragment[ej - ei + 1];
+							System.arraycopy(fragments, ei, base, 0, base.length);
+							registerBase(eiType, base);
+
+							fragments = newFragments;
+							recursiveCutOff = true;
+						} else
+							ej++;
+					}
 				ei++;
 			}
 		}
