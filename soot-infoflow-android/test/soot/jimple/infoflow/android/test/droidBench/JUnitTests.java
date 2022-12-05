@@ -21,7 +21,6 @@ import soot.jimple.infoflow.android.InfoflowAndroidConfiguration;
 import soot.jimple.infoflow.android.SetupApplication;
 import soot.jimple.infoflow.results.InfoflowResults;
 import soot.jimple.infoflow.taintWrappers.EasyTaintWrapper;
-import soot.jimple.infoflow.util.DebugFlowFunctionTaintPropagationHandler;
 
 public abstract class JUnitTests {
 	protected enum TestResultMode {
@@ -157,8 +156,6 @@ public abstract class JUnitTests {
 			configCallback.configureAnalyzer(setupApplication.getConfig());
 		setupApplication.getConfig().setEnableArraySizeTainting(true);
 		setupApplication.setTaintWrapper(new EasyTaintWrapper(taintWrapperFile));
-		setupApplication.setTaintPropagationHandler(new DebugFlowFunctionTaintPropagationHandler("Taint"));
-		setupApplication.setAliasPropagationHandler(new DebugFlowFunctionTaintPropagationHandler("Alias"));
 		if (mode == TestResultMode.FLOWDROID_BACKWARDS)
 			setupApplication.getConfig().setDataFlowDirection(InfoflowConfiguration.DataFlowDirection.Backwards);
 
