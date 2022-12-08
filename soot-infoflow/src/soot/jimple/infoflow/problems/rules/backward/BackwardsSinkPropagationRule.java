@@ -59,6 +59,7 @@ public class BackwardsSinkPropagationRule extends AbstractTaintPropagationRule {
 					// Create the new taint abstraction
 					Abstraction abs = new Abstraction(sinkInfo.getDefinition(), ap, stmt, sinkInfo.getUserData(), false,
 							false);
+					abs.setCorrespondingCallSite(stmt);
 					abs = abs.deriveNewAbstractionWithTurnUnit(stmt);
 
 					res.add(abs);
