@@ -33,7 +33,7 @@ import soot.jimple.infoflow.util.SootMethodRepresentationParser;
 import soot.util.MultiMap;
 
 public class InfoflowResultPostProcessor {
-	private final boolean DEBUG = true;
+	private final boolean DEBUG = false;
 	private static final Logger logger = LoggerFactory.getLogger(InfoflowResultPostProcessor.class);
 
 	protected final InfoflowManager manager;

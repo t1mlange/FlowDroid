@@ -20,7 +20,7 @@ public class SetPoolExecutor extends InterruptableExecutor {
 	
 	public SetPoolExecutor(int corePoolSize, int maximumPoolSize,
 			long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue) {
-		super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue);
+		super(1, 1, keepAliveTime, unit, workQueue);
 	}
 	
 	@Override
