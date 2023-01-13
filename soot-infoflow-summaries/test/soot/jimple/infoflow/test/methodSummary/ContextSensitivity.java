@@ -31,4 +31,21 @@ public class ContextSensitivity {
 		return s;
 	}
 
+	String recursionTest2(String str) {
+		y = x;
+		if (y == null)
+			return recursionTest2(y);
+		return y;
+	}
+
+	class A {
+		String str;
+	}
+
+	String recursionTest3(A str1, A str2) {
+		if (str1 == null)
+			return recursionTest3(str2, str1);
+		str1.str = str2.str;
+		return str1.str;
+	}
 }

@@ -56,9 +56,17 @@ public class BasicTestCode {
 
 	public void simpleArithmeticTest1() {
 		int i = TelephonyManager.getIMEI();
-		i++;
+//		i++;
+		int j = TelephonyManager.getIMEI();
+		int k = id(i,j);
 		ConnectionManager cm = new ConnectionManager();
-		cm.publish(i);
+		cm.publish(k);
+	}
+
+	public int id(int i, int j) {
+		if (i == 0)
+			return j;
+		return id(j, i);
 	}
 
 	public void arithmeticLoopTest1() {

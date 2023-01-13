@@ -202,6 +202,9 @@ public class LayoutFileParser extends AbstractResourceParser {
 					return;
 				}
 
+				if (fileName.contains("activity_log_main.xml"))
+					System.out.println("FILE");
+
 				// Initialize the Soot classes
 				scViewGroup = Scene.v().getSootClassUnsafe("android.view.ViewGroup");
 				scView = Scene.v().getSootClassUnsafe("android.view.View");
@@ -245,6 +248,9 @@ public class LayoutFileParser extends AbstractResourceParser {
 			logger.warn("Encountered a null or empty node name in file %s, skipping node...", layoutFile);
 			return;
 		}
+
+		if (rootNode.hasAttribute("text") && rootNode.getAttribute("text").getValue().equals("Login"))
+			System.out.println("Node");
 
 		String tname = rootNode.getTag().trim();
 		if (tname.equals("dummy")) {

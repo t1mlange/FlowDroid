@@ -53,6 +53,7 @@ import soot.jimple.infoflow.methodSummary.taintWrappers.TaintWrapperFactory;
 import soot.jimple.infoflow.nativeCallHandler.INativeCallHandler;
 import soot.jimple.infoflow.results.InfoflowResults;
 import soot.jimple.infoflow.solver.cfg.IInfoflowCFG;
+import soot.jimple.infoflow.solver.gcSolver.GCSolverPeerGroup;
 import soot.jimple.infoflow.taintWrappers.TaintWrapperList;
 import soot.options.Options;
 
@@ -655,6 +656,8 @@ public class SummaryGenerator {
 
 			@Override
 			public void onResultsAvailable(IInfoflowCFG cfg, InfoflowResults results) {
+				long edges = (results.getPerformanceData().getEdgePropagationCount());
+
 				InfoflowResultPostProcessor processor;
 				if (infoflow.getManager() != null)
 					processor = new InfoflowResultPostProcessor(listener.getResult(), infoflow.getManager(), methodSig,

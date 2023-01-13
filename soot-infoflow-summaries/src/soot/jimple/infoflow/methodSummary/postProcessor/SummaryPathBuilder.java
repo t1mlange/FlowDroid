@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 
+import org.checkerframework.checker.units.qual.A;
 import soot.SootMethod;
 import soot.jimple.Stmt;
 import soot.jimple.infoflow.InfoflowManager;
@@ -31,6 +33,8 @@ class SummaryPathBuilder extends ContextSensitivePathBuilder {
 	private Set<Abstraction> visitedAbstractions = Collections
 			.newSetFromMap(new IdentityHashMap<Abstraction, Boolean>());
 	private final SummaryPathBuilderContext context;
+
+	public AtomicLong counter = new AtomicLong();
 
 	/**
 	 * Extended version of the {@link SourceInfo} class that also allows to store

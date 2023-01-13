@@ -102,6 +102,9 @@ public class DefaultCallbackAnalyzer extends AbstractCallbackAnalyzer implements
 						if (isKilled != null)
 							break;
 
+						if (sc.toString().contains("LoginActivity"))
+							System.out.println("Looking for the right class");
+
 						List<MethodOrMethodContext> methods = new ArrayList<MethodOrMethodContext>(
 								entryPointUtils.getLifecycleMethods(sc));
 

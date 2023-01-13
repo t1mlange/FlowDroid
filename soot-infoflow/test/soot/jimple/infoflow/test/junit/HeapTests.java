@@ -640,14 +640,16 @@ public abstract class HeapTests extends JUnitTests {
 
 	@Test(timeout = 300000)
 	public void doubleAliasTest2() {
-		IInfoflow infoflow = initInfoflow();
-		infoflow.getConfig().setInspectSources(false);
-		infoflow.getConfig().setInspectSinks(false);
+		while (true) {
+			IInfoflow infoflow = initInfoflow();
+			infoflow.getConfig().setInspectSources(false);
+			infoflow.getConfig().setInspectSinks(false);
 
-		List<String> epoints = new ArrayList<String>();
-		epoints.add("<soot.jimple.infoflow.test.HeapTestCode: void doubleAliasTest2()>");
-		infoflow.computeInfoflow(appPath, libPath, epoints, sources, sinks);
-		checkInfoflow(infoflow, 2);
+			List<String> epoints = new ArrayList<String>();
+			epoints.add("<soot.jimple.infoflow.test.HeapTestCode: void doubleAliasTest2()>");
+			infoflow.computeInfoflow(appPath, libPath, epoints, sources, sinks);
+			checkInfoflow(infoflow, 2);
+		}
 	}
 
 	@Test(timeout = 300000)

@@ -61,7 +61,7 @@ public final class DebugAbstractionTree {
 					if (p.getSourceContext() != null)
 						absName += " [source]";
 				}
-				sbNodes.append(String.format("    abs%d[label=\"{%s|{<a> A%s}}\"];\n", idCounter, absName,
+				sbNodes.append(String.format("    abs%d[label=\"{%s\n%s|{<a> A%s}}\"];\n", idCounter, escape((p.isAbstractionActive() ? "" : "_") + p.getAccessPath().toString()), absName,
 						neighbors.toString()));
 			}
 		}

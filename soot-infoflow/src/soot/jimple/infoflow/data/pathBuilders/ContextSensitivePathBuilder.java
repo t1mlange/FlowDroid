@@ -11,6 +11,7 @@ import heros.solver.Pair;
 import soot.jimple.Stmt;
 import soot.jimple.infoflow.InfoflowManager;
 import soot.jimple.infoflow.collect.ConcurrentHashSet;
+import soot.jimple.infoflow.collect.ConcurrentIdentityHashMap;
 import soot.jimple.infoflow.collect.ConcurrentIdentityHashMultiMap;
 import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.data.AbstractionAtSink;
@@ -20,6 +21,8 @@ import soot.jimple.infoflow.results.InfoflowResults;
 import soot.jimple.infoflow.results.ResultSinkInfo;
 import soot.jimple.infoflow.results.ResultSourceInfo;
 import soot.jimple.infoflow.solver.executors.InterruptableExecutor;
+import soot.jimple.infoflow.util.DebugAbstractionTree;
+import soot.util.IdentityHashSet;
 
 /**
  * Class for reconstructing abstraction paths from sinks to source. This builder
@@ -73,6 +76,21 @@ public class ContextSensitivePathBuilder extends ConcurrentAbstractionPathBuilde
 
 		public SourceFindingTask(Abstraction abstraction) {
 			this.abstraction = abstraction;
+		}
+
+		private Set<Abstraction> gatherAllNeighbors(Abstraction abs) {
+			IdentityHashSet<Abstraction> res = new IdentityHashSet<>();
+			recAddNeighbors(res, abs);
+			return res;
+		}
+
+		private void recAddNeighbors(Set<Abstraction> set,  Abstraction abs) {
+			if (abs.getNeighborCount() > 0) {
+				for (Abstraction n : abs.getNeighbors()) {
+					if (set.add(n))
+						recAddNeighbors(set, n);
+				}
+			}
 		}
 
 		@Override
@@ -249,7 +267,7 @@ public class ContextSensitivePathBuilder extends ConcurrentAbstractionPathBuilde
 	public void computeTaintPaths(Set<AbstractionAtSink> res) {
 		try {
 			super.computeTaintPaths(res);
-
+//			DebugAbstractionTree.createDotGraph()
 			// Wait for the path builder to terminate. The path reconstruction should stop
 			// on time anyway. In case it doesn't, we make sure that we don't get stuck.
 			long pathTimeout = manager.getConfig().getPathConfiguration().getPathReconstructionTimeout();

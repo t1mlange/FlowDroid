@@ -824,7 +824,7 @@ public abstract class AbstractInfoflow implements IInfoflow {
 				// chance to terminate gracefully before moving on.
 				int terminateTries = 0;
 				while (terminateTries < 10) {
-					if (executor.getActiveCount() != 0 || !executor.isTerminated()) {
+					if (executor.getActiveCount() != 0 || !executor.isTerminated() || !((IMemoryBoundedSolver) forwardSolver).isTerminated()) {
 						terminateTries++;
 						try {
 							Thread.sleep(500);

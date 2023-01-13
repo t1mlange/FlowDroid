@@ -23,6 +23,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 
 import org.slf4j.Logger;
@@ -113,7 +114,7 @@ public class IFDSSolver<N, D extends FastSolverLinkedNode<D, N>, I extends BiDiI
 	protected final Map<N, Set<D>> initialSeeds;
 
 	@DontSynchronize("benign races")
-	public long propagationCount;
+	public AtomicLong propagationCount = new AtomicLong();
 
 	@DontSynchronize("stateless")
 	protected final D zeroValue;
@@ -262,6 +263,8 @@ public class IFDSSolver<N, D extends FastSolverLinkedNode<D, N>, I extends BiDiI
 		if (exception != null) {
 			throw new RuntimeException("There were exceptions during IFDS analysis. Exiting.", exception);
 		}
+
+//		LocalWorklistTask.isFinished();
 	}
 
 	/**
@@ -283,7 +286,7 @@ public class IFDSSolver<N, D extends FastSolverLinkedNode<D, N>, I extends BiDiI
 		else {
 			LocalWorklistTask.scheduleLocal(task);
 		}
-		propagationCount++;
+		propagationCount.incrementAndGet();
 	}
 
 	/**
@@ -860,7 +863,7 @@ public class IFDSSolver<N, D extends FastSolverLinkedNode<D, N>, I extends BiDiI
 
 	@Override
 	public boolean isTerminated() {
-		return killFlag != null || this.executor.isFinished();
+		return killFlag != null || (this.executor.isFinished() && LocalWorklistTask.isFinished());
 	}
 
 	@Override

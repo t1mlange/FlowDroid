@@ -147,7 +147,7 @@ public class InfoflowSolver extends IFDSSolver<Unit, Abstraction, BiDiInterproce
 
 	@Override
 	public long getPropagationCount() {
-		return propagationCount;
+		return propagationCount.get();
 	}
 
 	@Override

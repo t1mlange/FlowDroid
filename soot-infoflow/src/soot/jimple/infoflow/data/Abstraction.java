@@ -643,6 +643,13 @@ public class Abstraction implements Cloneable, FastSolverLinkedNode<Abstraction,
 					}
 				}
 			}
+
+			if (originalAbstraction.getNeighborCount() > 0) {
+				System.out.println("XXX");
+				this.neighbors.addAll(originalAbstraction.neighbors);
+				originalAbstraction.neighbors = null;
+			}
+
 			return this.neighbors.add(originalAbstraction);
 		}
 	}

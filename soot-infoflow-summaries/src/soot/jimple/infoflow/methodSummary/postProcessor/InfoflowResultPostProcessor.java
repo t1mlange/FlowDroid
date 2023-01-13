@@ -30,6 +30,7 @@ import soot.jimple.infoflow.methodSummary.taintWrappers.AccessPathFragment;
 import soot.jimple.infoflow.methodSummary.util.AliasUtils;
 import soot.jimple.infoflow.typing.TypeUtils;
 import soot.jimple.infoflow.util.SootMethodRepresentationParser;
+import soot.util.IdentityHashSet;
 import soot.util.MultiMap;
 
 public class InfoflowResultPostProcessor {
@@ -89,6 +90,23 @@ public class InfoflowResultPostProcessor {
 
 	}
 
+	private void fixNeighborsOfNeighbors(Abstraction abs) {
+		foldNeighbor(abs, 0);
+	}
+
+	private Set<Abstraction> foldNeighbor(Abstraction abs, int depth) {
+		if (abs.getNeighborCount() > 0) {
+			for (Abstraction n : abs.getNeighbors())
+				for (Abstraction r : foldNeighbor(n, depth+1))
+					abs.addNeighbor(r);
+
+			Set<Abstraction> set = abs.getNeighbors();
+			return set;
+		}
+
+		return Collections.emptySet();
+	}
+
 	/**
 	 * Post process the information collected during a Infoflow analysis. Extract
 	 * all summary flow from collectedAbstractions.
@@ -104,6 +122,8 @@ public class InfoflowResultPostProcessor {
 		int analyzedPaths = 0;
 		int abstractionCount = 0;
 
+		StringBuilder sb = new StringBuilder();
+
 		// Do we have anything to analyze at all?
 		if (collectedAbstractions != null && !collectedAbstractions.isEmpty()) {
 			// Create a context-sensitive path builder. Without context-sensitivity,
@@ -111,6 +131,8 @@ public class InfoflowResultPostProcessor {
 			SummaryPathBuilder pathBuilder = new SummaryPathBuilder(manager);
 
 			for (Abstraction a : collectedAbstractions.keySet()) {
+				sb.append(a.getAccessPath()).append(", ");
+
 				// If this abstraction is directly the source abstraction, we do not
 				// need to construct paths
 				if (a.getSourceContext() != null) {
@@ -130,6 +152,10 @@ public class InfoflowResultPostProcessor {
 							Collections.singleton(new AbstractionAtSink(null, a, a.getCurrentStmt())));
 
 					logger.info("Obtained {} source-to-sink connections.", pathBuilder.getResultInfos().size());
+
+					if (a.toString().contains("$stack4")) {
+						System.out.println("XX");
+					}
 
 					// Reconstruct the sources
 					for (Stmt stmt : collectedAbstractions.get(a)) {
@@ -161,7 +187,14 @@ public class InfoflowResultPostProcessor {
 				}
 			}
 			pathBuilder.shutdown();
+			System.out.println(pathBuilder.counter.get());
 		}
+
+		if (flows.getFlowCount() == 11)
+			sb.insert(0, "CORRECT: ");
+		else
+			sb.insert(0, "FUCK WITH " + flows.getFlowCount() + ": ");
+		System.out.println(sb);
 
 		// Compact the flow set to remove paths that are over-approximations of
 		// other flows

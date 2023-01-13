@@ -18,6 +18,7 @@ import org.xmlpull.v1.XmlPullParserException;
 import soot.jimple.infoflow.InfoflowConfiguration;
 import soot.jimple.infoflow.InfoflowConfiguration.ImplicitFlowMode;
 import soot.jimple.infoflow.InfoflowConfiguration.StaticFieldTrackingMode;
+import soot.jimple.infoflow.android.InfoflowAndroidConfiguration;
 import soot.jimple.infoflow.android.SetupApplication;
 import soot.jimple.infoflow.results.InfoflowResults;
 import soot.jimple.infoflow.taintWrappers.EasyTaintWrapper;
@@ -78,7 +79,7 @@ public class JUnitTests {
 		setupApplication.getConfig().setStaticFieldTrackingMode(
 				enableStaticFields ? StaticFieldTrackingMode.ContextFlowSensitive : StaticFieldTrackingMode.None);
 		setupApplication.getConfig().setFlowSensitiveAliasing(flowSensitiveAliasing);
-
+		setupApplication.getConfig().getCallbackConfig().setCallbackAnalyzer(InfoflowAndroidConfiguration.CallbackAnalyzer.Default);
 //		setupApplication.getConfig().setDataFlowDirection(InfoflowConfiguration.DataFlowDirection.Backwards);
 
 		return setupApplication.runInfoflow("SourcesAndSinks.txt");

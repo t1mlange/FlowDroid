@@ -758,8 +758,8 @@ public class HeapTestCode {
 		cm.publish(c.b);
 	}
 
-	private A alias2(A a) {
-		A a2 = a;
+	private A alias2(A paramA) {
+		A a2 = paramA;
 		return a2;
 	}
 

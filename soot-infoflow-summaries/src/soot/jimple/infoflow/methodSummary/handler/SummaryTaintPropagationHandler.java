@@ -193,7 +193,7 @@ public class SummaryTaintPropagationHandler implements TaintPropagationHandler {
 		if (!this.result.put(abs, stmt)) {
 			for (Abstraction abs2 : result.keySet()) {
 				if (abs.equals(abs2)) {
-					abs2.addNeighbor(abs);
+//					abs2.addNeighbor(abs);
 					break;
 				}
 			}

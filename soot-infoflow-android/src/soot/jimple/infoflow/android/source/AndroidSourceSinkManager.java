@@ -370,6 +370,7 @@ public class AndroidSourceSinkManager extends BaseSourceSinkManager
 
 	@Override
 	protected ISourceSinkDefinition getUISourceDefinition(Stmt sCallSite, IInfoflowCFG cfg) {
+//		System.out.println(sCallSite.toString());
 		// If we match input controls, we need to check whether this is a call
 		// to one of the well-known resource handling functions in Android
 		if (sourceSinkConfig.getLayoutMatchingMode() == LayoutMatchingMode.NoMatch || !sCallSite.containsInvokeExpr())
@@ -382,7 +383,6 @@ public class AndroidSourceSinkManager extends BaseSourceSinkManager
 
 		InvokeExpr ie = sCallSite.getInvokeExpr();
 		SootMethod callee = ie.getMethod();
-
 		// Is this a call to resource-handling method?
 		boolean isResourceCall = callee == smActivityFindViewById || callee == smViewFindViewById;
 		if (!isResourceCall) {

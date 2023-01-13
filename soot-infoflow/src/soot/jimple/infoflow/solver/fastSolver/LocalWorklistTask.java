@@ -43,4 +43,7 @@ public abstract class LocalWorklistTask implements Runnable {
 			t.localTaskList.add(task);
 	}
 
+	public static boolean isFinished() {
+		return TASKS.get() == null;
+	}
 }

@@ -34,4 +34,11 @@ public class OtherAPKTests extends JUnitTests {
 				("testAPKs/ReturnParameterTest.apk", false, false, false);
 		Assert.assertTrue(res == null || res.isEmpty());
 	}
+
+	@Test
+	public void runInsecureBankV2() throws IOException, XmlPullParserException {
+		InfoflowResults res = analyzeAPKFile
+				("testAPKs/InsecureBankv2.apk", false, false, true);
+		Assert.assertTrue(res == null || res.isEmpty());
+	}
 }
