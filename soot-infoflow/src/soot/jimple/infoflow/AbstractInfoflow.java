@@ -734,6 +734,8 @@ public abstract class AbstractInfoflow implements IInfoflow {
 				aliasingStrategy.getSolver().getTabulationProblem().setActivationUnitsToCallSites(forwardProblem);
 			}
 
+			IInfoflowSolver additionalSolver = null;
+			IInfoflowSolver additionalAliasSolver = null;
 			if (config.getAdditionalFlowsEnabled()) {
 				// Add the SecondaryFlowGenerator to the main forward taint analysis
 				TaintPropagationHandler forwardHandler = forwardProblem.getTaintPropagationHandler();
@@ -762,7 +764,7 @@ public abstract class AbstractInfoflow implements IInfoflow {
 
 				AbstractInfoflowProblem additionalProblem = new BackwardsInfoflowProblem(additionalManager, zeroValue, reverseRuleManagerFactory);
 
-				IInfoflowSolver additionalSolver = createDataFlowSolver(executor, additionalProblem);
+				additionalSolver = createDataFlowSolver(executor, additionalProblem);
 				additionalManager.setMainSolver(additionalSolver);
 				additionalSolver.setMemoryManager(memoryManager);
 				memoryWatcher.addSolver((IMemoryBoundedSolver) additionalSolver);
@@ -778,14 +780,14 @@ public abstract class AbstractInfoflow implements IInfoflow {
 				if (revereAliasingStrategy.getSolver() != null)
 					revereAliasingStrategy.getSolver().getTabulationProblem().getManager().setMainSolver(additionalSolver);
 
-				IInfoflowSolver reverseAliasSolver = revereAliasingStrategy.getSolver();
+				additionalAliasSolver = revereAliasingStrategy.getSolver();
 
 				// Initialize the aliasing infrastructure
 				Aliasing reverseAliasing = createAliasController(revereAliasingStrategy);
 				if (dummyMainMethod != null)
 					reverseAliasing.excludeMethodFromMustAlias(dummyMainMethod);
 				additionalManager.setAliasing(reverseAliasing);
-				additionalManager.setAliasSolver(reverseAliasSolver);
+				additionalManager.setAliasSolver(additionalAliasSolver);
 
 				manager.additionalManager = additionalManager;
 
@@ -932,6 +934,11 @@ public abstract class AbstractInfoflow implements IInfoflow {
 				if (backwardSolver != null)
 					performanceData.addEdgePropagationCount(backwardSolver.getPropagationCount());
 
+				if (config.getAdditionalFlowsEnabled()) {
+					performanceData.addSecondaryEdgePropagationCount(additionalSolver.getPropagationCount());
+					performanceData.addSecondaryEdgePropagationCount(additionalAliasSolver.getPropagationCount());
+				}
+
 				// Print taint wrapper statistics
 				if (taintWrapper != null) {
 					logger.info("Taint wrapper hits: " + taintWrapper.getWrapperHits());
@@ -940,7 +947,7 @@ public abstract class AbstractInfoflow implements IInfoflow {
 
 				// Give derived classes a chance to do whatever they need before we remove stuff
 				// from memory
-				onTaintPropagationCompleted(forwardSolver, backwardSolver);
+				onTaintPropagationCompleted(forwardSolver, backwardSolver, additionalSolver, additionalAliasSolver);
 
 				// Get the result abstractions
 				Set<AbstractionAtSink> res = propagationResults.getResults();
@@ -1785,9 +1792,12 @@ public abstract class AbstractInfoflow implements IInfoflow {
 	 * method is called before memory cleanup happens.
 	 * 
 	 * @param forwardSolver  The forward data flow solver
+	 * @param aliasSolver The alias data flow solver
 	 * @param backwardSolver The backward data flow solver
+	 * @param backwardAliasSolver The backward alias data flow solver
 	 */
-	protected void onTaintPropagationCompleted(IInfoflowSolver forwardSolver, IInfoflowSolver backwardSolver) {
+	protected void onTaintPropagationCompleted(IInfoflowSolver forwardSolver, IInfoflowSolver aliasSolver,
+											   IInfoflowSolver backwardSolver, IInfoflowSolver backwardAliasSolver) {
 		//
 	}
 

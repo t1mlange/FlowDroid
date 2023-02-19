@@ -34,7 +34,8 @@ public class SummaryInfoflow extends Infoflow implements ISummaryInfoflow {
 	}
 
 	@Override
-	protected void onTaintPropagationCompleted(IInfoflowSolver forwardSolver, IInfoflowSolver backwardSolver) {
+	protected void onTaintPropagationCompleted(IInfoflowSolver forwardSolver, IInfoflowSolver backwardSolver,
+											   IInfoflowSolver additionalSolver, IInfoflowSolver additionalAliasSolver) {
 		cachedManager = this.manager;
 	}
 

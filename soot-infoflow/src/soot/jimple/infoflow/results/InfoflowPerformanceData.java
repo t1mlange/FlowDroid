@@ -16,6 +16,7 @@ public class InfoflowPerformanceData {
 	private int totalRuntimeSeconds = -1;
 	private int maxMemoryConsumption = -1;
 	private long edgePropagationCount = -1;
+	private long secondaryEdgePropagationCount = -1;
 
 	private int sourceCount = -1;
 	private int sinkCount = -1;
@@ -210,7 +211,7 @@ public class InfoflowPerformanceData {
 	/**
 	 * Adds the given number of seconds to the time spent on taint propagation
 	 * 
-	 * @param toaAdd The time to add in seconds
+	 * @param toAdd The time to add in seconds
 	 */
 	public void addTaintPropagationSeconds(int toAdd) {
 		int time = this.taintPropagationSeconds;
@@ -224,7 +225,7 @@ public class InfoflowPerformanceData {
 	 * Adds the given number of edges to the total number of edges propagated,
 	 * regardless of the solver in which they were propagated
 	 * 
-	 * @param toaAdd The number of edges to add
+	 * @param toAdd The number of edges to add
 	 */
 	public void addEdgePropagationCount(long toAdd) {
 		long edges = this.edgePropagationCount;
@@ -232,6 +233,20 @@ public class InfoflowPerformanceData {
 			this.edgePropagationCount = toAdd;
 		else
 			this.edgePropagationCount = edges + toAdd;
+	}
+
+	/**
+	 * Adds the given number of edges to the total number of secondary edges propagated,
+	 * regardless of the solver in which they were propagated
+	 *
+	 * @param toAdd The number of edges to add
+	 */
+	public void addSecondaryEdgePropagationCount(long toAdd) {
+		long edges = this.secondaryEdgePropagationCount;
+		if (edges < 0)
+			this.secondaryEdgePropagationCount = toAdd;
+		else
+			this.secondaryEdgePropagationCount = edges + toAdd;
 	}
 
 	/**
@@ -256,7 +271,7 @@ public class InfoflowPerformanceData {
 	/**
 	 * Sets the number of sinks that were identified in the given input program
 	 * 
-	 * @param sourceCount The number of sinks that were identified in the given
+	 * @param sinkCount The number of sinks that were identified in the given
 	 *                    input program
 	 */
 	public void setSinkCount(int sinkCount) {
@@ -273,13 +288,23 @@ public class InfoflowPerformanceData {
 	}
 
 	/**
-	 * Gets the number of edges that have been propagated in any solver, regardless
-	 * of which solver propagated the edges
+	 * Gets the number of edges that have been propagated in any regular solver, regardless
+	 * of taint or alias solver
 	 * 
 	 * @return The number of edges that have been propagated in any solver
 	 */
 	public long getEdgePropagationCount() {
 		return edgePropagationCount;
+	}
+
+	/**
+	 * Gets the number of edges that have been propagated in any secondary flow solver, regardless
+	 * of taint or alias solver
+	 *
+	 * @return The number of edges that have been propagated in any solver
+	 */
+	public long getSecondaryEdgePropagationCount() {
+		return secondaryEdgePropagationCount;
 	}
 
 	/**
@@ -295,7 +320,7 @@ public class InfoflowPerformanceData {
 	/**
 	 * Sets the number of edges propagated in the alias analysis
 	 * 
-	 * @param infoflowPropagationCount The number of edges propagated in the alias
+	 * @param aliasPropagationCount The number of edges propagated in the alias
 	 *                                 analysis
 	 */
 	public void setAliasPropagationCount(long aliasPropagationCount) {
