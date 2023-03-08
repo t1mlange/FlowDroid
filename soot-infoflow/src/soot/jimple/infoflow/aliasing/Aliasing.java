@@ -2,6 +2,7 @@ package soot.jimple.infoflow.aliasing;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -33,6 +34,7 @@ import soot.jimple.infoflow.data.AccessPath;
 import soot.jimple.infoflow.data.AccessPathFactory;
 import soot.jimple.infoflow.data.AccessPathFragment;
 import soot.jimple.infoflow.typing.TypeUtils;
+import soot.jimple.infoflow.util.ConcurrentIterableTCustomHashSet;
 import soot.jimple.toolkits.pointer.LocalMustAliasAnalysis;
 import soot.jimple.toolkits.pointer.StrongLocalMustAliasAnalysis;
 import soot.toolkits.graph.UnitGraph;
@@ -118,7 +120,7 @@ public class Aliasing {
 	public static AccessPath getReferencedAPBase(AccessPath taintedAP, SootField[] referencedFields,
 			InfoflowManager manager) {
 		final AccessPathFactory af = manager.getAccessPathFactory();
-		final Collection<AccessPathFragment[]> bases = taintedAP.isStaticFieldRef()
+		final ConcurrentIterableTCustomHashSet<AccessPathFragment[]> bases = taintedAP.isStaticFieldRef()
 				? af.getBaseForType(taintedAP.getFirstFieldType())
 				: af.getBaseForType(taintedAP.getBaseType());
 		if (bases != null && bases.size() > manager.getConfig().getMaxAliasingBases())
@@ -142,7 +144,9 @@ public class Aliasing {
 				// must be excluded from base matching.
 				if (bases != null && !(taintedAP.isStaticFieldRef() && fieldIdx == 0)) {
 					// Check the base. Handles A.y (taint) ~ A.[x].y (ref)
-					for (AccessPathFragment[] base : bases) {
+					Iterator<AccessPathFragment[]> it = bases.threadSafeIterator();
+					while (it.hasNext()) {
+						AccessPathFragment[] base = it.next();
 						if (base[0].getField() == referencedFields[fieldIdx]) {
 							// Build the access path against which we have
 							// actually matched

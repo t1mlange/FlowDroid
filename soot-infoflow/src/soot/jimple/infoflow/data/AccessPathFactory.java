@@ -1,14 +1,10 @@
 package soot.jimple.infoflow.data;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Set;
+import java.util.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import gnu.trove.set.hash.TCustomHashSet;
 import gnu.trove.strategy.HashingStrategy;
 import soot.ArrayType;
 import soot.Local;
@@ -27,6 +23,7 @@ import soot.jimple.infoflow.InfoflowConfiguration.AccessPathConfiguration;
 import soot.jimple.infoflow.collect.MyConcurrentHashMap;
 import soot.jimple.infoflow.data.AccessPath.ArrayTaintType;
 import soot.jimple.infoflow.typing.TypeUtils;
+import soot.jimple.infoflow.util.ConcurrentIterableTCustomHashSet;
 
 public class AccessPathFactory {
 
@@ -109,7 +106,7 @@ public class AccessPathFactory {
 		this.typeUtils = typeUtils;
 	}
 
-	private MyConcurrentHashMap<Type, Set<AccessPathFragment[]>> baseRegister = new MyConcurrentHashMap<>();
+	private MyConcurrentHashMap<Type, ConcurrentIterableTCustomHashSet<AccessPathFragment[]>> baseRegister = new MyConcurrentHashMap<>();
 
 	public AccessPath createAccessPath(Value val, boolean taintSubFields) {
 		return createAccessPath(val, null, null, taintSubFields, false, true, ArrayTaintType.ContentsAndLength);
@@ -418,7 +415,7 @@ public class AccessPathFactory {
 
 	private void registerBase(Type eiType, AccessPathFragment[] base) {
 		Set<AccessPathFragment[]> bases = baseRegister.computeIfAbsent(eiType,
-				t -> Collections.synchronizedSet(new TCustomHashSet<>(new HashingStrategy<AccessPathFragment[]>() {
+				t -> new ConcurrentIterableTCustomHashSet<>(new HashingStrategy<AccessPathFragment[]>() {
 
 					private static final long serialVersionUID = 3017690689067651070L;
 
@@ -431,12 +428,11 @@ public class AccessPathFactory {
 					public boolean equals(AccessPathFragment[] arg0, AccessPathFragment[] arg1) {
 						return Arrays.equals(arg0, arg1);
 					}
-
-				})));
+				}));
 		bases.add(base);
 	}
 
-	public Collection<AccessPathFragment[]> getBaseForType(Type tp) {
+	public ConcurrentIterableTCustomHashSet<AccessPathFragment[]> getBaseForType(Type tp) {
 		return baseRegister.get(tp);
 	}
 

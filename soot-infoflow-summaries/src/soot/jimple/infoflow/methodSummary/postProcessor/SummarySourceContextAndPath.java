@@ -1,11 +1,6 @@
 package soot.jimple.infoflow.methodSummary.postProcessor;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.ConcurrentModificationException;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,6 +32,7 @@ import soot.jimple.infoflow.methodSummary.util.AliasUtils;
 import soot.jimple.infoflow.taintWrappers.IReversibleTaintWrapper;
 import soot.jimple.infoflow.taintWrappers.ITaintPropagationWrapper;
 import soot.jimple.infoflow.util.BaseSelector;
+import soot.jimple.infoflow.util.ConcurrentIterableTCustomHashSet;
 import soot.jimple.infoflow.util.extensiblelist.ExtensibleList;
 
 /**
@@ -341,10 +337,12 @@ class SummarySourceContextAndPath extends SourceContextAndPath {
 				return curAP;
 			} else {
 				// Get the bases for this type
-				final Collection<AccessPathFragment[]> bases = manager.getAccessPathFactory()
+				final ConcurrentIterableTCustomHashSet<AccessPathFragment[]> bases = manager.getAccessPathFactory()
 						.getBaseForType(base.getType());
 				if (bases != null) {
-					for (AccessPathFragment[] xbase : bases) {
+					Iterator<AccessPathFragment[]> it = bases.threadSafeIterator();
+					while (it.hasNext()) {
+						AccessPathFragment[] xbase = it.next();
 						if (xbase[0].getField() == field) {
 							// Build the access path against which we have
 							// actually matched
