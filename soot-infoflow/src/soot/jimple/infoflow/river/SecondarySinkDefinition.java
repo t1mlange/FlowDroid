@@ -1,7 +1,10 @@
 package soot.jimple.infoflow.river;
 
 import soot.jimple.infoflow.sourcesSinks.definitions.AbstractSourceSinkDefinition;
+import soot.jimple.infoflow.sourcesSinks.definitions.AccessPathTuple;
 import soot.jimple.infoflow.sourcesSinks.definitions.ISourceSinkDefinition;
+
+import java.util.Collection;
 
 /**
  * Special source/sink definition for statements that are sinks merely because
@@ -27,13 +30,18 @@ public class SecondarySinkDefinition extends AbstractSourceSinkDefinition {
 	}
 
 	@Override
-	public void merge(ISourceSinkDefinition other) {
-		// NO-OP
+	public ISourceSinkDefinition merge(ISourceSinkDefinition other) {
+		return null;
 	}
 
 	@Override
 	public boolean isEmpty() {
 		return false;
+	}
+
+	@Override
+	public Collection<AccessPathTuple> getAllAccessPaths() {
+		return null;
 	}
 
 }

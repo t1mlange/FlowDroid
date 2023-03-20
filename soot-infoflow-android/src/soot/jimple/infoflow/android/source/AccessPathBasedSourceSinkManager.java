@@ -217,7 +217,7 @@ public class AccessPathBasedSourceSinkManager extends AndroidSourceSinkManager {
 				InstanceInvokeExpr iiexpr = (InstanceInvokeExpr) iexpr;
 				if (iiexpr.getBase() == sourceAccessPath.getPlainValue()) {
 					for (AccessPathTuple apt : methodDef.getBaseObjects())
-						if (apt.getSourceSinkType().isSink() && accessPathMatches(sourceAccessPath, apt))
+						if (apt.getSourceSinkType().isSink() && AccessPath.accessPathMatches(sourceAccessPath, apt))
 							return new SinkInfo(apDef.filter(Collections.singleton(apt)));
 				}
 			}
@@ -230,7 +230,7 @@ public class AccessPathBasedSourceSinkManager extends AndroidSourceSinkManager {
 						// Check whether we have a sink on that parameter
 						if (methodDef.getParameters().length > i)
 							for (AccessPathTuple apt : methodDef.getParameters()[i])
-								if (apt.getSourceSinkType().isSink() && accessPathMatches(sourceAccessPath, apt))
+								if (apt.getSourceSinkType().isSink() && AccessPath.accessPathMatches(sourceAccessPath, apt))
 									return new SinkInfo(apDef.filter(Collections.singleton(apt)));
 					}
 			}
@@ -240,45 +240,18 @@ public class AccessPathBasedSourceSinkManager extends AndroidSourceSinkManager {
 			// Check whether we need to taint the right side of the assignment
 			if (sCallSite instanceof AssignStmt && fieldDef.getAccessPaths() != null) {
 				for (AccessPathTuple apt : fieldDef.getAccessPaths())
-					if (apt.getSourceSinkType().isSink() && accessPathMatches(sourceAccessPath, apt))
+					if (apt.getSourceSinkType().isSink() && AccessPath.accessPathMatches(sourceAccessPath, apt))
 						return new SinkInfo(apDef.filter(Collections.singleton(apt)));
 			}
 		} else if (def instanceof StatementSourceSinkDefinition) {
 			StatementSourceSinkDefinition ssdef = (StatementSourceSinkDefinition) def;
 			for (AccessPathTuple apt : ssdef.getAccessPaths())
-				if (apt.getSourceSinkType().isSink() && accessPathMatches(sourceAccessPath, apt))
+				if (apt.getSourceSinkType().isSink() && AccessPath.accessPathMatches(sourceAccessPath, apt))
 					return new SinkInfo(apDef.filter(Collections.singleton(apt)));
 		}
 
 		// No matching access path found
 		return null;
-	}
-
-	/**
-	 * Checks whether the given access path matches the given definition
-	 * 
-	 * @param sourceAccessPath The access path to check
-	 * @param apt              The definition against which to check the access path
-	 * @return True if the given access path matches the given definition, otherwise
-	 *         false
-	 */
-	private boolean accessPathMatches(AccessPath sourceAccessPath, AccessPathTuple apt) {
-		// If the source or sink definitions does not specify any fields, it
-		// always matches
-		if (apt.getFields() == null || apt.getFields().length == 0 || sourceAccessPath == null)
-			return true;
-
-		for (int i = 0; i < apt.getFields().length; i++) {
-			// If a.b.c.* is our defined sink and a.b is tainted, this is not a
-			// leak. If a.b.* is tainted, it is.
-			if (i >= sourceAccessPath.getFragmentCount())
-				return sourceAccessPath.getTaintSubFields();
-
-			// Compare the fields
-			if (!sourceAccessPath.getFragments()[i].getField().getName().equals(apt.getFields()[i]))
-				return false;
-		}
-		return true;
 	}
 
 	@Override
@@ -424,7 +397,7 @@ public class AccessPathBasedSourceSinkManager extends AndroidSourceSinkManager {
 									&& methodDef.getParameters().length > paramRef.getIndex()) {
 								for (AccessPathTuple apt : methodDef.getParameters()[paramRef.getIndex()]) {
 									AccessPath ap = apt.toAccessPath(is.getLeftOp(), manager, false);
-									if (accessPathMatches(sourceAccessPath, apt)) {
+									if (AccessPath.accessPathMatches(sourceAccessPath, apt)) {
 										aps.add(ap);
 										apTuples.add(apt);
 									}
@@ -441,7 +414,7 @@ public class AccessPathBasedSourceSinkManager extends AndroidSourceSinkManager {
 						for (AccessPathTuple apt : methodDef.getBaseObjects()) {
 							if (apt.getSourceSinkType().isSource()) {
 								AccessPath ap = apt.toAccessPath(baseVal, manager, true);
-								if (accessPathMatches(sourceAccessPath, apt)) {
+								if (AccessPath.accessPathMatches(sourceAccessPath, apt)) {
 									aps.add(ap);
 									apTuples.add(apt);
 								}
@@ -455,7 +428,7 @@ public class AccessPathBasedSourceSinkManager extends AndroidSourceSinkManager {
 						for (AccessPathTuple apt : methodDef.getReturnValues()) {
 							if (apt.getSourceSinkType().isSource()) {
 								AccessPath ap = apt.toAccessPath(returnVal, manager, false);
-								if (accessPathMatches(sourceAccessPath, apt)) {
+								if (AccessPath.accessPathMatches(sourceAccessPath, apt)) {
 									aps.add(ap);
 									apTuples.add(apt);
 								}
@@ -471,7 +444,7 @@ public class AccessPathBasedSourceSinkManager extends AndroidSourceSinkManager {
 								for (AccessPathTuple apt : methodDef.getParameters()[i]) {
 									if (apt.getSourceSinkType().isSource()) {
 										AccessPath ap = apt.toAccessPath(sCallSite.getInvokeExpr().getArg(i), manager, true);
-										if (accessPathMatches(sourceAccessPath, apt)) {
+										if (AccessPath.accessPathMatches(sourceAccessPath, apt)) {
 											aps.add(ap);
 											apTuples.add(apt);
 										}
@@ -491,7 +464,7 @@ public class AccessPathBasedSourceSinkManager extends AndroidSourceSinkManager {
 				for (AccessPathTuple apt : fieldDef.getAccessPaths()) {
 					if (apt.getSourceSinkType().isSource()) {
 						AccessPath ap = apt.toAccessPath(assignStmt.getLeftOp(), manager, false);
-						if (accessPathMatches(sourceAccessPath, apt)) {
+						if (AccessPath.accessPathMatches(sourceAccessPath, apt)) {
 							aps.add(ap);
 							apTuples.add(apt);
 						}
@@ -503,7 +476,7 @@ public class AccessPathBasedSourceSinkManager extends AndroidSourceSinkManager {
 			for (AccessPathTuple apt : ssdef.getAccessPaths()) {
 				if (apt.getSourceSinkType().isSource()) {
 					AccessPath ap = apt.toAccessPath(ssdef.getLocal(), manager, true);
-					if (accessPathMatches(sourceAccessPath, apt)) {
+					if (AccessPath.accessPathMatches(sourceAccessPath, apt)) {
 						aps.add(ap);
 						apTuples.add(apt);
 					}

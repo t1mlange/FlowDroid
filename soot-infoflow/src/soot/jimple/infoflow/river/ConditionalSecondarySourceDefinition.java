@@ -1,7 +1,10 @@
 package soot.jimple.infoflow.river;
 
 import soot.jimple.infoflow.sourcesSinks.definitions.AbstractSourceSinkDefinition;
+import soot.jimple.infoflow.sourcesSinks.definitions.AccessPathTuple;
 import soot.jimple.infoflow.sourcesSinks.definitions.ISourceSinkDefinition;
+
+import java.util.Collection;
 
 /**
  * Special source definition for sources of secondary flows that are also conditional sinks.
@@ -22,8 +25,8 @@ public class ConditionalSecondarySourceDefinition extends AbstractSourceSinkDefi
     }
 
     @Override
-    public void merge(ISourceSinkDefinition other) {
-        // NO-OP
+    public ISourceSinkDefinition merge(ISourceSinkDefinition other) {
+        return null;
     }
 
     @Override
@@ -31,4 +34,8 @@ public class ConditionalSecondarySourceDefinition extends AbstractSourceSinkDefi
         return false;
     }
 
+    @Override
+    public Collection<AccessPathTuple> getAllAccessPaths() {
+        return null;
+    }
 }

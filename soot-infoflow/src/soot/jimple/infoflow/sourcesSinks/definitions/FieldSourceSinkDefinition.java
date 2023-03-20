@@ -90,38 +90,15 @@ public class FieldSourceSinkDefinition extends AbstractSourceSinkDefinition
 	 * @return The new source/sink definition
 	 */
 	protected FieldSourceSinkDefinition buildNewDefinition(Set<AccessPathTuple> accessPaths) {
-		return buildNewDefinition(fieldSignature, accessPaths);
-	}
-
-	/**
-	 * Factory method for creating a new field-based source/sink definition based on
-	 * the current one. This method is used when transforming the current
-	 * definition. Derived classes can override this method to create instances of
-	 * the correct class.
-	 * 
-	 * @param fieldSignature The field signature
-	 * @param accessPaths    The of access paths for the new definition
-	 * @return The new source/sink definition
-	 */
-	protected FieldSourceSinkDefinition buildNewDefinition(String fieldSignature, Set<AccessPathTuple> accessPaths) {
 		FieldSourceSinkDefinition fssd = new FieldSourceSinkDefinition(fieldSignature, accessPaths);
 		fssd.setCategory(category);
+		fssd.setConditions(conditions);
 		return fssd;
 	}
 
 	@Override
-	public void merge(ISourceSinkDefinition other) {
-		if (other instanceof FieldSourceSinkDefinition) {
-			FieldSourceSinkDefinition otherField = (FieldSourceSinkDefinition) other;
-
-			// Merge the base object definitions
-			if (otherField.accessPaths != null && !otherField.accessPaths.isEmpty()) {
-				if (this.accessPaths == null)
-					this.accessPaths = new HashSet<>();
-				for (AccessPathTuple apt : otherField.accessPaths)
-					this.accessPaths.add(apt);
-			}
-		}
+	public ISourceSinkDefinition merge(ISourceSinkDefinition other) {
+		return MergedFieldSourceSinkDefinition.create(this).merge(other);
 	}
 
 	@Override
@@ -144,9 +121,7 @@ public class FieldSourceSinkDefinition extends AbstractSourceSinkDefinition
 				if (toFilter.contains(ap))
 					filteredAPs.add(ap);
 		}
-		FieldSourceSinkDefinition def = buildNewDefinition(fieldSignature, filteredAPs);
-		def.category = category;
-		return def;
+		return buildNewDefinition(filteredAPs);
 	}
 
 	@Override

@@ -21,6 +21,7 @@ import soot.jimple.ArrayRef;
 import soot.jimple.InstanceFieldRef;
 import soot.jimple.Jimple;
 import soot.jimple.StaticFieldRef;
+import soot.jimple.infoflow.sourcesSinks.definitions.AccessPathTuple;
 
 /**
  * This class represents the taint, containing a base value and a list of fields
@@ -487,4 +488,30 @@ public class AccessPath implements Cloneable {
 		return zeroAccessPath;
 	}
 
+	/**
+	 * Checks whether the given access path matches the given definition
+	 *
+	 * @param sourceAccessPath The access path to check
+	 * @param apt              The definition against which to check the access path
+	 * @return True if the given access path matches the given definition, otherwise
+	 *         false
+	 */
+	public static boolean accessPathMatches(AccessPath sourceAccessPath, AccessPathTuple apt) {
+		// If the source or sink definitions does not specify any fields, it
+		// always matches
+		if (apt.getFields() == null || apt.getFields().length == 0 || sourceAccessPath == null)
+			return true;
+
+		for (int i = 0; i < apt.getFields().length; i++) {
+			// If a.b.c.* is our defined sink and a.b is tainted, this is not a
+			// leak. If a.b.* is tainted, it is.
+			if (i >= sourceAccessPath.getFragmentCount())
+				return sourceAccessPath.getTaintSubFields();
+
+			// Compare the fields
+			if (!sourceAccessPath.getFragments()[i].getField().getName().equals(apt.getFields()[i]))
+				return false;
+		}
+		return true;
+	}
 }

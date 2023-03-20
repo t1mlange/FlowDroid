@@ -1,5 +1,6 @@
 package soot.jimple.infoflow.sourcesSinks.definitions;
 
+import java.util.Collection;
 import java.util.Set;
 
 /**
@@ -45,8 +46,9 @@ public interface ISourceSinkDefinition {
 	 * this definition object
 	 * 
 	 * @param other The definition object to merge
+	 * @return merged source sink definition, possibly reusing the base instance
 	 */
-	public abstract void merge(ISourceSinkDefinition other);
+	public abstract ISourceSinkDefinition merge(ISourceSinkDefinition other);
 
 	/**
 	 * Indicates if the definition contains any sources or sinks
@@ -62,6 +64,8 @@ public interface ISourceSinkDefinition {
 	 *         valid, optionally <code>null</code> if no such conditions exist
 	 */
 	public Set<SourceSinkCondition> getConditions();
+
+	public Collection<AccessPathTuple> getAllAccessPaths();
 
 	/**
 	 * Sets the conditions under which the source/sink definition is valid

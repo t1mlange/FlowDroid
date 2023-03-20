@@ -1,14 +1,21 @@
 package soot.jimple.infoflow.problems;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import soot.Unit;
 import soot.jimple.infoflow.InfoflowManager;
 import soot.jimple.infoflow.collect.MyConcurrentHashMap;
 import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.data.AbstractionAtSink;
+import soot.jimple.infoflow.data.AccessPath;
 import soot.jimple.infoflow.solver.memory.IMemoryManager;
+import soot.jimple.infoflow.sourcesSinks.definitions.AccessPathTuple;
+import soot.jimple.infoflow.sourcesSinks.definitions.IMergedSourceSinkDefinition;
+import soot.jimple.infoflow.sourcesSinks.definitions.ISourceSinkDefinition;
 import soot.jimple.infoflow.util.SystemClassHandler;
 
 /**

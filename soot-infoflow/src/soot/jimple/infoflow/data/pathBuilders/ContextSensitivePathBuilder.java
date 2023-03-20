@@ -1,5 +1,6 @@
 package soot.jimple.infoflow.data.pathBuilders;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.PriorityBlockingQueue;
@@ -227,22 +228,23 @@ public class ContextSensitivePathBuilder extends ConcurrentAbstractionPathBuilde
 
 		// Register the source that we have found
 		SourceContext sourceContext = abs.getSourceContext();
-		Pair<ResultSourceInfo, ResultSinkInfo> newResult;
+		Collection<Pair<ResultSourceInfo, ResultSinkInfo>> newResults;
 		if (scap.getDefinition() instanceof SecondarySinkDefinition) {
 			assert manager.getConfig().getAdditionalFlowsEnabled();
 
-			newResult = results.addConditionalResult(scap.getDefinition(), scap.getAccessPath(),
+			newResults = results.addConditionalResult(scap.getDefinition(), scap.getAccessPath(),
 					scap.getStmt(), sourceContext.getDefinition(), sourceContext.getAccessPath(), sourceContext.getStmt(),
 					sourceContext.getUserData(), scap.getAbstractionPath(), manager);
 		} else {
-			newResult = results.addResult(scap.getDefinition(), scap.getAccessPath(),
+			newResults = results.addResult(scap.getDefinition(), scap.getAccessPath(),
 					scap.getStmt(), sourceContext.getDefinition(), sourceContext.getAccessPath(), sourceContext.getStmt(),
 					sourceContext.getUserData(), scap.getAbstractionPath(), manager);
 		}
 		// Notify our handlers
 		if (resultAvailableHandlers != null)
 			for (OnPathBuilderResultAvailable handler : resultAvailableHandlers)
-				handler.onResultAvailable(newResult.getO1(), newResult.getO2());
+				for (Pair<ResultSourceInfo, ResultSinkInfo> newResult : newResults)
+					handler.onResultAvailable(newResult.getO1(), newResult.getO2());
 
 		return true;
 	}

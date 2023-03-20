@@ -18,9 +18,9 @@ import soot.jimple.Stmt;
 public class StatementSourceSinkDefinition extends AbstractSourceSinkDefinition
 		implements IAccessPathBasedSourceSinkDefinition {
 
-	private final Stmt stmt;
-	private final Local local;
-	private Set<AccessPathTuple> accessPaths;
+	protected final Stmt stmt;
+	protected final Local local;
+	protected Set<AccessPathTuple> accessPaths;
 
 	public StatementSourceSinkDefinition(Stmt stmt, Local local, Set<AccessPathTuple> accessPaths) {
 		if (accessPaths == null || accessPaths.isEmpty())
@@ -56,7 +56,7 @@ public class StatementSourceSinkDefinition extends AbstractSourceSinkDefinition
 				}
 			}
 		}
-		return buildNewDefinition(stmt, local, newSet);
+		return buildNewDefinition(newSet);
 	}
 
 	@Override
@@ -74,7 +74,7 @@ public class StatementSourceSinkDefinition extends AbstractSourceSinkDefinition
 				}
 			}
 		}
-		return buildNewDefinition(stmt, local, newSet);
+		return buildNewDefinition(newSet);
 	}
 
 	public Stmt getStmt() {
@@ -90,18 +90,8 @@ public class StatementSourceSinkDefinition extends AbstractSourceSinkDefinition
 	}
 
 	@Override
-	public void merge(ISourceSinkDefinition other) {
-		if (other instanceof StatementSourceSinkDefinition) {
-			StatementSourceSinkDefinition otherStmt = (StatementSourceSinkDefinition) other;
-
-			// Merge the base object definitions
-			if (otherStmt.accessPaths != null && !otherStmt.accessPaths.isEmpty()) {
-				if (this.accessPaths == null)
-					this.accessPaths = new HashSet<>();
-				for (AccessPathTuple apt : otherStmt.accessPaths)
-					this.accessPaths.add(apt);
-			}
-		}
+	public ISourceSinkDefinition merge(ISourceSinkDefinition other) {
+		return MergedStatementSourceSinkDefinition.create(this).merge(other);
 	}
 
 	@Override
@@ -129,13 +119,10 @@ public class StatementSourceSinkDefinition extends AbstractSourceSinkDefinition
 				if (toFilter.contains(ap))
 					filteredAPs.add(ap);
 		}
-		StatementSourceSinkDefinition def = buildNewDefinition(stmt, local, filteredAPs);
-		def.setCategory(category);
-		return def;
+		return buildNewDefinition(filteredAPs);
 	}
 
-	protected StatementSourceSinkDefinition buildNewDefinition(Stmt stmt, Local local,
-			Set<AccessPathTuple> accessPaths) {
+	protected StatementSourceSinkDefinition buildNewDefinition(Set<AccessPathTuple> accessPaths) {
 		StatementSourceSinkDefinition sssd = new StatementSourceSinkDefinition(stmt, local, accessPaths);
 		sssd.category = category;
 		return sssd;

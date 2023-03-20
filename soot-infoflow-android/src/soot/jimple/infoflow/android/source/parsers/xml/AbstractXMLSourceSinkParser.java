@@ -593,7 +593,7 @@ public abstract class AbstractXMLSourceSinkParser {
 	 */
 	protected void addSourceSinkDefinition(String signature, IAccessPathBasedSourceSinkDefinition ssd) {
 		if (sourcesAndSinks.containsKey(signature))
-			sourcesAndSinks.get(signature).merge(ssd);
+			sourcesAndSinks.put(signature, sourcesAndSinks.get(signature).merge(ssd));
 		else
 			sourcesAndSinks.put(signature, ssd);
 	}
@@ -623,7 +623,7 @@ public abstract class AbstractXMLSourceSinkParser {
 
 	protected void addSourceSinkDefinition(String signature, ISourceSinkDefinition ssd) {
 		if (sourcesAndSinks.containsKey(signature))
-			sourcesAndSinks.get(signature).merge(ssd);
+			sourcesAndSinks.put(signature, sourcesAndSinks.get(signature).merge(ssd));
 		else
 			sourcesAndSinks.put(signature, ssd);
 	}

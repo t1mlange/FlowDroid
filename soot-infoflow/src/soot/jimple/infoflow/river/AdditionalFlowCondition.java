@@ -11,6 +11,8 @@ import soot.jimple.infoflow.results.*;
 import soot.jimple.infoflow.sourcesSinks.definitions.SourceSinkCondition;
 import soot.util.MultiMap;
 
+import javax.xml.crypto.Data;
+
 /**
  * A condition that checks additional data flow to see whether a source or sink
  * is valid or not
@@ -49,7 +51,7 @@ public class AdditionalFlowCondition extends SourceSinkCondition {
         if (isEmpty())
             return true;
 
-        MultiMap<ResultSourceInfo, ResultSinkInfo> additionalResults = results.getAdditionalResults();
+        Set<DataFlowResult> additionalResults = results.getAdditionalResultSet();
         if (additionalResults == null || additionalResults.isEmpty())
             return false;
 
@@ -221,30 +223,30 @@ public class AdditionalFlowCondition extends SourceSinkCondition {
      * @return A list of all callee signatures and a list of declaring classes on the path from the sink on
      */
     private Pair<Set<String>, Set<String>>
-    getSignaturesAndClassNamesReachedFromSink(MultiMap<ResultSourceInfo, ResultSinkInfo> additionalResults,
+    getSignaturesAndClassNamesReachedFromSink(Set<DataFlowResult> additionalResults,
                                               Stmt primarySinkStmt) {
         Set<String> sigSet = new HashSet<>();
         Set<String> classSet = new HashSet<>();
 
-        for (ResultSourceInfo secondarySourceInfo : additionalResults.keySet()) {
+        for (DataFlowResult result : additionalResults) {
+            ResultSourceInfo secondarySourceInfo = result.getSource();
+            ResultSinkInfo secondarySinkInfo = result.getSink();
             // Match secondary source with primary sink of interest
             if (secondarySourceInfo.getStmt() == primarySinkStmt
                     && secondarySourceInfo.getDefinition() instanceof ConditionalSecondarySourceDefinition) {
-                for (ResultSinkInfo secondarySinkInfo : additionalResults.get(secondarySourceInfo)) {
-                    if (secondarySourceInfo.getPath() == null) {
-                        // Fall back if path reconstruction is not enabled
-                        SootMethod callee = secondarySinkInfo.getStmt().getInvokeExpr().getMethod();
-                        sigSet.add(callee.getSignature());
-                        classSet.add(callee.getDeclaringClass().getName());
-                    } else {
-                        Stmt[] path = secondarySourceInfo.getPath();
-                        for (Stmt stmt : path) {
-                            if (stmt.containsInvokeExpr()) {
-                                // Register all calls on the path
-                                SootMethod callee = stmt.getInvokeExpr().getMethod();
-                                sigSet.add(callee.getSignature());
-                                classSet.add(callee.getDeclaringClass().getName());
-                            }
+                if (secondarySourceInfo.getPath() == null) {
+                    // Fall back if path reconstruction is not enabled
+                    SootMethod callee = secondarySinkInfo.getStmt().getInvokeExpr().getMethod();
+                    sigSet.add(callee.getSignature());
+                    classSet.add(callee.getDeclaringClass().getName());
+                } else {
+                    Stmt[] path = secondarySourceInfo.getPath();
+                    for (Stmt stmt : path) {
+                        if (stmt.containsInvokeExpr()) {
+                            // Register all calls on the path
+                            SootMethod callee = stmt.getInvokeExpr().getMethod();
+                            sigSet.add(callee.getSignature());
+                            classSet.add(callee.getDeclaringClass().getName());
                         }
                     }
                 }
