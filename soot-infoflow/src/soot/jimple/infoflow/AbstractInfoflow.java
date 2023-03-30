@@ -776,7 +776,7 @@ public abstract class AbstractInfoflow implements IInfoflow {
 //				SequentialTaintPropagationHandler tpg = new SequentialTaintPropagationHandler();
 //				tpg.addHandler(new DebugFlowFunctionTaintPropagationHandler());
 //				tpg.addHandler(new SecondaryFlowListener());
-				additionalProblem.setTaintPropagationHandler(tpg);
+//				additionalProblem.setTaintPropagationHandler(tpg);
 				additionalProblem.setTaintWrapper(taintWrapper);
 				additionalNativeCallHandler = new BackwardNativeCallHandler();
 				additionalProblem.setNativeCallHandler(additionalNativeCallHandler);
