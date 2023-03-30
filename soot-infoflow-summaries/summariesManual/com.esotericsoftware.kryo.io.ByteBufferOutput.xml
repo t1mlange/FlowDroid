@@ -25,7 +25,7 @@
         </method>
         <method id="void write(byte[],int,int)">
             <flows>
-                <flow isAlias="false" typeChecking="false">
+                <flow isAlias="false" typeChecking="false" ignoreInRiver="true">
                     <from sourceSinkType="Parameter" ParameterIndex="0" />
                     <to sourceSinkType="Field"
                         AccessPath="[com.esotericsoftware.kryo.ByteBufferOutput: java.io.OutputStream innerStream]"
@@ -35,7 +35,7 @@
         </method>
         <method id="void write(byte[],int)">
             <flows>
-                <flow isAlias="false" typeChecking="false">
+                <flow isAlias="false" typeChecking="false" ignoreInRiver="true">
                     <from sourceSinkType="Parameter" ParameterIndex="0" />
                     <to sourceSinkType="Field"
                         AccessPath="[com.esotericsoftware.kryo.ByteBufferOutput: java.io.OutputStream innerStream]"
@@ -45,7 +45,7 @@
         </method>
         <method id="void write(byte[])">
             <flows>
-                <flow isAlias="false" typeChecking="false">
+                <flow isAlias="false" typeChecking="false" ignoreInRiver="true">
                     <from sourceSinkType="Parameter" ParameterIndex="0" />
                     <to sourceSinkType="Field"
                         AccessPath="[com.esotericsoftware.kryo.ByteBufferOutput: java.io.OutputStream innerStream]"
@@ -55,7 +55,7 @@
         </method>
         <method id="void write(int)">
             <flows>
-                <flow isAlias="false" typeChecking="false">
+                <flow isAlias="false" typeChecking="false" ignoreInRiver="true">
                     <from sourceSinkType="Parameter" ParameterIndex="0" />
                     <to sourceSinkType="Field"
                         AccessPath="[com.esotericsoftware.kryo.ByteBufferOutput: java.io.OutputStream innerStream]"
@@ -65,7 +65,7 @@
         </method>
         <method id="void writeAscii(java.lang.String)">
             <flows>
-                <flow isAlias="false" typeChecking="false">
+                <flow isAlias="false" typeChecking="false" ignoreInRiver="true">
                     <from sourceSinkType="Parameter" ParameterIndex="0" />
                     <to sourceSinkType="Field"
                         AccessPath="[com.esotericsoftware.kryo.ByteBufferOutput: java.io.OutputStream innerStream]"
@@ -75,7 +75,7 @@
         </method>
         <method id="void writeBoolean(boolean)">
             <flows>
-                <flow isAlias="false" typeChecking="false">
+                <flow isAlias="false" typeChecking="false" ignoreInRiver="true">
                     <from sourceSinkType="Parameter" ParameterIndex="0" />
                     <to sourceSinkType="Field"
                         AccessPath="[com.esotericsoftware.kryo.ByteBufferOutput: java.io.OutputStream innerStream]"
@@ -85,7 +85,7 @@
         </method>
         <method id="void writeBooleans(boolean[],int,int)">
             <flows>
-                <flow isAlias="false" typeChecking="false">
+                <flow isAlias="false" typeChecking="false" ignoreInRiver="true">
                     <from sourceSinkType="Parameter" ParameterIndex="0" />
                     <to sourceSinkType="Field"
                         AccessPath="[com.esotericsoftware.kryo.ByteBufferOutput: java.io.OutputStream innerStream]"
@@ -95,7 +95,7 @@
         </method>
         <method id="void writeByte(byte)">
             <flows>
-                <flow isAlias="false" typeChecking="false">
+                <flow isAlias="false" typeChecking="false" ignoreInRiver="true">
                     <from sourceSinkType="Parameter" ParameterIndex="0" />
                     <to sourceSinkType="Field"
                         AccessPath="[com.esotericsoftware.kryo.ByteBufferOutput: java.io.OutputStream innerStream]"
@@ -105,7 +105,7 @@
         </method>
         <method id="void writeByte(int)">
             <flows>
-                <flow isAlias="false" typeChecking="false">
+                <flow isAlias="false" typeChecking="false" ignoreInRiver="true">
                     <from sourceSinkType="Parameter" ParameterIndex="0" />
                     <to sourceSinkType="Field"
                         AccessPath="[com.esotericsoftware.kryo.ByteBufferOutput: java.io.OutputStream innerStream]"
@@ -115,7 +115,7 @@
         </method>
         <method id="void writeBytes(byte[])">
             <flows>
-                <flow isAlias="false" typeChecking="false">
+                <flow isAlias="false" typeChecking="false" ignoreInRiver="true">
                     <from sourceSinkType="Parameter" ParameterIndex="0" />
                     <to sourceSinkType="Field"
                         AccessPath="[com.esotericsoftware.kryo.ByteBufferOutput: java.io.OutputStream innerStream]"
@@ -125,7 +125,7 @@
         </method>
         <method id="void writeByte(byte[],int,int)">
             <flows>
-                <flow isAlias="false" typeChecking="false">
+                <flow isAlias="false" typeChecking="false" ignoreInRiver="true">
                     <from sourceSinkType="Parameter" ParameterIndex="0" />
                     <to sourceSinkType="Field"
                         AccessPath="[com.esotericsoftware.kryo.ByteBufferOutput: java.io.OutputStream innerStream]"
@@ -135,7 +135,7 @@
         </method>
         <method id="void writeChar(char)">
             <flows>
-                <flow isAlias="false" typeChecking="false">
+                <flow isAlias="false" typeChecking="false" ignoreInRiver="true">
                     <from sourceSinkType="Parameter" ParameterIndex="0" />
                     <to sourceSinkType="Field"
                         AccessPath="[com.esotericsoftware.kryo.ByteBufferOutput: java.io.OutputStream innerStream]"
@@ -145,7 +145,7 @@
         </method>
         <method id="void writeChars(char[],int,int)">
             <flows>
-                <flow isAlias="false" typeChecking="false">
+                <flow isAlias="false" typeChecking="false" ignoreInRiver="true">
                     <from sourceSinkType="Parameter" ParameterIndex="0" />
                     <to sourceSinkType="Field"
                         AccessPath="[com.esotericsoftware.kryo.ByteBufferOutput: java.io.OutputStream innerStream]"
@@ -155,7 +155,7 @@
         </method>
         <method id="void writeDouble(double)">
             <flows>
-                <flow isAlias="false" typeChecking="false">
+                <flow isAlias="false" typeChecking="false" ignoreInRiver="true">
                     <from sourceSinkType="Parameter" ParameterIndex="0" />
                     <to sourceSinkType="Field"
                         AccessPath="[com.esotericsoftware.kryo.ByteBufferOutput: java.io.OutputStream innerStream]"
@@ -165,7 +165,7 @@
         </method>
         <method id="void writeDoubles(double,int,int)">
             <flows>
-                <flow isAlias="false" typeChecking="false">
+                <flow isAlias="false" typeChecking="false" ignoreInRiver="true">
                     <from sourceSinkType="Parameter" ParameterIndex="0" />
                     <to sourceSinkType="Field"
                         AccessPath="[com.esotericsoftware.kryo.ByteBufferOutput: java.io.OutputStream innerStream]"
@@ -175,7 +175,7 @@
         </method>
         <method id="void writeFloat(float)">
             <flows>
-                <flow isAlias="false" typeChecking="false">
+                <flow isAlias="false" typeChecking="false" ignoreInRiver="true">
                     <from sourceSinkType="Parameter" ParameterIndex="0" />
                     <to sourceSinkType="Field"
                         AccessPath="[com.esotericsoftware.kryo.ByteBufferOutput: java.io.OutputStream innerStream]"
@@ -185,7 +185,7 @@
         </method>
         <method id="void writeFloats(float,int,int)">
             <flows>
-                <flow isAlias="false" typeChecking="false">
+                <flow isAlias="false" typeChecking="false" ignoreInRiver="true">
                     <from sourceSinkType="Parameter" ParameterIndex="0" />
                     <to sourceSinkType="Field"
                         AccessPath="[com.esotericsoftware.kryo.ByteBufferOutput: java.io.OutputStream innerStream]"
@@ -195,7 +195,7 @@
         </method>
         <method id="void writeInt(int)">
             <flows>
-                <flow isAlias="false" typeChecking="false">
+                <flow isAlias="false" typeChecking="false" ignoreInRiver="true">
                     <from sourceSinkType="Parameter" ParameterIndex="0" />
                     <to sourceSinkType="Field"
                         AccessPath="[com.esotericsoftware.kryo.ByteBufferOutput: java.io.OutputStream innerStream]"
@@ -205,7 +205,7 @@
         </method>
         <method id="void writeInts(int[],int,int)">
             <flows>
-                <flow isAlias="false" typeChecking="false">
+                <flow isAlias="false" typeChecking="false" ignoreInRiver="true">
                     <from sourceSinkType="Parameter" ParameterIndex="0" />
                     <to sourceSinkType="Field"
                         AccessPath="[com.esotericsoftware.kryo.ByteBufferOutput: java.io.OutputStream innerStream]"
@@ -215,7 +215,7 @@
         </method>
         <method id="void writeLong(long)">
             <flows>
-                <flow isAlias="false" typeChecking="false">
+                <flow isAlias="false" typeChecking="false" ignoreInRiver="true">
                     <from sourceSinkType="Parameter" ParameterIndex="0" />
                     <to sourceSinkType="Field"
                         AccessPath="[com.esotericsoftware.kryo.ByteBufferOutput: java.io.OutputStream innerStream]"
@@ -225,7 +225,7 @@
         </method>
         <method id="void writeLongs(long[],int,int)">
             <flows>
-                <flow isAlias="false" typeChecking="false">
+                <flow isAlias="false" typeChecking="false" ignoreInRiver="true">
                     <from sourceSinkType="Parameter" ParameterIndex="0" />
                     <to sourceSinkType="Field"
                         AccessPath="[com.esotericsoftware.kryo.ByteBufferOutput: java.io.OutputStream innerStream]"
@@ -235,7 +235,7 @@
         </method>
         <method id="void writeShort(short)">
             <flows>
-                <flow isAlias="false" typeChecking="false">
+                <flow isAlias="false" typeChecking="false" ignoreInRiver="true">
                     <from sourceSinkType="Parameter" ParameterIndex="0" />
                     <to sourceSinkType="Field"
                         AccessPath="[com.esotericsoftware.kryo.ByteBufferOutput: java.io.OutputStream innerStream]"
@@ -245,7 +245,7 @@
         </method>
         <method id="void writeShorts(short[],int,int)">
             <flows>
-                <flow isAlias="false" typeChecking="false">
+                <flow isAlias="false" typeChecking="false" ignoreInRiver="true">
                     <from sourceSinkType="Parameter" ParameterIndex="0" />
                     <to sourceSinkType="Field"
                         AccessPath="[com.esotericsoftware.kryo.ByteBufferOutput: java.io.OutputStream innerStream]"
@@ -255,7 +255,7 @@
         </method>
         <method id="void writeString(java.lang.String)">
             <flows>
-                <flow isAlias="false" typeChecking="false">
+                <flow isAlias="false" typeChecking="false" ignoreInRiver="true">
                     <from sourceSinkType="Parameter" ParameterIndex="0" />
                     <to sourceSinkType="Field"
                         AccessPath="[com.esotericsoftware.kryo.ByteBufferOutput: java.io.OutputStream innerStream]"
@@ -266,7 +266,7 @@
 
         <method id="int writeVarInt(int,boolean)">
             <flows>
-                <flow isAlias="false" typeChecking="false">
+                <flow isAlias="false" typeChecking="false" ignoreInRiver="true">
                     <from sourceSinkType="Parameter" ParameterIndex="0" />
                     <to sourceSinkType="Field"
                         AccessPath="[com.esotericsoftware.kryo.ByteBufferOutput: java.io.OutputStream innerStream]"
@@ -276,7 +276,7 @@
         </method>
         <method id="int writeVarIntFlag(boolean,int,boolean)">
             <flows>
-                <flow isAlias="false" typeChecking="false">
+                <flow isAlias="false" typeChecking="false" ignoreInRiver="true">
                     <from sourceSinkType="Parameter" ParameterIndex="0" />
                     <to sourceSinkType="Field"
                         AccessPath="[com.esotericsoftware.kryo.ByteBufferOutput: java.io.OutputStream innerStream]"
@@ -286,7 +286,7 @@
         </method>
         <method id="int writeVarLong(long,boolean)">
             <flows>
-                <flow isAlias="false" typeChecking="false">
+                <flow isAlias="false" typeChecking="false" ignoreInRiver="true">
                     <from sourceSinkType="Parameter" ParameterIndex="0" />
                     <to sourceSinkType="Field"
                         AccessPath="[com.esotericsoftware.kryo.ByteBufferOutput: java.io.OutputStream innerStream]"

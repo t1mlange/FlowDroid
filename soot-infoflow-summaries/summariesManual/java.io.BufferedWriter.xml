@@ -23,13 +23,13 @@
 		</method>
 		<method id="java.io.Writer append(char)">
 			<flows>
-				<flow isAlias="false" typeChecking="false">
+				<flow isAlias="false" typeChecking="false" ignoreInRiver="true">
 					<from sourceSinkType="Parameter" ParameterIndex="0" />
 					<to sourceSinkType="Field"
 						AccessPath="[java.io.BufferedWriter: java.io.Writer innerWriter]"
 						AccessPathTypes="[java.io.Writer]" />
 				</flow>
-				<flow isAlias="true">
+				<flow isAlias="true" ignoreInRiver="true">
 					<from sourceSinkType="Field" />
 					<to sourceSinkType="Return" />
 				</flow>
@@ -37,13 +37,13 @@
 		</method>
 		<method id="java.io.Writer append(java.lang.CharSequence)">
 			<flows>
-				<flow isAlias="false" typeChecking="false">
+				<flow isAlias="false" typeChecking="false" ignoreInRiver="true">
 					<from sourceSinkType="Parameter" ParameterIndex="0" />
 					<to sourceSinkType="Field"
 						AccessPath="[java.io.BufferedWriter: java.io.Writer innerWriter]"
 						AccessPathTypes="[java.io.Writer]" />
 				</flow>
-				<flow isAlias="true">
+				<flow isAlias="true" ignoreInRiver="true">
 					<from sourceSinkType="Field" />
 					<to sourceSinkType="Return" />
 				</flow>
@@ -51,13 +51,13 @@
 		</method>
 		<method id="java.io.Writer append(java.lang.CharSequence,int,int)">
 			<flows>
-				<flow isAlias="false" typeChecking="false">
+				<flow isAlias="false" typeChecking="false" ignoreInRiver="true">
 					<from sourceSinkType="Parameter" ParameterIndex="0" />
 					<to sourceSinkType="Field"
 						AccessPath="[java.io.BufferedWriter: java.io.Writer innerWriter]"
 						AccessPathTypes="[java.io.Writer]" />
 				</flow>
-				<flow isAlias="true">
+				<flow isAlias="true" ignoreInRiver="true">
 					<from sourceSinkType="Field" />
 					<to sourceSinkType="Return" />
 				</flow>
@@ -65,7 +65,7 @@
 		</method>
 		<method id="void write(char[],int,int)">
 			<flows>
-				<flow isAlias="false" typeChecking="false">
+				<flow isAlias="false" typeChecking="false" ignoreInRiver="true">
 					<from sourceSinkType="Parameter" ParameterIndex="0" />
 					<to sourceSinkType="Field"
 						AccessPath="[java.io.BufferedWriter: java.io.Writer innerWriter]"
@@ -75,7 +75,7 @@
 		</method>
 		<method id="void write(int)">
 			<flows>
-				<flow isAlias="false" typeChecking="false">
+				<flow isAlias="false" typeChecking="false" ignoreInRiver="true">
 					<from sourceSinkType="Parameter" ParameterIndex="0" />
 					<to sourceSinkType="Field"
 						AccessPath="[java.io.BufferedWriter: java.io.Writer innerWriter]"
@@ -85,7 +85,7 @@
 		</method>
 		<method id="void write(char[])">
 			<flows>
-				<flow isAlias="false" typeChecking="false">
+				<flow isAlias="false" typeChecking="false" ignoreInRiver="true">
 					<from sourceSinkType="Parameter" ParameterIndex="0" />
 					<to sourceSinkType="Field"
 						AccessPath="[java.io.BufferedWriter: java.io.Writer innerWriter]"
@@ -95,7 +95,7 @@
 		</method>
 		<method id="void write(java.lang.String)">
 			<flows>
-				<flow isAlias="false" typeChecking="false">
+				<flow isAlias="false" typeChecking="false" ignoreInRiver="true">
 					<from sourceSinkType="Parameter" ParameterIndex="0" />
 					<to sourceSinkType="Field"
 						AccessPath="[java.io.BufferedWriter: java.io.Writer innerWriter]"

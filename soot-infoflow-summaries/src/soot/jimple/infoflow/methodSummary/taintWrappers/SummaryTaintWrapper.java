@@ -657,6 +657,21 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper, ITypeChecke
 				if (reverseFlows)
 					flowsInTarget = flowsInTarget.reverse();
 				for (MethodFlow flow : flowsInTarget) {
+					// Small optimization: In River, we follow the base object upwards to its origin. Some summarized
+					// flows do not help in this case, in fact they only might produce false positives. With the
+					// attribute ignoreInRiver, one can exclude flows from being applied in River.
+					// Example:
+					//				   ^				^
+					//				   |                | <- prevent creating this edge through a reversed summary
+					// 			outputStream.write(not_secret);
+					//				   ^
+					// 				   |			    |- incoming primary flows
+					// secondary flow -|			    v
+					// 			  outputStream.write(secret);
+					if (manager.getConfig().getAdditionalFlowsEnabled() && reverseFlows
+							&& flow.getIgnoreInRiver())
+						continue;
+
 					// Apply the flow summary
 					AccessPathPropagator newPropagator = applyFlow(flow, curPropagator);
 					if (newPropagator == null) {

@@ -38,6 +38,7 @@ public class XMLConstants {
 	public static final String ATTRIBUTE_TYPE_CHECKING = "typeChecking";
 	public static final String ATTRIBUTE_IGNORE_TYPES = "ignoreTypes";
 	public static final String ATTRIBUTE_CUT_SUBFIELDS = "cutSubfields";
+	public static final String ATTRIBUTE_IGNORE_IN_RIVER = "ignoreInRiver";
 	public static final String ATTRIBUTE_MATCH_STRICT = "matchStrict";
 	public static final String ATTRIBUTE_NAME = "name";
 	public static final String ATTRIBUTE_SUPERCLASS = "superClass";

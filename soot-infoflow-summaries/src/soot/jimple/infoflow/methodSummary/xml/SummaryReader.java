@@ -74,6 +74,7 @@ public class SummaryReader extends AbstractXMLReader {
 			Boolean typeChecking = null;
 			Boolean ignoreTypes = null;
 			Boolean cutSubfields = null;
+			Boolean ignoreInRiver = null;
 
 			State state = State.summary;
 			while (xmlreader.hasNext()) {
@@ -135,6 +136,9 @@ public class SummaryReader extends AbstractXMLReader {
 						if (sIgnoreTypes != null && !sIgnoreTypes.isEmpty())
 							ignoreTypes = sIgnoreTypes.equals(XMLConstants.VALUE_TRUE);
 
+						String sIgnoreInRiver = getAttributeByName(xmlreader, XMLConstants.ATTRIBUTE_IGNORE_IN_RIVER);
+						if (sIgnoreInRiver != null && !sIgnoreInRiver.isEmpty())
+							ignoreInRiver = sIgnoreInRiver.equals(XMLConstants.VALUE_TRUE);
 					} else
 						throw new SummaryXMLException();
 				} else if (localName.equals(TREE_CLEAR) && xmlreader.isStartElement()) {
@@ -161,7 +165,7 @@ public class SummaryReader extends AbstractXMLReader {
 					if (state == State.flow) {
 						state = State.method;
 						MethodFlow flow = new MethodFlow(currentMethod, createSource(summary, sourceAttributes),
-								createSink(summary, sinkAttributes), isAlias, typeChecking, ignoreTypes, cutSubfields);
+								createSink(summary, sinkAttributes), isAlias, typeChecking, ignoreTypes, cutSubfields, ignoreInRiver);
 						summary.addFlow(flow);
 
 						isAlias = false;

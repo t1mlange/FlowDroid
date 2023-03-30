@@ -13,7 +13,7 @@
 		</method>
 		<method id="void write(byte[],int,int)">
 			<flows>
-				<flow isAlias="false" typeChecking="false">
+				<flow isAlias="false" typeChecking="false" ignoreInRiver="true">
 					<from sourceSinkType="Parameter" ParameterIndex="0" />
 					<to sourceSinkType="Field"
 						AccessPath="[java.io.DataOutputStream: java.io.OutputStream innerStream]"
@@ -23,7 +23,7 @@
 		</method>
 		<method id="void write(int)">
 			<flows>
-				<flow isAlias="false" typeChecking="false">
+				<flow isAlias="false" typeChecking="false" ignoreInRiver="true">
 					<from sourceSinkType="Parameter" ParameterIndex="0" />
 					<to sourceSinkType="Field"
 						AccessPath="[java.io.DataOutputStream: java.io.OutputStream innerStream]"
@@ -33,7 +33,7 @@
 		</method>
 		<method id="void write(byte[])">
 			<flows>
-				<flow isAlias="false" typeChecking="false">
+				<flow isAlias="false" typeChecking="false" ignoreInRiver="true">
 					<from sourceSinkType="Parameter" ParameterIndex="0" />
 					<to sourceSinkType="Field"
 						AccessPath="[java.io.DataOutputStream: java.io.OutputStream innerStream]"
@@ -43,7 +43,7 @@
 		</method>
 		<method id="void writeBoolean(boolean)">
 			<flows>
-				<flow isAlias="false" typeChecking="false">
+				<flow isAlias="false" typeChecking="false" ignoreInRiver="true">
 					<from sourceSinkType="Parameter" ParameterIndex="0" />
 					<to sourceSinkType="Field"
 						AccessPath="[java.io.DataOutputStream: java.io.OutputStream innerStream]"
@@ -53,7 +53,7 @@
 		</method>
 		<method id="void writeByte(int)">
 			<flows>
-				<flow isAlias="false" typeChecking="false">
+				<flow isAlias="false" typeChecking="false" ignoreInRiver="true">
 					<from sourceSinkType="Parameter" ParameterIndex="0" />
 					<to sourceSinkType="Field"
 						AccessPath="[java.io.DataOutputStream: java.io.OutputStream innerStream]"
@@ -63,7 +63,7 @@
 		</method>
 		<method id="void writeBytes(java.lang.String)">
 			<flows>
-				<flow isAlias="false" typeChecking="false">
+				<flow isAlias="false" typeChecking="false" ignoreInRiver="true">
 					<from sourceSinkType="Parameter" ParameterIndex="0" />
 					<to sourceSinkType="Field"
 						AccessPath="[java.io.DataOutputStream: java.io.OutputStream innerStream]"
@@ -73,7 +73,7 @@
 		</method>
 		<method id="void writeChar(int)">
 			<flows>
-				<flow isAlias="false" typeChecking="false">
+				<flow isAlias="false" typeChecking="false" ignoreInRiver="true">
 					<from sourceSinkType="Parameter" ParameterIndex="0" />
 					<to sourceSinkType="Field"
 						AccessPath="[java.io.DataOutputStream: java.io.OutputStream innerStream]"
@@ -83,7 +83,7 @@
 		</method>
 		<method id="void writeChars(java.lang.String)">
 			<flows>
-				<flow isAlias="false" typeChecking="false">
+				<flow isAlias="false" typeChecking="false" ignoreInRiver="true">
 					<from sourceSinkType="Parameter" ParameterIndex="0" />
 					<to sourceSinkType="Field"
 						AccessPath="[java.io.DataOutputStream: java.io.OutputStream innerStream]"
@@ -93,7 +93,7 @@
 		</method>
 		<method id="void writeDouble(double)">
 			<flows>
-				<flow isAlias="false" typeChecking="false">
+				<flow isAlias="false" typeChecking="false" ignoreInRiver="true">
 					<from sourceSinkType="Parameter" ParameterIndex="0" />
 					<to sourceSinkType="Field"
 						AccessPath="[java.io.DataOutputStream: java.io.OutputStream innerStream]"
@@ -103,7 +103,7 @@
 		</method>
 		<method id="void writeFloat(float)">
 			<flows>
-				<flow isAlias="false" typeChecking="false">
+				<flow isAlias="false" typeChecking="false" ignoreInRiver="true">
 					<from sourceSinkType="Parameter" ParameterIndex="0" />
 					<to sourceSinkType="Field"
 						AccessPath="[java.io.DataOutputStream: java.io.OutputStream innerStream]"

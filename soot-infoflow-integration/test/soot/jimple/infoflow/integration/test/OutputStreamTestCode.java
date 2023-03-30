@@ -10,6 +10,7 @@ public class OutputStreamTestCode {
     public static String source() {
         return "secret";
     }
+    public String irrelevant = "Not secret at all";
 
     public void testBufferedOutputStream1() {
         try {
@@ -21,6 +22,7 @@ public class OutputStreamTestCode {
             OutputStream os = con.getOutputStream();
 
             OutputStream osb = new BufferedOutputStream(os);
+            osb.write(irrelevant.getBytes());
             osb.write(src.getBytes());
         } catch (IOException e) {
             throw new RuntimeException(e);

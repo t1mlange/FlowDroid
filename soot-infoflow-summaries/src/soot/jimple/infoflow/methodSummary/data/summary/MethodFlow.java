@@ -23,6 +23,7 @@ public class MethodFlow extends AbstractMethodSummary {
 	private final Boolean typeChecking;
 	private final Boolean ignoreTypes;
 	private final Boolean cutSubFields;
+	private final Boolean ignoreInRiver;
 
 	/**
 	 * Creates a new instance of the MethodFlow class
@@ -42,7 +43,7 @@ public class MethodFlow extends AbstractMethodSummary {
 	 *                     enabled.
 	 */
 	public MethodFlow(String methodSig, FlowSource from, FlowSink to, boolean isAlias, Boolean typeChecking,
-			Boolean ignoreTypes, Boolean cutSubFields) {
+			Boolean ignoreTypes, Boolean cutSubFields, Boolean ignoreInRiver) {
 		super(methodSig);
 		this.from = from;
 		this.to = to;
@@ -50,6 +51,7 @@ public class MethodFlow extends AbstractMethodSummary {
 		this.typeChecking = typeChecking;
 		this.ignoreTypes = ignoreTypes;
 		this.cutSubFields = cutSubFields;
+		this.ignoreInRiver = ignoreInRiver;
 	}
 
 	/**
@@ -109,7 +111,7 @@ public class MethodFlow extends AbstractMethodSummary {
 				to.getAccessPath(), to.getGap(), to.isMatchStrict());
 		FlowSink reverseSink = new FlowSink(toType, from.getParameterIndex(), from.getBaseType(), from.getAccessPath(),
 				taintSubFields, from.getGap(), from.isMatchStrict());
-		return new MethodFlow(methodSig, reverseSource, reverseSink, isAlias, typeChecking, ignoreTypes, cutSubFields);
+		return new MethodFlow(methodSig, reverseSource, reverseSink, isAlias, typeChecking, ignoreTypes, cutSubFields, ignoreInRiver);
 	}
 
 	/**
@@ -158,7 +160,7 @@ public class MethodFlow extends AbstractMethodSummary {
 		if (replacementMap == null)
 			return this;
 		return new MethodFlow(methodSig, from.replaceGaps(replacementMap), to.replaceGaps(replacementMap), isAlias,
-				typeChecking, ignoreTypes, cutSubFields);
+				typeChecking, ignoreTypes, cutSubFields, ignoreInRiver);
 	}
 
 	/**
@@ -252,4 +254,7 @@ public class MethodFlow extends AbstractMethodSummary {
 		return ignoreTypes;
 	}
 
+	public boolean getIgnoreInRiver() {
+		return ignoreInRiver != null && ignoreInRiver.booleanValue();
+	}
 }
