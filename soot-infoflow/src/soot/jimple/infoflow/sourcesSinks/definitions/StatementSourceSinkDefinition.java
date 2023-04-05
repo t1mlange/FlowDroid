@@ -90,21 +90,6 @@ public class StatementSourceSinkDefinition extends AbstractSourceSinkDefinition
 	}
 
 	@Override
-	public void merge(ISourceSinkDefinition other) {
-		if (other instanceof StatementSourceSinkDefinition) {
-			StatementSourceSinkDefinition otherStmt = (StatementSourceSinkDefinition) other;
-
-			// Merge the base object definitions
-			if (otherStmt.accessPaths != null && !otherStmt.accessPaths.isEmpty()) {
-				if (this.accessPaths == null)
-					this.accessPaths = new HashSet<>();
-				for (AccessPathTuple apt : otherStmt.accessPaths)
-					this.accessPaths.add(apt);
-			}
-		}
-	}
-
-	@Override
 	public boolean isEmpty() {
 		return false;
 	}
@@ -120,7 +105,7 @@ public class StatementSourceSinkDefinition extends AbstractSourceSinkDefinition
 	}
 
 	@Override
-	public IAccessPathBasedSourceSinkDefinition filter(Collection<AccessPathTuple> toFilter) {
+	public StatementSourceSinkDefinition filter(Collection<AccessPathTuple> toFilter) {
 		// Filter the access paths
 		Set<AccessPathTuple> filteredAPs = null;
 		if (accessPaths != null && !accessPaths.isEmpty()) {
