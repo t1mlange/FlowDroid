@@ -772,11 +772,11 @@ public abstract class AbstractInfoflow implements IInfoflow {
 				memoryWatcher.addSolver((IMemoryBoundedSolver) additionalSolver);
 
 				// Set all handlers to the additional problem
-				additionalProblem.setTaintPropagationHandler(new SecondaryFlowListener());
 //				SequentialTaintPropagationHandler tpg = new SequentialTaintPropagationHandler();
-//				tpg.addHandler(new DebugFlowFunctionTaintPropagationHandler());
 //				tpg.addHandler(new SecondaryFlowListener());
+//				tpg.addHandler(new DebugFlowFunctionTaintPropagationHandler());
 //				additionalProblem.setTaintPropagationHandler(tpg);
+				additionalProblem.setTaintPropagationHandler(new SecondaryFlowListener());
 				additionalProblem.setTaintWrapper(taintWrapper);
 				additionalNativeCallHandler = new BackwardNativeCallHandler();
 				additionalProblem.setNativeCallHandler(additionalNativeCallHandler);
