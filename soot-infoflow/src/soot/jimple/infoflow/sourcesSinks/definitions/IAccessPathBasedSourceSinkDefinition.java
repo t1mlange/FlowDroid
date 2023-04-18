@@ -56,4 +56,12 @@ public interface IAccessPathBasedSourceSinkDefinition extends ISourceSinkDefinit
 	 */
 	public abstract IAccessPathBasedSourceSinkDefinition getSinkOnlyDefinition();
 
+	/**
+	 * Compares the definition to another definition and returns whether it is a
+	 * subset of other. Used to check whether this was derived from other e.g. using
+	 * filter().
+	 *
+	 * @return true if other contains this
+	 */
+	public boolean isSubsetOf(ISourceSinkDefinition other);
 }

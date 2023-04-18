@@ -163,4 +163,28 @@ public class StatementSourceSinkDefinition extends AbstractSourceSinkDefinition
 		return true;
 	}
 
+	@Override
+	public boolean isSubsetOf(ISourceSinkDefinition obj) {
+		if (this == obj)
+			return true;
+		if (getClass() != obj.getClass())
+			return false;
+		StatementSourceSinkDefinition other = (StatementSourceSinkDefinition) obj;
+		if (local == null) {
+			if (other.local != null)
+				return false;
+		} else if (!local.equals(other.local))
+			return false;
+		if (stmt == null) {
+			if (other.stmt != null)
+				return false;
+		} else if (!stmt.equals(other.stmt))
+			return false;
+
+		if (accessPaths != null)
+			if (other.accessPaths == null || !accessPaths.stream().allMatch(t -> other.accessPaths.contains(t)))
+				return false;
+
+		return true;
+	}
 }

@@ -554,4 +554,50 @@ public class MethodSourceSinkDefinition extends AbstractSourceSinkDefinition
 		return def;
 	}
 
+	@Override
+	public boolean isSubsetOf(ISourceSinkDefinition obj) {
+		// Quick equal check
+		if (this == obj)
+			return true;
+
+		if (getClass() != obj.getClass())
+			return false;
+		MethodSourceSinkDefinition other = (MethodSourceSinkDefinition) obj;
+
+		// Filter only affects base objects, parameters and return values.
+		// Everything else must be equal.
+		if (method == null) {
+			if (other.method != null)
+				return false;
+		} else if (!method.equals(other.method))
+			return false;
+		if (callType != other.callType)
+			return false;
+		if (category != other.category)
+			return false;
+		if (conditions != other.conditions)
+			return false;
+
+		if (baseObjects != null)
+			if (other.baseObjects == null || !baseObjects.stream().allMatch(b -> other.baseObjects.contains(b)))
+				return false;
+
+		if (parameters != null) {
+			if (other.parameters == null || this.parameters.length != other.parameters.length)
+				return false;
+
+			for (int i = 0; i < parameters.length; i++) {
+				final int idx = i;
+				if (parameters[idx] != null && !parameters[idx].stream()
+						.allMatch(p -> other.parameters[idx] != null && other.parameters[idx].contains(p)))
+					return false;
+			}
+		}
+
+		if (returnValues != null)
+			if (other.returnValues != null || !returnValues.stream().allMatch(r -> other.returnValues.contains(r)))
+				return false;
+
+		return true;
+	}
 }

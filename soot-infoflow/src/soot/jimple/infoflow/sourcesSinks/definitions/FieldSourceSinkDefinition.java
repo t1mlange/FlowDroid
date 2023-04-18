@@ -165,4 +165,24 @@ public class FieldSourceSinkDefinition extends AbstractSourceSinkDefinition
 		return true;
 	}
 
+	@Override
+	public boolean isSubsetOf(ISourceSinkDefinition obj) {
+		if (this == obj)
+			return true;
+		if (getClass() != obj.getClass())
+			return false;
+
+		FieldSourceSinkDefinition other = (FieldSourceSinkDefinition) obj;
+		if (fieldSignature == null) {
+			if (other.fieldSignature != null)
+				return false;
+		} else if (!fieldSignature.equals(other.fieldSignature))
+			return false;
+
+		if (accessPaths != null)
+			if (other.accessPaths == null || !accessPaths.stream().allMatch(t -> other.accessPaths.contains(t)))
+				return false;
+
+		return true;
+	}
 }
