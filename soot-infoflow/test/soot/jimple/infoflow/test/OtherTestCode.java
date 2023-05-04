@@ -685,4 +685,50 @@ public class OtherTestCode {
 		cm.publish(add42(i));
 	}
 
+	abstract class UB {
+		abstract String getString();
+	}
+
+	class UB1 extends UB {
+		public String getString() {
+			return TelephonyManager.getDeviceId();
+		}
+	}
+
+	class UB2 extends UB {
+		public String getString() {
+			return "1337";
+		}
+	}
+
+	String oneMoreIndirection(String str) {
+		return str;
+	}
+
+	String getStringFromUB(UB ub) {
+		return ub.getString() + "Unrealted";
+	}
+
+	public void unrealizableUnbalancedReturnTest1() {
+		UB ub;
+		String str;
+		ConnectionManager cm = new ConnectionManager();
+
+		// getStringFromUB returns a tainted element if called with an object of type UB1. When the argument is
+		// of type UB2, a simple constant is returned.
+		// Internally, the UB1#getString() method contains the source and instantly encounters an unbalanced return.
+		// Then, the IFDS solver propagated to the caller into getStringFromUB, which then returns into this method.
+		// Because SPARK is flow-insensitive and there are callers with both types, UB1 and UB2, as arguments, there
+		// is a call-graph edge to both getStringFromUB(UB) call sites in this method. The return edge from
+		// getStringFromUB(UB) is also unbalanced, thus the solver propagates the taint further on the unrealizable
+		// edge to the second getStringFromUB(UB) call site.
+		ub = new UB1();
+		str = getStringFromUB(ub);
+		cm.publish(str);
+
+		ub = new UB2();
+		str = getStringFromUB(ub);
+		cm.publish(str.length());
+	}
+
 }

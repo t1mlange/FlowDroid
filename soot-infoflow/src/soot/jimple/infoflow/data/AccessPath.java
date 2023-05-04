@@ -76,8 +76,8 @@ public class AccessPath implements Cloneable {
 		this.canHaveImmutableAliases = canHaveImmutableAliases;
 	}
 
-	AccessPath(Local val, Type valType, AccessPathFragment[] fragments, boolean taintSubFields,
-			boolean isCutOffApproximation, ArrayTaintType arrayTaintType, boolean canHaveImmutableAliases) {
+	public AccessPath(Local val, Type valType, AccessPathFragment[] fragments, boolean taintSubFields,
+					  boolean isCutOffApproximation, ArrayTaintType arrayTaintType, boolean canHaveImmutableAliases) {
 		this.value = val;
 		this.baseType = valType;
 		this.fragments = fragments;

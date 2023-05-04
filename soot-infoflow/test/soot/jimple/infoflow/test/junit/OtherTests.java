@@ -20,6 +20,7 @@ import soot.jimple.infoflow.IInfoflow;
 import soot.jimple.infoflow.InfoflowConfiguration;
 import soot.jimple.infoflow.InfoflowConfiguration.PathReconstructionMode;
 import soot.jimple.infoflow.config.IInfoflowConfig;
+import soot.jimple.infoflow.util.DebugFlowFunctionTaintPropagationHandler;
 import soot.options.Options;
 
 /**
@@ -434,6 +435,28 @@ public abstract class OtherTests extends JUnitTests {
 		epoints.add("<soot.jimple.infoflow.test.OtherTestCode: void skipOverObjectTest2()>");
 		infoflow.computeInfoflow(appPath, libPath, epoints, sources, sinks);
 		checkInfoflow(infoflow, 1);
+		Assert.assertTrue(infoflow.getResults().isPathBetweenMethods(sink, sourceDeviceId));
+	}
+
+	@Test(timeout = 300000)
+	public void unrealizableUnbalancedReturnTest1() {
+		IInfoflow infoflow = initInfoflow();
+		infoflow.setTaintPropagationHandler(new DebugFlowFunctionTaintPropagationHandler());
+		List<String> epoints = new ArrayList<String>();
+		epoints.add("<soot.jimple.infoflow.test.OtherTestCode: void unrealizableUnbalancedReturnTest1()>");
+		infoflow.computeInfoflow(appPath, libPath, epoints, sources, sinks);
+		checkInfoflow(infoflow, 1);
+		Assert.assertTrue(infoflow.getResults().isPathBetweenMethods(sink, sourceDeviceId));
+	}
+
+	@Test(timeout = 300000)
+	public void unrealizableUnbalancedReturnTest2() {
+		IInfoflow infoflow = initInfoflow();
+		infoflow.setTaintPropagationHandler(new DebugFlowFunctionTaintPropagationHandler());
+		List<String> epoints = new ArrayList<String>();
+		epoints.add("<soot.jimple.infoflow.test.OtherTestCode: void unrealizableUnbalancedReturnTest2()>");
+		infoflow.computeInfoflow(appPath, libPath, epoints, sources, sinks);
+		checkInfoflow(infoflow, 0);
 		Assert.assertTrue(infoflow.getResults().isPathBetweenMethods(sink, sourceDeviceId));
 	}
 

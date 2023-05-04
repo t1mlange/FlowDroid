@@ -14,8 +14,11 @@ import java.util.*;
 
 import gnu.trove.set.hash.TCustomHashSet;
 import gnu.trove.strategy.HashingStrategy;
+import soot.NullType;
 import soot.SootMethod;
+import soot.Type;
 import soot.Unit;
+import soot.jimple.Jimple;
 import soot.jimple.Stmt;
 import soot.jimple.infoflow.InfoflowConfiguration;
 import soot.jimple.infoflow.collect.AtomicBitSet;
@@ -148,7 +151,7 @@ public class Abstraction implements Cloneable, FastSolverLinkedNode<Abstraction,
 		this(sourceVal, new SourceContext(definitions, sourceVal, sourceStmt, userData), exceptionThrown, isImplicit);
 	}
 
-	Abstraction(AccessPath apToTaint, SourceContext sourceContext, boolean exceptionThrown, boolean isImplicit) {
+	public Abstraction(AccessPath apToTaint, SourceContext sourceContext, boolean exceptionThrown, boolean isImplicit) {
 		this.sourceContext = sourceContext;
 		this.accessPath = apToTaint;
 		this.activationUnit = null;
@@ -297,6 +300,10 @@ public class Abstraction implements Cloneable, FastSolverLinkedNode<Abstraction,
 
 		abs.exceptionThrown = false;
 		return abs;
+	}
+
+	public Type getType() {
+		return accessPath.getBaseType();
 	}
 
 	public boolean isAbstractionActive() {
@@ -668,6 +675,12 @@ public class Abstraction implements Cloneable, FastSolverLinkedNode<Abstraction,
 		Abstraction zeroValue = new Abstraction(AccessPath.getZeroAccessPath(), null, false, false);
 		Abstraction.flowSensitiveAliasing = flowSensitiveAliasing;
 		return zeroValue;
+	}
+
+	public static Abstraction getZeroTypeAbstraction(Type type) {
+		AccessPath ap = new AccessPath(Jimple.v().newLocal("zero", type), null, type, null, false,
+				false, AccessPath.ArrayTaintType.ContentsAndLength, false);
+		return new Abstraction(ap, null, false, false);
 	}
 
 	@Override

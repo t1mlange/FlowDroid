@@ -39,9 +39,13 @@ import heros.SynchronizedBy;
 import heros.ZeroedFlowFunctions;
 import heros.solver.Pair;
 import heros.solver.PathEdge;
-import soot.SootMethod;
-import soot.Unit;
+import soot.*;
+import soot.jimple.InstanceInvokeExpr;
+import soot.jimple.Stmt;
 import soot.jimple.infoflow.collect.MyConcurrentHashMap;
+import soot.jimple.infoflow.data.Abstraction;
+import soot.jimple.infoflow.data.AccessPath;
+import soot.jimple.infoflow.data.AccessPathFactory;
 import soot.jimple.infoflow.memory.IMemoryBoundedSolver;
 import soot.jimple.infoflow.memory.ISolverTerminationReason;
 import soot.jimple.infoflow.solver.AbstractIFDSSolver;
@@ -51,6 +55,8 @@ import soot.jimple.infoflow.solver.executors.InterruptableExecutor;
 import soot.jimple.infoflow.solver.executors.SetPoolExecutor;
 import soot.jimple.infoflow.solver.memory.IMemoryManager;
 import soot.jimple.toolkits.ide.icfg.BiDiInterproceduralCFG;
+import soot.util.ConcurrentHashMultiMap;
+import soot.util.HashMultiMap;
 
 /**
  * A solver for an {@link IFDSTabulationProblem}. This solver is not based on
@@ -442,6 +448,9 @@ public class IFDSSolver<N, D extends FastSolverLinkedNode<D, N>, I extends BiDiI
 		return callToReturnFlowFunction.computeTargets(d2);
 	}
 
+	// Maps base types to facts :)
+	ConcurrentHashMultiMap<D, Type> unbalancedContexts = new ConcurrentHashMultiMap<>();
+
 	/**
 	 * Lines 21-32 of the algorithm.
 	 * 
@@ -510,9 +519,35 @@ public class IFDSSolver<N, D extends FastSolverLinkedNode<D, N>, I extends BiDiI
 		// note: we propagate that way only values that originate from ZERO, as
 		// conditionally generated values should only be propagated into callers that
 		// have an incoming edge for this condition
-		if (followReturnsPastSeeds && d1 == zeroValue && (inc == null || inc.isEmpty())) {
+		if (followReturnsPastSeeds && (inc == null || inc.isEmpty())) {
+			D newD1 = d1;
 			Collection<N> callers = icfg.getCallersOf(methodThatNeedsSummary);
 			for (N c : callers) {
+				if (!methodThatNeedsSummary.isStatic()) {
+					Local base = (Local) ((InstanceInvokeExpr) ((Stmt) c).getInvokeExpr()).getBase();
+
+					if (newD1 == zeroValue) {
+						// Construct new context
+						Abstraction abs = new Abstraction(
+								new AccessPath(base, RefType.v(methodThatNeedsSummary.getDeclaringClass()), null, false,
+										false, AccessPath.ArrayTaintType.Contents, false),
+								null, false, false);
+						newD1 = (D) abs;
+					} else if (newD1 != zeroValue) {
+						boolean matchingType = false;
+						Type ctxType = ((Abstraction) newD1).getAccessPath().getBaseType();
+						for (ValueBox vb : ((Stmt) c).getUseAndDefBoxes()) {
+							if (Scene.v().getFastHierarchy().canStoreType(ctxType, vb.getValue().getType())){
+								matchingType = true;
+								break;
+							}
+						}
+
+						if (!matchingType)
+							continue;
+					}
+				}
+
 				for (N retSiteC : icfg.getReturnSitesOfCallAt(c)) {
 					FlowFunction<D> retFunction = flowFunctions.getReturnFlowFunction(c, methodThatNeedsSummary, n,
 							retSiteC);
@@ -523,7 +558,7 @@ public class IFDSSolver<N, D extends FastSolverLinkedNode<D, N>, I extends BiDiI
 							if (memoryManager != null)
 								d5 = memoryManager.handleGeneratedMemoryObject(d2, d5);
 							if (d5 != null)
-								schedulingStrategy.propagateReturnFlow(zeroValue, retSiteC, d5, c, true);
+								schedulingStrategy.propagateReturnFlow(newD1, retSiteC, d5, c, true);
 						}
 					}
 				}

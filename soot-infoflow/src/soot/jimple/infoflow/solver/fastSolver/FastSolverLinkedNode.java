@@ -1,5 +1,7 @@
 package soot.jimple.infoflow.solver.fastSolver;
 
+import soot.Type;
+
 /**
  * Common interface for all abstractions processed by the IFDS solver
  * 
@@ -66,4 +68,5 @@ public interface FastSolverLinkedNode<D, N> extends Cloneable {
 	 */
 	public int getPathLength();
 
+	public Type getType();
 }
