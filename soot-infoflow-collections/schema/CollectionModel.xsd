@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <xs:element name="collectionModel">
+        <xs:complexType>
+            <xs:sequence maxOccurs="unbounded">
+                <xs:element name="method" type="method" />
+            </xs:sequence>
+            <xs:attribute name="type" type="collectionType" use="required" />
+        </xs:complexType>
+    </xs:element>
+
+    <xs:complexType name="method">
+        <xs:sequence maxOccurs="unbounded">
+            <xs:choice>
+                <xs:element name="access" type="access" />
+                <xs:element name="insert" type="insert" />
+                <xs:element name="remove" type="remove" />
+            </xs:choice>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="access">
+        <xs:sequence maxOccurs="2">
+            <xs:element name="key" type="key" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="insert">
+        <xs:sequence maxOccurs="2">
+            <xs:element name="key" type="key" />
+        </xs:sequence>
+        <xs:element name="data" type="data" />
+    </xs:complexType>
+
+    <xs:complexType name="remove">
+        <xs:sequence maxOccurs="2">
+            <xs:element name="key" type="key" />
+        </xs:sequence>
+        <xs:element name="data" type="data" />
+    </xs:complexType>
+
+    <!--  -->
+    <xs:complexType name="key">
+        <xs:attribute name="idx" type="xs:int" use="required" />
+    </xs:complexType>
+
+    <xs:complexType name="data">
+        <xs:attribute name="idx" type="xs:int" use="required" />
+    </xs:complexType>
+
+    <xs:simpleType name="collectionType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="ValueBased" />
+            <xs:enumeration value="PositionBased" />
+        </xs:restriction>
+    </xs:simpleType>
+</xs:schema>
