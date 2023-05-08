@@ -1,12 +1,13 @@
 package soot.jimple.infoflow.collections;
 
 import soot.SootMethod;
-import soot.Type;
 import soot.jimple.Stmt;
 import soot.jimple.infoflow.InfoflowManager;
 import soot.jimple.infoflow.data.Abstraction;
+import soot.jimple.infoflow.handlers.PreAnalysisHandler;
 import soot.jimple.infoflow.taintWrappers.ITaintPropagationWrapper;
 
+import java.util.Collection;
 import java.util.Set;
 
 public class CollectionTaintWrapper implements ITaintPropagationWrapper {
@@ -27,8 +28,12 @@ public class CollectionTaintWrapper implements ITaintPropagationWrapper {
     }
 
     @Override
-    public Set<Abstraction> getTaintsForMethod(Stmt stmt, Abstraction d1, Abstraction taintedPath) {
+    public Collection<PreAnalysisHandler> getPreAnalysisHandlers() {
+        return fallbackWrapper.getPreAnalysisHandlers();
+    }
 
+    @Override
+    public Set<Abstraction> getTaintsForMethod(Stmt stmt, Abstraction d1, Abstraction taintedPath) {
         if (fallbackWrapper != null)
             return getTaintsForMethod(stmt, d1, taintedPath);
         return null;
@@ -70,10 +75,5 @@ public class CollectionTaintWrapper implements ITaintPropagationWrapper {
     @Override
     public int getWrapperMisses() {
         return this.wrapperMisses + fallbackWrapper.getWrapperMisses();
-    }
-
-    @Override
-    public boolean isSubType(Type t1, Type t2) {
-        return false;
     }
 }

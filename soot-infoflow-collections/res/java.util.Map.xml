@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 
-<collectionModel class="java.util.Map" type="ValueBased">
+<collectionModel class="java.util.Map" type="value">
     <method id="java.lang.Object get(java.lang.Object)">
         <access>
             <key idx="0" />
@@ -14,9 +14,18 @@
         <insert>
             <key idx="0" />
             <data idx="1" />
+            <return />
         </insert>
     </method>
-    <method id="clear()">
-
+    <method id="java.lang.Object remove(java.lang.Object)">
+        <remove>
+            <key idx="0" />
+            <return />
+        </remove>
+    </method>
+    <method id="void clear()">
+        <remove>
+            <allKeys />
+        </remove>
     </method>
 </collectionModel>
