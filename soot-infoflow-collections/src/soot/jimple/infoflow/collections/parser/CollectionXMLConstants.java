@@ -1,4 +1,4 @@
-package soot.jimple.infoflow.collections;
+package soot.jimple.infoflow.collections.parser;
 
 public class CollectionXMLConstants {
 

@@ -2,8 +2,8 @@ package soot.jimple.infoflow.collections.test.junit;
 
 import org.junit.Assert;
 import org.junit.Test;
-import soot.jimple.infoflow.collections.CollectionModel;
-import soot.jimple.infoflow.collections.CollectionXMLParser;
+import soot.jimple.infoflow.collections.data.CollectionModel;
+import soot.jimple.infoflow.collections.parser.CollectionXMLParser;
 
 import java.io.IOException;
 import java.util.Map;
@@ -17,7 +17,7 @@ public class XMLParserTests {
     @Test(timeout=30000)
     public void testXMLParser1() throws IOException {
         CollectionXMLParser parser = new CollectionXMLParser();
-        parser.parse("res/java.util.Map.xml");
+        parser.parse("collectionModels/java.util.Map.xml");
         Map<String, CollectionModel> models = parser.getModels();
         Assert.assertEquals(1, models.size());
         Assert.assertTrue(models.containsKey("java.util.Map"));
