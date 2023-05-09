@@ -9,19 +9,22 @@
     <method id="java.lang.Object put(java.lang.Object,java.lang.Object)">
         <remove>
             <key idx="0" />
-            <return />
         </remove>
+        <access>
+            <key idx="0" />
+        </access>
         <insert>
             <key idx="0" />
             <data idx="1" />
-            <return />
         </insert>
     </method>
     <method id="java.lang.Object remove(java.lang.Object)">
         <remove>
             <key idx="0" />
-            <return />
         </remove>
+        <access>
+            <key idx="0" />
+        </access>
     </method>
     <method id="void clear()">
         <remove>

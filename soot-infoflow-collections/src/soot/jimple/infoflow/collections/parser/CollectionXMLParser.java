@@ -1,20 +1,21 @@
-package soot.jimple.infoflow.collections;
+package soot.jimple.infoflow.collections.parser;
 
-import org.checkerframework.framework.qual.PreconditionAnnotation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
+import soot.jimple.infoflow.collections.operations.ICollectionOperation;
+import soot.jimple.infoflow.collections.data.CollectionMethod;
+import soot.jimple.infoflow.collections.data.CollectionModel;
+import soot.jimple.infoflow.collections.operations.AccessOperation;
+import soot.jimple.infoflow.collections.operations.InsertOperation;
+import soot.jimple.infoflow.collections.operations.RemoveOperation;
 import soot.jimple.infoflow.util.ResourceUtils;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
-import javax.xml.stream.XMLEventReader;
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
@@ -22,7 +23,7 @@ import javax.xml.validation.Validator;
 import java.io.*;
 import java.util.*;
 
-import static soot.jimple.infoflow.collections.CollectionXMLConstants.*;
+import static soot.jimple.infoflow.collections.parser.CollectionXMLConstants.*;
 
 public class CollectionXMLParser {
     private final Logger logger = LoggerFactory.getLogger(getClass());
@@ -91,15 +92,15 @@ public class CollectionXMLParser {
                     resetAfterMethod();
                     break;
                 case ACCESS_TAG:
-                    operations.add(new AccessOperation(keys));
+                    operations.add(new AccessOperation(trimKeys(keys)));
                     resetAfterOperation();
                     break;
                 case INSERT_TAG:
-                    operations.add(new InsertOperation(keys, data, returnOldElement));
+                    operations.add(new InsertOperation(trimKeys(keys), data, returnOldElement));
                     resetAfterOperation();
                     break;
                 case REMOVE_TAG:
-                    operations.add(new RemoveOperation(keys, allKeys, returnOldElement));
+                    operations.add(new RemoveOperation(trimKeys(keys), allKeys, returnOldElement));
                     resetAfterOperation();
                     break;
             }
@@ -112,6 +113,17 @@ public class CollectionXMLParser {
                     break;
                 }
             }
+        }
+
+        protected int[] trimKeys(int[] keys) {
+            int i;
+            for (i = 0; i < keys.length; i++) {
+                if (keys[i] == -1)
+                    break;
+            }
+            int[] newKeys = new int[i];
+            System.arraycopy(keys, 0, newKeys, 0, i);
+            return newKeys;
         }
 
         protected void resetAfterOperation() {

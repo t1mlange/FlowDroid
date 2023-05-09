@@ -1,4 +1,6 @@
-package soot.jimple.infoflow.collections;
+package soot.jimple.infoflow.collections.data;
+
+import soot.jimple.infoflow.collections.parser.CollectionXMLConstants;
 
 import java.util.Map;
 
