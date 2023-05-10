@@ -8,12 +8,20 @@ import soot.toolkits.scalar.ForwardFlowAnalysis;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ *  NOT YET INITIALIZED
+ *    / /  /      \
+ *   0  1  2  ...  n
+ *   \  \  \      /
+ *  NON-CONSTANT SIZE
+ */
 public class IntraproceduralListSizeAnalysis extends ForwardFlowAnalysis<Unit, Map<Local, Integer>> {
     private final SootClass listClass;
 
     public IntraproceduralListSizeAnalysis(DirectedGraph<Unit> graph) {
         super(graph);
         listClass = Scene.v().getSootClassUnsafe("java.util.List");
+        doAnalysis();
     }
 
     @Override
@@ -22,15 +30,16 @@ public class IntraproceduralListSizeAnalysis extends ForwardFlowAnalysis<Unit, M
         Stmt stmt = (Stmt) unit;
         if (stmt instanceof AssignStmt) {
             Value leftOp = ((AssignStmt) stmt).getLeftOp();
-            if (in.containsKey(leftOp))
-                out.remove(leftOp);
-
             Value rightOp = ((AssignStmt) stmt).getRightOp();
+
             if (leftOp instanceof Local && rightOp instanceof NewExpr) {
                 SootClass sc = ((NewExpr) rightOp).getBaseType().getSootClass();
-                if (Scene.v().getFastHierarchy().isSubclass(sc, listClass)) {
+                if (Scene.v().getFastHierarchy().getAllImplementersOfInterface(listClass).contains(sc)) {
                     out.put((Local) leftOp, 0);
                 }
+            } else {
+                if (in.containsKey(leftOp))
+                    out.remove(leftOp);
             }
 
             // Invalidate list size if an alias is created
@@ -48,7 +57,8 @@ public class IntraproceduralListSizeAnalysis extends ForwardFlowAnalysis<Unit, M
         }
 
         SootMethod sm = stmt.getInvokeExpr().getMethod();
-        if (!Scene.v().getFastHierarchy().isSubclass(sm.getDeclaringClass(), listClass))
+        if (listClass != sm.getDeclaringClass()
+                && !Scene.v().getFastHierarchy().getAllImplementersOfInterface(listClass).contains(sm.getDeclaringClass()))
             return;
 
         if (sm.getSubSignature().equals("boolean add(java.lang.Object)")) {

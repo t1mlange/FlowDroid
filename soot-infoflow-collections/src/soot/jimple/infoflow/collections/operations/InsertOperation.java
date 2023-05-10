@@ -4,27 +4,27 @@ import soot.*;
 import soot.jimple.InstanceInvokeExpr;
 import soot.jimple.Stmt;
 import soot.jimple.infoflow.InfoflowManager;
-import soot.jimple.infoflow.collections.context.CompositeContext;
-import soot.jimple.infoflow.collections.strategies.IKeyStrategy;
+import soot.jimple.infoflow.collections.context.WildcardContext;
+import soot.jimple.infoflow.collections.strategies.IContainerStrategy;
 import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.data.AccessPath;
 import soot.jimple.infoflow.data.AccessPathFragment;
 import soot.jimple.infoflow.data.ContextDefinition;
 import soot.jimple.infoflow.typing.TypeUtils;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 public class InsertOperation implements ICollectionOperation {
-    private final int[] keys;
+    private int[] keys;
     private final int data;
-    private final boolean returnOldElement;
+    private final String field;
+    private final String fieldType;
 
-    public InsertOperation(int[] keys, int data, boolean returnOldElement) {
+    public InsertOperation(int[] keys, int data, String field, String fieldType) {
         this.keys = keys;
         this.data = data;
-        this.returnOldElement = returnOldElement;
+        this.field = field;
+        this.fieldType = fieldType;
     }
 
     private SootField safeGetField(String fieldSig) {
@@ -56,33 +56,30 @@ public class InsertOperation implements ICollectionOperation {
 
     @Override
     public boolean apply(Stmt stmt, Abstraction incoming, Collection<Abstraction> out,
-                         InfoflowManager manager, IKeyStrategy strategy) {
+                         InfoflowManager manager, IContainerStrategy strategy) {
         InstanceInvokeExpr iie = ((InstanceInvokeExpr) stmt.getInvokeExpr());
         if (!manager.getAliasing().mayAlias(incoming.getAccessPath().getPlainValue(), iie.getArg(data)))
             return false;
 
-        List<ContextDefinition> contexts = new ArrayList<>();
-        for (int keyIdx : keys) {
-            ContextDefinition stmtKey = strategy.getFromValue(iie.getArg(keyIdx));
-            contexts.add(stmtKey);
-        }
-        ContextDefinition ctx;
-        if (contexts.size() > 1)
-            ctx = new CompositeContext(contexts);
-        else
-            ctx = contexts.get(0);
 
         Value base = iie.getBase();
+        ContextDefinition[] ctxt = new ContextDefinition[keys.length];
+        for (int i = 0; i < ctxt.length; i++) {
+            if (keys[i] == Index.LAST_INDEX.toInt())
+                ctxt[i] = strategy.getContextFromImplicitKey(base, stmt);
+            else if (keys[i] == Index.ALL.toInt())
+                ctxt[i] = WildcardContext.v();
+            else
+                ctxt[i] = strategy.getContextFromKey(iie.getArg(keys[i]), stmt);
+        }
+
         AccessPathFragment[] oldFragments = incoming.getAccessPath().getFragments();
         int len = oldFragments == null ? 0 : oldFragments.length;
         AccessPathFragment[] fragments = new AccessPathFragment[len + 1];
         if (oldFragments != null)
             System.arraycopy(oldFragments, 0, fragments, 1, fragments.length);
-        SootField f = safeGetField("<java.util.Map: java.lang.Object[] values>");
-        if (ctx.isUnknown())
-            fragments[0] = new AccessPathFragment(f, f.getType());
-        else
-            fragments[0] = new AccessPathFragment(f, f.getType(), ctx);
+        SootField f = safeGetField(field);
+        fragments[0] = new AccessPathFragment(f, f.getType(), ctxt);
         AccessPath ap = manager.getAccessPathFactory().createAccessPath(base, fragments, incoming.getAccessPath().getTaintSubFields());
         out.add(incoming.deriveNewAbstraction(ap, stmt));
 

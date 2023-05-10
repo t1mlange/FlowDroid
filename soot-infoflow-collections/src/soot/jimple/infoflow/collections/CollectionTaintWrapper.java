@@ -1,6 +1,6 @@
 package soot.jimple.infoflow.collections;
 
-import heros.DontSynchronize;
+import heros.SynchronizedBy;
 import soot.SootMethod;
 import soot.jimple.Stmt;
 import soot.jimple.infoflow.InfoflowManager;
@@ -8,7 +8,7 @@ import soot.jimple.infoflow.collections.data.CollectionMethod;
 import soot.jimple.infoflow.collections.data.CollectionModel;
 import soot.jimple.infoflow.collections.operations.ICollectionOperation;
 import soot.jimple.infoflow.collections.strategies.ConstantKeyStrategy;
-import soot.jimple.infoflow.collections.strategies.IKeyStrategy;
+import soot.jimple.infoflow.collections.strategies.IContainerStrategy;
 import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.handlers.PreAnalysisHandler;
 import soot.jimple.infoflow.taintWrappers.ITaintPropagationWrapper;
@@ -17,20 +17,20 @@ import java.util.*;
 
 public class CollectionTaintWrapper implements ITaintPropagationWrapper {
 
-    @DontSynchronize("Read-only during analysis")
+    @SynchronizedBy("Read-only during analysis")
     private final Map<String, CollectionModel> models;
 
-    @DontSynchronize("Read-only during analysis")
+    @SynchronizedBy("Read-only during analysis")
     private final ITaintPropagationWrapper fallbackWrapper;
 
-    @DontSynchronize("Benign race")
+    @SynchronizedBy("Benign race")
     private int wrapperHits;
-    @DontSynchronize("Benign race")
+    @SynchronizedBy("Benign race")
     private int wrapperMisses;
 
     private InfoflowManager manager;
 
-    private IKeyStrategy strategy;
+    private IContainerStrategy strategy;
 
     public CollectionTaintWrapper(Map<String, CollectionModel> models,
                                   ITaintPropagationWrapper fallbackWrapper) {
@@ -38,15 +38,16 @@ public class CollectionTaintWrapper implements ITaintPropagationWrapper {
         this.fallbackWrapper = fallbackWrapper;
         this.wrapperHits = 0;
         this.wrapperMisses = 0;
-        this.strategy = new ConstantKeyStrategy();
     }
 
     @Override
     public void initialize(InfoflowManager manager) {
-        this.manager = manager;
-
         if (fallbackWrapper != null)
             fallbackWrapper.initialize(manager);
+
+        this.manager = manager;
+
+        this.strategy = new ConstantKeyStrategy(manager);
     }
 
     @Override
@@ -57,7 +58,11 @@ public class CollectionTaintWrapper implements ITaintPropagationWrapper {
     }
 
     private Set<Abstraction> fallbackTaintsForMethod(Stmt stmt, Abstraction d1, Abstraction taintedPath) {
-        return fallbackWrapper == null ? null : fallbackWrapper.getTaintsForMethod(stmt, d1, taintedPath);
+        if (fallbackWrapper != null)
+            return fallbackWrapper.getTaintsForMethod(stmt, d1, taintedPath);
+
+        wrapperMisses++;
+        return null;
     }
 
     @Override

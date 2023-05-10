@@ -8,14 +8,4 @@ public class UnknownContext implements ContextDefinition {
     public static UnknownContext v() {
         return INSTANCE;
     }
-
-    @Override
-    public boolean isUnknown() {
-        return true;
-    }
-
-    @Override
-    public boolean isComposite() {
-        return false;
-    }
 }

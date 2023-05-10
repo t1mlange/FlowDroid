@@ -5,21 +5,25 @@ import soot.jimple.AssignStmt;
 import soot.jimple.InstanceInvokeExpr;
 import soot.jimple.Stmt;
 import soot.jimple.infoflow.InfoflowManager;
-import soot.jimple.infoflow.collections.strategies.IKeyStrategy;
+import soot.jimple.infoflow.collections.strategies.IContainerStrategy;
 import soot.jimple.infoflow.collections.util.Tristate;
 import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.data.AccessPath;
 import soot.jimple.infoflow.data.AccessPathFragment;
 import soot.jimple.infoflow.data.ContextDefinition;
 
-import java.util.Arrays;
 import java.util.Collection;
 
 public class AccessOperation extends AbstractOperation {
     private final int[] keys;
+    private final String field;
+    private final String fieldType;
 
-    public AccessOperation(int[] keys) {
+
+    public AccessOperation(int[] keys, String field, String fieldType) {
         this.keys = keys;
+        this.field = field;
+        this.fieldType = fieldType;
     }
 
     @Override
@@ -27,7 +31,7 @@ public class AccessOperation extends AbstractOperation {
                          Abstraction incoming,
                          Collection<Abstraction> out,
                          InfoflowManager manager,
-                         IKeyStrategy strategy) {
+                         IContainerStrategy strategy) {
         // No need to model an access if the return value is ignored
         if (!(stmt instanceof AssignStmt))
             return false;
@@ -36,15 +40,17 @@ public class AccessOperation extends AbstractOperation {
         if (!manager.getAliasing().mayAlias(incoming.getAccessPath().getPlainValue(), iie.getBase()))
             return false;
 
-        Tristate state = Tristate.TRUE();
-        for (int keyIdx : keys) {
-            ContextDefinition stmtKey = strategy.getFromValue(iie.getArg(keyIdx));
-            ContextDefinition apKey = incoming.getAccessPath().getFirstFragment().getContext();
-            state = state.and(strategy.intersect(apKey, stmtKey));
+        AccessPathFragment fragment = incoming.getAccessPath().getFirstFragment();
+        if (!fragment.getField().getSignature().equals(this.field))
+            return false;
 
-            // If we definitely do not access an element, we can stop here
-            if (state.isFalse())
-                break;
+        ContextDefinition[] apCtxt = fragment.getContext();
+        assert keys.length == apCtxt.length; // Failure must be because of a bad model
+
+        Tristate state = Tristate.TRUE();
+        for (int i = 0; i < keys.length && !state.isFalse(); i++) {
+            ContextDefinition stmtKey = strategy.getContextFromKey(iie.getArg(keys[i]), stmt);
+            state = state.and(strategy.intersect(apCtxt[i], stmtKey));
         }
 
         if (!state.isFalse()) {
@@ -59,18 +65,4 @@ public class AccessOperation extends AbstractOperation {
         // Access never removes an element
         return false;
     }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        AccessOperation that = (AccessOperation) o;
-        return Arrays.equals(keys, that.keys);
-    }
-
-    @Override
-    public int hashCode() {
-        return Arrays.hashCode(keys);
-    }
-
 }

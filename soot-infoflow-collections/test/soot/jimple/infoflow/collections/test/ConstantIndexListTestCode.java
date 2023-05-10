@@ -50,6 +50,15 @@ public class ConstantIndexListTestCode {
         String tainted = source();
         lst.add("Some String");
         lst.add(tainted);
+        String removed =lst.remove(1);
+        sink(removed);
+    }
+
+    public void testList6() {
+        List<String> lst = new ArrayList<>();
+        String tainted = source();
+        lst.add("Some String");
+        lst.add(tainted);
         lst.clear();
         sink(lst.get(1));
     }
