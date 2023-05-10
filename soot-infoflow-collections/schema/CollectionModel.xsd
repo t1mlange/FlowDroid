@@ -22,46 +22,35 @@
     </xs:complexType>
 
     <xs:complexType name="access">
-        <xs:choice>
+        <xs:sequence>
             <xs:sequence maxOccurs="2">
-                <xs:element name="key">
-                    <xs:complexType>
-                        <xs:attribute name="idx" type="xs:int"/>
-                    </xs:complexType>
-                </xs:element>
+                <xs:element name="key" type="key" />
             </xs:sequence>
-            <xs:element name="allKeys" />
-        </xs:choice>
+            <xs:element name="accessPath" type="accessPath" />
+        </xs:sequence>
     </xs:complexType>
 
     <xs:complexType name="insert">
         <xs:sequence>
             <xs:sequence maxOccurs="2">
-                <xs:element name="key">
-                    <xs:complexType>
-                        <xs:attribute name="idx" type="xs:int"/>
-                    </xs:complexType>
-                </xs:element>
+                <xs:element name="key" type="key" />
             </xs:sequence>
             <xs:element name="data" type="data" />
-            <xs:element name="return" type="return" minOccurs="0" />
+            <xs:element name="accessPath" type="accessPath" />
         </xs:sequence>
     </xs:complexType>
 
     <xs:complexType name="remove">
-        <xs:sequence>
-            <xs:choice>
-                <xs:sequence maxOccurs="2">
-                    <xs:element name="key">
-                        <xs:complexType>
-                            <xs:attribute name="idx" type="xs:int"/>
-                        </xs:complexType>
-                    </xs:element>
-                </xs:sequence>
-                <xs:element name="allKeys" />
-            </xs:choice>
-            <xs:element name="return" type="return" minOccurs="0" />
+    <xs:sequence>
+            <xs:sequence maxOccurs="2">
+                <xs:element name="key" type="key" />
+            </xs:sequence>
+            <xs:element name="accessPath" type="accessPath" />
         </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="key">
+        <xs:attribute name="idx" type="idx"/>
     </xs:complexType>
 
     <xs:complexType name="data">
@@ -71,10 +60,29 @@
     <xs:complexType name="return">
     </xs:complexType>
 
+    <xs:complexType name="accessPath">
+        <xs:attribute name="field" type="xs:string" />
+        <xs:attribute name="type" type="xs:string" />
+    </xs:complexType>
+
     <xs:simpleType name="collectionType">
         <xs:restriction base="xs:string">
             <xs:enumeration value="value" />
             <xs:enumeration value="position" />
         </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="idx">
+        <xs:union>
+            <xs:simpleType>
+                <xs:restriction base="xs:int" />
+            </xs:simpleType>
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:enumeration value="all" />
+                    <xs:enumeration value="last" />
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:union>
     </xs:simpleType>
 </xs:schema>

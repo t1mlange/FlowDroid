@@ -36,6 +36,7 @@ public class AccessPath implements Cloneable {
 
 	private final Local value;
 	private final Type baseType;
+	private final ContextDefinition baseContext;
 
 	private final AccessPathFragment[] fragments;
 
@@ -58,6 +59,7 @@ public class AccessPath implements Cloneable {
 	private AccessPath() {
 		this.value = null;
 		this.baseType = null;
+		this.baseContext = null;
 		this.fragments = null;
 		this.taintSubFields = true;
 		this.cutOffApproximation = false;
@@ -69,6 +71,7 @@ public class AccessPath implements Cloneable {
 			boolean isCutOffApproximation, ArrayTaintType arrayTaintType, boolean canHaveImmutableAliases) {
 		this.value = val;
 		this.baseType = valType;
+		this.baseContext = null;
 		this.fragments = AccessPathFragment.createFragmentArray(appendingFields, appendingFieldTypes);
 		this.taintSubFields = taintSubFields;
 		this.cutOffApproximation = isCutOffApproximation;
@@ -80,6 +83,7 @@ public class AccessPath implements Cloneable {
 			boolean isCutOffApproximation, ArrayTaintType arrayTaintType, boolean canHaveImmutableAliases) {
 		this.value = val;
 		this.baseType = valType;
+		this.baseContext = null;
 		this.fragments = fragments;
 		this.taintSubFields = taintSubFields;
 		this.cutOffApproximation = isCutOffApproximation;
@@ -407,6 +411,16 @@ public class AccessPath implements Cloneable {
 	public Type getBaseType() {
 		return this.baseType;
 	}
+
+	/**
+	 * Gets the type of the base value
+	 *
+	 * @return The type of the base value
+	 */
+	public ContextDefinition getBaseContext() {
+		return this.baseContext;
+	}
+
 
 	/**
 	 * Gets whether sub-fields shall be tainted. If this access path is e.g. a.b.*,

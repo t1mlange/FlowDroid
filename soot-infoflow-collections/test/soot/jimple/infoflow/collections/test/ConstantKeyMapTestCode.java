@@ -40,4 +40,16 @@ public class ConstantKeyMapTestCode {
         String res = map.get("ConstantKey");
         sink(res);
     }
+
+    public void testMap5() {
+        Map<String, String> map = new HashMap<>();
+        String tainted = source();
+        map.put("ConstantKey", tainted);
+        String res = "";
+        for (String e : map.keySet()) {
+            if (e.equals("Some Value"))
+                res = map.get(e);
+        }
+        sink(res);
+    }
 }

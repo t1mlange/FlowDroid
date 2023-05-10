@@ -2,7 +2,7 @@ package soot.jimple.infoflow.collections.operations;
 
 import soot.jimple.Stmt;
 import soot.jimple.infoflow.InfoflowManager;
-import soot.jimple.infoflow.collections.strategies.IKeyStrategy;
+import soot.jimple.infoflow.collections.strategies.IContainerStrategy;
 import soot.jimple.infoflow.data.Abstraction;
 
 import java.util.Collection;
@@ -24,5 +24,5 @@ public interface ICollectionOperation {
      * @return true if the incoming abstraction should be killed
      */
     boolean apply(Stmt stmt, Abstraction incoming, Collection<Abstraction> out,
-                  InfoflowManager manager, IKeyStrategy keyStrategy);
+                  InfoflowManager manager, IContainerStrategy keyStrategy);
 }

@@ -13,14 +13,4 @@ public class ConstantContext implements ContextDefinition {
     public Constant getConstant() {
         return c;
     }
-
-    @Override
-    public boolean isUnknown() {
-        return false;
-    }
-
-    @Override
-    public boolean isComposite() {
-        return false;
-    }
 }

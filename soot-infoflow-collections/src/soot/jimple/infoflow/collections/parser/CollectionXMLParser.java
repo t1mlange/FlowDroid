@@ -5,12 +5,9 @@ import org.slf4j.LoggerFactory;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
-import soot.jimple.infoflow.collections.operations.ICollectionOperation;
+import soot.jimple.infoflow.collections.operations.*;
 import soot.jimple.infoflow.collections.data.CollectionMethod;
 import soot.jimple.infoflow.collections.data.CollectionModel;
-import soot.jimple.infoflow.collections.operations.AccessOperation;
-import soot.jimple.infoflow.collections.operations.InsertOperation;
-import soot.jimple.infoflow.collections.operations.RemoveOperation;
 import soot.jimple.infoflow.util.ResourceUtils;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -30,10 +27,10 @@ public class CollectionXMLParser {
 
     protected class SAXHandler extends DefaultHandler {
         // Used inside an operation
-        private boolean allKeys;
         private int[] keys;
         private int data;
-        private boolean returnOldElement;
+        private String accessPathField;
+        private String accessPathType;
 
         // Used inside a CollectionMethod
         private String subSig;
@@ -59,22 +56,20 @@ public class CollectionXMLParser {
                     collectionType = attributes.getValue(TYPE_ATTR);
                     className = attributes.getValue(CLASS_ATTR);
                     break;
-
                 case METHOD_TAG:
                     subSig = attributes.getValue(ID_ATTR);
                     break;
-
                 case KEY_TAG:
                     readKey(attributes);
-                    break;
-                case ALL_KEYS_TAG:
-                    allKeys = true;
                     break;
                 case DATA_TAG:
                     data = Integer.parseInt(attributes.getValue(INDEX_ATTR));
                     break;
-                case RETURN_TAG:
-                    returnOldElement = true;
+                case ACCESS_PATH_TAG:
+                    accessPathField = attributes.getValue(FIELD_ATTR);
+                    accessPathField = "<" + accessPathField.substring(1, accessPathField.length() - 1) + ">";
+                    accessPathType = attributes.getValue(TYPE_ATTR);
+                    accessPathType = accessPathType.substring(1, accessPathType.length() - 1);
                     break;
             }
         }
@@ -92,15 +87,15 @@ public class CollectionXMLParser {
                     resetAfterMethod();
                     break;
                 case ACCESS_TAG:
-                    operations.add(new AccessOperation(trimKeys(keys)));
+                    operations.add(new AccessOperation(trimKeys(keys), accessPathField, accessPathType));
                     resetAfterOperation();
                     break;
                 case INSERT_TAG:
-                    operations.add(new InsertOperation(trimKeys(keys), data, returnOldElement));
+                    operations.add(new InsertOperation(trimKeys(keys), data, accessPathField, accessPathType));
                     resetAfterOperation();
                     break;
                 case REMOVE_TAG:
-                    operations.add(new RemoveOperation(trimKeys(keys), allKeys, returnOldElement));
+                    operations.add(new RemoveOperation(trimKeys(keys), accessPathField, accessPathType));
                     resetAfterOperation();
                     break;
             }
@@ -108,8 +103,23 @@ public class CollectionXMLParser {
 
         protected void readKey(Attributes attributes) {
             for (int i = 0; i < MAX_KEYS; i++) {
-                if (keys[i] == -1) {
-                    keys[i] = Integer.parseInt(attributes.getValue(INDEX_ATTR));
+                if (keys[i] == Index.UNUSED.toInt()) {
+                    String v = attributes.getValue(INDEX_ATTR);
+                    switch (v) {
+                        case ALL:
+                            keys[i] = Index.ALL.toInt();
+                            break;
+                        case LAST_INDEX:
+                            keys[i] = Index.LAST_INDEX.toInt();
+                            break;
+                        default:
+                            try {
+                                keys[i] = Integer.parseInt(v);
+                            } catch (NumberFormatException e) {
+                                throw new RuntimeException(v + " is not a valid index!");
+                            }
+                            break;
+                    }
                     break;
                 }
             }
@@ -118,7 +128,7 @@ public class CollectionXMLParser {
         protected int[] trimKeys(int[] keys) {
             int i;
             for (i = 0; i < keys.length; i++) {
-                if (keys[i] == -1)
+                if (keys[i] == Index.UNUSED.toInt())
                     break;
             }
             int[] newKeys = new int[i];
@@ -127,11 +137,11 @@ public class CollectionXMLParser {
         }
 
         protected void resetAfterOperation() {
-            allKeys = false;
             keys = new int[MAX_KEYS];
-            Arrays.fill(keys, -1);
-            data = -1;
-            returnOldElement = false;
+            Arrays.fill(keys, Index.UNUSED.toInt());
+            data = Index.UNUSED.toInt();
+            accessPathField = null;
+            accessPathType = null;
         }
 
         protected void resetAfterMethod() {

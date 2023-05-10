@@ -7,16 +7,16 @@ import soot.jimple.infoflow.InfoflowConfiguration;
 
 import java.util.Collections;
 
-public class ConstantKeyMapTests extends FlowDroidTests {
+public class ConstantIndexListTests extends FlowDroidTests {
     @Override
     protected void setConfiguration(InfoflowConfiguration config) {
 
     }
 
-    private static final String testCodeClass = "soot.jimple.infoflow.collections.test.ConstantKeyMapTestCode";
+    private static final String testCodeClass = "soot.jimple.infoflow.collections.test.ConstantIndexListTestCode";
 
     @Test(timeout = 30000)
-    public void testMap1() {
+    public void testList1() {
         IInfoflow infoflow = initInfoflow();
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
@@ -24,7 +24,7 @@ public class ConstantKeyMapTests extends FlowDroidTests {
     }
 
     @Test(timeout = 30000)
-    public void testMap2() {
+    public void testList2() {
         IInfoflow infoflow = initInfoflow();
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
@@ -32,7 +32,15 @@ public class ConstantKeyMapTests extends FlowDroidTests {
     }
 
     @Test(timeout = 30000)
-    public void testMap3() {
+    public void testList3() {
+        IInfoflow infoflow = initInfoflow();
+        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "(int)>";
+        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
+        Assert.assertEquals(1, infoflow.getResults().size());
+    }
+
+    @Test(timeout = 30000)
+    public void testList4() {
         IInfoflow infoflow = initInfoflow();
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
@@ -40,18 +48,18 @@ public class ConstantKeyMapTests extends FlowDroidTests {
     }
 
     @Test(timeout = 30000)
-    public void testMap4() {
-        IInfoflow infoflow = initInfoflow();
-        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
-        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
-        Assert.assertEquals(0, infoflow.getResults().size());
-    }
-
-    @Test(timeout = 30000)
-    public void testMap5() {
+    public void testList5() {
         IInfoflow infoflow = initInfoflow();
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
         Assert.assertEquals(1, infoflow.getResults().size());
+    }
+
+    @Test(timeout = 30000)
+    public void testList6() {
+        IInfoflow infoflow = initInfoflow();
+        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
+        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
+        Assert.assertEquals(0, infoflow.getResults().size());
     }
 }

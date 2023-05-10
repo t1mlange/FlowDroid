@@ -39,6 +39,10 @@ public abstract class FlowDroidTests {
         }
     }
 
+    protected static String getCurrentMethod() {
+        return Thread.currentThread().getStackTrace()[2].getMethodName();
+    }
+
     @Before
     public void resetSootAndStream() throws IOException {
         soot.G.reset();

@@ -15,7 +15,7 @@ public class AccessPathFragment {
 
 	private final SootField field;
 	private final Type fieldType;
-	private final ContextDefinition context;
+	private final ContextDefinition[] context;
 
 	/**
 	 * Creates a new {@link AccessPathFragment} without a context
@@ -36,7 +36,7 @@ public class AccessPathFragment {
 	 * @param fieldType The propagated type of the field that is dereferenced
 	 * @param context   The context under which the access path is tainted
 	 */
-	public AccessPathFragment(SootField field, Type fieldType, ContextDefinition context) {
+	public AccessPathFragment(SootField field, Type fieldType, ContextDefinition[] context) {
 		this.field = field;
 		this.fieldType = fieldType;
 		this.context = context;
@@ -69,7 +69,7 @@ public class AccessPathFragment {
 	 * 
 	 * @return The context in which the access path is tainted
 	 */
-	public ContextDefinition getContext() {
+	public ContextDefinition[] getContext() {
 		return context;
 	}
 
