@@ -81,6 +81,7 @@
                 <xs:restriction base="xs:string">
                     <xs:enumeration value="all" />
                     <xs:enumeration value="last" />
+                    <xs:enumeration value="id" />
                 </xs:restriction>
             </xs:simpleType>
         </xs:union>

@@ -52,6 +52,7 @@ public class ConstantKeyMapTestCode {
         }
         sink(res);
     }
+
     public void testMap6() {
         Map<String, String> map = new HashMap<>();
         Map<String, String> map2 = new HashMap<>();
@@ -60,5 +61,15 @@ public class ConstantKeyMapTestCode {
         map.put("ConstantKey", tainted);
         map2.putAll(map);
         sink(map2.get("ConstantKey"));
+    }
+
+    public void testMap7() {
+        Map<String, String> map = new HashMap<>();
+        Map<String, String> map2 = new HashMap<>();
+
+        String tainted = source();
+        map.put("ConstantKey", tainted);
+        map2.putAll(map);
+        sink(map2.get("OtherKey"));
     }
 }
