@@ -39,11 +39,7 @@ import soot.SootField;
 import soot.SootMethod;
 import soot.Unit;
 import soot.jimple.Stmt;
-import soot.jimple.infoflow.AbstractInfoflow;
-import soot.jimple.infoflow.BackwardsInfoflow;
-import soot.jimple.infoflow.IInfoflow;
-import soot.jimple.infoflow.Infoflow;
-import soot.jimple.infoflow.InfoflowConfiguration;
+import soot.jimple.infoflow.*;
 import soot.jimple.infoflow.InfoflowConfiguration.SootIntegrationMode;
 import soot.jimple.infoflow.android.InfoflowAndroidConfiguration.CallbackConfiguration;
 import soot.jimple.infoflow.android.InfoflowAndroidConfiguration.IccConfiguration;
@@ -155,6 +151,18 @@ public class SetupApplication implements ITaintWrapperDataFlowAnalysis {
 	protected IUsageContextProvider usageContextProvider = null;
 
 	protected IInPlaceInfoflow infoflow = null;
+
+	public interface OptimizationPass {
+		void performCodeInstrumentationBeforeDCE(InfoflowManager manager, Set<SootMethod> excludedMethods);
+
+		void performCodeInstrumentationAfterDCE(InfoflowManager manager, Set<SootMethod> excludedMethods);
+	}
+
+	protected List<OptimizationPass> opts = new ArrayList<>();
+
+	public void addOptimizationPass(OptimizationPass pass) {
+		opts.add(pass);
+	}
 
 	/**
 	 * Class for aggregating the data flow results obtained through multiple runs of
@@ -1326,6 +1334,19 @@ public class SetupApplication implements ITaintWrapperDataFlowAnalysis {
 			return super.isUserCodeClass(className) || className.startsWith(packageName);
 		}
 
+		@Override
+		protected void performCodeInstrumentationBeforeDCE(InfoflowManager manager, Set<SootMethod> excludedMethods) {
+			super.performCodeInstrumentationBeforeDCE(manager, excludedMethods);
+			for (OptimizationPass pass : opts)
+				pass.performCodeInstrumentationBeforeDCE(manager, excludedMethods);
+		}
+
+		@Override
+		protected void performCodeInstrumentationAfterDCE(InfoflowManager manager, Set<SootMethod> excludedMethods) {
+			super.performCodeInstrumentationAfterDCE(manager, excludedMethods);
+			for (OptimizationPass pass : opts)
+				pass.performCodeInstrumentationAfterDCE(manager, excludedMethods);
+		}
 	}
 
 	protected class InPlaceBackwardsInfoflow extends BackwardsInfoflow implements IInPlaceInfoflow {

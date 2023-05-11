@@ -1512,6 +1512,9 @@ public abstract class AbstractInfoflow implements IInfoflow {
 			excludedMethods.addAll(additionalEntryPointMethods);
 		excludedMethods.addAll(Scene.v().getEntryPoints());
 
+		// Allow for additional code instrumentation steps
+		performCodeInstrumentationBeforeDCE(dceManager, excludedMethods);
+
 		ICodeOptimizer dce = new DeadCodeEliminator();
 		dce.initialize(config);
 		dce.run(dceManager, excludedMethods, sourcesSinks, taintWrapper);
@@ -1527,7 +1530,17 @@ public abstract class AbstractInfoflow implements IInfoflow {
 		}
 
 		// Allow for additional code instrumentation steps
-		performCodeInstrumentation(dceManager, excludedMethods);
+		performCodeInstrumentationAfterDCE(dceManager, excludedMethods);
+	}
+
+	/**
+	 * Allows subclasses to perform additional code instrumentation tasks
+	 *
+	 * @param dceManager      The manager class for dead code elimination and
+	 *                        instrumentation
+	 * @param excludedMethods The methods that shall not be modified
+	 */
+	protected void performCodeInstrumentationBeforeDCE(InfoflowManager dceManager, Set<SootMethod> excludedMethods) {
 	}
 
 	/**
@@ -1537,7 +1550,7 @@ public abstract class AbstractInfoflow implements IInfoflow {
 	 *                        instrumentation
 	 * @param excludedMethods The methods that shall not be modified
 	 */
-	protected void performCodeInstrumentation(InfoflowManager dceManager, Set<SootMethod> excludedMethods) {
+	protected void performCodeInstrumentationAfterDCE(InfoflowManager dceManager, Set<SootMethod> excludedMethods) {
 	}
 
 	/**
