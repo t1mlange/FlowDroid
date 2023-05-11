@@ -15,6 +15,11 @@ import soot.jimple.infoflow.taintWrappers.ITaintPropagationWrapper;
 
 import java.util.*;
 
+/**
+ * Taint Wrapper that models the behavior of collections w.r.t. keys or indices
+ *
+ * @author Tim Lange
+ */
 public class CollectionTaintWrapper implements ITaintPropagationWrapper {
 
     @SynchronizedBy("Read-only during analysis")
