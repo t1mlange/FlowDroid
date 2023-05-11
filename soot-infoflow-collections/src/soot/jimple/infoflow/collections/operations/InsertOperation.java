@@ -67,11 +67,11 @@ public class InsertOperation implements ICollectionOperation {
         for (int i = 0; i < ctxt.length; i++) {
             if (keys[i] == Index.LAST_INDEX.toInt())
                 ctxt[i] = strategy.getContextFromImplicitKey(base, stmt);
-            else if (keys[i] == Index.ALL.toInt())
-                ctxt[i] = WildcardContext.v();
             else
                 ctxt[i] = strategy.getContextFromKey(iie.getArg(keys[i]), stmt);
         }
+        if (strategy.shouldSmash(ctxt))
+            ctxt = null;
 
         AccessPathFragment[] oldFragments = incoming.getAccessPath().getFragments();
         int len = oldFragments == null ? 0 : oldFragments.length;

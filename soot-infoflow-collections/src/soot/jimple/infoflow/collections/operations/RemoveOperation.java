@@ -33,6 +33,10 @@ public class RemoveOperation implements ICollectionOperation {
         if (!fragment.getField().getSignature().equals(this.field))
             return false;
 
+        // We might see a smashed container, where we can't infer anything
+        if (!fragment.hasContext())
+            return false;
+
         ContextDefinition[] apCtxt = fragment.getContext();
         assert keys.length == apCtxt.length; // Failure must be because of a bad model
 

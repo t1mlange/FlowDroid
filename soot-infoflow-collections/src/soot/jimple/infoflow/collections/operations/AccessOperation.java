@@ -44,13 +44,17 @@ public class AccessOperation extends AbstractOperation {
         if (!fragment.getField().getSignature().equals(this.field))
             return false;
 
-        ContextDefinition[] apCtxt = fragment.getContext();
-        assert keys.length == apCtxt.length; // Failure must be because of a bad model
-
         Tristate state = Tristate.TRUE();
-        for (int i = 0; i < keys.length && !state.isFalse(); i++) {
-            ContextDefinition stmtKey = strategy.getContextFromKey(iie.getArg(keys[i]), stmt);
-            state = state.and(strategy.intersect(apCtxt[i], stmtKey));
+
+        // We only have to check the keys if we have a context
+        if (fragment.hasContext()) {
+            ContextDefinition[] apCtxt = fragment.getContext();
+            assert keys.length == apCtxt.length; // Failure must be because of a bad model
+
+            for (int i = 0; i < keys.length && !state.isFalse(); i++) {
+                ContextDefinition stmtKey = strategy.getContextFromKey(iie.getArg(keys[i]), stmt);
+                state = state.and(strategy.intersect(apCtxt[i], stmtKey));
+            }
         }
 
         if (!state.isFalse()) {

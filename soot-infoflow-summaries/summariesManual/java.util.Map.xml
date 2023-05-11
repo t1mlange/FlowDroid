@@ -26,13 +26,17 @@
 		<method id="void putAll(java.util.Map)">
 			<flows>
 				<flow isAlias="false" typeChecking="false">
-					<from sourceSinkType="Parameter" ParameterIndex="0" />
+					<from sourceSinkType="Parameter" ParameterIndex="0"
+						  AccessPath="[java.util.Map: java.lang.Object[] keys]"
+						  AccessPathTypes="[java.lang.Object[]]" />
 					<to sourceSinkType="Field"
 						AccessPath="[java.util.Map: java.lang.Object[] keys]"
 						AccessPathTypes="[java.lang.Object[]]" />
 				</flow>
 				<flow isAlias="false" typeChecking="false">
-					<from sourceSinkType="Parameter" ParameterIndex="0" />
+					<from sourceSinkType="Parameter" ParameterIndex="0"
+						  AccessPath="[java.util.Map: java.lang.Object[] values]"
+						  AccessPathTypes="[java.lang.Object[]]" />
 					<to sourceSinkType="Field"
 						AccessPath="[java.util.Map: java.lang.Object[] values]"
 						AccessPathTypes="[java.lang.Object[]]" />

@@ -73,6 +73,10 @@ public class AccessPathFragment {
 		return context;
 	}
 
+	public boolean hasContext() {
+		return context != null;
+	}
+
 	@Override
 	public String toString() {
 		return field.toString();
