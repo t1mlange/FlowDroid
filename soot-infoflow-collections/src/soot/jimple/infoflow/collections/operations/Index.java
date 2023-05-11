@@ -7,7 +7,9 @@ public enum Index {
     // Represents an index not used
     UNUSED(-42),
     // Represents any index
-    ALL(-2),
+    ALL(-3),
+    // Represents that the access is the data argument
+    ID(-2),
     // Represents the last index (only for position based)
     LAST_INDEX(-1);
 

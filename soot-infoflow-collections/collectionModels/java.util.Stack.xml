@@ -1,0 +1,31 @@
+<?xml version="1.0" ?>
+
+<collectionModel class="java.util.Stack" type="position">
+    <method id="java.lang.Object peek()">
+        <access>
+            <key idx="last" />
+            <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
+                        type="[java.lang.Object[]]" />
+        </access>
+    </method>
+    <method id="java.lang.Object pop()">
+        <remove>
+            <key idx="last" />
+            <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
+                        type="[java.lang.Object[]]" />
+        </remove>
+        <access>
+            <key idx="last" />
+            <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
+                        type="[java.lang.Object[]]" />
+        </access>
+    </method>
+    <method id="java.lang.Object push(java.lang.Object)">
+        <insert>
+            <key idx="last" />
+            <data idx="0" />
+            <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
+                        type="[java.lang.Object[]]" />
+        </insert>
+    </method>
+</collectionModel>
