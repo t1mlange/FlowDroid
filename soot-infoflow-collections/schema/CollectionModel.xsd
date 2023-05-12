@@ -16,6 +16,8 @@
                 <xs:element name="access" type="access" />
                 <xs:element name="insert" type="insert" />
                 <xs:element name="remove" type="remove" />
+                <xs:element name="return" type="return" />
+                <xs:element name="shift" type="shift" />
             </xs:choice>
         </xs:sequence>
         <xs:attribute name="id" type="xs:string" use="required" />
@@ -49,20 +51,30 @@
         </xs:sequence>
     </xs:complexType>
 
+    <xs:complexType name="return">
+        <xs:sequence>
+            <xs:element name="data" type="data" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="shift">
+        <xs:sequence>
+            <xs:element name="key" type="key" />
+            <xs:element name="accessPath" type="accessPath" />
+        </xs:sequence>
+    </xs:complexType>
+
     <xs:complexType name="key">
-        <xs:attribute name="idx" type="idx"/>
+        <xs:attribute name="idx" type="idx" use="required" />
     </xs:complexType>
 
     <xs:complexType name="data">
-        <xs:attribute name="idx" type="xs:int"/>
-    </xs:complexType>
-
-    <xs:complexType name="return">
+        <xs:attribute name="idx" type="xs:int" use="required" />
     </xs:complexType>
 
     <xs:complexType name="accessPath">
-        <xs:attribute name="field" type="xs:string" />
-        <xs:attribute name="type" type="xs:string" />
+        <xs:attribute name="field" type="xs:string" use="required" />
+        <xs:attribute name="type" type="xs:string" use="required" />
     </xs:complexType>
 
     <xs:simpleType name="collectionType">

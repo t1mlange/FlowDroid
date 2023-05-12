@@ -4,6 +4,7 @@ import soot.jimple.InstanceInvokeExpr;
 import soot.jimple.Stmt;
 import soot.jimple.infoflow.InfoflowManager;
 import soot.jimple.infoflow.collections.context.WildcardContext;
+import soot.jimple.infoflow.collections.data.Index;
 import soot.jimple.infoflow.collections.strategies.IContainerStrategy;
 import soot.jimple.infoflow.collections.util.Tristate;
 import soot.jimple.infoflow.data.Abstraction;

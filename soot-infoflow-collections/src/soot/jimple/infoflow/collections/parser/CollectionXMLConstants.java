@@ -9,11 +9,12 @@ public class CollectionXMLConstants {
 
     public static final String ACCESS_TAG = "access";
     public static final String INSERT_TAG = "insert";
+    public static final String SHIFT_TAG = "shift";
     public static final String REMOVE_TAG = "remove";
+    public static final String RETURN_TAG = "return";
 
     public static final String KEY_TAG = "key";
     public static final String DATA_TAG = "data";
-    public static final String RETURN_TAG = "return";
     public static final String ACCESS_PATH_TAG = "accessPath";
 
     public static final String INDEX_ATTR = "idx";

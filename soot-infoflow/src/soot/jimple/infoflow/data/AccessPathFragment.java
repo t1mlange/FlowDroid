@@ -79,6 +79,15 @@ public class AccessPathFragment {
 
 	@Override
 	public String toString() {
+		if (hasContext()) {
+			StringBuilder sb = new StringBuilder(field.toString());
+			sb.append("@[");
+			for (ContextDefinition c : context) {
+				sb.append(c).append(",");
+			}
+			sb.append("]");
+			return sb.toString();
+		}
 		return field.toString();
 	}
 
@@ -137,4 +146,7 @@ public class AccessPathFragment {
 		return new AccessPathFragment(field, newType, context);
 	}
 
+	public AccessPathFragment copyWithNewContext(ContextDefinition[] newContext) {
+		return new AccessPathFragment(field, fieldType, newContext);
+	}
 }

@@ -8,4 +8,9 @@ public class WildcardContext implements ContextDefinition {
     public static WildcardContext v() {
         return INSTANCE;
     }
+
+    @Override
+    public String toString() {
+        return "<Wildcard Context>";
+    }
 }

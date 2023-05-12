@@ -7,7 +7,7 @@ import static soot.jimple.infoflow.collections.test.Helper.sink;
 import static soot.jimple.infoflow.collections.test.Helper.source;
 
 public class ConstantIndexListTestCode {
-    public void testList1() {
+    public void testListAdd1() {
         List<String> lst = new ArrayList<>();
         String tainted = source();
         lst.add("Some String");
@@ -15,7 +15,7 @@ public class ConstantIndexListTestCode {
         sink(lst.get(1));
     }
 
-    public void testList2() {
+    public void testListAdd2() {
         List<String> lst = new ArrayList<>();
         String tainted = source();
         lst.add("Some String");
@@ -23,7 +23,7 @@ public class ConstantIndexListTestCode {
         sink(lst.get(0));
     }
 
-    public void testList3(int x) {
+    public void testListAdd3(int x) {
         List<String> lst = new ArrayList<>();
         String tainted = source();
         lst.add("Some String");
@@ -34,7 +34,7 @@ public class ConstantIndexListTestCode {
         sink(lst.get(1));
     }
 
-    public void testList4() {
+    public void testListRemove1() {
         List<String> lst = new ArrayList<>();
         String tainted = source();
         lst.add("Some String");
@@ -43,21 +43,52 @@ public class ConstantIndexListTestCode {
         sink(lst.get(1));
     }
 
-    public void testList5() {
+    public void testListRemove2() {
         List<String> lst = new ArrayList<>();
         String tainted = source();
         lst.add("Some String");
         lst.add(tainted);
-        String removed =lst.remove(1);
+        String removed = lst.remove(1);
         sink(removed);
     }
 
-    public void testList6() {
+    public void testListClear() {
         List<String> lst = new ArrayList<>();
         String tainted = source();
         lst.add("Some String");
         lst.add(tainted);
         lst.clear();
+        sink(lst.get(1));
+    }
+
+    public void testListInsert1() {
+        List<String> lst = new ArrayList<>();
+        String tainted = source();
+        lst.add("Some String");
+        lst.add(tainted);
+        lst.add(1, "Other");
+        lst.add("xxx");
+        sink(lst.get(2));
+    }
+
+    public void testListInsert2() {
+        List<String> lst = new ArrayList<>();
+        String tainted = source();
+        lst.add("Some String");
+        lst.add(tainted);
+        lst.add(1, "Other");
+        lst.add("xxx");
+        sink(lst.get(1));
+    }
+
+    public void testListInsert3() {
+        List<String> lst = new ArrayList<>();
+        String tainted = source();
+        lst.add("Some String");
+        lst.add("Some String2");
+        lst.add("Some String3");
+        lst.add(1, tainted);
+        lst.add("xxx");
         sink(lst.get(1));
     }
 }

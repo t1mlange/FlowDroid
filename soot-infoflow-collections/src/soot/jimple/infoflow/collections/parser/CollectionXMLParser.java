@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
+import soot.jimple.infoflow.collections.data.Index;
 import soot.jimple.infoflow.collections.operations.*;
 import soot.jimple.infoflow.collections.data.CollectionMethod;
 import soot.jimple.infoflow.collections.data.CollectionModel;
@@ -94,8 +95,16 @@ public class CollectionXMLParser {
                     operations.add(new InsertOperation(trimKeys(keys), data, accessPathField, accessPathType));
                     resetAfterOperation();
                     break;
+                case SHIFT_TAG:
+                    operations.add(new ShiftOperation(trimKeys(keys), accessPathField, accessPathType));
+                    resetAfterOperation();
+                    break;
                 case REMOVE_TAG:
                     operations.add(new RemoveOperation(trimKeys(keys), accessPathField, accessPathType));
+                    resetAfterOperation();
+                    break;
+                case RETURN_TAG:
+                    operations.add(new ReturnOperation(data));
                     resetAfterOperation();
                     break;
             }
