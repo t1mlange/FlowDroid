@@ -4,7 +4,6 @@ import soot.*;
 import soot.jimple.InstanceInvokeExpr;
 import soot.jimple.Stmt;
 import soot.jimple.infoflow.InfoflowManager;
-import soot.jimple.infoflow.collections.context.WildcardContext;
 import soot.jimple.infoflow.collections.strategies.IContainerStrategy;
 import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.data.AccessPath;
@@ -66,7 +65,7 @@ public class InsertOperation implements ICollectionOperation {
         ContextDefinition[] ctxt = new ContextDefinition[keys.length];
         for (int i = 0; i < ctxt.length; i++) {
             if (keys[i] == Index.LAST_INDEX.toInt())
-                ctxt[i] = strategy.getContextFromImplicitKey(base, stmt);
+                ctxt[i] = strategy.getNextPosition(base, stmt);
             else
                 ctxt[i] = strategy.getContextFromKey(iie.getArg(keys[i]), stmt);
         }

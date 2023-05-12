@@ -47,13 +47,23 @@ public class ConstantKeyStrategy implements IContainerStrategy {
     }
 
     @Override
-    public ContextDefinition getContextFromImplicitKey(Value value, Stmt stmt) {
+    public ContextDefinition getNextPosition(Value value, Stmt stmt) {
+        return getContextFromImplicitKey(value, stmt, false);
+    }
+
+    @Override
+    public ContextDefinition getLastPosition(Value value, Stmt stmt) {
+        return getContextFromImplicitKey(value, stmt, true);
+    }
+
+    private ContextDefinition getContextFromImplicitKey(Value value, Stmt stmt, boolean decr) {
         if (value instanceof Local) {
             SootMethod currMethod = manager.getICFG().getMethodOf(stmt);
-            var lstSizeAnalysis = implicitIndices.computeIfAbsent(currMethod, sm -> new IntraproceduralListSizeAnalysis(manager.getICFG().getOrCreateUnitGraph(sm)));
+            var lstSizeAnalysis = implicitIndices.computeIfAbsent(currMethod,
+                    sm -> new IntraproceduralListSizeAnalysis(manager.getICFG().getOrCreateUnitGraph(sm)));
             Integer i = lstSizeAnalysis.getFlowBefore(stmt).get(value);
             if (i != null)
-                return new ConstantContext(IntConstant.v(i));
+                return new ConstantContext(IntConstant.v(decr ? i-1 : i));
         }
 
         return UnknownContext.v();
