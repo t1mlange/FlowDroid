@@ -44,6 +44,23 @@ public interface IContainerStrategy {
     ContextDefinition getLastPosition(Value value, Stmt stmt);
 
     /**
+     * Returns whether ctxt1 is less than ctxt2
+     *
+     * @param ctxt1 first context
+     * @param ctxt2 second context
+     * @return true ctxt1 is less than ctxt2
+     */
+    Tristate lessThan(ContextDefinition ctxt1, ContextDefinition ctxt2);
+
+    /**
+     * Shifts the ctxt to the right
+     *
+     * @param ctxt current context
+     * @return new context
+     */
+    ContextDefinition shiftRight(ContextDefinition ctxt);
+
+    /**
      * Returns whether the context is still useful or not
      *
      * @param ctxts contexts

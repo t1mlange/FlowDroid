@@ -13,4 +13,9 @@ public class ConstantContext implements ContextDefinition {
     public Constant getConstant() {
         return c;
     }
+
+    @Override
+    public String toString() {
+        return c.toString();
+    }
 }

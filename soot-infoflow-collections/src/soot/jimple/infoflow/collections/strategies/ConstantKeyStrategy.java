@@ -56,6 +56,30 @@ public class ConstantKeyStrategy implements IContainerStrategy {
         return getContextFromImplicitKey(value, stmt, true);
     }
 
+    @Override
+    public Tristate lessThan(ContextDefinition ctxt1, ContextDefinition ctxt2) {
+        if (ctxt1 instanceof ConstantContext && ctxt2 instanceof ConstantContext) {
+            Constant c1 = ((ConstantContext) ctxt1).getConstant();
+            Constant c2 = ((ConstantContext) ctxt2).getConstant();
+            return Tristate.fromBoolean(((IntConstant) c1).value < ((IntConstant) c2).value);
+        }
+
+        if (ctxt2 == UnknownContext.v())
+            return Tristate.MAYBE();
+
+        throw new RuntimeException("Unknown combination of " + ctxt1.toString() + " and " + ctxt2.toString());
+    }
+
+    @Override
+    public ContextDefinition shiftRight(ContextDefinition ctxt) {
+        if (ctxt instanceof ConstantContext) {
+            IntConstant c = (IntConstant) ((ConstantContext) ctxt).getConstant();
+            return new ConstantContext(IntConstant.v(c.value+1));
+        }
+
+        throw new RuntimeException("Unexpected context: " + ctxt);
+    }
+
     private ContextDefinition getContextFromImplicitKey(Value value, Stmt stmt, boolean decr) {
         if (value instanceof Local) {
             SootMethod currMethod = manager.getICFG().getMethodOf(stmt);

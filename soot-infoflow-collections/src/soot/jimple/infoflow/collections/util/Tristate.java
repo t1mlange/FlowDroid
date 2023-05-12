@@ -28,6 +28,10 @@ public class Tristate {
         return MAYBE_INSTANCE;
     }
 
+    public static Tristate fromBoolean(boolean b) {
+        return b ? TRUE() : FALSE();
+    }
+
     public boolean isTrue() {
         return internal == State.TRUE;
     }

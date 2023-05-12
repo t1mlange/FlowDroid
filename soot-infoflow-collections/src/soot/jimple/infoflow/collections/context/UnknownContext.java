@@ -8,4 +8,9 @@ public class UnknownContext implements ContextDefinition {
     public static UnknownContext v() {
         return INSTANCE;
     }
+
+    @Override
+    public String toString() {
+        return "<Unknown Context>";
+    }
 }

@@ -1,4 +1,4 @@
-package soot.jimple.infoflow.collections.operations;
+package soot.jimple.infoflow.collections.data;
 
 /**
  * Maps special indices to ints

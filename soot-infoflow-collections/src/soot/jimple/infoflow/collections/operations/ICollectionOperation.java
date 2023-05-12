@@ -16,13 +16,13 @@ public interface ICollectionOperation {
     /**
      * Applies the operation to a taint.
      *
-     * @param stmt current statement
-     * @param incoming incoming taint
-     * @param out outgoing set to which add new taints
-     * @param manager infoflow manager
-     * @param keyStrategy strategy that provides the possible location abstractions
+     * @param stmt      current statement
+     * @param incoming  incoming taint
+     * @param out       outgoing set to which add new taints
+     * @param manager   infoflow manager
+     * @param strategy  strategy that provides the possible location abstractions
      * @return true if the incoming abstraction should be killed
      */
     boolean apply(Stmt stmt, Abstraction incoming, Collection<Abstraction> out,
-                  InfoflowManager manager, IContainerStrategy keyStrategy);
+                  InfoflowManager manager, IContainerStrategy strategy);
 }

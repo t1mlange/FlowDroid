@@ -27,5 +27,8 @@
             <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
                         type="[java.lang.Object[]]" />
         </insert>
+        <return>
+            <data idx="0" />
+        </return>
     </method>
 </collectionModel>
