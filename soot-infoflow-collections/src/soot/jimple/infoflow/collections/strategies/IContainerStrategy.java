@@ -24,14 +24,24 @@ public interface IContainerStrategy {
     ContextDefinition getContextFromKey(Value value, Stmt stmt);
 
     /**
-     * Retrieves a context given an implicit key
+     * Retrieves a context given an implicit key after the given statement
      * (i.e. a list where the key is dependent on the number of add calls before)
      *
      * @param value
      * @param stmt
      * @return
      */
-    ContextDefinition getContextFromImplicitKey(Value value, Stmt stmt);
+    ContextDefinition getNextPosition(Value value, Stmt stmt);
+
+    /**
+     * Retrieves a context given an implicit key before the given statement
+     * (i.e. a list where the key is dependent on the number of add calls before)
+     *
+     * @param value
+     * @param stmt
+     * @return
+     */
+    ContextDefinition getLastPosition(Value value, Stmt stmt);
 
     /**
      * Returns whether the context is still useful or not

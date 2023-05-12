@@ -61,11 +61,17 @@ public class IntraproceduralListSizeAnalysis extends ForwardFlowAnalysis<Unit, M
                 && !Scene.v().getFastHierarchy().getAllImplementersOfInterface(listClass).contains(sm.getDeclaringClass()))
             return;
 
-        if (sm.getSubSignature().equals("boolean add(java.lang.Object)")) {
+        if (sm.getSubSignature().equals("boolean add(java.lang.Object)")
+                || sm.getSubSignature().equals("java.lang.Object push(java.lang.Object)")) {
             Local base = (Local) ((InstanceInvokeExpr) stmt.getInvokeExpr()).getBase();
             Integer c = out.get(base);
             if (c != null)
                 out.put(base, c+1);
+        } else if (sm.getSubSignature().equals("java.lang.Object pop()")) {
+            Local base = (Local) ((InstanceInvokeExpr) stmt.getInvokeExpr()).getBase();
+            Integer c = out.get(base);
+            if (c != null)
+                out.put(base, c-1);
         }
     }
 

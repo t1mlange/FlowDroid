@@ -20,23 +20,36 @@ public class ConstantIndexStackTestCode {
     public void testStackPushPop2() {
         Stack<String> s = new Stack<>();
         String tainted = source();
+        // s -> 0
         s.push("First");
+        // s -> 1
         s.push(tainted);
+        // s -> 2
         s.push("Third");
+        // s -> 3
         s.pop();
+        // s -> 2
         s.pop();
+        // s -> 1
         String res = s.pop();
+        // s -> 0
         sink(res);
     }
 
     public void testStackPushPopPeek1() {
         Stack<String> s = new Stack<>();
         String tainted = source();
+        // s -> 0
         s.push("First");
+        // s -> 1
         s.push(tainted);
+        // s -> 2
         s.push("Third");
+        // s -> 3
         s.pop();
+        // s -> 2
         String res = s.peek();
+        // s -> 2
         sink(res);
     }
 }

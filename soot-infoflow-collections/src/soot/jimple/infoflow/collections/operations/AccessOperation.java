@@ -52,7 +52,13 @@ public class AccessOperation extends AbstractOperation {
             assert keys.length == apCtxt.length; // Failure must be because of a bad model
 
             for (int i = 0; i < keys.length && !state.isFalse(); i++) {
-                ContextDefinition stmtKey = strategy.getContextFromKey(iie.getArg(keys[i]), stmt);
+                ContextDefinition stmtKey;
+                if (keys[i] == Index.LAST_INDEX.toInt())
+                    stmtKey = strategy.getLastPosition(iie.getBase(), stmt);
+                else if (keys[i] >= 0)
+                    stmtKey = strategy.getContextFromKey(iie.getArg(keys[i]), stmt);
+                else
+                    throw new RuntimeException("Wrong key supplied");
                 state = state.and(strategy.intersect(apCtxt[i], stmtKey));
             }
         }
