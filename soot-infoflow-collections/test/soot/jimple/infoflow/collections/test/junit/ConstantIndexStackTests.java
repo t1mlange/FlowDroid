@@ -40,4 +40,12 @@ public class ConstantIndexStackTests extends FlowDroidTests {
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
         Assert.assertEquals(1, infoflow.getResults().size());
     }
+
+    @Test(timeout = 30000)
+    public void testStackPushReturn1() {
+        IInfoflow infoflow = initInfoflow();
+        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
+        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
+        Assert.assertEquals(1, infoflow.getResults().size());
+    }
 }
