@@ -6,6 +6,10 @@ import static soot.jimple.infoflow.collections.test.Helper.sink;
 import static soot.jimple.infoflow.collections.test.Helper.source;
 
 public class ConstantIndexStackTestCode {
+    class A {
+        String f;
+    }
+
     public void testStackPushPop1() {
         Stack<String> s = new Stack<>();
         String tainted = source();
@@ -51,5 +55,14 @@ public class ConstantIndexStackTestCode {
         String res = s.peek();
         // s -> 2
         sink(res);
+    }
+
+    public void testStackPushReturn1() {
+        A a = new A();
+        a.f = source();
+
+        Stack<A> s = new Stack<>();
+        A b = s.push(a);
+        sink(b.f);
     }
 }

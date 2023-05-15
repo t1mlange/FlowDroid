@@ -11,7 +11,7 @@
     </xs:element>
 
     <xs:complexType name="method">
-        <xs:sequence maxOccurs="unbounded">
+        <xs:sequence minOccurs="0" maxOccurs="unbounded">
             <xs:choice>
                 <xs:element name="access" type="access" />
                 <xs:element name="insert" type="insert" />
@@ -69,7 +69,7 @@
     </xs:complexType>
 
     <xs:complexType name="data">
-        <xs:attribute name="idx" type="xs:int" use="required" />
+        <xs:attribute name="idx" type="xs:nonNegativeInteger" use="required" />
     </xs:complexType>
 
     <xs:complexType name="accessPath">
@@ -87,7 +87,7 @@
     <xs:simpleType name="idx">
         <xs:union>
             <xs:simpleType>
-                <xs:restriction base="xs:int" />
+                <xs:restriction base="xs:nonNegativeInteger" />
             </xs:simpleType>
             <xs:simpleType>
                 <xs:restriction base="xs:string">

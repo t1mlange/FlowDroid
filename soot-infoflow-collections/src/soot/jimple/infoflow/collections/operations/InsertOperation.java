@@ -77,7 +77,7 @@ public class InsertOperation implements ICollectionOperation {
         int len = oldFragments == null ? 0 : oldFragments.length;
         AccessPathFragment[] fragments = new AccessPathFragment[len + 1];
         if (oldFragments != null)
-            System.arraycopy(oldFragments, 0, fragments, 1, fragments.length);
+            System.arraycopy(oldFragments, 0, fragments, 1, len);
         SootField f = safeGetField(field);
         fragments[0] = new AccessPathFragment(f, f.getType(), ctxt);
         AccessPath ap = manager.getAccessPathFactory().createAccessPath(base, fragments, incoming.getAccessPath().getTaintSubFields());
