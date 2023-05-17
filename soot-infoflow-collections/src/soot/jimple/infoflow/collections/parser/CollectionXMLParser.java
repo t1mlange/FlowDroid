@@ -33,6 +33,7 @@ public class CollectionXMLParser {
         private int data;
         private String accessPathField;
         private String accessPathType;
+        private int callbackIdx;
 
         // Used inside a CollectionMethod
         private String subSig;
@@ -69,6 +70,9 @@ public class CollectionXMLParser {
                     break;
                 case DATA_TAG:
                     data = Integer.parseInt(attributes.getValue(PARAM_IDX_ATTR));
+                    break;
+                case CALLBACK_TAG:
+                    callbackIdx = Integer.parseInt(attributes.getValue(PARAM_IDX_ATTR));
                     break;
                 case ACCESS_PATH_TAG:
                     accessPathField = attributes.getValue(FIELD_ATTR);
@@ -116,7 +120,7 @@ public class CollectionXMLParser {
                     resetAfterOperation();
                     break;
                 case COMPUTE_TAG:
-                    operations.add(new ComputeOperation(trimKeys(keys), accessPathField, accessPathType));
+                    operations.add(new ComputeOperation(trimKeys(keys), accessPathField, accessPathType, callbackIdx));
                     resetAfterOperation();
                     break;
             }

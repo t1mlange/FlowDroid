@@ -169,4 +169,11 @@ public class ConstantKeyMapTestCode {
         map.compute("XXX", (k, v) -> "Overwritten");
         sink(map.get("XXX"));
     }
+
+    public void testMapCompute3() {
+        Map<String, String> map = new HashMap<>();
+        String tainted = source();
+        map.compute("XXX", (k, v) -> tainted);
+        sink(map.get("XXX"));
+    }
 }
