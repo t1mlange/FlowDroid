@@ -13,4 +13,9 @@ public class UnknownContext implements ContextDefinition {
     public String toString() {
         return "<Unknown Context>";
     }
+
+    @Override
+    public boolean containsInformation() {
+        return false;
+    }
 }

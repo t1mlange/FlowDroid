@@ -3,8 +3,8 @@ package soot.jimple.infoflow.collections.operations;
 import soot.jimple.InstanceInvokeExpr;
 import soot.jimple.Stmt;
 import soot.jimple.infoflow.InfoflowManager;
-import soot.jimple.infoflow.collections.context.WildcardContext;
-import soot.jimple.infoflow.collections.data.Index;
+import soot.jimple.infoflow.collections.data.Location;
+import soot.jimple.infoflow.collections.data.ParamIndex;
 import soot.jimple.infoflow.collections.strategies.IContainerStrategy;
 import soot.jimple.infoflow.collections.util.Tristate;
 import soot.jimple.infoflow.data.Abstraction;
@@ -13,15 +13,9 @@ import soot.jimple.infoflow.data.ContextDefinition;
 
 import java.util.Collection;
 
-public class RemoveOperation implements ICollectionOperation {
-    private final int[] keys;
-    private final String field;
-    private final String fieldType;
-
-    public RemoveOperation(int[] keys, String field, String fieldType) {
-        this.keys = keys;
-        this.field = field;
-        this.fieldType = fieldType;
+public class RemoveOperation extends LocationDependentOperation {
+    public RemoveOperation(Location[] keys, String field, String fieldType) {
+        super(keys, field, fieldType);
     }
 
     @Override
@@ -43,8 +37,15 @@ public class RemoveOperation implements ICollectionOperation {
 
         Tristate state = Tristate.TRUE();
         for (int i = 0; i < keys.length && state.isTrue(); i++) {
-            ContextDefinition stmtKey = keys[i] == Index.ALL.toInt() ? WildcardContext.v() : strategy.getContextFromKey(iie.getArg(keys[i]), stmt);
-            state = state.and(strategy.intersect(apCtxt[i], stmtKey));
+            // We do not have to check the context if the key is a wildcard anyway
+            if (keys[i].getParamIdx() != ParamIndex.ALL.toInt()) {
+                ContextDefinition stmtKey;
+                if (keys[i].isValueBased())
+                    stmtKey = strategy.getIndexContext(iie.getArg(keys[i].getParamIdx()), stmt);
+                else
+                    stmtKey = strategy.getKeyContext(iie.getArg(keys[i].getParamIdx()), stmt);
+                state = state.and(strategy.intersect(apCtxt[i], stmtKey));
+            }
         }
 
         return state.isTrue();

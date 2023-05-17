@@ -20,7 +20,7 @@ public class CollectionXMLConstants {
     public static final String DATA_TAG = "data";
     public static final String ACCESS_PATH_TAG = "accessPath";
 
-    public static final String INDEX_ATTR = "paramIdx";
+    public static final String PARAM_IDX_ATTR = "paramIdx";
     public static final String ID_ATTR = "id";
     public static final String CLASS_ATTR = "class";
     public static final String TYPE_ATTR = "type";

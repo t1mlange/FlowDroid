@@ -5,10 +5,8 @@ import org.slf4j.LoggerFactory;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
-import soot.jimple.infoflow.collections.data.Index;
+import soot.jimple.infoflow.collections.data.*;
 import soot.jimple.infoflow.collections.operations.*;
-import soot.jimple.infoflow.collections.data.CollectionMethod;
-import soot.jimple.infoflow.collections.data.CollectionModel;
 import soot.jimple.infoflow.util.ResourceUtils;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -28,7 +26,7 @@ public class CollectionXMLParser {
 
     protected class SAXHandler extends DefaultHandler {
         // Used inside an operation
-        private int[] keys;
+        private Location[] keys;
         private int data;
         private String accessPathField;
         private String accessPathType;
@@ -61,11 +59,13 @@ public class CollectionXMLParser {
                     subSig = attributes.getValue(ID_ATTR);
                     break;
                 case KEY_TAG:
+                    readKeyOrIndex(attributes, false);
+                    break;
                 case INDEX_TAG:
-                    readKey(attributes);
+                    readKeyOrIndex(attributes, true);
                     break;
                 case DATA_TAG:
-                    data = Integer.parseInt(attributes.getValue(INDEX_ATTR));
+                    data = Integer.parseInt(attributes.getValue(PARAM_IDX_ATTR));
                     break;
                 case ACCESS_PATH_TAG:
                     accessPathField = attributes.getValue(FIELD_ATTR);
@@ -119,20 +119,20 @@ public class CollectionXMLParser {
             }
         }
 
-        protected void readKey(Attributes attributes) {
+        protected void readKeyOrIndex(Attributes attributes, boolean isIndex) {
             for (int i = 0; i < MAX_KEYS; i++) {
-                if (keys[i] == Index.UNUSED.toInt()) {
-                    String v = attributes.getValue(INDEX_ATTR);
+                if (keys[i] == null) {
+                    String v = attributes.getValue(PARAM_IDX_ATTR);
                     switch (v) {
                         case ALL:
-                            keys[i] = Index.ALL.toInt();
+                            keys[i] = isIndex ? new Index(ParamIndex.ALL.toInt()) : new Key(ParamIndex.ALL.toInt());
                             break;
                         case LAST_INDEX:
-                            keys[i] = Index.LAST_INDEX.toInt();
+                            keys[i] = isIndex ? new Index(ParamIndex.LAST_INDEX.toInt()) : new Key(ParamIndex.LAST_INDEX.toInt());
                             break;
                         default:
                             try {
-                                keys[i] = Integer.parseInt(v);
+                                keys[i] = isIndex ? new Index(Integer.parseInt(v)) : new Key(Integer.parseInt(v));
                             } catch (NumberFormatException e) {
                                 throw new RuntimeException(v + " is not a valid index!");
                             }
@@ -143,21 +143,20 @@ public class CollectionXMLParser {
             }
         }
 
-        protected int[] trimKeys(int[] keys) {
+        protected Location[] trimKeys(Location[] keys) {
             int i;
             for (i = 0; i < keys.length; i++) {
-                if (keys[i] == Index.UNUSED.toInt())
+                if (keys[i] == null)
                     break;
             }
-            int[] newKeys = new int[i];
+            Location[] newKeys = new Location[i];
             System.arraycopy(keys, 0, newKeys, 0, i);
             return newKeys;
         }
 
         protected void resetAfterOperation() {
-            keys = new int[MAX_KEYS];
-            Arrays.fill(keys, Index.UNUSED.toInt());
-            data = Index.UNUSED.toInt();
+            keys = new Location[MAX_KEYS];
+            data = ParamIndex.UNUSED.toInt();
             accessPathField = null;
             accessPathType = null;
         }

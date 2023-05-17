@@ -5,7 +5,8 @@ import soot.jimple.AssignStmt;
 import soot.jimple.InstanceInvokeExpr;
 import soot.jimple.Stmt;
 import soot.jimple.infoflow.InfoflowManager;
-import soot.jimple.infoflow.collections.data.Index;
+import soot.jimple.infoflow.collections.data.Location;
+import soot.jimple.infoflow.collections.data.ParamIndex;
 import soot.jimple.infoflow.collections.strategies.IContainerStrategy;
 import soot.jimple.infoflow.collections.util.Tristate;
 import soot.jimple.infoflow.data.Abstraction;
@@ -15,16 +16,9 @@ import soot.jimple.infoflow.data.ContextDefinition;
 
 import java.util.Collection;
 
-public class AccessOperation extends AbstractOperation {
-    private final int[] keys;
-    private final String field;
-    private final String fieldType;
-
-
-    public AccessOperation(int[] keys, String field, String fieldType) {
-        this.keys = keys;
-        this.field = field;
-        this.fieldType = fieldType;
+public class AccessOperation extends LocationDependentOperation {
+    public AccessOperation(Location[] keys, String field, String fieldType) {
+        super(keys, field, fieldType);
     }
 
     @Override
@@ -51,10 +45,13 @@ public class AccessOperation extends AbstractOperation {
 
             for (int i = 0; i < keys.length && !state.isFalse(); i++) {
                 ContextDefinition stmtKey;
-                if (keys[i] == Index.LAST_INDEX.toInt())
+                if (keys[i].getParamIdx() == ParamIndex.LAST_INDEX.toInt())
                     stmtKey = strategy.getLastPosition(iie.getBase(), stmt);
-                else if (keys[i] >= 0)
-                    stmtKey = strategy.getContextFromKey(iie.getArg(keys[i]), stmt);
+                else if (keys[i].getParamIdx() >= 0)
+                    if (keys[i].isValueBased())
+                        stmtKey = strategy.getIndexContext(iie.getArg(keys[i].getParamIdx()), stmt);
+                    else
+                        stmtKey = strategy.getKeyContext(iie.getArg(keys[i].getParamIdx()), stmt);
                 else
                     throw new RuntimeException("Wrong key supplied");
                 state = state.and(strategy.intersect(apCtxt[i], stmtKey));

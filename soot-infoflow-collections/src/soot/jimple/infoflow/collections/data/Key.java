@@ -1,12 +1,12 @@
 package soot.jimple.infoflow.collections.data;
 
-public class Index extends Location {
-    public Index(int paramIdx) {
+public class Key extends Location {
+    public Key(int paramIdx) {
         super(paramIdx);
     }
 
     @Override
     public boolean isValueBased() {
-        return true;
+        return false;
     }
 }

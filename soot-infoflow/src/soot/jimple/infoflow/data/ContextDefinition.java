@@ -8,6 +8,8 @@ package soot.jimple.infoflow.data;
  *
  */
 public interface ContextDefinition {
-    // There are no restrictions to what a context could be. We expect the context factory to be tightly coupled with
+    boolean containsInformation();
+
+        // There are no restrictions to what a context could be. We expect the context factory to be tightly coupled with
     // the users of the contexts.
 }
