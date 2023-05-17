@@ -93,6 +93,36 @@ public class ConstantIndexListTestCode {
         sink(lst.get(1));
     }
 
+    public void testListInsert4() {
+        List<String> lst = new ArrayList<>();
+        String tainted = source();
+        lst.add("Some String");
+        lst.add(tainted);
+        lst.add(new Random().nextInt(), "Other");
+        lst.add("xxx");
+        sink(lst.get(1)); // index 1 or 2 might be tainted
+    }
+
+    public void testListInsert5() {
+        List<String> lst = new ArrayList<>();
+        String tainted = source();
+        lst.add("Some String");
+        lst.add(tainted);
+        lst.add(new Random().nextInt(), "Other");
+        lst.add("xxx");
+        sink(lst.get(2)); // index 1 or 2 might be tainted
+    }
+
+    public void testListInsert6() {
+        List<String> lst = new ArrayList<>();
+        String tainted = source();
+        lst.add("Some String");
+        lst.add(tainted);
+        lst.add(new Random().nextInt(), "Other");
+        lst.add("xxx");
+        sink(lst.get(3)); // index 1 or 2 might be tainted
+    }
+
     public void testListInsertInLoop1() {
         List<String> lst = new ArrayList<>();
         String tainted = source();
@@ -100,6 +130,6 @@ public class ConstantIndexListTestCode {
         while (new Random().nextBoolean()) {
             lst.add(0, "Some element"); // tainted idx gets shifted by 1 each iteration
         }
-        sink(lst.get(0)); // No leak but does it terminate?
+        sink(lst.get(0));
     }
 }

@@ -4,7 +4,8 @@ import soot.*;
 import soot.jimple.InstanceInvokeExpr;
 import soot.jimple.Stmt;
 import soot.jimple.infoflow.InfoflowManager;
-import soot.jimple.infoflow.collections.data.Index;
+import soot.jimple.infoflow.collections.data.Location;
+import soot.jimple.infoflow.collections.data.ParamIndex;
 import soot.jimple.infoflow.collections.strategies.IContainerStrategy;
 import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.data.AccessPath;
@@ -14,17 +15,12 @@ import soot.jimple.infoflow.typing.TypeUtils;
 
 import java.util.Collection;
 
-public class InsertOperation implements ICollectionOperation {
-    private int[] keys;
+public class InsertOperation extends LocationDependentOperation {
     private final int data;
-    private final String field;
-    private final String fieldType;
 
-    public InsertOperation(int[] keys, int data, String field, String fieldType) {
-        this.keys = keys;
+    public InsertOperation(Location[] keys, int data, String field, String fieldType) {
+        super(keys, field, fieldType);
         this.data = data;
-        this.field = field;
-        this.fieldType = fieldType;
     }
 
     private SootField safeGetField(String fieldSig) {
@@ -63,10 +59,12 @@ public class InsertOperation implements ICollectionOperation {
         Value base = iie.getBase();
         ContextDefinition[] ctxt = new ContextDefinition[keys.length];
         for (int i = 0; i < ctxt.length; i++) {
-            if (keys[i] == Index.LAST_INDEX.toInt())
+            if (keys[i].getParamIdx() == ParamIndex.LAST_INDEX.toInt())
                 ctxt[i] = strategy.getNextPosition(base, stmt);
+            else if (keys[i].isValueBased())
+                ctxt[i] = strategy.getIndexContext(iie.getArg(keys[i].getParamIdx()), stmt);
             else
-                ctxt[i] = strategy.getContextFromKey(iie.getArg(keys[i]), stmt);
+                ctxt[i] = strategy.getKeyContext(iie.getArg(keys[i].getParamIdx()), stmt);
         }
         if (strategy.shouldSmash(ctxt))
             ctxt = null;

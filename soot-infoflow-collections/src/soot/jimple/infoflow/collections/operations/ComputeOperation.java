@@ -8,8 +8,7 @@ import soot.jimple.InstanceInvokeExpr;
 import soot.jimple.Stmt;
 import soot.jimple.infoflow.InfoflowManager;
 import soot.jimple.infoflow.collections.CollectionTaintWrapper;
-import soot.jimple.infoflow.collections.context.WildcardContext;
-import soot.jimple.infoflow.collections.data.Index;
+import soot.jimple.infoflow.collections.data.Location;
 import soot.jimple.infoflow.collections.strategies.IContainerStrategy;
 import soot.jimple.infoflow.collections.util.Tristate;
 import soot.jimple.infoflow.data.Abstraction;
@@ -19,15 +18,9 @@ import soot.jimple.infoflow.data.ContextDefinition;
 
 import java.util.Collection;
 
-public class ComputeOperation implements ICollectionOperation {
-    private final int[] keys;
-    private final String field;
-    private final String fieldType;
-
-    public ComputeOperation(int[] keys, String field, String fieldType) {
-        this.keys = keys;
-        this.field = field;
-        this.fieldType = fieldType;
+public class ComputeOperation extends LocationDependentOperation {
+    public ComputeOperation(Location[] keys, String field, String fieldType) {
+        super(keys, field, fieldType);
     }
 
     @Override
@@ -47,7 +40,7 @@ public class ComputeOperation implements ICollectionOperation {
             assert keys.length == apCtxt.length; // Failure must be because of a bad model
 
             for (int i = 0; i < keys.length && state.isTrue(); i++) {
-                ContextDefinition stmtKey = keys[i] == Index.ALL.toInt() ? WildcardContext.v() : strategy.getContextFromKey(iie.getArg(keys[i]), stmt);
+                ContextDefinition stmtKey = strategy.getKeyContext(iie.getArg(keys[i].getParamIdx()), stmt);
                 state = state.and(strategy.intersect(apCtxt[i], stmtKey));
             }
         }
@@ -70,10 +63,10 @@ public class ComputeOperation implements ICollectionOperation {
             synchronized (sm) {
                 if (!sm.hasActiveBody()) {
                     sm.retrieveActiveBody();
+                    manager.getICFG().notifyMethodChanged(sm);
                 }
             }
         }
-        manager.getICFG().notifyMethodChanged(sm);
 
         Local p1 = sm.getActiveBody().getParameterLocal(1);
         AccessPath ap = manager.getAccessPathFactory().createAccessPath(p1, true);

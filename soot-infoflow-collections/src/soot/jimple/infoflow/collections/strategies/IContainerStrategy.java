@@ -1,6 +1,5 @@
 package soot.jimple.infoflow.collections.strategies;
 
-import soot.SootMethod;
 import soot.Value;
 import soot.jimple.Stmt;
 import soot.jimple.infoflow.collections.util.Tristate;
@@ -22,7 +21,16 @@ public interface IContainerStrategy {
      * @param stmt
      * @return
      */
-    ContextDefinition getContextFromKey(Value value, Stmt stmt);
+    ContextDefinition getKeyContext(Value value, Stmt stmt);
+
+    /**
+     *
+     *
+     * @param value
+     * @param stmt
+     * @return
+     */
+    ContextDefinition getIndexContext(Value value, Stmt stmt);
 
     /**
      * Retrieves a context given an implicit key after the given statement
@@ -51,7 +59,7 @@ public interface IContainerStrategy {
      * @param ctxt2 second context
      * @return true ctxt1 is less than ctxt2
      */
-    Tristate lessThan(ContextDefinition ctxt1, ContextDefinition ctxt2);
+    Tristate lessThanEqual(ContextDefinition ctxt1, ContextDefinition ctxt2);
 
     /**
      * Shifts the ctxt to the right
@@ -59,7 +67,7 @@ public interface IContainerStrategy {
      * @param ctxt current context
      * @return new context
      */
-    ContextDefinition shiftRight(ContextDefinition ctxt);
+    ContextDefinition shiftRight(ContextDefinition ctxt, Stmt stmt, boolean exact);
 
     /**
      * Returns whether the context is still useful or not

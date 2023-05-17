@@ -1,7 +1,43 @@
 package soot.jimple.infoflow.collections.context;
 
+import soot.jimple.Constant;
+import soot.jimple.infoflow.collections.util.Tristate;
 import soot.jimple.infoflow.data.ContextDefinition;
 
-public class KeySetContext implements ContextDefinition {
+import java.util.HashSet;
+import java.util.Set;
 
+public class KeySetContext implements ContextDefinition {
+    Set<Constant> keys;
+
+    public KeySetContext(Constant key) {
+        this.keys = new HashSet<>();
+        this.keys.add(key);
+    }
+
+    public Tristate intersect(KeySetContext other) {
+        boolean all = true;
+        boolean any = false;
+        for (Constant c : this.keys) {
+            if (other.keys.contains(c))
+                any = true;
+            else
+                all = false;
+
+            if (any && !all)
+                return Tristate.MAYBE();
+        }
+
+        return Tristate.fromBoolean(any && all);
+    }
+
+    @Override
+    public boolean containsInformation() {
+        return !keys.isEmpty();
+    }
+
+    @Override
+    public String toString() {
+        return keys.toString();
+    }
 }

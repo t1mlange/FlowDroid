@@ -7,7 +7,6 @@ import soot.jimple.Constant;
 import soot.jimple.ReturnStmt;
 import soot.jimple.Stmt;
 import soot.jimple.infoflow.InfoflowManager;
-import soot.jimple.infoflow.collections.context.ConstantContext;
 import soot.jimple.infoflow.collections.context.UnknownContext;
 import soot.jimple.infoflow.collections.data.CollectionMethod;
 import soot.jimple.infoflow.collections.data.CollectionModel;
@@ -83,12 +82,12 @@ public class CollectionTaintWrapper implements ITaintPropagationWrapper {
     }
 
     private ContextDefinition merge(ContextDefinition a, ContextDefinition b) {
-        if (a instanceof ConstantContext && b instanceof ConstantContext) {
-            HashSet<Constant> c = new HashSet<>();
-            c.addAll(((ConstantContext) a).getConstants());
-            c.addAll(((ConstantContext) b).getConstants());
-            return new ConstantContext(c);
-        }
+//        if (a instanceof ConstantContext && b instanceof ConstantContext) {
+//            HashSet<Constant> c = new HashSet<>();
+//            c.addAll(((ConstantContext) a).getConstants());
+//            c.addAll(((ConstantContext) b).getConstants());
+//            return new ConstantContext(c);
+//        }
 
         return UnknownContext.v();
     }

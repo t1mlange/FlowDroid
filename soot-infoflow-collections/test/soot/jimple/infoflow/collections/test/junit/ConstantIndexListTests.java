@@ -39,7 +39,6 @@ public class ConstantIndexListTests extends FlowDroidTests {
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
         Assert.assertEquals(1, infoflow.getResults().size());
     }
-
     @Test(timeout = 30000)
     public void testListRemove1() {
         IInfoflow infoflow = initInfoflow();
@@ -89,11 +88,36 @@ public class ConstantIndexListTests extends FlowDroidTests {
     }
 
     @Test(timeout = 30000)
-    public void testListInsertInLoop1() {
+    public void testListInsert4() {
         IInfoflow infoflow = initInfoflow();
         infoflow.setTaintPropagationHandler(new DebugFlowFunctionTaintPropagationHandler());
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
+        Assert.assertEquals(1, infoflow.getResults().size());
+    }
+
+    @Test(timeout = 30000)
+    public void testListInsert5() {
+        IInfoflow infoflow = initInfoflow();
+        infoflow.setTaintPropagationHandler(new DebugFlowFunctionTaintPropagationHandler());
+        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
+        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
+        Assert.assertEquals(1, infoflow.getResults().size());
+    }
+
+    @Test(timeout = 30000)
+    public void testListInsert6() {
+        IInfoflow infoflow = initInfoflow();
+        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
+        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
         Assert.assertEquals(0, infoflow.getResults().size());
+    }
+
+    @Test(timeout = 30000)
+    public void testListInsertInLoop1() {
+        IInfoflow infoflow = initInfoflow();
+        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
+        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
+        // We mainly care about termination here
     }
 }

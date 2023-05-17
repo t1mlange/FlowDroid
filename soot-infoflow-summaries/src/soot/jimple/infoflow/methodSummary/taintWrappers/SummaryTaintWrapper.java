@@ -384,7 +384,7 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 	protected AccessPath createAccessPathFromTaint(Taint t, Stmt stmt, AccessPathPropagator curr, boolean reverseFlows) {
 		soot.jimple.infoflow.data.AccessPathFragment[] fragments;
 		// Try to keep the access path from the old abstraction such that contexts are preserved
-		if (t.getAccessPath().equals(curr.getTaint().getAccessPath())) {
+		if (t.getAccessPathLength() > 0 && t.getAccessPath().equals(curr.getD2().getAccessPath())) {
 			int l = t.getAccessPathLength();
 			fragments = new soot.jimple.infoflow.data.AccessPathFragment[l];
 			System.arraycopy(curr.getD2().getAccessPath().getFragments(), 0, fragments, 0, l);

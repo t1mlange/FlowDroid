@@ -3,7 +3,7 @@
 <collectionModel class="java.util.List" type="position">
     <method id="boolean add(java.lang.Object)">
         <insert>
-            <key paramIdx="last" />
+            <index paramIdx="last" />
             <data paramIdx="0" />
             <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
                         type="[java.lang.Object[]]" />
@@ -11,13 +11,13 @@
     </method>
     <method id="void add(int,java.lang.Object)">
         <insert>
-            <key paramIdx="0" />
+            <index paramIdx="0" />
             <data paramIdx="1" />
             <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
                         type="[java.lang.Object[]]" />
         </insert>
         <shift>
-            <key paramIdx="0" />
+            <index paramIdx="0" />
             <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
                         type="[java.lang.Object[]]" />
         </shift>
@@ -25,7 +25,7 @@
     <!-- addAll() handled with fallback -->
     <method id="void clear()">
         <remove>
-            <key paramIdx="all" />
+            <index paramIdx="all" />
             <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
                         type="[java.lang.Object[]]" />
         </remove>
@@ -34,7 +34,7 @@
     <!-- containsAll() handled with fallback -->
     <method id="java.lang.Object get(int)">
         <access>
-            <key paramIdx="0" />
+            <index paramIdx="0" />
             <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
                         type="[java.lang.Object[]]" />
         </access>
@@ -47,12 +47,12 @@
     <!-- listIterator() handled with fallback -->
     <method id="java.lang.Object remove(int)">
         <remove>
-            <key paramIdx="0" />
+            <index paramIdx="0" />
             <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
                         type="[java.lang.Object[]]" />
         </remove>
         <access>
-            <key paramIdx="0" />
+            <index paramIdx="0" />
             <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
                         type="[java.lang.Object[]]" />
         </access>
@@ -69,17 +69,17 @@
     </method>
     <method id="java.lang.Object set(int,java.lang.Object)">
         <remove>
-            <key paramIdx="0" />
+            <index paramIdx="0" />
             <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
                         type="[java.lang.Object[]]" />
         </remove>
         <access>
-            <key paramIdx="0" />
+            <index paramIdx="0" />
             <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
                         type="[java.lang.Object[]]" />
         </access>
         <insert>
-            <key paramIdx="0" />
+            <index paramIdx="0" />
             <data paramIdx="1" />
             <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
                         type="[java.lang.Object[]]" />
@@ -88,7 +88,7 @@
     <!-- size() handled with fallback -->
     <method id="void sort(java.util.Comparator)">
         <invalidate>
-            <key paramIdx="0" />
+            <index paramIdx="0" />
             <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
                         type="[java.lang.Object[]]" />
         </invalidate>
@@ -97,7 +97,7 @@
     <method id="java.util.List subList(int,int)">
         <!-- TODO: there may be better ways to model this function -->
         <invalidate>
-            <key paramIdx="0" />
+            <index paramIdx="0" />
             <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
                         type="[java.lang.Object[]]" />
         </invalidate>
