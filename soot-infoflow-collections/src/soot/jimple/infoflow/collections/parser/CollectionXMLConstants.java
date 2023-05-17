@@ -18,6 +18,7 @@ public class CollectionXMLConstants {
     public static final String KEY_TAG = "key";
     public static final String INDEX_TAG = "index";
     public static final String DATA_TAG = "data";
+    public static final String CALLBACK_TAG = "callback";
     public static final String ACCESS_PATH_TAG = "accessPath";
 
     public static final String PARAM_IDX_ATTR = "paramIdx";

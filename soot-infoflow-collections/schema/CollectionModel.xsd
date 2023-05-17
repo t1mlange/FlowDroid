@@ -45,7 +45,7 @@
                     <xs:element name="index" type="index" />
                 </xs:choice>
             </xs:sequence>
-            <xs:element name="data" type="data" />
+            <xs:element name="data" type="paramIdx" />
             <xs:element name="accessPath" type="accessPath" />
         </xs:sequence>
     </xs:complexType>
@@ -64,7 +64,7 @@
 
     <xs:complexType name="return">
         <xs:sequence>
-            <xs:element name="data" type="data" />
+            <xs:element name="data" type="paramIdx" />
         </xs:sequence>
     </xs:complexType>
 
@@ -94,6 +94,7 @@
                 <xs:element name="key" type="key" />
                 <xs:element name="index" type="index" />
             </xs:choice>
+            <xs:element name="callback" type="paramIdx" />
             <xs:element name="accessPath" type="accessPath" />
         </xs:sequence>
     </xs:complexType>
@@ -106,7 +107,7 @@
         <xs:attribute name="paramIdx" type="idx" use="required" />
     </xs:complexType>
 
-    <xs:complexType name="data">
+    <xs:complexType name="paramIdx">
         <xs:attribute name="paramIdx" type="xs:nonNegativeInteger" use="required" />
     </xs:complexType>
 

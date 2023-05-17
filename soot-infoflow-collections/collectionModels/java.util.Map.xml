@@ -1,13 +1,13 @@
 <?xml version="1.0" ?>
 
 <collectionModel class="java.util.Map" type="value">
-    <method id="void clear()">
-        <remove>
-            <key paramIdx="all" />
-            <accessPath field="[java.util.Map: java.lang.Object[] values]"
-                        type="[java.lang.Object[]]" />
-        </remove>
-    </method>
+<!--    <method id="void clear()">-->
+<!--        <remove>-->
+<!--            <key paramIdx="all" />-->
+<!--            <accessPath field="[java.util.Map: java.lang.Object[] values]"-->
+<!--                        type="[java.lang.Object[]]" />-->
+<!--        </remove>-->
+<!--    </method>-->
     <method id="boolean containsKey(java.lang.Object)">
         <!-- intentionally identity for now -->
     </method>
@@ -101,6 +101,7 @@
     <method id="java.lang.Object compute(java.lang.Object,java.util.function.BiFunction)">
         <compute>
             <key paramIdx="0" />
+            <callback paramIdx="1" />
             <accessPath field="[java.util.Map: java.lang.Object[] values]"
                         type="[java.lang.Object[]]" />
         </compute>
