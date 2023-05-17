@@ -18,7 +18,7 @@ public class ReturnOperation implements ICollectionOperation {
     }
 
     @Override
-    public boolean apply(Stmt stmt, Abstraction incoming, Collection<Abstraction> out, InfoflowManager manager, IContainerStrategy keyStrategy) {
+    public boolean apply(Abstraction d1, Abstraction incoming, Stmt stmt, InfoflowManager manager, IContainerStrategy keyStrategy, Collection<Abstraction> out) {
         InstanceInvokeExpr iie = ((InstanceInvokeExpr) stmt.getInvokeExpr());
         if (!manager.getAliasing().mayAlias(incoming.getAccessPath().getPlainValue(), iie.getArg(data))
                 || !(stmt instanceof AssignStmt))

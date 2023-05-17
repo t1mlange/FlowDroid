@@ -3,7 +3,7 @@
 <collectionModel class="java.util.Map" type="value">
     <method id="void clear()">
         <remove>
-            <key idx="all" />
+            <key paramIdx="all" />
             <accessPath field="[java.util.Map: java.lang.Object[] values]"
                         type="[java.lang.Object[]]" />
         </remove>
@@ -16,63 +16,63 @@
     </method>
     <method id="java.lang.Object get(java.lang.Object)">
         <access>
-            <key idx="0" />
+            <key paramIdx="0" />
             <accessPath field="[java.util.Map: java.lang.Object[] values]"
                         type="[java.lang.Object[]]" />
         </access>
     </method>
     <method id="java.lang.Object getOrDefault(java.lang.Object,java.lang.Object)">
         <access>
-            <key idx="0" />
+            <key paramIdx="0" />
             <accessPath field="[java.util.Map: java.lang.Object[] values]"
                         type="[java.lang.Object[]]" />
         </access>
         <return>
-            <data idx="1" />
+            <data paramIdx="1" />
         </return>
     </method>
     <method id="java.lang.Object put(java.lang.Object,java.lang.Object)">
         <remove>
-            <key idx="0" />
+            <key paramIdx="0" />
             <accessPath field="[java.util.Map: java.lang.Object[] values]"
                         type="[java.lang.Object[]]" />
         </remove>
         <access>
-            <key idx="0" />
+            <key paramIdx="0" />
             <accessPath field="[java.util.Map: java.lang.Object[] values]"
                         type="[java.lang.Object[]]" />
         </access>
         <insert>
-            <key idx="0" />
-            <data idx="1" />
+            <key paramIdx="0" />
+            <data paramIdx="1" />
             <accessPath field="[java.util.Map: java.lang.Object[] values]"
                         type="[java.lang.Object[]]" />
         </insert>
     </method>
     <method id="java.lang.Object putIfAbsent(java.lang.Object,java.lang.Object)">
         <access>
-            <key idx="0" />
+            <key paramIdx="0" />
             <accessPath field="[java.util.Map: java.lang.Object[] values]"
                         type="[java.lang.Object[]]" />
         </access>
         <insert>
-            <key idx="0" />
-            <data idx="1" />
+            <key paramIdx="0" />
+            <data paramIdx="1" />
             <accessPath field="[java.util.Map: java.lang.Object[] values]"
                         type="[java.lang.Object[]]" />
         </insert>
         <return>
-            <data idx="1" />
+            <data paramIdx="1" />
         </return>
     </method>
     <method id="java.lang.Object remove(java.lang.Object)">
         <remove>
-            <key idx="0" />
+            <key paramIdx="0" />
             <accessPath field="[java.util.Map: java.lang.Object[] values]"
                         type="[java.lang.Object[]]" />
         </remove>
         <access>
-            <key idx="0" />
+            <key paramIdx="0" />
             <accessPath field="[java.util.Map: java.lang.Object[] values]"
                         type="[java.lang.Object[]]" />
         </access>
@@ -82,20 +82,27 @@
     </method>
     <method id="java.lang.Object replace(java.lang.Object,java.lang.Object)">
         <remove>
-            <key idx="0" />
+            <key paramIdx="0" />
             <accessPath field="[java.util.Map: java.lang.Object[] values]"
                         type="[java.lang.Object[]]" />
         </remove>
         <access>
-            <key idx="0" />
+            <key paramIdx="0" />
             <accessPath field="[java.util.Map: java.lang.Object[] values]"
                         type="[java.lang.Object[]]" />
         </access>
         <insert>
-            <key idx="0" />
-            <data idx="1" />
+            <key paramIdx="0" />
+            <data paramIdx="1" />
             <accessPath field="[java.util.Map: java.lang.Object[] values]"
                         type="[java.lang.Object[]]" />
         </insert>
+    </method>
+    <method id="java.lang.Object compute(java.lang.Object,java.util.function.BiFunction)">
+        <compute>
+            <key paramIdx="0" />
+            <accessPath field="[java.util.Map: java.lang.Object[] values]"
+                        type="[java.lang.Object[]]" />
+        </compute>
     </method>
 </collectionModel>

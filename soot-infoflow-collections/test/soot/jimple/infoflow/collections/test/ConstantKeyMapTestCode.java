@@ -146,12 +146,27 @@ public class ConstantKeyMapTestCode {
         sink(map.get("OtherConstantKey"));
     }
 
-
     public void testMapPutIfAbsent5() {
         Map<String, String> map = new HashMap<>();
         String tainted = source();
         map.put("ConstantKey", "untainted");
         map.putIfAbsent("ConstantKey", tainted);
         sink(map.get("ConstantKey"));
+    }
+
+    public void testMapCompute1() {
+        Map<String, String> map = new HashMap<>();
+        String tainted = source();
+        map.put("XXX", tainted);
+        map.compute("XXX", (k, v) -> v);
+        sink(map.get("XXX"));
+    }
+
+    public void testMapCompute2() {
+        Map<String, String> map = new HashMap<>();
+        String tainted = source();
+        map.put("XXX", tainted);
+        map.compute("XXX", (k, v) -> "Overwritten");
+        sink(map.get("XXX"));
     }
 }

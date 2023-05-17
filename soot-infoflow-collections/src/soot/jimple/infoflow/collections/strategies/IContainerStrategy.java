@@ -1,5 +1,6 @@
 package soot.jimple.infoflow.collections.strategies;
 
+import soot.SootMethod;
 import soot.Value;
 import soot.jimple.Stmt;
 import soot.jimple.infoflow.collections.util.Tristate;
@@ -67,4 +68,12 @@ public interface IContainerStrategy {
      * @return true if context contains no useful information and thus, the collection should be smashed
      */
     boolean shouldSmash(ContextDefinition[] ctxts);
+
+    /**
+     * Returns the SootMethod for a given value.
+     *
+     * @param value callback argument
+     * @return SootMethod object if it could be identified, otherwise null
+     */
+    SootMethod getSootMethodFromValue(Value value, Stmt stmt);
 }

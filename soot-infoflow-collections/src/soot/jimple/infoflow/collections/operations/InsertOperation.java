@@ -55,12 +55,10 @@ public class InsertOperation implements ICollectionOperation {
     }
 
     @Override
-    public boolean apply(Stmt stmt, Abstraction incoming, Collection<Abstraction> out,
-                         InfoflowManager manager, IContainerStrategy strategy) {
+    public boolean apply(Abstraction d1, Abstraction incoming, Stmt stmt, InfoflowManager manager, IContainerStrategy strategy, Collection<Abstraction> out) {
         InstanceInvokeExpr iie = ((InstanceInvokeExpr) stmt.getInvokeExpr());
         if (!manager.getAliasing().mayAlias(incoming.getAccessPath().getPlainValue(), iie.getArg(data)))
             return false;
-
 
         Value base = iie.getBase();
         ContextDefinition[] ctxt = new ContextDefinition[keys.length];

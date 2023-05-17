@@ -2,6 +2,7 @@ package soot.jimple.infoflow.collections.test;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import static soot.jimple.infoflow.collections.test.Helper.sink;
 import static soot.jimple.infoflow.collections.test.Helper.source;
@@ -90,5 +91,15 @@ public class ConstantIndexListTestCode {
         lst.add(1, tainted);
         lst.add("xxx");
         sink(lst.get(1));
+    }
+
+    public void testListInsertInLoop1() {
+        List<String> lst = new ArrayList<>();
+        String tainted = source();
+        lst.add(source()); // tainted @ idx=0
+        while (new Random().nextBoolean()) {
+            lst.add(0, "Some element"); // tainted idx gets shifted by 1 each iteration
+        }
+        sink(lst.get(0)); // No leak but does it terminate?
     }
 }

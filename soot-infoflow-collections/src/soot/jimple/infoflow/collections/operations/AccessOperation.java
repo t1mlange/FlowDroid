@@ -28,11 +28,8 @@ public class AccessOperation extends AbstractOperation {
     }
 
     @Override
-    public boolean apply(Stmt stmt,
-                         Abstraction incoming,
-                         Collection<Abstraction> out,
-                         InfoflowManager manager,
-                         IContainerStrategy strategy) {
+    public boolean apply(Abstraction d1, Abstraction incoming, Stmt stmt,
+                         InfoflowManager manager, IContainerStrategy strategy, Collection<Abstraction> out) {
         // No need to model an access if the return value is ignored
         if (!(stmt instanceof AssignStmt))
             return false;

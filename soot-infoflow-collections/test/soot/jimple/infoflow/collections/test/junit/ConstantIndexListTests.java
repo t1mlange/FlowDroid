@@ -4,6 +4,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import soot.jimple.infoflow.IInfoflow;
 import soot.jimple.infoflow.InfoflowConfiguration;
+import soot.jimple.infoflow.util.DebugFlowFunctionTaintPropagationHandler;
 
 import java.util.Collections;
 
@@ -85,5 +86,14 @@ public class ConstantIndexListTests extends FlowDroidTests {
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
         Assert.assertEquals(1, infoflow.getResults().size());
+    }
+
+    @Test(timeout = 30000)
+    public void testListInsertInLoop1() {
+        IInfoflow infoflow = initInfoflow();
+        infoflow.setTaintPropagationHandler(new DebugFlowFunctionTaintPropagationHandler());
+        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
+        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
+        Assert.assertEquals(0, infoflow.getResults().size());
     }
 }

@@ -153,4 +153,22 @@ public class ConstantKeyMapTests extends FlowDroidTests {
         // because a precise flow function would not be distributive here.
         Assert.assertEquals(1, infoflow.getResults().size());
     }
+
+    @Test//(timeout = 30000)
+    public void testMapCompute1() {
+        IInfoflow infoflow = initInfoflow();
+        infoflow.getConfig().setWriteOutputFiles(true);
+        infoflow.setTaintPropagationHandler(new DebugFlowFunctionTaintPropagationHandler());
+        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
+        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
+        Assert.assertEquals(1, infoflow.getResults().size());
+    }
+
+    @Test(timeout = 30000)
+    public void testMapCompute2() {
+        IInfoflow infoflow = initInfoflow();
+        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
+        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
+        Assert.assertEquals(0, infoflow.getResults().size());
+    }
 }

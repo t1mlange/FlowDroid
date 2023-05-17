@@ -135,6 +135,18 @@ public class AccessPathFragment {
 				&& Objects.equals(fieldType, other.fieldType);
 	}
 
+	public boolean equalsWithoutContext(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		AccessPathFragment other = (AccessPathFragment) obj;
+		return Objects.equals(field, other.field)
+				&& Objects.equals(fieldType, other.fieldType);
+	}
+
 	/**
 	 * Copies this access path fragment with a new propagated type. All other data
 	 * is kept as-is.

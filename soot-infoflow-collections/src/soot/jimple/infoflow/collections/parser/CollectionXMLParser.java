@@ -61,6 +61,7 @@ public class CollectionXMLParser {
                     subSig = attributes.getValue(ID_ATTR);
                     break;
                 case KEY_TAG:
+                case INDEX_TAG:
                     readKey(attributes);
                     break;
                 case DATA_TAG:
@@ -105,6 +106,14 @@ public class CollectionXMLParser {
                     break;
                 case RETURN_TAG:
                     operations.add(new ReturnOperation(data));
+                    resetAfterOperation();
+                    break;
+                case INVALIDATE_TAG:
+                    operations.add(new InvalidateOperation(trimKeys(keys), accessPathField, accessPathType));
+                    resetAfterOperation();
+                    break;
+                case COMPUTE_TAG:
+                    operations.add(new ComputeOperation(trimKeys(keys), accessPathField, accessPathType));
                     resetAfterOperation();
                     break;
             }
