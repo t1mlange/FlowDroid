@@ -2,8 +2,9 @@ package soot.jimple.infoflow.collections;
 
 import heros.SynchronizedBy;
 import heros.solver.PathEdge;
-import soot.*;
-import soot.jimple.Constant;
+import soot.SootMethod;
+import soot.Unit;
+import soot.Value;
 import soot.jimple.ReturnStmt;
 import soot.jimple.Stmt;
 import soot.jimple.infoflow.InfoflowManager;
