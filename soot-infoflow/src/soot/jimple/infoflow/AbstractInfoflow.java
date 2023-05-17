@@ -321,6 +321,7 @@ public abstract class AbstractInfoflow implements IInfoflow {
 
 			// do not merge variables (causes problems with PointsToSets)
 			Options.v().setPhaseOption("jb.ulp", "off");
+			Options.v().setPhaseOption("jb.model-lambdametafactory", "on");
 
 			setSourcePrec();
 		}

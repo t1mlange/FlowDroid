@@ -19,14 +19,14 @@ public class ShiftOperation implements ICollectionOperation {
     private final String fieldType;
 
     public ShiftOperation(int[] keys, String field, String fieldType) {
-        assert keys.length == 1;
+        assert keys.length == 1; // TODO: generalize
         this.key = keys[0];
         this.field = field;
         this.fieldType = fieldType;
     }
 
     @Override
-    public boolean apply(Stmt stmt, Abstraction incoming, Collection<Abstraction> out, InfoflowManager manager, IContainerStrategy strategy) {
+    public boolean apply(Abstraction d1, Abstraction incoming, Stmt stmt, InfoflowManager manager, IContainerStrategy strategy, Collection<Abstraction> out) {
         InstanceInvokeExpr iie = ((InstanceInvokeExpr) stmt.getInvokeExpr());
         Value base = iie.getBase();
         if (!manager.getAliasing().mayAlias(incoming.getAccessPath().getPlainValue(), base))

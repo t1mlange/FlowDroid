@@ -18,6 +18,8 @@
                 <xs:element name="remove" type="remove" />
                 <xs:element name="return" type="return" />
                 <xs:element name="shift" type="shift" />
+                <xs:element name="compute" type="compute" />
+                <xs:element name="invalidate" type="invalidate" />
             </xs:choice>
         </xs:sequence>
         <xs:attribute name="id" type="xs:string" use="required" />
@@ -26,7 +28,10 @@
     <xs:complexType name="access">
         <xs:sequence>
             <xs:sequence maxOccurs="2">
-                <xs:element name="key" type="key" />
+                <xs:choice>
+                    <xs:element name="key" type="key" />
+                    <xs:element name="index" type="index" />
+                </xs:choice>
             </xs:sequence>
             <xs:element name="accessPath" type="accessPath" />
         </xs:sequence>
@@ -35,7 +40,10 @@
     <xs:complexType name="insert">
         <xs:sequence>
             <xs:sequence maxOccurs="2">
-                <xs:element name="key" type="key" />
+                <xs:choice>
+                    <xs:element name="key" type="key" />
+                    <xs:element name="index" type="index" />
+                </xs:choice>
             </xs:sequence>
             <xs:element name="data" type="data" />
             <xs:element name="accessPath" type="accessPath" />
@@ -43,9 +51,12 @@
     </xs:complexType>
 
     <xs:complexType name="remove">
-    <xs:sequence>
+        <xs:sequence>
             <xs:sequence maxOccurs="2">
-                <xs:element name="key" type="key" />
+                <xs:choice>
+                    <xs:element name="key" type="key" />
+                    <xs:element name="index" type="index" />
+                </xs:choice>
             </xs:sequence>
             <xs:element name="accessPath" type="accessPath" />
         </xs:sequence>
@@ -59,17 +70,44 @@
 
     <xs:complexType name="shift">
         <xs:sequence>
-            <xs:element name="key" type="key" />
+            <xs:choice>
+                <xs:element name="key" type="key" />
+                <xs:element name="index" type="index" />
+            </xs:choice>
             <xs:element name="accessPath" type="accessPath" />
         </xs:sequence>
     </xs:complexType>
 
+    <xs:complexType name="invalidate">
+        <xs:sequence>
+            <xs:choice>
+                <xs:element name="key" type="key" />
+                <xs:element name="index" type="index" />
+            </xs:choice>
+            <xs:element name="accessPath" type="accessPath" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="compute">
+        <xs:sequence>
+            <xs:choice>
+                <xs:element name="key" type="key" />
+                <xs:element name="index" type="index" />
+            </xs:choice>
+            <xs:element name="accessPath" type="accessPath" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="index">
+        <xs:attribute name="paramIdx" type="idx" use="required" />
+    </xs:complexType>
+
     <xs:complexType name="key">
-        <xs:attribute name="idx" type="idx" use="required" />
+        <xs:attribute name="paramIdx" type="idx" use="required" />
     </xs:complexType>
 
     <xs:complexType name="data">
-        <xs:attribute name="idx" type="xs:nonNegativeInteger" use="required" />
+        <xs:attribute name="paramIdx" type="xs:nonNegativeInteger" use="required" />
     </xs:complexType>
 
     <xs:complexType name="accessPath">

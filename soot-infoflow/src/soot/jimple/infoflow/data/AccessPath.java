@@ -282,6 +282,46 @@ public class AccessPath implements Cloneable {
 		return true;
 	}
 
+	public boolean equalsWithoutContext(Object obj) {
+		if (obj == this || super.equals(obj))
+			return true;
+		if (obj == null || getClass() != obj.getClass())
+			return false;
+
+		AccessPath other = (AccessPath) obj;
+
+		if (this.hashCode != 0 && other.hashCode != 0 && this.hashCode != other.hashCode)
+			return false;
+
+		if (value == null) {
+			if (other.value != null)
+				return false;
+		} else if (!value.equals(other.value))
+			return false;
+		if (baseType == null) {
+			if (other.baseType != null)
+				return false;
+		} else if (!baseType.equals(other.baseType))
+			return false;
+
+		if (fragments.length != other.fragments.length)
+			return false;
+		for (int i = 0; i < fragments.length; i++) {
+			if (!fragments[i].equalsWithoutContext(other.fragments[i]))
+				return false;
+		}
+
+		if (this.taintSubFields != other.taintSubFields)
+			return false;
+		if (this.arrayTaintType != other.arrayTaintType)
+			return false;
+
+		if (this.canHaveImmutableAliases != other.canHaveImmutableAliases)
+			return false;
+
+		return true;
+	}
+
 	public boolean isStaticFieldRef() {
 		return value == null && fragments != null && fragments.length > 0;
 	}

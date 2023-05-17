@@ -1,10 +1,9 @@
 package soot.jimple.infoflow.collections.strategies;
 
-import soot.Local;
-import soot.SootMethod;
-import soot.Value;
+import soot.*;
 import soot.jimple.Constant;
 import soot.jimple.IntConstant;
+import soot.jimple.InvokeExpr;
 import soot.jimple.Stmt;
 import soot.jimple.infoflow.InfoflowManager;
 import soot.jimple.infoflow.collections.analyses.IntraproceduralListSizeAnalysis;
@@ -13,16 +12,34 @@ import soot.jimple.infoflow.collections.context.UnknownContext;
 import soot.jimple.infoflow.collections.context.WildcardContext;
 import soot.jimple.infoflow.collections.util.Tristate;
 import soot.jimple.infoflow.data.ContextDefinition;
+import soot.toolkits.graph.UnitGraph;
+import soot.toolkits.scalar.SimpleLocalDefs;
+import soot.util.Cons;
 
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class ConstantKeyStrategy implements IContainerStrategy {
     private final ConcurrentHashMap<SootMethod, IntraproceduralListSizeAnalysis> implicitIndices;
+    private final ConcurrentHashMap<SootMethod, SimpleLocalDefs> defs;
     private final InfoflowManager manager;
 
     public ConstantKeyStrategy(InfoflowManager manager) {
         this.implicitIndices = new ConcurrentHashMap<>();
+        this.defs = new ConcurrentHashMap<>();
         this.manager = manager;
+    }
+
+    private <T> boolean setIntersect(Set<T> s1, Set<T> s2) {
+        for (T c : s1) {
+            if (s2.contains(c))
+                return true;
+        }
+        return false;
     }
 
     @Override
@@ -33,8 +50,14 @@ public class ConstantKeyStrategy implements IContainerStrategy {
         if (stmtKey == WildcardContext.v())
             return Tristate.TRUE();
 
-        if (((ConstantContext) apKey).getConstant().equals(((ConstantContext) stmtKey).getConstant()))
+        Set<Constant> apC = ((ConstantContext) apKey).getConstants();
+        Set<Constant> stmtC = ((ConstantContext) stmtKey).getConstants();
+        if (apC.equals(stmtC))
             return Tristate.TRUE();
+
+        if (setIntersect(apC, stmtC))
+            return Tristate.TRUE();
+
         return Tristate.FALSE();
     }
 
@@ -56,12 +79,35 @@ public class ConstantKeyStrategy implements IContainerStrategy {
         return getContextFromImplicitKey(value, stmt, true);
     }
 
+    private <T> T max(Set<T> s, BiFunction<T, T, Boolean> ltComparator) {
+        T max = null;
+        for (T e : s) {
+            if (max == null || ltComparator.apply(max, e))
+                max = e;
+        }
+        return max;
+    }
+
+    private <T> T min(Set<T> s, BiFunction<T, T, Boolean> ltComparator) {
+        T min = null;
+        for (T e : s) {
+            if (min == null || ltComparator.apply(e, min))
+                min = e;
+        }
+        return min;
+    }
+
+    private <T> boolean lessThan(Set<T> s1, Set<T> s2,
+                               BiFunction<T, T, Boolean> ltComparator) {
+        return ltComparator.apply(max(s1, ltComparator), min(s2, ltComparator));
+    }
+
     @Override
     public Tristate lessThan(ContextDefinition ctxt1, ContextDefinition ctxt2) {
         if (ctxt1 instanceof ConstantContext && ctxt2 instanceof ConstantContext) {
-            Constant c1 = ((ConstantContext) ctxt1).getConstant();
-            Constant c2 = ((ConstantContext) ctxt2).getConstant();
-            return Tristate.fromBoolean(((IntConstant) c1).value < ((IntConstant) c2).value);
+            Set<Constant> c1 = ((ConstantContext) ctxt1).getConstants();
+            Set<Constant> c2 = ((ConstantContext) ctxt2).getConstants();
+            return Tristate.fromBoolean(lessThan(c1, c2, (a, b) -> ((IntConstant) a).value < ((IntConstant) b).value));
         }
 
         if (ctxt2 == UnknownContext.v())
@@ -73,8 +119,8 @@ public class ConstantKeyStrategy implements IContainerStrategy {
     @Override
     public ContextDefinition shiftRight(ContextDefinition ctxt) {
         if (ctxt instanceof ConstantContext) {
-            IntConstant c = (IntConstant) ((ConstantContext) ctxt).getConstant();
-            return new ConstantContext(IntConstant.v(c.value+1));
+            Set<Constant> s = ((ConstantContext) ctxt).getConstants();
+            return new ConstantContext(s.stream().map(c -> IntConstant.v(((IntConstant) c).value + 1)).collect(Collectors.toSet()));
         }
 
         throw new RuntimeException("Unexpected context: " + ctxt);
@@ -96,10 +142,48 @@ public class ConstantKeyStrategy implements IContainerStrategy {
     @Override
     public boolean shouldSmash(ContextDefinition[] ctxts) {
         for (ContextDefinition ctxt : ctxts) {
+            if (ctxt instanceof ConstantContext) {
+                if (((ConstantContext) ctxt).getConstants().size() > 5)
+                    return true;
+            }
             if (ctxt != UnknownContext.v())
                 return false;
         }
 
         return true;
+    }
+
+    @Override
+    public SootMethod getSootMethodFromValue(Value value, Stmt stmt) {
+        if (!(value instanceof Local))
+            return null;
+
+        Type t = value.getType();
+        SootMethod currMethod = manager.getICFG().getMethodOf(stmt);
+        var defs = this.defs.computeIfAbsent(currMethod,
+                sm -> new SimpleLocalDefs((UnitGraph) manager.getICFG().getOrCreateUnitGraph(sm)));
+        List<Unit> defUnits = defs.getDefsOfAt((Local) value, stmt);
+
+        SootMethod callback = null;
+        for (Unit u : defUnits) {
+            Stmt s = (Stmt) u;
+            if (!s.containsInvokeExpr())
+                continue;
+
+            SootMethod sm = s.getInvokeExpr().getMethod();
+            if (!sm.getSubSignature().equals(t.toString() + " bootstrap$()"))
+                continue;
+
+            // Ignore if types doesn't match
+            if (!Scene.v().getFastHierarchy().canStoreType(sm.getDeclaringClass().getType(), t))
+                continue;
+
+            // Result is not unique, abort and overapproximate
+            if (callback != null)
+                return null;
+
+            callback = sm.getDeclaringClass().getMethodByNameUnsafe("apply");
+        }
+        return callback;
     }
 }
