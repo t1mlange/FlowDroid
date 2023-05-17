@@ -1,7 +1,10 @@
 package soot.jimple.infoflow.collections.analyses;
 
 import soot.*;
-import soot.jimple.*;
+import soot.jimple.AssignStmt;
+import soot.jimple.InstanceInvokeExpr;
+import soot.jimple.NewExpr;
+import soot.jimple.Stmt;
 import soot.toolkits.graph.DirectedGraph;
 import soot.toolkits.scalar.ForwardFlowAnalysis;
 
