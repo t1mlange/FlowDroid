@@ -25,12 +25,10 @@ import java.util.stream.Collectors;
 
 public class ConstantKeyStrategy implements IContainerStrategy {
     private final ConcurrentHashMap<SootMethod, IntraproceduralListSizeAnalysis> implicitIndices;
-    private final ConcurrentHashMap<SootMethod, SimpleLocalDefs> defs;
     private final InfoflowManager manager;
 
     public ConstantKeyStrategy(InfoflowManager manager) {
         this.implicitIndices = new ConcurrentHashMap<>();
-        this.defs = new ConcurrentHashMap<>();
         this.manager = manager;
     }
 
@@ -151,39 +149,5 @@ public class ConstantKeyStrategy implements IContainerStrategy {
         }
 
         return true;
-    }
-
-    @Override
-    public SootMethod getSootMethodFromValue(Value value, Stmt stmt) {
-        if (!(value instanceof Local))
-            return null;
-
-        Type t = value.getType();
-        SootMethod currMethod = manager.getICFG().getMethodOf(stmt);
-        var defs = this.defs.computeIfAbsent(currMethod,
-                sm -> new SimpleLocalDefs((UnitGraph) manager.getICFG().getOrCreateUnitGraph(sm)));
-        List<Unit> defUnits = defs.getDefsOfAt((Local) value, stmt);
-
-        SootMethod callback = null;
-        for (Unit u : defUnits) {
-            Stmt s = (Stmt) u;
-            if (!s.containsInvokeExpr())
-                continue;
-
-            SootMethod sm = s.getInvokeExpr().getMethod();
-            if (!sm.getSubSignature().equals(t.toString() + " bootstrap$()"))
-                continue;
-
-            // Ignore if types doesn't match
-            if (!Scene.v().getFastHierarchy().canStoreType(sm.getDeclaringClass().getType(), t))
-                continue;
-
-            // Result is not unique, abort and overapproximate
-            if (callback != null)
-                return null;
-
-            callback = sm.getDeclaringClass().getMethodByNameUnsafe("apply");
-        }
-        return callback;
     }
 }

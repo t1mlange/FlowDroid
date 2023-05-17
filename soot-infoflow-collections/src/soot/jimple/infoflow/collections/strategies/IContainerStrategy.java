@@ -68,12 +68,4 @@ public interface IContainerStrategy {
      * @return true if context contains no useful information and thus, the collection should be smashed
      */
     boolean shouldSmash(ContextDefinition[] ctxts);
-
-    /**
-     * Returns the SootMethod for a given value.
-     *
-     * @param value callback argument
-     * @return SootMethod object if it could be identified, otherwise null
-     */
-    SootMethod getSootMethodFromValue(Value value, Stmt stmt);
 }

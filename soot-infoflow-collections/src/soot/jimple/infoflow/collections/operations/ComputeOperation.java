@@ -56,10 +56,10 @@ public class ComputeOperation implements ICollectionOperation {
         if (state.isFalse())
             return false;
 
-        SootMethod sm = strategy.getSootMethodFromValue(iie.getArg(1), stmt);
-        if (sm != null) {
-            analyzeCallback(d1, incoming, stmt, sm, manager);
-        }
+        // Analyze each callback present in the call-graph
+        manager.getICFG().getCalleesOfCallAt(stmt).stream()
+                .filter(m -> m.getName().equals("apply"))
+                .forEach(m -> analyzeCallback(d1, incoming, stmt, m, manager));
 
         // We first kill it and wait for the result
         return true;
