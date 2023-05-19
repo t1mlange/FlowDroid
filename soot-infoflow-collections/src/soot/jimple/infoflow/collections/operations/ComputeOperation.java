@@ -18,21 +18,48 @@ import soot.jimple.infoflow.data.ContextDefinition;
 import java.util.Collection;
 
 public class ComputeOperation extends LocationDependentOperation {
-    private final int callbackIdx;
+    private final int data; // Index of data provided to a map
+    private final int callbackIdx; // Index of the callback parameter
+    private final int callbackBaseIdx; // Index of the value parameter in the apply() function
+    private final int callbackDataIdx; // Index of the value parameter in the apply() function
+    private final boolean doReturn;
 
-    public ComputeOperation(Location[] keys, String field, String fieldType, int callbackIdx) {
+    public ComputeOperation(Location[] keys, String field, String fieldType, int data,
+                            int callbackIdx, int callbackBaseIdx, int callbackDataIdx,
+                            boolean doReturn) {
         super(keys, field, fieldType);
+        this.data = data;
         this.callbackIdx = callbackIdx;
+        this.callbackBaseIdx = callbackBaseIdx;
+        this.callbackDataIdx = callbackDataIdx;
+        this.doReturn = doReturn;
     }
 
     @Override
     public boolean apply(Abstraction d1, Abstraction incoming, Stmt stmt, InfoflowManager manager,
                          IContainerStrategy strategy, Collection<Abstraction> out) {
         InstanceInvokeExpr iie = ((InstanceInvokeExpr) stmt.getInvokeExpr());
-        if (manager.getAliasing().mayAlias(incoming.getAccessPath().getPlainValue(), iie.getBase()))
+
+        // Some methods such as computeIfAbsent won't have a value provided
+        if (callbackBaseIdx != ParamIndex.UNUSED.toInt()
+                && manager.getAliasing().mayAlias(incoming.getAccessPath().getPlainValue(), iie.getBase()))
             return identityDependsOnCallback(d1, incoming, stmt, manager, strategy);
-        if (manager.getAliasing().mayAlias(incoming.getAccessPath().getPlainValue(), iie.getArg(callbackIdx)))
-            isCallbackReturnAlwaysTainted(d1, incoming, stmt, manager, strategy);
+
+        if (data != ParamIndex.UNUSED.toInt()
+                && manager.getAliasing().mayAlias(incoming.getAccessPath().getPlainValue(), iie.getArg(data))) {
+            manager.getICFG().getCalleesOfCallAt(stmt).stream()
+                    .filter(m -> m.getName().equals("apply"))
+                    .forEach(m -> analyzeCallbackWithTaintedData(d1, incoming, stmt, m, manager, strategy));
+            return false;
+        }
+
+        if (manager.getAliasing().mayAlias(incoming.getAccessPath().getPlainValue(), iie.getArg(callbackIdx))) {
+            manager.getICFG().getCalleesOfCallAt(stmt).stream()
+                    .filter(m -> m.getName().equals("apply"))
+                    .forEach(m -> analyzeCallbackWithTaintedCallback(d1, incoming, stmt, m, manager, strategy));
+            return false;
+        }
+
         return false;
     }
 
@@ -51,6 +78,10 @@ public class ComputeOperation extends LocationDependentOperation {
             assert keys.length == apCtxt.length; // Failure must be because of a bad model
 
             for (int i = 0; i < keys.length && state.isTrue(); i++) {
+                // ALL always matches the context
+                if (keys[i].getParamIdx() == ParamIndex.ALL.toInt())
+                    continue;
+
                 ContextDefinition stmtKey = strategy.getKeyContext(iie.getArg(keys[i].getParamIdx()), stmt);
                 state = state.and(strategy.intersect(apCtxt[i], stmtKey));
             }
@@ -63,21 +94,38 @@ public class ComputeOperation extends LocationDependentOperation {
         // Analyze each callback present in the call-graph
         manager.getICFG().getCalleesOfCallAt(stmt).stream()
                 .filter(m -> m.getName().equals("apply"))
-                .forEach(m -> analyzeCallback(d1, incoming, stmt, m, manager));
+                .forEach(m -> analyzeCallbackWithTaintedCollection(d1, incoming, stmt, m, manager));
 
         return true;
     }
 
-    private void isCallbackReturnAlwaysTainted(Abstraction d1, Abstraction incoming, Stmt stmt, InfoflowManager manager,
-                                               IContainerStrategy strategy) {
-        manager.getICFG().getCalleesOfCallAt(stmt).stream()
-                .filter(m -> m.getName().equals("apply"))
-                .forEach(m -> analyzeCallback2(d1, incoming, stmt, m, manager, strategy));
-    }
+    private void analyzeCallbackWithTaintedData(Abstraction d1, Abstraction incoming, Stmt stmt, SootMethod sm, InfoflowManager manager, IContainerStrategy strategy) {
+        maybeInitMethodBody(sm, manager);
 
-    private void analyzeCallback2(Abstraction d1, Abstraction incoming, Stmt stmt, SootMethod sm, InfoflowManager manager, IContainerStrategy strategy) {
         InstanceInvokeExpr iie = ((InstanceInvokeExpr) stmt.getInvokeExpr());
 
+        Abstraction newAbs = createCollectionTaint(incoming, stmt, iie, manager, strategy);
+        Abstraction abs = createParameterLocalTaint(sm, incoming, this.callbackDataIdx, manager);
+        process(sm, d1, stmt, newAbs, abs, manager);
+    }
+
+    private void analyzeCallbackWithTaintedCallback(Abstraction d1, Abstraction incoming, Stmt stmt, SootMethod sm, InfoflowManager manager, IContainerStrategy strategy) {
+        maybeInitMethodBody(sm, manager);
+
+        InstanceInvokeExpr iie = ((InstanceInvokeExpr) stmt.getInvokeExpr());
+
+        Abstraction newAbs = createCollectionTaint(incoming, stmt, iie, manager, strategy);
+        Abstraction abs = createThisLocalTaint(sm, incoming, manager);
+        process(sm, d1, stmt, newAbs, abs, manager);
+    }
+
+    private void analyzeCallbackWithTaintedCollection(Abstraction d1, Abstraction incoming, Stmt stmt, SootMethod sm, InfoflowManager manager) {
+        maybeInitMethodBody(sm, manager);
+        Abstraction abs = createParameterLocalTaint(sm, incoming, this.callbackBaseIdx, manager);
+        process(sm, d1, stmt, incoming, abs, manager);
+    }
+
+    private void maybeInitMethodBody(SootMethod sm, InfoflowManager manager) {
         if (!sm.hasActiveBody()) {
             synchronized (sm) {
                 if (!sm.hasActiveBody()) {
@@ -86,12 +134,10 @@ public class ComputeOperation extends LocationDependentOperation {
                 }
             }
         }
+    }
 
-        Local p1 = sm.getActiveBody().getThisLocal();
-        AccessPath thisAp = manager.getAccessPathFactory().copyWithNewValue(incoming.getAccessPath(), p1);
-        Abstraction abs = new Abstraction(null, thisAp, null, null, false, false);
-
-
+    private Abstraction createCollectionTaint(Abstraction incoming, Stmt stmt, InstanceInvokeExpr iie,
+                                              InfoflowManager manager, IContainerStrategy strategy) {
         Value base = iie.getBase();
         ContextDefinition[] ctxt = new ContextDefinition[keys.length];
         for (int i = 0; i < ctxt.length; i++) {
@@ -106,40 +152,32 @@ public class ComputeOperation extends LocationDependentOperation {
             ctxt = null;
 
         AccessPathFragment[] oldFragments = incoming.getAccessPath().getFragments();
-        int len = oldFragments == null ? 0 : oldFragments.length;
+        int len = oldFragments == null ? 1: oldFragments.length;
         AccessPathFragment[] fragments = new AccessPathFragment[len];
         if (oldFragments != null && len > 1)
-            System.arraycopy(oldFragments, 0, fragments, 2, len - 2);
+            System.arraycopy(oldFragments, 0, fragments, 1, len - 1);
         SootField f = safeGetField(field);
         fragments[0] = new AccessPathFragment(f, f.getType(), ctxt);
         AccessPath ap = manager.getAccessPathFactory().createAccessPath(base, fragments, incoming.getAccessPath().getTaintSubFields());
-        Abstraction newAbs = incoming.deriveNewAbstraction(ap, stmt);
-
-        CollectionTaintWrapper tw = (CollectionTaintWrapper) manager.getTaintWrapper();
-        tw.registerCallback(d1, stmt, newAbs, abs);
-
-        for (Unit sP : manager.getICFG().getStartPointsOf(sm)) {
-            PathEdge<Unit, Abstraction> edge = new PathEdge<>(abs, sP, abs);
-            manager.getMainSolver().processEdge(edge);
-        }
+        return incoming.deriveNewAbstraction(ap, stmt);
     }
 
-    private void analyzeCallback(Abstraction d1, Abstraction curr, Stmt stmt, SootMethod sm, InfoflowManager manager) {
-        if (!sm.hasActiveBody()) {
-            synchronized (sm) {
-                if (!sm.hasActiveBody()) {
-                    sm.retrieveActiveBody();
-                    manager.getICFG().notifyMethodChanged(sm);
-                }
-            }
-        }
+    private Abstraction createParameterLocalTaint(SootMethod sm, Abstraction incoming, int idx, InfoflowManager manager) {
+        Local paramLocal = sm.getActiveBody().getParameterLocal(idx);
+        AccessPath ap = manager.getAccessPathFactory().copyWithNewValue(incoming.getAccessPath(), paramLocal,
+                paramLocal.getType(), true);
+        return new Abstraction(null, ap, null, null, false, false);
+    }
 
-        Local p1 = sm.getActiveBody().getParameterLocal(1);
-        AccessPath ap = manager.getAccessPathFactory().createAccessPath(p1, true);
-        Abstraction abs = new Abstraction(null, ap, null, null, false, false);
+    private Abstraction createThisLocalTaint(SootMethod sm, Abstraction incoming, InfoflowManager manager) {
+        Local thisLocal = sm.getActiveBody().getThisLocal();
+        AccessPath thisAp = manager.getAccessPathFactory().copyWithNewValue(incoming.getAccessPath(), thisLocal);
+        return new Abstraction(null, thisAp, null, null, false, false);
+    }
 
+    private void process(SootMethod sm, Abstraction d1, Stmt stmt, Abstraction injectIfSuccessful, Abstraction abs, InfoflowManager manager) {
         CollectionTaintWrapper tw = (CollectionTaintWrapper) manager.getTaintWrapper();
-        tw.registerCallback(d1, stmt, curr, abs);
+        tw.registerCallback(d1, stmt, injectIfSuccessful, abs);
 
         for (Unit sP : manager.getICFG().getStartPointsOf(sm)) {
             PathEdge<Unit, Abstraction> edge = new PathEdge<>(abs, sP, abs);

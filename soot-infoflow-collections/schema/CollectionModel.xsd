@@ -16,13 +16,13 @@
                 <xs:element name="access" type="access" />
                 <xs:element name="insert" type="insert" />
                 <xs:element name="remove" type="remove" />
-                <xs:element name="return" type="return" />
+                <xs:element name="copy" type="copy" />
                 <xs:element name="shift" type="shift" />
                 <xs:element name="compute" type="compute" />
                 <xs:element name="invalidate" type="invalidate" />
             </xs:choice>
         </xs:sequence>
-        <xs:attribute name="id" type="xs:string" use="required" />
+        <xs:attribute name="subsig" type="xs:string" use="required" />
     </xs:complexType>
 
     <xs:complexType name="access">
@@ -62,9 +62,10 @@
         </xs:sequence>
     </xs:complexType>
 
-    <xs:complexType name="return">
+    <xs:complexType name="copy">
         <xs:sequence>
-            <xs:element name="data" type="paramIdx" />
+            <xs:element name="from" type="paramIdxOrBaseOrReturn" />
+            <xs:element name="to" type="paramIdxOrBaseOrReturn" />
         </xs:sequence>
     </xs:complexType>
 
@@ -94,34 +95,22 @@
                 <xs:element name="key" type="key" />
                 <xs:element name="index" type="index" />
             </xs:choice>
+            <xs:element name="data" type="paramIdx" minOccurs="0" />
             <xs:element name="callback" type="paramIdx" />
+            <xs:element name="callbackBase" type="paramIdx" minOccurs="0" />
+            <xs:element name="callbackData" type="paramIdx" minOccurs="0" />
+            <xs:element name="return" minOccurs="0" />
             <xs:element name="accessPath" type="accessPath" />
         </xs:sequence>
     </xs:complexType>
 
     <xs:complexType name="index">
-        <xs:attribute name="paramIdx" type="idx" use="required" />
+        <xs:attribute name="idx" type="idx" use="required" />
     </xs:complexType>
 
     <xs:complexType name="key">
-        <xs:attribute name="paramIdx" type="idx" use="required" />
+        <xs:attribute name="idx" type="idx" use="required" />
     </xs:complexType>
-
-    <xs:complexType name="paramIdx">
-        <xs:attribute name="paramIdx" type="xs:nonNegativeInteger" use="required" />
-    </xs:complexType>
-
-    <xs:complexType name="accessPath">
-        <xs:attribute name="field" type="xs:string" use="required" />
-        <xs:attribute name="type" type="xs:string" use="required" />
-    </xs:complexType>
-
-    <xs:simpleType name="collectionType">
-        <xs:restriction base="xs:string">
-            <xs:enumeration value="value" />
-            <xs:enumeration value="position" />
-        </xs:restriction>
-    </xs:simpleType>
 
     <xs:simpleType name="idx">
         <xs:union>
@@ -136,5 +125,39 @@
                 </xs:restriction>
             </xs:simpleType>
         </xs:union>
+    </xs:simpleType>
+
+    <xs:complexType name="paramIdx">
+        <xs:attribute name="idx" type="xs:nonNegativeInteger" use="required" />
+    </xs:complexType>
+
+    <xs:complexType name="paramIdxOrBaseOrReturn">
+        <xs:attribute name="idx" use="required">
+            <xs:simpleType>
+                <xs:union>
+                    <xs:simpleType>
+                        <xs:restriction base="xs:nonNegativeInteger" />
+                    </xs:simpleType>
+                    <xs:simpleType>
+                        <xs:restriction base="xs:string">
+                            <xs:enumeration value="base" />
+                            <xs:enumeration value="return" />
+                        </xs:restriction>
+                    </xs:simpleType>
+                </xs:union>
+            </xs:simpleType>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="accessPath">
+        <xs:attribute name="field" type="xs:string" use="required" />
+        <xs:attribute name="type" type="xs:string" use="required" />
+    </xs:complexType>
+
+    <xs:simpleType name="collectionType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="value" />
+            <xs:enumeration value="position" />
+        </xs:restriction>
     </xs:simpleType>
 </xs:schema>
