@@ -1,34 +1,35 @@
 <?xml version="1.0" ?>
 
 <collectionModel class="java.util.Stack" type="position">
-    <method id="java.lang.Object peek()">
+    <method subsig="java.lang.Object peek()">
         <access>
-            <key paramIdx="last" />
+            <key idx="last" />
             <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
                         type="[java.lang.Object[]]" />
         </access>
     </method>
-    <method id="java.lang.Object pop()">
+    <method subsig="java.lang.Object pop()">
         <remove>
-            <key paramIdx="last" />
+            <key idx="last" />
             <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
                         type="[java.lang.Object[]]" />
         </remove>
         <access>
-            <key paramIdx="last" />
+            <key idx="last" />
             <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
                         type="[java.lang.Object[]]" />
         </access>
     </method>
-    <method id="java.lang.Object push(java.lang.Object)">
+    <method subsig="java.lang.Object push(java.lang.Object)">
         <insert>
-            <key paramIdx="last" />
-            <data paramIdx="0" />
+            <key idx="last" />
+            <data idx="0" />
             <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
                         type="[java.lang.Object[]]" />
         </insert>
-        <return>
-            <data paramIdx="0" />
-        </return>
+        <copy>
+            <from idx="0" />
+            <to idx="return" />
+        </copy>
     </method>
 </collectionModel>

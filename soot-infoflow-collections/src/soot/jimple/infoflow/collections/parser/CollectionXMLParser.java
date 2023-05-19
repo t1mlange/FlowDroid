@@ -30,10 +30,15 @@ public class CollectionXMLParser {
     protected class SAXHandler extends DefaultHandler {
         // Used inside an operation
         private Location[] keys;
-        private int data;
+        private int dataIdx;
         private String accessPathField;
         private String accessPathType;
         private int callbackIdx;
+        private int callbackBaseIdx;
+        private int callbackDataIdx;
+        private int fromIdx;
+        private int toIdx;
+        private boolean doReturn;
 
         // Used inside a CollectionMethod
         private String subSig;
@@ -60,7 +65,7 @@ public class CollectionXMLParser {
                     className = attributes.getValue(CLASS_ATTR);
                     break;
                 case METHOD_TAG:
-                    subSig = attributes.getValue(ID_ATTR);
+                    subSig = attributes.getValue(SUBSIG_ATTR);
                     break;
                 case KEY_TAG:
                     readKeyOrIndex(attributes, false);
@@ -69,16 +74,31 @@ public class CollectionXMLParser {
                     readKeyOrIndex(attributes, true);
                     break;
                 case DATA_TAG:
-                    data = Integer.parseInt(attributes.getValue(PARAM_IDX_ATTR));
+                    dataIdx = Integer.parseInt(attributes.getValue(PARAM_IDX_ATTR));
                     break;
                 case CALLBACK_TAG:
                     callbackIdx = Integer.parseInt(attributes.getValue(PARAM_IDX_ATTR));
+                    break;
+                case CALLBACK_BASE_TAG:
+                    callbackBaseIdx = Integer.parseInt(attributes.getValue(PARAM_IDX_ATTR));
+                    break;
+                case CALLBACK_DATA_TAG:
+                    callbackDataIdx = Integer.parseInt(attributes.getValue(PARAM_IDX_ATTR));
                     break;
                 case ACCESS_PATH_TAG:
                     accessPathField = attributes.getValue(FIELD_ATTR);
                     accessPathField = "<" + accessPathField.substring(1, accessPathField.length() - 1) + ">";
                     accessPathType = attributes.getValue(TYPE_ATTR);
                     accessPathType = accessPathType.substring(1, accessPathType.length() - 1);
+                    break;
+                case FROM_TAG:
+                    fromIdx = getParamIndex(attributes.getValue(PARAM_IDX_ATTR));
+                    break;
+                case TO_TAG:
+                    toIdx = getParamIndex(attributes.getValue(PARAM_IDX_ATTR));
+                    break;
+                case RETURN_TAG:
+                    doReturn = true;
                     break;
             }
         }
@@ -100,7 +120,7 @@ public class CollectionXMLParser {
                     resetAfterOperation();
                     break;
                 case INSERT_TAG:
-                    operations.add(new InsertOperation(trimKeys(keys), data, accessPathField, accessPathType));
+                    operations.add(new InsertOperation(trimKeys(keys), dataIdx, accessPathField, accessPathType));
                     resetAfterOperation();
                     break;
                 case SHIFT_TAG:
@@ -111,8 +131,8 @@ public class CollectionXMLParser {
                     operations.add(new RemoveOperation(trimKeys(keys), accessPathField, accessPathType));
                     resetAfterOperation();
                     break;
-                case RETURN_TAG:
-                    operations.add(new ReturnOperation(data));
+                case COPY_TAG:
+                    operations.add(new CopyOperation(fromIdx, toIdx));
                     resetAfterOperation();
                     break;
                 case INVALIDATE_TAG:
@@ -120,7 +140,10 @@ public class CollectionXMLParser {
                     resetAfterOperation();
                     break;
                 case COMPUTE_TAG:
-                    operations.add(new ComputeOperation(trimKeys(keys), accessPathField, accessPathType, callbackIdx));
+                    if (dataIdx != ParamIndex.UNUSED.toInt() && callbackDataIdx == ParamIndex.UNUSED.toInt())
+                        throw new RuntimeException("callbackData must be set if data is set!");
+                    operations.add(new ComputeOperation(trimKeys(keys), accessPathField, accessPathType, dataIdx,
+                            callbackIdx, callbackBaseIdx, callbackDataIdx, doReturn));
                     resetAfterOperation();
                     break;
             }
@@ -150,6 +173,22 @@ public class CollectionXMLParser {
             }
         }
 
+        protected int getParamIndex(String value) {
+            switch (value) {
+                case BASE_INDEX:
+                    return ParamIndex.BASE.toInt();
+                case RETURN_INDEX:
+                    return ParamIndex.RETURN.toInt();
+                default:
+
+                    try {
+                        return Integer.parseInt(value);
+                    } catch (NumberFormatException e) {
+                        throw new RuntimeException(value + " is not a valid index!");
+                    }
+            }
+        }
+
         protected Location[] trimKeys(Location[] keys) {
             int i;
             for (i = 0; i < keys.length; i++) {
@@ -163,7 +202,13 @@ public class CollectionXMLParser {
 
         protected void resetAfterOperation() {
             keys = new Location[MAX_KEYS];
-            data = ParamIndex.UNUSED.toInt();
+            dataIdx = ParamIndex.UNUSED.toInt();
+            fromIdx = ParamIndex.UNUSED.toInt();
+            toIdx = ParamIndex.UNUSED.toInt();
+            callbackIdx = ParamIndex.UNUSED.toInt();
+            callbackBaseIdx = ParamIndex.UNUSED.toInt();
+            callbackDataIdx = ParamIndex.UNUSED.toInt();
+            doReturn = false;
             accessPathField = null;
             accessPathType = null;
         }
@@ -189,7 +234,7 @@ public class CollectionXMLParser {
     }
 
     public void parse(String fileName) throws FileNotFoundException {
-        checkXMLForValidity(new FileReader(fileName));
+        checkXMLForValidity(fileName);
 
         SAXParserFactory pf = SAXParserFactory.newInstance();
         try {
@@ -215,7 +260,7 @@ public class CollectionXMLParser {
     private static final String XSD_FILE_PATH = "schema/CollectionModel.xsd";
     private static final String W3C_XML_SCHEMA = "http://www.w3.org/2001/XMLSchema";
 
-    protected void checkXMLForValidity(Reader reader) {
+    protected void checkXMLForValidity(String fileName) throws FileNotFoundException {
         SchemaFactory sf = SchemaFactory.newInstance(W3C_XML_SCHEMA);
         StreamSource xsdFile;
         try {
@@ -224,17 +269,17 @@ public class CollectionXMLParser {
             throw new RuntimeException("Couldn't open the XSD file to check the validity", e);
         }
 
-        StreamSource xmlFile = new StreamSource(reader);
+        StreamSource xmlFile = new StreamSource(new FileReader(fileName));
         try {
             Schema schema = sf.newSchema(xsdFile);
             Validator validator = schema.newValidator();
             try {
                 validator.validate(xmlFile);
             } catch (IOException e) {
-                throw new RuntimeException("File isn't valid against the xsd specification", e);
+                throw new RuntimeException(fileName + " isn't valid against the xsd specification", e);
             }
         } catch (SAXException e) {
-            throw new RuntimeException("File isn't valid against the xsd specification", e);
+            throw new RuntimeException(fileName + " isn't valid against the xsd specification", e);
         } finally {
             try {
                 xsdFile.getInputStream().close();

@@ -1,40 +1,40 @@
 <?xml version="1.0" ?>
 
 <collectionModel class="java.util.List" type="position">
-    <method id="boolean add(java.lang.Object)">
+    <method subsig="boolean add(java.lang.Object)">
         <insert>
-            <index paramIdx="last" />
-            <data paramIdx="0" />
+            <index idx="last" />
+            <data idx="0" />
             <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
                         type="[java.lang.Object[]]" />
         </insert>
     </method>
-    <method id="void add(int,java.lang.Object)">
+    <method subsig="void add(int,java.lang.Object)">
         <insert>
-            <index paramIdx="0" />
-            <data paramIdx="1" />
+            <index idx="0" />
+            <data idx="1" />
             <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
                         type="[java.lang.Object[]]" />
         </insert>
         <shift>
-            <index paramIdx="0" />
+            <index idx="0" />
             <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
                         type="[java.lang.Object[]]" />
         </shift>
     </method>
     <!-- addAll() handled with fallback -->
-    <method id="void clear()">
+    <method subsig="void clear()">
         <remove>
-            <index paramIdx="all" />
+            <index idx="all" />
             <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
                         type="[java.lang.Object[]]" />
         </remove>
     </method>
     <!-- contains() handled with fallback -->
     <!-- containsAll() handled with fallback -->
-    <method id="java.lang.Object get(int)">
+    <method subsig="java.lang.Object get(int)">
         <access>
-            <index paramIdx="0" />
+            <index idx="0" />
             <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
                         type="[java.lang.Object[]]" />
         </access>
@@ -45,59 +45,59 @@
     <!-- iterator() handled with fallback -->
     <!-- lastIndexOf() handled with fallback -->
     <!-- listIterator() handled with fallback -->
-    <method id="java.lang.Object remove(int)">
+    <method subsig="java.lang.Object remove(int)">
         <remove>
-            <index paramIdx="0" />
+            <index idx="0" />
             <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
                         type="[java.lang.Object[]]" />
         </remove>
         <access>
-            <index paramIdx="0" />
+            <index idx="0" />
             <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
                         type="[java.lang.Object[]]" />
         </access>
     </method>
-    <method id="boolean remove(java.lang.Object)">
+    <method subsig="boolean remove(java.lang.Object)">
         <!-- intentionally identity -->
     </method>
-    <method id="boolean removeAll(java.util.Collection)">
+    <method subsig="boolean removeAll(java.util.Collection)">
         <!-- intentionally identity -->
     </method>
     <!-- TODO: replaceAll() -->
-    <method id="boolean retainAll(java.util.Collection)">
+    <method subsig="boolean retainAll(java.util.Collection)">
         <!-- intentionally identity -->
     </method>
-    <method id="java.lang.Object set(int,java.lang.Object)">
+    <method subsig="java.lang.Object set(int,java.lang.Object)">
         <remove>
-            <index paramIdx="0" />
+            <index idx="0" />
             <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
                         type="[java.lang.Object[]]" />
         </remove>
         <access>
-            <index paramIdx="0" />
+            <index idx="0" />
             <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
                         type="[java.lang.Object[]]" />
         </access>
         <insert>
-            <index paramIdx="0" />
-            <data paramIdx="1" />
+            <index idx="0" />
+            <data idx="1" />
             <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
                         type="[java.lang.Object[]]" />
         </insert>
     </method>
     <!-- size() handled with fallback -->
-    <method id="void sort(java.util.Comparator)">
+    <method subsig="void sort(java.util.Comparator)">
         <invalidate>
-            <index paramIdx="0" />
+            <index idx="0" />
             <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
                         type="[java.lang.Object[]]" />
         </invalidate>
     </method>
     <!-- spliterator() handled with fallback -->
-    <method id="java.util.List subList(int,int)">
+    <method subsig="java.util.List subList(int,int)">
         <!-- TODO: there may be better ways to model this function -->
         <invalidate>
-            <index paramIdx="0" />
+            <index idx="0" />
             <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
                         type="[java.lang.Object[]]" />
         </invalidate>

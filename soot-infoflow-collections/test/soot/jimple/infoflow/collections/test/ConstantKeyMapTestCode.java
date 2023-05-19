@@ -166,14 +166,116 @@ public class ConstantKeyMapTestCode {
         Map<String, String> map = new HashMap<>();
         String tainted = source();
         map.put("XXX", tainted);
-        map.compute("XXX", (k, v) -> "Overwritten");
+        map.computeIfPresent("XXX", (k, v) -> "Overwritten");
         sink(map.get("XXX"));
     }
 
     public void testMapCompute3() {
         Map<String, String> map = new HashMap<>();
         String tainted = source();
-        map.compute("XXX", (k, v) -> tainted);
+        map.computeIfPresent("XXX", (k, v) -> tainted);
+        sink(map.get("XXX"));
+    }
+
+    public String unusedStringField;
+    public void testMapCompute4() {
+        Map<String, String> map = new HashMap<>();
+        String tainted = source();
+        map.compute("XXX", (k, v) -> {
+            unusedStringField = tainted;
+            return "Overwrite";
+        });
+        sink(map.get("XXX"));
+    }
+
+    public void testMapComputeIfAbsent1() {
+        Map<String, String> map = new HashMap<>();
+        String tainted = source();
+        map.computeIfAbsent("XXX", (k) -> tainted);
+        sink(map.get("XXX"));
+    }
+
+    public void testMapComputeIfAbsent2() {
+        Map<String, String> map = new HashMap<>();
+        String tainted = source();
+        map.computeIfAbsent("XXX", (k) -> "Whatever");
+        sink(map.get("XXX"));
+    }
+
+    public void testMapMerge1() {
+        Map<String, String> map = new HashMap<>();
+        String tainted = source();
+        map.put("XXX", tainted);
+        map.merge("XXX", "Value", (v1, v2) -> new StringBuilder(v1).append(v2).toString());
+        sink(map.get("XXX"));
+    }
+
+    public void testMapMerge2() {
+        Map<String, String> map = new HashMap<>();
+        String tainted = source();
+        map.put("XXX", tainted);
+        map.merge("XXX", "Value", (v1, v2) -> "Overwrite");
+        sink(map.get("XXX"));
+    }
+
+    public void testMapMerge3() {
+        Map<String, String> map = new HashMap<>();
+        String tainted = source();
+        map.merge("XXX", tainted, (v1, v2) -> new StringBuilder(v1).append(v2).toString());
+        sink(map.get("XXX"));
+    }
+
+    public void testMapMerge4() {
+        Map<String, String> map = new HashMap<>();
+        String tainted = source();
+        map.merge("XXX", tainted, (v1, v2) -> "Overwrite");
+        sink(map.get("XXX"));
+    }
+
+    public void testMapMerge5() {
+        Map<String, String> map = new HashMap<>();
+        String tainted = source();
+        map.merge("XXX", tainted, (v1, v2) -> v1);
+        sink(map.get("XXX"));
+    }
+
+
+    public void testMapMerge6() {
+        Map<String, String> map = new HashMap<>();
+        String tainted = source();
+        map.merge("XXX", tainted, (v1, v2) -> v2);
+        sink(map.get("XXX"));
+    }
+
+    public void testMapMerge7() {
+        Map<String, String> map = new HashMap<>();
+        String tainted = source();
+        map.put("XXX", tainted);
+        map.merge("XXX", "Value", (v1, v2) -> v1);
+        sink(map.get("XXX"));
+    }
+
+    public void testMapMerge8() {
+        Map<String, String> map = new HashMap<>();
+        String tainted = source();
+        map.put("XXX", tainted);
+        map.merge("XXX", "Value", (v1, v2) -> v2);
+        sink(map.get("XXX"));
+    }
+
+    public void testMapReplaceAll1() {
+        Map<String, String> map = new HashMap<>();
+        String tainted = source();
+        map.put("XXX", tainted);
+        map.replaceAll((k, v) ->  new StringBuilder("Prefix").append(v).toString());
+        sink(map.get("XXX"));
+    }
+
+    public void testMapReplaceAll2() {
+        Map<String, String> map = new HashMap<>();
+        String tainted = source();
+        map.put("XXX", tainted);
+        map.replaceAll((k, v) -> "Overwrite");
         sink(map.get("XXX"));
     }
 }

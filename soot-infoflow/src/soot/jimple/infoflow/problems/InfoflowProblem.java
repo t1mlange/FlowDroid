@@ -452,7 +452,7 @@ public class InfoflowProblem extends AbstractInfoflowProblem {
 						if (res != null && !res.isEmpty())
 							resAbs.addAll(res);
 						for (AccessPath ap : resMapping) {
-							if (ap != null) {
+							if (ap != null)  {
 								// If the variable is never read in the callee,
 								// there is no need to propagate it through
 								if (aliasing.getAliasingStrategy().isLazyAnalysis() || source.isImplicit()
