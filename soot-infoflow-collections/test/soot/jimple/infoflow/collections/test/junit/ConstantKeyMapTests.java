@@ -66,7 +66,6 @@ public class ConstantKeyMapTests extends FlowDroidTests {
 
     @Test(timeout = 30000)
     public void testMapClear1() {
-        // TODO: why stubdroid doesn't work here
         IInfoflow infoflow = initInfoflow();
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
