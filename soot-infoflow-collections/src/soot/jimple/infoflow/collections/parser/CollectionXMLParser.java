@@ -174,6 +174,9 @@ public class CollectionXMLParser {
                         case ALL:
                             keys[i] = isIndex ? new Index(ParamIndex.ALL.toInt()) : new Key(ParamIndex.ALL.toInt());
                             break;
+                        case FIRST_INDEX:
+                            keys[i] = isIndex ? new Index(ParamIndex.FIRST_INDEX.toInt()) : new Key(ParamIndex.FIRST_INDEX.toInt());
+                            break;
                         case LAST_INDEX:
                             keys[i] = isIndex ? new Index(ParamIndex.LAST_INDEX.toInt()) : new Key(ParamIndex.LAST_INDEX.toInt());
                             break;
@@ -197,7 +200,6 @@ public class CollectionXMLParser {
                 case RETURN_INDEX:
                     return ParamIndex.RETURN.toInt();
                 default:
-
                     try {
                         return Integer.parseInt(value);
                     } catch (NumberFormatException e) {

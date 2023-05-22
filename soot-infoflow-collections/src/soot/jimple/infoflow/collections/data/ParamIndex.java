@@ -8,10 +8,12 @@ public enum ParamIndex {
     UNUSED(-42),
     // Represents the base object
     // Represents any index
-    ALL(-4),
+    ALL(-5),
     // Represents that the access is the data argument
-    RETURN(-3),
-    BASE(-2),
+    RETURN(-4),
+    BASE(-3),
+    // Represents the first index (only for position based)
+    FIRST_INDEX(-2),
     // Represents the last index (only for position based)
     LAST_INDEX(-1);
 

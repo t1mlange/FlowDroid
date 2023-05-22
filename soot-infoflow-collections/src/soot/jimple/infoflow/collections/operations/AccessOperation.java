@@ -47,6 +47,8 @@ public class AccessOperation extends LocationDependentOperation {
                 ContextDefinition stmtKey;
                 if (locations[i].getParamIdx() == ParamIndex.LAST_INDEX.toInt())
                     stmtKey = strategy.getLastPosition(iie.getBase(), stmt);
+                else if (locations[i].getParamIdx() == ParamIndex.FIRST_INDEX.toInt())
+                    stmtKey = strategy.getFirstPosition(iie.getBase(), stmt);
                 else if (locations[i].getParamIdx() >= 0)
                     if (locations[i].isValueBased())
                         stmtKey = strategy.getIndexContext(iie.getArg(locations[i].getParamIdx()), stmt);

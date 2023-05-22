@@ -1,8 +1,6 @@
 package soot.jimple.infoflow.collections.test;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 import static soot.jimple.infoflow.collections.test.Helper.sink;
 import static soot.jimple.infoflow.collections.test.Helper.source;
@@ -196,5 +194,82 @@ public class ConstantIndexListTestCode {
         lst.add("yyy");
         List<String> subList = lst.subList(0, 1);
         sink(lst.get(1));
+    }
+
+    public void testListIterator1() {
+        List<String> lst = new ArrayList<>();
+        String tainted = source();
+        lst.add(tainted);
+        lst.iterator();
+        sink(lst.get(1));
+    }
+
+    public void testListIterator2() {
+        List<String> lst = new ArrayList<>();
+        String tainted = source();
+        lst.add(tainted);
+        Iterator<String> it = lst.iterator();
+        sink(it.next());
+    }
+
+    public void testListListIterator1() {
+        List<String> lst = new ArrayList<>();
+        String tainted = source();
+        lst.add(tainted);
+        lst.listIterator();
+        sink(lst.get(1));
+    }
+
+    public void testListListIterator2() {
+        List<String> lst = new ArrayList<>();
+        String tainted = source();
+        lst.add(tainted);
+        Iterator<String> it = lst.listIterator(1);
+        sink(it.next());
+    }
+
+    public void testListSet1() {
+        List<String> lst = new ArrayList<>();
+        String tainted = source();
+        lst.add("xxx");
+        lst.add(tainted);
+        lst.set(1, "XXX");
+        sink(lst.get(1));
+    }
+
+    public void testListSet2() {
+        List<String> lst = new ArrayList<>();
+        String tainted = source();
+        lst.add("xxx");
+        lst.add("yyy");
+        lst.set(1, tainted);
+        sink(lst.get(1));
+    }
+
+    public void testListRemoveAll1() {
+        List<String> lst = new ArrayList<>();
+        String tainted = source();
+        lst.add("xxx");
+        lst.add(tainted);
+        lst.removeAll(Collections.emptyList());
+        sink(lst.get(0));
+    }
+
+    public void testListRetainAll1() {
+        List<String> lst = new ArrayList<>();
+        String tainted = source();
+        lst.add("xxx");
+        lst.add(tainted);
+        lst.retainAll(Collections.emptyList());
+        sink(lst.get(0));
+    }
+
+    public void testListSort1() {
+        List<String> lst = new ArrayList<>();
+        String tainted = source();
+        lst.add("xxx");
+        lst.add(tainted);
+        lst.sort(String::compareTo);
+        sink(lst.get(0));
     }
 }

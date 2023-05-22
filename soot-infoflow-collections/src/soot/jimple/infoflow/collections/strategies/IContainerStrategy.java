@@ -50,6 +50,16 @@ public interface IContainerStrategy {
      * @param stmt
      * @return
      */
+    ContextDefinition getFirstPosition(Value value, Stmt stmt);
+
+    /**
+     * Retrieves a context given an implicit key before the given statement
+     * (i.e. a list where the key is dependent on the number of add calls before)
+     *
+     * @param value
+     * @param stmt
+     * @return
+     */
     ContextDefinition getLastPosition(Value value, Stmt stmt);
 
     /**

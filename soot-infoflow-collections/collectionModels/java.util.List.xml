@@ -22,7 +22,7 @@
                         type="[java.lang.Object[]]" />
         </shiftRight>
     </method>
-    <!-- addAll() handled with fallback -->
+    <!-- TODO: addAll() handled with fallback -->
     <method subsig="void clear()">
         <remove>
             <index idx="all" />
@@ -45,8 +45,8 @@
     <method subsig="java.util.Iterator iterator()">
         <invalidate>
             <index idx="0" />
-            <return AccessPath="[java.util.Iterator: java.lang.Object innerCollection]"
-                    AccessPathTypes="[java.lang.Object]" />
+            <return field="[java.util.Iterator: java.lang.Object innerCollection]"
+                    type="[java.lang.Object]" />
             <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
                         type="[java.lang.Object[]]" />
         </invalidate>
@@ -56,8 +56,8 @@
     <method subsig="java.util.ListIterator listIterator()">
         <invalidate>
             <index idx="0" />
-            <return field="[java.util.ListIterator: java.util.List innerList]"
-                    type="[java.util.List]" />
+            <return field="[java.util.Iterator: java.lang.Object innerCollection]"
+                    type="[java.lang.Object]" />
             <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
                         type="[java.lang.Object[]]" />
         </invalidate>
@@ -65,8 +65,8 @@
     <method subsig="java.util.ListIterator listIterator(int)">
         <invalidate>
             <index idx="0" />
-            <return field="[java.util.ListIterator: java.util.List innerList]"
-                    type="[java.util.List]" />
+            <return field="[java.util.Iterator: java.lang.Object innerCollection]"
+                    type="[java.lang.Object]" />
             <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
                         type="[java.lang.Object[]]" />
         </invalidate>

@@ -3,9 +3,7 @@ package soot.jimple.infoflow.collections;
 import heros.SynchronizedBy;
 import heros.solver.Pair;
 import heros.solver.PathEdge;
-import soot.SootMethod;
-import soot.Unit;
-import soot.Value;
+import soot.*;
 import soot.jimple.ReturnStmt;
 import soot.jimple.Stmt;
 import soot.jimple.infoflow.InfoflowManager;
@@ -196,7 +194,8 @@ public class CollectionTaintWrapper implements ITaintPropagationWrapper {
         if (!stmt.containsInvokeExpr())
             return fallbackTaintsForMethod(stmt, d1, taintedPath);
 
-        CollectionMethod method = getCollectionMethodForSootMethod(stmt.getInvokeExpr().getMethod());
+        SootMethod sm = stmt.getInvokeExpr().getMethod();
+        CollectionMethod method = getCollectionMethodForSootMethod(sm);
         if (method == null)
             return fallbackTaintsForMethod(stmt, d1, taintedPath);
 
@@ -234,8 +233,33 @@ public class CollectionTaintWrapper implements ITaintPropagationWrapper {
     private CollectionMethod getCollectionMethodForSootMethod(SootMethod sm) {
         CollectionModel model = models.get(sm.getDeclaringClass().getName());
         if (model != null) {
-            return model.getMethod(sm.getSubSignature());
+            CollectionMethod cm = model.getMethod(sm.getSubSignature());
+            if (cm != null)
+                return cm;
         }
+
+        List<SootClass> ifcs = new ArrayList<>(sm.getDeclaringClass().getInterfaces());
+        SootClass currentClass = sm.getDeclaringClass().getSuperclassUnsafe();
+        while (currentClass != null) {
+            model = models.get(currentClass.getName());
+            if (model != null) {
+                CollectionMethod cm = model.getMethod(sm.getSubSignature());
+                if (cm != null)
+                    return cm;
+            }
+            ifcs.addAll(currentClass.getInterfaces());
+            currentClass = currentClass.getSuperclassUnsafe();
+        }
+
+        for (SootClass ifc : ifcs) {
+            model = models.get(ifc.getName());
+            if (model != null) {
+                CollectionMethod cm = model.getMethod(sm.getSubSignature());
+                if (cm != null)
+                    return cm;
+            }
+        }
+
         return null;
     }
 
