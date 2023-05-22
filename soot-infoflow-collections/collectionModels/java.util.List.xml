@@ -16,11 +16,11 @@
             <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
                         type="[java.lang.Object[]]" />
         </insert>
-        <shift>
+        <shiftRight>
             <index idx="0" />
             <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
                         type="[java.lang.Object[]]" />
-        </shift>
+        </shiftRight>
     </method>
     <!-- addAll() handled with fallback -->
     <method subsig="void clear()">
@@ -51,6 +51,11 @@
             <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
                         type="[java.lang.Object[]]" />
         </remove>
+        <shiftLeft>
+            <index idx="0" />
+            <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
+                        type="[java.lang.Object[]]" />
+        </shiftLeft>
         <access>
             <index idx="0" />
             <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
@@ -58,14 +63,35 @@
         </access>
     </method>
     <method subsig="boolean remove(java.lang.Object)">
-        <!-- intentionally identity -->
+        <!-- We cannot remove any element but might shift -->
+        <shiftLeft>
+            <index idx="all" />
+            <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
+                        type="[java.lang.Object[]]" />
+        </shiftLeft>
     </method>
     <method subsig="boolean removeAll(java.util.Collection)">
-        <!-- intentionally identity -->
+        <invalidate>
+            <index idx="0" />
+            <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
+                        type="[java.lang.Object[]]" />
+        </invalidate>
     </method>
-    <!-- TODO: replaceAll() -->
+    <method subsig="void replaceAll(java.util.function.UnaryOperator)">
+        <compute>
+            <index idx="all" />
+            <callback idx="0" />
+            <callbackBase idx="0" />
+            <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
+                        type="[java.lang.Object[]]" />
+        </compute>
+    </method>
     <method subsig="boolean retainAll(java.util.Collection)">
-        <!-- intentionally identity -->
+        <invalidate>
+            <index idx="0" />
+            <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
+                        type="[java.lang.Object[]]" />
+        </invalidate>
     </method>
     <method subsig="java.lang.Object set(int,java.lang.Object)">
         <remove>

@@ -6,6 +6,7 @@ import soot.jimple.Stmt;
 import soot.jimple.infoflow.InfoflowManager;
 import soot.jimple.infoflow.collections.context.UnknownContext;
 import soot.jimple.infoflow.collections.data.Location;
+import soot.jimple.infoflow.collections.data.ParamIndex;
 import soot.jimple.infoflow.collections.strategies.IContainerStrategy;
 import soot.jimple.infoflow.collections.util.Tristate;
 import soot.jimple.infoflow.data.Abstraction;
@@ -15,12 +16,14 @@ import soot.jimple.infoflow.data.ContextDefinition;
 
 import java.util.Collection;
 
-public class ShiftOperation extends LocationDependentOperation {
+public abstract class AbstractShiftOperation extends LocationDependentOperation {
 
-    public ShiftOperation(Location[] keys, String field, String fieldType) {
+    public AbstractShiftOperation(Location[] keys, String field, String fieldType) {
         super(keys, field, fieldType);
         assert keys.length == 1; // TODO: generalize
     }
+
+    protected abstract ContextDefinition shift(ContextDefinition ctxt, Stmt stmt, boolean exact, IContainerStrategy strategy);
 
     @Override
     public boolean apply(Abstraction d1, Abstraction incoming, Stmt stmt, InfoflowManager manager, IContainerStrategy strategy, Collection<Abstraction> out) {
@@ -36,14 +39,19 @@ public class ShiftOperation extends LocationDependentOperation {
 
         ContextDefinition[] ctxts = fragment.getContext();
         assert ctxts.length == 1;
-
         ContextDefinition ctxt = ctxts[0];
-        ContextDefinition stmtCtxt = strategy.getIndexContext(iie.getArg(keys[0].getParamIdx()), stmt);
-        Tristate t = strategy.lessThanEqual(stmtCtxt, ctxt);
+
+        Tristate t;
+        if (keys[0].getParamIdx() == ParamIndex.ALL.toInt()) {
+            t = Tristate.MAYBE();
+        } else {
+            ContextDefinition stmtCtxt = strategy.getIndexContext(iie.getArg(keys[0].getParamIdx()), stmt);
+            t = strategy.lessThanEqual(stmtCtxt, ctxt);
+        }
 
         // If the insert might be in front of this index, we have to shift
         if (!t.isFalse()) {
-            ContextDefinition newCtxt = strategy.shiftRight(ctxt, stmt, t.isTrue());
+            ContextDefinition newCtxt = shift(ctxt, stmt, t.isTrue(), strategy);
             AccessPathFragment[] oldFragments = incoming.getAccessPath().getFragments();
             AccessPathFragment[] fragments = new AccessPathFragment[oldFragments.length];
             System.arraycopy(oldFragments, 0, fragments, 1, fragments.length - 1);
