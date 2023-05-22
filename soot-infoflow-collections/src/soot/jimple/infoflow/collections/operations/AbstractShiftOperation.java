@@ -42,10 +42,10 @@ public abstract class AbstractShiftOperation extends LocationDependentOperation 
         ContextDefinition ctxt = ctxts[0];
 
         Tristate t;
-        if (keys[0].getParamIdx() == ParamIndex.ALL.toInt()) {
+        if (locations[0].getParamIdx() == ParamIndex.ALL.toInt()) {
             t = Tristate.MAYBE();
         } else {
-            ContextDefinition stmtCtxt = strategy.getIndexContext(iie.getArg(keys[0].getParamIdx()), stmt);
+            ContextDefinition stmtCtxt = strategy.getIndexContext(iie.getArg(locations[0].getParamIdx()), stmt);
             t = strategy.lessThanEqual(stmtCtxt, ctxt);
         }
 

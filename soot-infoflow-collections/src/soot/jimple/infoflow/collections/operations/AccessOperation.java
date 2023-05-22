@@ -41,17 +41,17 @@ public class AccessOperation extends LocationDependentOperation {
         // We only have to check the keys if we have a context
         if (fragment.hasContext()) {
             ContextDefinition[] apCtxt = fragment.getContext();
-            assert keys.length == apCtxt.length; // Failure must be because of a bad model
+            assert locations.length == apCtxt.length; // Failure must be because of a bad model
 
-            for (int i = 0; i < keys.length && !state.isFalse(); i++) {
+            for (int i = 0; i < locations.length && !state.isFalse(); i++) {
                 ContextDefinition stmtKey;
-                if (keys[i].getParamIdx() == ParamIndex.LAST_INDEX.toInt())
+                if (locations[i].getParamIdx() == ParamIndex.LAST_INDEX.toInt())
                     stmtKey = strategy.getLastPosition(iie.getBase(), stmt);
-                else if (keys[i].getParamIdx() >= 0)
-                    if (keys[i].isValueBased())
-                        stmtKey = strategy.getIndexContext(iie.getArg(keys[i].getParamIdx()), stmt);
+                else if (locations[i].getParamIdx() >= 0)
+                    if (locations[i].isValueBased())
+                        stmtKey = strategy.getIndexContext(iie.getArg(locations[i].getParamIdx()), stmt);
                     else
-                        stmtKey = strategy.getKeyContext(iie.getArg(keys[i].getParamIdx()), stmt);
+                        stmtKey = strategy.getKeyContext(iie.getArg(locations[i].getParamIdx()), stmt);
                 else
                     throw new RuntimeException("Wrong key supplied");
                 state = state.and(strategy.intersect(apCtxt[i], stmtKey));

@@ -14,9 +14,6 @@ import soot.jimple.infoflow.data.AccessPath;
 import java.util.Collection;
 
 public class CopyOperation implements ICollectionOperation {
-    private static final int baseIdx = ParamIndex.BASE.toInt();
-    private static final int returnIdx = ParamIndex.RETURN.toInt();
-
     private final int from;
     private final int to;
 

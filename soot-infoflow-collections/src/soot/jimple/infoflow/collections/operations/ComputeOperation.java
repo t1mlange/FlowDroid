@@ -77,14 +77,14 @@ public class ComputeOperation extends LocationDependentOperation {
         // We might see a smashed container, where we can't infer anything
         if (fragment.hasContext()) {
             ContextDefinition[] apCtxt = fragment.getContext();
-            assert keys.length == apCtxt.length; // Failure must be because of a bad model
+            assert locations.length == apCtxt.length; // Failure must be because of a bad model
 
-            for (int i = 0; i < keys.length && state.isTrue(); i++) {
+            for (int i = 0; i < locations.length && state.isTrue(); i++) {
                 // ALL always matches the context
-                if (keys[i].getParamIdx() == ParamIndex.ALL.toInt())
+                if (locations[i].getParamIdx() == ParamIndex.ALL.toInt())
                     continue;
 
-                ContextDefinition stmtKey = strategy.getKeyContext(iie.getArg(keys[i].getParamIdx()), stmt);
+                ContextDefinition stmtKey = strategy.getKeyContext(iie.getArg(locations[i].getParamIdx()), stmt);
                 state = state.and(strategy.intersect(apCtxt[i], stmtKey));
             }
         }
@@ -141,14 +141,14 @@ public class ComputeOperation extends LocationDependentOperation {
     private Abstraction createCollectionTaint(Abstraction incoming, Stmt stmt, InstanceInvokeExpr iie,
                                               InfoflowManager manager, IContainerStrategy strategy) {
         Value base = iie.getBase();
-        ContextDefinition[] ctxt = new ContextDefinition[keys.length];
+        ContextDefinition[] ctxt = new ContextDefinition[locations.length];
         for (int i = 0; i < ctxt.length; i++) {
-            if (keys[i].getParamIdx() == ParamIndex.LAST_INDEX.toInt())
+            if (locations[i].getParamIdx() == ParamIndex.LAST_INDEX.toInt())
                 ctxt[i] = strategy.getNextPosition(base, stmt);
-            else if (keys[i].isValueBased())
-                ctxt[i] = strategy.getIndexContext(iie.getArg(keys[i].getParamIdx()), stmt);
+            else if (locations[i].isValueBased())
+                ctxt[i] = strategy.getIndexContext(iie.getArg(locations[i].getParamIdx()), stmt);
             else
-                ctxt[i] = strategy.getKeyContext(iie.getArg(keys[i].getParamIdx()), stmt);
+                ctxt[i] = strategy.getKeyContext(iie.getArg(locations[i].getParamIdx()), stmt);
         }
         if (strategy.shouldSmash(ctxt))
             ctxt = null;
@@ -191,8 +191,11 @@ public class ComputeOperation extends LocationDependentOperation {
     private void process(SootMethod sm, Abstraction d1, Stmt stmt, Abstraction injectIfSuccessful, Abstraction abs, InfoflowManager manager) {
         CollectionTaintWrapper tw = (CollectionTaintWrapper) manager.getTaintWrapper();
         tw.registerCallback(d1, stmt, injectIfSuccessful, abs, sm);
-        if (doReturn)
-            tw.registerCallback(d1, stmt, deriveReturnValueTaint(stmt, injectIfSuccessful, manager), abs, sm);
+        if (doReturn) {
+            Abstraction retAbs = deriveReturnValueTaint(stmt, injectIfSuccessful, manager);
+            if (retAbs != null)
+                tw.registerCallback(d1, stmt, retAbs, abs, sm);
+        }
 
         for (Unit sP : manager.getICFG().getStartPointsOf(sm)) {
             PathEdge<Unit, Abstraction> edge = new PathEdge<>(abs, sP, abs);

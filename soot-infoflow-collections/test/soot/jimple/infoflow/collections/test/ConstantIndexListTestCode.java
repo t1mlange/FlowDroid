@@ -177,4 +177,24 @@ public class ConstantIndexListTestCode {
         lst.replaceAll(e -> "Overwritten");
         sink(lst.get(0));
     }
+
+    public void testListSublist1() {
+        List<String> lst = new ArrayList<>();
+        String tainted = source();
+        lst.add(tainted);
+        lst.add("xxx");
+        lst.add("yyy");
+        List<String> subList = lst.subList(0, 1);
+        sink(subList.get(1));
+    }
+
+    public void testListSublist2() {
+        List<String> lst = new ArrayList<>();
+        String tainted = source();
+        lst.add(tainted);
+        lst.add("xxx");
+        lst.add("yyy");
+        List<String> subList = lst.subList(0, 1);
+        sink(lst.get(1));
+    }
 }

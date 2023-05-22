@@ -86,6 +86,7 @@
                 <xs:element name="key" type="key" />
                 <xs:element name="index" type="index" />
             </xs:choice>
+            <xs:element name="return" minOccurs="0" />
             <xs:element name="accessPath" type="accessPath" />
         </xs:sequence>
     </xs:complexType>

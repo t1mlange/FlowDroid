@@ -11,7 +11,6 @@ import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.data.AccessPath;
 import soot.jimple.infoflow.data.AccessPathFragment;
 import soot.jimple.infoflow.data.ContextDefinition;
-import soot.jimple.infoflow.typing.TypeUtils;
 
 import java.util.Collection;
 
@@ -30,14 +29,14 @@ public class InsertOperation extends LocationDependentOperation {
             return false;
 
         Value base = iie.getBase();
-        ContextDefinition[] ctxt = new ContextDefinition[keys.length];
+        ContextDefinition[] ctxt = new ContextDefinition[locations.length];
         for (int i = 0; i < ctxt.length; i++) {
-            if (keys[i].getParamIdx() == ParamIndex.LAST_INDEX.toInt())
+            if (locations[i].getParamIdx() == ParamIndex.LAST_INDEX.toInt())
                 ctxt[i] = strategy.getNextPosition(base, stmt);
-            else if (keys[i].isValueBased())
-                ctxt[i] = strategy.getIndexContext(iie.getArg(keys[i].getParamIdx()), stmt);
+            else if (locations[i].isValueBased())
+                ctxt[i] = strategy.getIndexContext(iie.getArg(locations[i].getParamIdx()), stmt);
             else
-                ctxt[i] = strategy.getKeyContext(iie.getArg(keys[i].getParamIdx()), stmt);
+                ctxt[i] = strategy.getKeyContext(iie.getArg(locations[i].getParamIdx()), stmt);
         }
         if (strategy.shouldSmash(ctxt))
             ctxt = null;
