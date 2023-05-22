@@ -25,6 +25,7 @@
             <key idx="0" />
             <callback idx="1" />
             <callbackBase idx="1" />
+            <return />
             <accessPath field="[java.util.Map: java.lang.Object[] values]"
                         type="[java.lang.Object[]]" />
         </compute>
@@ -33,6 +34,7 @@
         <compute>
             <key idx="0" />
             <callback idx="1" />
+            <return />
             <accessPath field="[java.util.Map: java.lang.Object[] values]"
                         type="[java.lang.Object[]]" />
         </compute>
@@ -71,6 +73,7 @@
             <callback idx="2" />
             <callbackBase idx="0" />
             <callbackData idx="1" />
+            <return />
             <accessPath field="[java.util.Map: java.lang.Object[] values]"
                         type="[java.lang.Object[]]" />
         </compute>

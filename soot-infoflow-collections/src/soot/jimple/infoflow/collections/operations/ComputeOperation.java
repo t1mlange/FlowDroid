@@ -2,6 +2,7 @@ package soot.jimple.infoflow.collections.operations;
 
 import heros.solver.PathEdge;
 import soot.*;
+import soot.jimple.AssignStmt;
 import soot.jimple.InstanceInvokeExpr;
 import soot.jimple.Stmt;
 import soot.jimple.infoflow.InfoflowManager;
@@ -175,9 +176,22 @@ public class ComputeOperation extends LocationDependentOperation {
         return new Abstraction(null, thisAp, null, null, false, false);
     }
 
+    private Abstraction deriveReturnValueTaint(Stmt stmt, Abstraction incoming, InfoflowManager manager) {
+        if (stmt instanceof AssignStmt) {
+            Value leftOp = ((AssignStmt) stmt).getLeftOp();
+            AccessPath leftAp = manager.getAccessPathFactory().copyWithNewValue(incoming.getAccessPath(), leftOp,
+                    leftOp.getType(), true);
+            return incoming.deriveNewAbstraction(leftAp, stmt);
+        }
+
+        return null;
+    }
+
     private void process(SootMethod sm, Abstraction d1, Stmt stmt, Abstraction injectIfSuccessful, Abstraction abs, InfoflowManager manager) {
         CollectionTaintWrapper tw = (CollectionTaintWrapper) manager.getTaintWrapper();
-        tw.registerCallback(d1, stmt, injectIfSuccessful, abs);
+        tw.registerCallback(d1, stmt, injectIfSuccessful, abs, sm);
+        if (doReturn)
+            tw.registerCallback(d1, stmt, deriveReturnValueTaint(stmt, injectIfSuccessful, manager), abs, sm);
 
         for (Unit sP : manager.getICFG().getStartPointsOf(sm)) {
             PathEdge<Unit, Abstraction> edge = new PathEdge<>(abs, sP, abs);
