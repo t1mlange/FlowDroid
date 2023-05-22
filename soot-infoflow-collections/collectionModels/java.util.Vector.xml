@@ -1,0 +1,101 @@
+<?xml version="1.0" ?>
+
+<collectionModel class="java.util.Vector" type="position">
+    <!-- TODO: addAll -->
+    <method subsig="void addElement(java.lang.Object)">
+        <insert>
+            <index idx="last" />
+            <data idx="0" />
+            <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
+                        type="[java.lang.Object[]]" />
+        </insert>
+    </method>
+    <!-- capacity() handled with fallback -->
+    <method subsig="void copyInto(java.lang.Object[])">
+        <!-- TODO: can be more precise if we handle arrays -->
+        <invalidate>
+            <index idx="0" />
+            <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
+                        type="[java.lang.Object[]]" />
+        </invalidate>
+    </method>
+    <method subsig="java.lang.Object get(int)">
+        <access>
+            <index idx="0" />
+            <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
+                        type="[java.lang.Object[]]" />
+        </access>
+    </method>
+    <!-- elements() handled with fallback -->
+    <!-- ensureCapacity() handled with fallback -->
+    <method subsig="java.lang.Object firstElement()">
+        <access>
+            <index idx="first" />
+            <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
+                        type="[java.lang.Object[]]" />
+        </access>
+    </method>
+    <method subsig="void insertElementAt(java.lang.Object,int)">
+        <insert>
+            <index idx="1" />
+            <data idx="0" />
+            <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
+                        type="[java.lang.Object[]]" />
+        </insert>
+        <shiftRight>
+            <index idx="0" />
+            <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
+                        type="[java.lang.Object[]]" />
+        </shiftRight>
+    </method>
+    <method subsig="void removeAllElements()">
+        <remove>
+            <index idx="all" />
+            <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
+                        type="[java.lang.Object[]]" />
+        </remove>
+    </method>
+    <method subsig="void removeElementAt(int)">
+        <remove>
+            <index idx="0" />
+            <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
+                        type="[java.lang.Object[]]" />
+        </remove>
+        <shiftLeft>
+            <index idx="0" />
+            <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
+                        type="[java.lang.Object[]]" />
+        </shiftLeft>
+    </method>
+    <method subsig="boolean removeElement(java.lang.Object)">
+        <!-- We cannot remove any element but might shift -->
+        <shiftLeft>
+            <index idx="all" />
+            <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
+                        type="[java.lang.Object[]]" />
+        </shiftLeft>
+    </method>
+    <method subsig="boolean removeIf(java.util.function.Predicate)">
+        <invalidate>
+            <index idx="all" />
+            <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
+                        type="[java.lang.Object[]]" />
+        </invalidate>
+    </method>
+    <!-- TODO: removeRange -->
+    <method subsig="void setElementAt(java.lang.Object,int)">
+        <remove>
+            <index idx="1" />
+            <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
+                        type="[java.lang.Object[]]" />
+        </remove>
+        <insert>
+            <index idx="1" />
+            <data idx="0" />
+            <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
+                        type="[java.lang.Object[]]" />
+        </insert>
+    </method>
+    <!-- setSize() handled by fallback -->
+    <!-- trimToSize() handled by fallback -->
+</collectionModel>

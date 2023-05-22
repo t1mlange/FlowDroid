@@ -36,6 +36,7 @@ public class CollectionXMLConstants {
     public static final String VALUE = "value";
     public static final String POSITION = "position";
     public static final String ALL = "all";
+    public static final String FIRST_INDEX = "first";
     public static final String LAST_INDEX = "last";
     public static final String BASE_INDEX = "base";
     public static final String RETURN_INDEX = "return";

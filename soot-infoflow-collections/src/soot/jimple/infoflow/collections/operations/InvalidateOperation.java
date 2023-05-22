@@ -13,7 +13,6 @@ import soot.jimple.infoflow.collections.data.Location;
 import soot.jimple.infoflow.collections.strategies.IContainerStrategy;
 import soot.jimple.infoflow.data.*;
 import soot.jimple.infoflow.sourcesSinks.definitions.AccessPathTuple;
-import soot.jimple.infoflow.typing.TypeUtils;
 
 import java.util.Collection;
 
@@ -53,7 +52,7 @@ public class InvalidateOperation extends LocationDependentOperation {
         if (!fragment.getField().getSignature().equals(this.field) || !fragment.hasContext())
             return false;
 
-        ContextDefinition[] ctxt = fragment.getContext();
+        ContextDefinition[] ctxt = fragment.getContext().clone();
         for (Location key : locations) {
             // Invalidate the n-th key
             ctxt[key.getParamIdx()] = UnknownContext.v();

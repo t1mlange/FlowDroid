@@ -8,27 +8,84 @@ import soot.jimple.Stmt;
 import soot.toolkits.graph.DirectedGraph;
 import soot.toolkits.scalar.ForwardFlowAnalysis;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
- *  NOT YET INITIALIZED
- *    / /  /      \
- *   0  1  2  ...  n
- *   \  \  \      /
- *  NON-CONSTANT SIZE
+ * Simple intraprocedural list size analysis performing constant propagation on the list size
+ *
+ * @author Tim Lange
  */
-public class IntraproceduralListSizeAnalysis extends ForwardFlowAnalysis<Unit, Map<Local, Integer>> {
+public class IntraproceduralListSizeAnalysis extends ForwardFlowAnalysis<Unit, Map<Local, IntraproceduralListSizeAnalysis.ListSize>> {
+
+    /**
+     *  NOT YET INITIALIZED OR NO LIST -> implicitly null
+     *    / /  /      \
+     *   0  1  2  ...  n
+     *   \  \  \      /
+     *  NON-CONSTANT SIZE -> BOTTOM
+     */
+    public static class ListSize {
+        int size;
+        boolean isBottom;
+
+        ListSize(int size) {
+            this.size = size;
+        }
+
+        ListSize() {
+            isBottom = true;
+        }
+
+        ListSize plusOne() {
+            if (isBottom)
+                return this;
+            return new ListSize(size + 1);
+        }
+
+        ListSize minusOne() {
+            if (isBottom)
+                return this;
+            return new ListSize(size - 1);
+        }
+
+        public int getSize() {
+            return size;
+        }
+
+        public boolean isBottom() {
+            return isBottom;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            ListSize listSize = (ListSize) o;
+            return size == listSize.size && isBottom == listSize.isBottom;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(size, isBottom);
+        }
+    }
+
     private final SootClass listClass;
+
+    private final Set<String> incrementors;
 
     public IntraproceduralListSizeAnalysis(DirectedGraph<Unit> graph) {
         super(graph);
         listClass = Scene.v().getSootClassUnsafe("java.util.List");
+        incrementors = new HashSet<>();
+        incrementors.add("boolean add(java.lang.Object)");
+        incrementors.add("java.lang.Object push(java.lang.Object)");
+        incrementors.add("void addElement(java.lang.Object)");
         doAnalysis();
     }
 
     @Override
-    protected void flowThrough(Map<Local, Integer> in, Unit unit, Map<Local, Integer> out) {
+    protected void flowThrough(Map<Local, ListSize> in, Unit unit, Map<Local, ListSize> out) {
         out.putAll(in);
         Stmt stmt = (Stmt) unit;
         if (stmt instanceof AssignStmt) {
@@ -38,7 +95,7 @@ public class IntraproceduralListSizeAnalysis extends ForwardFlowAnalysis<Unit, M
             if (leftOp instanceof Local && rightOp instanceof NewExpr) {
                 SootClass sc = ((NewExpr) rightOp).getBaseType().getSootClass();
                 if (Scene.v().getFastHierarchy().getAllImplementersOfInterface(listClass).contains(sc)) {
-                    out.put((Local) leftOp, 0);
+                    out.put((Local) leftOp, new ListSize(0));
                 }
             } else {
                 if (in.containsKey(leftOp))
@@ -64,38 +121,41 @@ public class IntraproceduralListSizeAnalysis extends ForwardFlowAnalysis<Unit, M
                 && !Scene.v().getFastHierarchy().getAllImplementersOfInterface(listClass).contains(sm.getDeclaringClass()))
             return;
 
-        if (sm.getSubSignature().equals("boolean add(java.lang.Object)")
-                || sm.getSubSignature().equals("java.lang.Object push(java.lang.Object)")) {
+        if (incrementors.contains(sm.getSubSignature())) {
             Local base = (Local) ((InstanceInvokeExpr) stmt.getInvokeExpr()).getBase();
-            Integer c = out.get(base);
-            if (c != null)
-                out.put(base, c+1);
+            ListSize size = out.get(base);
+            if (size != null)
+                out.put(base, size.plusOne());
         } else if (sm.getSubSignature().equals("java.lang.Object pop()")) {
             Local base = (Local) ((InstanceInvokeExpr) stmt.getInvokeExpr()).getBase();
-            Integer c = out.get(base);
-            if (c != null)
-                out.put(base, c-1);
+            ListSize size = out.get(base);
+            if (size != null)
+                out.put(base, size.minusOne());
         }
     }
 
     @Override
-    protected Map<Local, Integer> newInitialFlow() {
+    protected Map<Local, ListSize> newInitialFlow() {
         return new HashMap<>();
     }
 
     @Override
-    protected void merge(Map<Local, Integer> in1, Map<Local, Integer> in2, Map<Local, Integer> out) {
+    protected void merge(Map<Local, ListSize> in1, Map<Local, ListSize> in2, Map<Local, ListSize> out) {
         // Must
         for (Local local : in1.keySet()) {
-            Integer in1Const = in1.get(local);
-            Integer in2Const = in1.get(local);
-            if (in1Const != null && in1Const.equals(in2Const))
+            ListSize in1Const = in1.get(local);
+            ListSize in2Const = in1.get(local);
+            if (in1Const == null)
+                out.put(local, in2Const);
+            else if (in2Const == null || in1Const.equals(in2Const))
                 out.put(local, in1Const);
+            else
+                out.put(local, new ListSize());
         }
     }
 
     @Override
-    protected void copy(Map<Local, Integer> source, Map<Local, Integer> dest) {
+    protected void copy(Map<Local, ListSize> source, Map<Local, ListSize> dest) {
         if (source == dest) {
             return;
         }

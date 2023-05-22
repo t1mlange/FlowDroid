@@ -60,6 +60,11 @@ public class ConstantKeyStrategy implements IContainerStrategy {
     }
 
     @Override
+    public ContextDefinition getFirstPosition(Value value, Stmt stmt) {
+        return new IntervalContext(0);
+    }
+
+    @Override
     public ContextDefinition getLastPosition(Value value, Stmt stmt) {
         return getContextFromImplicitKey(value, stmt, true);
     }
@@ -96,9 +101,10 @@ public class ConstantKeyStrategy implements IContainerStrategy {
             SootMethod currMethod = manager.getICFG().getMethodOf(stmt);
             var lstSizeAnalysis = implicitIndices.computeIfAbsent(currMethod,
                     sm -> new IntraproceduralListSizeAnalysis(manager.getICFG().getOrCreateUnitGraph(sm)));
-            Integer i = lstSizeAnalysis.getFlowBefore(stmt).get(value);
-            if (i != null)
-                return new IntervalContext(decr ? i-1 : i);
+            IntraproceduralListSizeAnalysis.ListSize size = lstSizeAnalysis.getFlowBefore(stmt).get(value);
+            if (size != null && !size.isBottom()) {
+                return new IntervalContext(decr ? size.getSize() - 1 : size.getSize());
+            }
         }
 
         return UnknownContext.v();
