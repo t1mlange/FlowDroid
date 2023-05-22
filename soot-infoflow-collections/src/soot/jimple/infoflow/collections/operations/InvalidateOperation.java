@@ -1,22 +1,46 @@
 package soot.jimple.infoflow.collections.operations;
 
+import soot.Scene;
+import soot.SootField;
+import soot.Type;
 import soot.Value;
+import soot.jimple.AssignStmt;
 import soot.jimple.InstanceInvokeExpr;
 import soot.jimple.Stmt;
 import soot.jimple.infoflow.InfoflowManager;
 import soot.jimple.infoflow.collections.context.UnknownContext;
 import soot.jimple.infoflow.collections.data.Location;
 import soot.jimple.infoflow.collections.strategies.IContainerStrategy;
-import soot.jimple.infoflow.data.Abstraction;
-import soot.jimple.infoflow.data.AccessPath;
-import soot.jimple.infoflow.data.AccessPathFragment;
-import soot.jimple.infoflow.data.ContextDefinition;
+import soot.jimple.infoflow.data.*;
+import soot.jimple.infoflow.sourcesSinks.definitions.AccessPathTuple;
+import soot.jimple.infoflow.typing.TypeUtils;
 
 import java.util.Collection;
 
 public class InvalidateOperation extends LocationDependentOperation {
-    public InvalidateOperation(Location[] keys, String field, String fieldType) {
-        super(keys, field, fieldType);
+    private final AccessPathTuple returnTuple;
+
+    public InvalidateOperation(Location[] locations, String field, String fieldType, AccessPathTuple returnTuple) {
+        super(locations, field, fieldType);
+        this.returnTuple = returnTuple;
+    }
+
+    private Abstraction deriveReturnValueTaint(Stmt stmt, Abstraction incoming, InfoflowManager manager) {
+        if (stmt instanceof AssignStmt) {
+            Value leftOp = ((AssignStmt) stmt).getLeftOp();
+            int oldSize = incoming.getAccessPath().getFragmentCount();
+            String[] fields = returnTuple.getFields();
+            AccessPathFragment[] newFragments = new AccessPathFragment[fields.length + oldSize - 1];
+            System.arraycopy(incoming.getAccessPath().getFragments(), 1, newFragments, fields.length, oldSize - 1);
+            for (int i = 0; i < fields.length; i++) {
+                SootField f = safeGetField(fields[i]);
+                newFragments[i] = new AccessPathFragment(f, f.getType());
+            }
+            AccessPath ap = manager.getAccessPathFactory().createAccessPath(leftOp, newFragments, incoming.getAccessPath().getTaintSubFields());
+            return incoming.deriveNewAbstraction(ap, stmt);
+        }
+
+        return null;
     }
 
     @Override
@@ -30,7 +54,7 @@ public class InvalidateOperation extends LocationDependentOperation {
             return false;
 
         ContextDefinition[] ctxt = fragment.getContext();
-        for (Location key : keys) {
+        for (Location key : locations) {
             // Invalidate the n-th key
             ctxt[key.getParamIdx()] = UnknownContext.v();
         }
@@ -40,10 +64,16 @@ public class InvalidateOperation extends LocationDependentOperation {
 
         AccessPathFragment[] oldFragments = incoming.getAccessPath().getFragments();
         AccessPathFragment[] fragments = new AccessPathFragment[oldFragments.length];
-        System.arraycopy(oldFragments, 1, fragments, 1, fragments.length);
+        System.arraycopy(oldFragments, 1, fragments, 1, fragments.length - 1);
         fragments[0] = oldFragments[0].copyWithNewContext(ctxt);
         AccessPath ap = manager.getAccessPathFactory().createAccessPath(base, fragments, incoming.getAccessPath().getTaintSubFields());
         out.add(incoming.deriveNewAbstraction(ap, stmt));
+
+        if (returnTuple != null) {
+            Abstraction abs = deriveReturnValueTaint(stmt, incoming, manager);
+            if (abs != null)
+                out.add(abs);
+        }
 
         // The newly created taint contains the old one, keeping the old one alive would be redundant
         return true;

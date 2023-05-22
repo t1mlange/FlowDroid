@@ -33,17 +33,17 @@ public class RemoveOperation extends LocationDependentOperation {
             return false;
 
         ContextDefinition[] apCtxt = fragment.getContext();
-        assert keys.length == apCtxt.length; // Failure must be because of a bad model
+        assert locations.length == apCtxt.length; // Failure must be because of a bad model
 
         Tristate state = Tristate.TRUE();
-        for (int i = 0; i < keys.length && state.isTrue(); i++) {
+        for (int i = 0; i < locations.length && state.isTrue(); i++) {
             // We do not have to check the context if the key is a wildcard anyway
-            if (keys[i].getParamIdx() != ParamIndex.ALL.toInt()) {
+            if (locations[i].getParamIdx() != ParamIndex.ALL.toInt()) {
                 ContextDefinition stmtKey;
-                if (keys[i].isValueBased())
-                    stmtKey = strategy.getIndexContext(iie.getArg(keys[i].getParamIdx()), stmt);
+                if (locations[i].isValueBased())
+                    stmtKey = strategy.getIndexContext(iie.getArg(locations[i].getParamIdx()), stmt);
                 else
-                    stmtKey = strategy.getKeyContext(iie.getArg(keys[i].getParamIdx()), stmt);
+                    stmtKey = strategy.getKeyContext(iie.getArg(locations[i].getParamIdx()), stmt);
                 state = state.and(strategy.intersect(apCtxt[i], stmtKey));
             }
         }

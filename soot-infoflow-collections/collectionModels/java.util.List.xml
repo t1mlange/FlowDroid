@@ -42,9 +42,35 @@
     <!-- hashCode() handled with fallback -->
     <!-- indexOf() handled with fallback -->
     <!-- isEmpty() handled with fallback -->
-    <!-- iterator() handled with fallback -->
+    <method subsig="java.util.Iterator iterator()">
+        <invalidate>
+            <index idx="0" />
+            <return AccessPath="[java.util.Iterator: java.lang.Object innerCollection]"
+                    AccessPathTypes="[java.lang.Object]" />
+            <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
+                        type="[java.lang.Object[]]" />
+        </invalidate>
+    </method>
     <!-- lastIndexOf() handled with fallback -->
     <!-- listIterator() handled with fallback -->
+    <method subsig="java.util.ListIterator listIterator()">
+        <invalidate>
+            <index idx="0" />
+            <return field="[java.util.ListIterator: java.util.List innerList]"
+                    type="[java.util.List]" />
+            <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
+                        type="[java.lang.Object[]]" />
+        </invalidate>
+    </method>
+    <method subsig="java.util.ListIterator listIterator(int)">
+        <invalidate>
+            <index idx="0" />
+            <return field="[java.util.ListIterator: java.util.List innerList]"
+                    type="[java.util.List]" />
+            <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
+                        type="[java.lang.Object[]]" />
+        </invalidate>
+    </method>
     <method subsig="java.lang.Object remove(int)">
         <remove>
             <index idx="0" />
@@ -119,11 +145,19 @@
                         type="[java.lang.Object[]]" />
         </invalidate>
     </method>
-    <!-- spliterator() handled with fallback -->
-    <method subsig="java.util.List subList(int,int)">
-        <!-- TODO: there may be better ways to model this function -->
+    <method subsig="java.util.Spliterator spliterator()">
         <invalidate>
             <index idx="0" />
+            <return />
+            <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
+                        type="[java.lang.Object[]]" />
+        </invalidate>
+    </method>
+    <method subsig="java.util.List subList(int,int)">
+        <invalidate>
+            <index idx="0" />
+            <return field="[java.util.Collection: java.lang.Object[] innerArray]"
+                    type="[java.lang.Object[]]" />
             <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
                         type="[java.lang.Object[]]" />
         </invalidate>

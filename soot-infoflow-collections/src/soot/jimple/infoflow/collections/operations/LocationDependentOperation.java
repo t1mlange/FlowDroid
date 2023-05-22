@@ -8,12 +8,12 @@ import soot.jimple.infoflow.collections.data.Location;
 import soot.jimple.infoflow.typing.TypeUtils;
 
 public abstract class LocationDependentOperation implements ICollectionOperation {
-    protected final Location[] keys;
+    protected final Location[] locations;
     protected final String field;
     protected final String fieldType;
 
-    public LocationDependentOperation(Location[] keys, String field, String fieldType) {
-        this.keys = keys;
+    public LocationDependentOperation(Location[] locations, String field, String fieldType) {
+        this.locations = locations;
         this.field = field;
         this.fieldType = fieldType;
     }

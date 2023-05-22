@@ -7,6 +7,8 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 import soot.jimple.infoflow.collections.data.*;
 import soot.jimple.infoflow.collections.operations.*;
+import soot.jimple.infoflow.sourcesSinks.definitions.AccessPathTuple;
+import soot.jimple.infoflow.sourcesSinks.definitions.SourceSinkType;
 import soot.jimple.infoflow.util.ResourceUtils;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -33,12 +35,14 @@ public class CollectionXMLParser {
         private int dataIdx;
         private String accessPathField;
         private String accessPathType;
+        private String returnAccessPathField;
+        private String returnAccessPathType;
+        private boolean doReturn;
         private int callbackIdx;
         private int callbackBaseIdx;
         private int callbackDataIdx;
         private int fromIdx;
         private int toIdx;
-        private boolean doReturn;
 
         // Used inside a CollectionMethod
         private String subSig;
@@ -99,6 +103,12 @@ public class CollectionXMLParser {
                     break;
                 case RETURN_TAG:
                     doReturn = true;
+                    returnAccessPathField = attributes.getValue(FIELD_ATTR);
+                    if (returnAccessPathField != null)
+                        returnAccessPathField = "<" + returnAccessPathField.substring(1, returnAccessPathField.length() - 1) + ">";
+                    returnAccessPathType = attributes.getValue(TYPE_ATTR);
+                    if (returnAccessPathType != null)
+                        returnAccessPathType = returnAccessPathType.substring(1, returnAccessPathType.length() - 1);
                     break;
             }
         }
@@ -140,7 +150,10 @@ public class CollectionXMLParser {
                     resetAfterOperation();
                     break;
                 case INVALIDATE_TAG:
-                    operations.add(new InvalidateOperation(trimKeys(keys), accessPathField, accessPathType));
+                    AccessPathTuple retTuple = null;
+                    if (returnAccessPathField != null)
+                        retTuple = AccessPathTuple.fromPathElements(returnAccessPathField, returnAccessPathType, SourceSinkType.Neither);
+                    operations.add(new InvalidateOperation(trimKeys(keys), accessPathField, accessPathType, retTuple));
                     resetAfterOperation();
                     break;
                 case COMPUTE_TAG:
@@ -215,6 +228,8 @@ public class CollectionXMLParser {
             doReturn = false;
             accessPathField = null;
             accessPathType = null;
+            returnAccessPathField = null;
+            returnAccessPathType = null;
         }
 
         protected void resetAfterMethod() {
