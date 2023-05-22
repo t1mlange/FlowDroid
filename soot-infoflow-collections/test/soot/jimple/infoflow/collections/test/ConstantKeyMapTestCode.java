@@ -278,4 +278,48 @@ public class ConstantKeyMapTestCode {
         map.replaceAll((k, v) -> "Overwrite");
         sink(map.get("XXX"));
     }
+
+    public void testMapComputeReturn1() {
+        Map<String, String> map = new HashMap<>();
+        String tainted = source();
+        String returned = map.compute("XXX", (k,v) -> tainted);
+        sink(returned);
+    }
+
+    public void testMapComputeReturn2() {
+        Map<String, String> map = new HashMap<>();
+        String tainted = source();
+        String returned = map.computeIfAbsent("XXX", (k) -> tainted);
+        sink(returned);
+    }
+
+    public void testMapComputeReturn3() {
+        Map<String, String> map = new HashMap<>();
+        String tainted = source();
+        String returned = map.computeIfPresent("XXX", (k,v) -> tainted);
+        sink(returned);
+    }
+
+    public void testMapComputeReturn4() {
+        Map<String, String> map = new HashMap<>();
+        String tainted = source();
+        map.put("XXX", tainted);
+        String returned = map.merge("XXX", "Value", (v1, v2) -> new StringBuilder(v1).append(v2).toString());
+        sink(returned);
+    }
+
+    public void testMapComputeReturn5() {
+        Map<String, String> map = new HashMap<>();
+        String tainted = source();
+        String returned = map.merge("XXX", tainted, (v1, v2) -> new StringBuilder(v1).append(v2).toString());
+        sink(returned);
+    }
+
+    public void testMapComputeReturn6() {
+        Map<String, String> map = new HashMap<>();
+        String tainted = source();
+        map.put("XXX", tainted);
+        String returned = map.merge("XXX", "Value", (v1, v2) -> v2);
+        sink(returned);
+    }
 }

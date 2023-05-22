@@ -1,6 +1,7 @@
 package soot.jimple.infoflow.collections;
 
 import heros.SynchronizedBy;
+import heros.solver.Pair;
 import heros.solver.PathEdge;
 import soot.SootMethod;
 import soot.Unit;
@@ -21,6 +22,7 @@ import soot.jimple.infoflow.data.ContextDefinition;
 import soot.jimple.infoflow.handlers.PreAnalysisHandler;
 import soot.jimple.infoflow.solver.IFollowReturnsPastSeedsHandler;
 import soot.jimple.infoflow.taintWrappers.ITaintPropagationWrapper;
+import soot.util.ConcurrentHashMultiMap;
 import soot.util.HashMultiMap;
 import soot.util.MultiMap;
 
@@ -167,14 +169,16 @@ public class CollectionTaintWrapper implements ITaintPropagationWrapper {
         @Override
         public void handleFollowReturnsPastSeeds(Abstraction d1, Unit u, Abstraction d2) {
             if (u instanceof ReturnStmt) {
-                Callback p = callbacks.get(d1);
-                if (p != null) {
-                    Value retOp = ((ReturnStmt) u).getOp();
-                    if (manager.getAliasing().mayAlias(d2.getAccessPath().getPlainValue(), retOp)) {
-                        callbacks.remove(d1);
-                        for (Unit s : manager.getICFG().getSuccsOf(p.u)) {
-                            PathEdge<Unit, Abstraction> e = new PathEdge<>(p.d1, s, p.d2);
-                            manager.getMainSolver().processEdge(e);
+                Value retOp = ((ReturnStmt) u).getOp();
+                if (manager.getAliasing().mayAlias(d2.getAccessPath().getPlainValue(), retOp)) {
+                    SootMethod sm = manager.getICFG().getMethodOf(u);
+                    Set<Callback> pairs = callbacks.get(new Pair<>(d1, sm));
+                    if (pairs != null) {
+                        for (Callback p : pairs) {
+                            for (Unit s : manager.getICFG().getSuccsOf(p.u)) {
+                                PathEdge<Unit, Abstraction> e = new PathEdge<>(p.d1, s, p.d2);
+                                manager.getMainSolver().processEdge(e);
+                            }
                         }
                     }
                 }
@@ -182,9 +186,9 @@ public class CollectionTaintWrapper implements ITaintPropagationWrapper {
         }
     }
 
-    Map<Abstraction, Callback> callbacks = new HashMap<>();
-    public void registerCallback(Abstraction d1, Stmt stmt, Abstraction curr, Abstraction queued) {
-        callbacks.put(queued, new Callback(d1, stmt, curr));
+    MultiMap<Pair<Abstraction, SootMethod>, Callback> callbacks = new ConcurrentHashMultiMap<>();
+    public void registerCallback(Abstraction d1, Stmt stmt, Abstraction curr, Abstraction queued, SootMethod sm) {
+        callbacks.put(new Pair<>(queued, sm), new Callback(d1, stmt, curr));
     }
 
     @Override
