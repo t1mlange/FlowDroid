@@ -52,6 +52,24 @@ public class IntervalContext implements ContextDefinition {
         return this;
     }
 
+    public ContextDefinition shiftLeft(Stmt stmt) {
+        if (shiftStmts.contains(stmt))
+            return UnknownContext.v();
+
+        if (max < Integer.MAX_VALUE)
+            return new IntervalContext(min - 1, max - 1, shiftStmts, stmt);
+        return this;
+    }
+
+    public ContextDefinition subtractLeft(Stmt stmt) {
+        if (shiftStmts.contains(stmt))
+            return UnknownContext.v();
+
+        if (max < Integer.MAX_VALUE)
+            return new IntervalContext(min - 1, max, shiftStmts, stmt);
+        return this;
+    }
+
     public Tristate lessThanEqual(IntervalContext other) {
         if (max <= other.min)
             return Tristate.TRUE();

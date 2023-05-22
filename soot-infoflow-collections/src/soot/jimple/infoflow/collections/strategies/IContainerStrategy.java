@@ -70,6 +70,14 @@ public interface IContainerStrategy {
     ContextDefinition shiftRight(ContextDefinition ctxt, Stmt stmt, boolean exact);
 
     /**
+     * Shifts the ctxt to the right
+     *
+     * @param ctxt current context
+     * @return new context
+     */
+    ContextDefinition shiftLeft(ContextDefinition ctxt, Stmt stmt, boolean exact);
+
+    /**
      * Returns whether the context is still useful or not
      *
      * @param ctxts contexts

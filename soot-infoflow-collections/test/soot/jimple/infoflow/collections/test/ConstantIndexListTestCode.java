@@ -53,6 +53,35 @@ public class ConstantIndexListTestCode {
         sink(removed);
     }
 
+    public void testListRemove3() {
+        List<String> lst = new ArrayList<>();
+        String tainted = source();
+        lst.add("Some String");
+        lst.add(tainted);
+        lst.remove(0);
+        sink(lst.get(0));
+    }
+
+    public void testListRemove4() {
+        List<String> lst = new ArrayList<>();
+        String tainted = source();
+        lst.add("Some String");
+        lst.add(tainted);
+        lst.add("Some String");
+        lst.remove(0);
+        sink(lst.get(1));
+    }
+
+    public void testListRemove5() {
+        List<String> lst = new ArrayList<>();
+        String tainted = source();
+        lst.add("Some String");
+        lst.add(tainted);
+        lst.add("Some String");
+        lst.remove("String");
+        sink(lst.get(0));
+    }
+
     public void testListClear() {
         List<String> lst = new ArrayList<>();
         String tainted = source();
@@ -130,6 +159,22 @@ public class ConstantIndexListTestCode {
         while (new Random().nextBoolean()) {
             lst.add(0, "Some element"); // tainted idx gets shifted by 1 each iteration
         }
+        sink(lst.get(0));
+    }
+
+    public void testListReplaceAll1() {
+        List<String> lst = new ArrayList<>();
+        String tainted = source();
+        lst.add(tainted);
+        lst.replaceAll(e -> e);
+        sink(lst.get(0));
+    }
+
+    public void testListReplaceAll2() {
+        List<String> lst = new ArrayList<>();
+        String tainted = source();
+        lst.add(tainted);
+        lst.replaceAll(e -> "Overwritten");
         sink(lst.get(0));
     }
 }

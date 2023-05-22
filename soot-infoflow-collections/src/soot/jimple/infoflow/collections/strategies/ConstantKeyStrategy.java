@@ -83,6 +83,14 @@ public class ConstantKeyStrategy implements IContainerStrategy {
         throw new RuntimeException("Expect interval context but got instead: " + ctxt);
     }
 
+    @Override
+    public ContextDefinition shiftLeft(ContextDefinition ctxt, Stmt stmt, boolean exact) {
+        if (ctxt instanceof IntervalContext)
+            return exact ? ((IntervalContext) ctxt).shiftLeft(stmt) : ((IntervalContext) ctxt).subtractLeft(stmt);
+
+        throw new RuntimeException("Expect interval context but got instead: " + ctxt);
+    }
+
     private ContextDefinition getContextFromImplicitKey(Value value, Stmt stmt, boolean decr) {
         if (value instanceof Local) {
             SootMethod currMethod = manager.getICFG().getMethodOf(stmt);

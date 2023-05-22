@@ -9,7 +9,8 @@ public class CollectionXMLConstants {
 
     public static final String ACCESS_TAG = "access";
     public static final String INSERT_TAG = "insert";
-    public static final String SHIFT_TAG = "shift";
+    public static final String SHIFT_LEFT_TAG = "shiftLeft";
+    public static final String SHIFT_RIGHT_TAG = "shiftRight";
     public static final String REMOVE_TAG = "remove";
     public static final String COPY_TAG = "copy";
     public static final String INVALIDATE_TAG = "invalidate";

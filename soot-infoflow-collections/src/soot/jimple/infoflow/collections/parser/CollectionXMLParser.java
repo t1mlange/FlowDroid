@@ -123,8 +123,12 @@ public class CollectionXMLParser {
                     operations.add(new InsertOperation(trimKeys(keys), dataIdx, accessPathField, accessPathType));
                     resetAfterOperation();
                     break;
-                case SHIFT_TAG:
-                    operations.add(new ShiftOperation(trimKeys(keys), accessPathField, accessPathType));
+                case SHIFT_LEFT_TAG:
+                    operations.add(new ShiftLeftOperation(trimKeys(keys), accessPathField, accessPathType));
+                    resetAfterOperation();
+                    break;
+                case SHIFT_RIGHT_TAG:
+                    operations.add(new ShiftRightOperation(trimKeys(keys), accessPathField, accessPathType));
                     resetAfterOperation();
                     break;
                 case REMOVE_TAG:

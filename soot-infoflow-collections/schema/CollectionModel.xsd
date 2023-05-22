@@ -17,7 +17,8 @@
                 <xs:element name="insert" type="insert" />
                 <xs:element name="remove" type="remove" />
                 <xs:element name="copy" type="copy" />
-                <xs:element name="shift" type="shift" />
+                <xs:element name="shiftLeft" type="shift" />
+                <xs:element name="shiftRight" type="shift" />
                 <xs:element name="compute" type="compute" />
                 <xs:element name="invalidate" type="invalidate" />
             </xs:choice>

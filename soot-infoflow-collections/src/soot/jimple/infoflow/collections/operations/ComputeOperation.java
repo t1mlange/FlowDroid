@@ -42,7 +42,8 @@ public class ComputeOperation extends LocationDependentOperation {
         InstanceInvokeExpr iie = ((InstanceInvokeExpr) stmt.getInvokeExpr());
 
         // Some methods such as computeIfAbsent won't have a value provided
-        if (callbackBaseIdx != ParamIndex.UNUSED.toInt()
+        boolean usesContents = callbackBaseIdx != ParamIndex.UNUSED.toInt();
+        if (usesContents
                 && manager.getAliasing().mayAlias(incoming.getAccessPath().getPlainValue(), iie.getBase()))
             return identityDependsOnCallback(d1, incoming, stmt, manager, strategy);
 
