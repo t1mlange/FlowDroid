@@ -83,10 +83,12 @@
 
     <xs:complexType name="invalidate">
         <xs:sequence>
-            <xs:choice>
-                <xs:element name="key" type="key" />
-                <xs:element name="index" type="index" />
-            </xs:choice>
+            <xs:sequence maxOccurs="2">
+                <xs:choice>
+                    <xs:element name="key" type="key" />
+                    <xs:element name="index" type="index" />
+                </xs:choice>
+            </xs:sequence>
             <xs:element name="return" minOccurs="0" />
             <xs:element name="accessPath" type="accessPath" />
         </xs:sequence>
