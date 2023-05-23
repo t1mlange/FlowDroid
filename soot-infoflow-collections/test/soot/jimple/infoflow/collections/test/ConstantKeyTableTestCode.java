@@ -113,7 +113,9 @@ public class ConstantKeyTableTestCode {
         Table<String, String, String> t = HashBasedTable.create();
         t.put("Key", "Key", source());
         Set<Table.Cell<String, String, String>> set = t.cellSet();
-        sink(set.stream().findAny().get().getValue());
+        for (Table.Cell<String, String, String> cell : set) {
+            sink(cell.getValue());
+        }
     }
 
     public void testTableCellSet2() {
