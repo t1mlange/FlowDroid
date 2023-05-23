@@ -1,5 +1,6 @@
 package soot.jimple.infoflow.collections.operations;
 
+import soot.SootField;
 import soot.Value;
 import soot.jimple.AssignStmt;
 import soot.jimple.InstanceInvokeExpr;
@@ -14,11 +15,18 @@ import soot.jimple.infoflow.data.AccessPath;
 import soot.jimple.infoflow.data.AccessPathFragment;
 import soot.jimple.infoflow.data.ContextDefinition;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 public class AccessOperation extends LocationDependentOperation {
-    public AccessOperation(Location[] keys, String field, String fieldType) {
+    private final String returnField;
+    private final String returnFieldType;
+
+    public AccessOperation(Location[] keys, String field, String fieldType, String returnField, String returnFieldType) {
         super(keys, field, fieldType);
+        this.returnField = returnField;
+        this.returnFieldType = returnFieldType;
     }
 
     @Override
@@ -33,10 +41,11 @@ public class AccessOperation extends LocationDependentOperation {
             return false;
 
         AccessPathFragment fragment = incoming.getAccessPath().getFirstFragment();
-        if (!fragment.getField().getSignature().equals(this.field))
+        if (fragment == null || !fragment.getField().getSignature().equals(this.field))
             return false;
 
         Tristate state = Tristate.TRUE();
+        List<ContextDefinition> copy = null;
 
         // We only have to check the keys if we have a context
         if (fragment.hasContext()) {
@@ -49,7 +58,14 @@ public class AccessOperation extends LocationDependentOperation {
                     stmtKey = strategy.getLastPosition(iie.getBase(), stmt);
                 else if (locations[i].getParamIdx() == ParamIndex.FIRST_INDEX.toInt())
                     stmtKey = strategy.getFirstPosition(iie.getBase(), stmt);
-                else if (locations[i].getParamIdx() >= 0)
+                else if (locations[i].getParamIdx() == ParamIndex.ALL.toInt())
+                    continue;
+                else if (locations[i].getParamIdx() == ParamIndex.COPY.toInt()) {
+                    if (copy == null)
+                        copy = new ArrayList<>();
+                    copy.add(apCtxt[i]);
+                    continue;
+                } else if (locations[i].getParamIdx() >= 0)
                     if (locations[i].isValueBased())
                         stmtKey = strategy.getIndexContext(iie.getArg(locations[i].getParamIdx()), stmt);
                     else
@@ -63,9 +79,20 @@ public class AccessOperation extends LocationDependentOperation {
         if (!state.isFalse()) {
             Value leftOp = ((AssignStmt) stmt).getLeftOp();
             AccessPathFragment[] oldFragments = incoming.getAccessPath().getFragments();
-            AccessPathFragment[] fragments = new AccessPathFragment[oldFragments.length - 1];
-            System.arraycopy(oldFragments, 1, fragments, 0, fragments.length);
-            AccessPath ap = manager.getAccessPathFactory().createAccessPath(leftOp, fragments, incoming.getAccessPath().getTaintSubFields());
+            AccessPathFragment[] fragments;
+            if (returnField == null) {
+                fragments = new AccessPathFragment[oldFragments.length - 1];
+                System.arraycopy(oldFragments, 1, fragments, 0, fragments.length);
+            } else {
+                fragments = new AccessPathFragment[oldFragments.length];
+                System.arraycopy(oldFragments, 1, fragments, 1, fragments.length - 1);
+                fragments[0] = new AccessPathFragment(safeGetField(returnField));
+            }
+            if (copy != null)
+                fragments[0] = fragments[0].copyWithNewContext(copy.toArray(new ContextDefinition[0]));
+
+            AccessPath ap = manager.getAccessPathFactory().createAccessPath(leftOp, fragments,
+                    incoming.getAccessPath().getTaintSubFields());
             out.add(incoming.deriveNewAbstraction(ap, stmt));
         }
 

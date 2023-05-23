@@ -126,7 +126,7 @@ public class CollectionXMLParser {
                     resetAfterMethod();
                     break;
                 case ACCESS_TAG:
-                    operations.add(new AccessOperation(trimKeys(keys), accessPathField, accessPathType));
+                    operations.add(new AccessOperation(trimKeys(keys), accessPathField, accessPathType, returnAccessPathField, returnAccessPathType));
                     resetAfterOperation();
                     break;
                 case INSERT_TAG:
@@ -179,6 +179,9 @@ public class CollectionXMLParser {
                             break;
                         case LAST_INDEX:
                             keys[i] = isIndex ? new Index(ParamIndex.LAST_INDEX.toInt()) : new Key(ParamIndex.LAST_INDEX.toInt());
+                            break;
+                        case COPY_TAG:
+                            keys[i] = isIndex ? new Index(ParamIndex.COPY.toInt()) : new Key(ParamIndex.COPY.toInt());
                             break;
                         default:
                             try {
