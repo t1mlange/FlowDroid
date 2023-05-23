@@ -1,0 +1,53 @@
+<?xml version="1.0" ?>
+
+<collectionModel class="com.google.common.collect.Table" type="value">
+    <method subsig="java.lang.Object put(java.lang.Object,java.lang.Object,java.lang.Object)">
+        <remove>
+            <key idx="0" />
+            <key idx="1" />
+            <accessPath field="[com.google.common.collect.Table: java.lang.Object[] table]"
+                        type="[java.lang.Object[]]" />
+        </remove>
+        <access>
+            <key idx="0" />
+            <key idx="1" />
+            <accessPath field="[com.google.common.collect.Table: java.lang.Object[] table]"
+                        type="[java.lang.Object[]]" />
+        </access>
+        <insert>
+            <key idx="0" />
+            <key idx="1" />
+            <data idx="2" />
+            <accessPath field="[com.google.common.collect.Table: java.lang.Object[] table]"
+                        type="[java.lang.Object[]]" />
+        </insert>
+    </method>
+    <method subsig="void putAll(com.google.common.collect.Table)">
+        <copy>
+            <from idx="0" />
+            <to idx="base" />
+        </copy>
+    </method>
+    <method subsig="java.lang.Object remove(java.lang.Object,java.lang.Object)">
+        <access>
+            <key idx="0" />
+            <key idx="1" />
+            <accessPath field="[com.google.common.collect.Table: java.lang.Object[] table]"
+                        type="[java.lang.Object[]]" />
+        </access>
+        <remove>
+            <key idx="0" />
+            <key idx="1" />
+            <accessPath field="[com.google.common.collect.Table: java.lang.Object[] table]"
+                        type="[java.lang.Object[]]" />
+        </remove>
+    </method>
+    <method subsig="java.lang.Object get(java.lang.Object,java.lang.Object)">
+        <access>
+            <key idx="0" />
+            <key idx="1" />
+            <accessPath field="[com.google.common.collect.Table: java.lang.Object[] table]"
+                        type="[java.lang.Object[]]" />
+        </access>
+    </method>
+</collectionModel>
