@@ -146,17 +146,10 @@ public class WrapperPropagationRule extends AbstractTaintPropagationRule {
 			ByReferenceBoolean killSource, ByReferenceBoolean killAll) {
 		// Compute the taint wrapper taints
 		Collection<Abstraction> wrapperTaints = computeWrapperTaints(d1, stmt, source);
-		if (wrapperTaints != null) {
-			// If the taint wrapper generated an abstraction for
-			// the incoming access path, we assume it to be handled
-			// and do not pass on the incoming abstraction on our own
-			for (Abstraction wrapperAbs : wrapperTaints)
-				if (wrapperAbs.getAccessPath().equals(source.getAccessPath())) {
-					if (wrapperAbs != source)
-						killSource.value = true;
-					break;
-				}
-		}
+
+		// We assume each taint wrapper returns the complete set of taints. Thus, if the source should be kept alive,
+		// the taint wrapper already added it to the outgoing set.
+		killSource.value = manager.getTaintWrapper() != null && manager.getTaintWrapper().isExclusive(stmt, source);
 
 		return wrapperTaints;
 	}
