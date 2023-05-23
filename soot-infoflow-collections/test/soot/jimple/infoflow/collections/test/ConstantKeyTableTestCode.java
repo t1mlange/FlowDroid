@@ -4,6 +4,7 @@ import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 
 import java.util.Map;
+import java.util.Set;
 
 import static soot.jimple.infoflow.collections.test.Helper.sink;
 import static soot.jimple.infoflow.collections.test.Helper.source;
@@ -66,22 +67,87 @@ public class ConstantKeyTableTestCode {
 
     public void testTableRow1() {
         Table<String, String, String> t = HashBasedTable.create();
-        t.put("Key", "Key", source());
-        Map<String, String> map = t.row("Key");
-        sink(map.get("Key"));
+        t.put("Row", "Col", source());
+        Map<String, String> map = t.row("Row");
+        sink(map.get("Col"));
     }
 
     public void testTableRow2() {
         Table<String, String, String> t = HashBasedTable.create();
-        t.put("Key", "Key", source());
-        Map<String, String> map = t.row("Key");
-        sink(map.get("Key2"));
+        t.put("Row", "Col", source());
+        Map<String, String> map = t.row("Col");
+        sink(map.get("Row"));
+        sink(map.get("Col"));
     }
 
     public void testTableRow3() {
         Table<String, String, String> t = HashBasedTable.create();
+        t.put("Row", "Col", source());
+        Map<String, String> map = t.row("Row");
+        sink(map.get("Row"));
+    }
+
+    public void testTableColumn1() {
+        Table<String, String, String> t = HashBasedTable.create();
+        t.put("Row", "Col", source());
+        Map<String, String> map = t.column("Col");
+        sink(map.get("Row"));
+    }
+
+    public void testTableColumn2() {
+        Table<String, String, String> t = HashBasedTable.create();
+        t.put("Row", "Col", source());
+        Map<String, String> map = t.column("Row");
+        sink(map.get("Row"));
+        sink(map.get("Col"));
+    }
+
+    public void testTableColumn3() {
+        Table<String, String, String> t = HashBasedTable.create();
+        t.put("Row", "Col", source());
+        Map<String, String> map = t.column("Col");
+        sink(map.get("Col"));
+    }
+
+    public void testTableCellSet1() {
+        Table<String, String, String> t = HashBasedTable.create();
         t.put("Key", "Key", source());
-        Map<String, String> map = t.row("Key2");
-        sink(map.get("Key2"));
+        Set<Table.Cell<String, String, String>> set = t.cellSet();
+        sink(set.stream().findAny().get().getValue());
+    }
+
+    public void testTableCellSet2() {
+        Table<String, String, String> t = HashBasedTable.create();
+        t.put("Key", "Key", source());
+        Set<Table.Cell<String, String, String>> set = t.cellSet();
+        sink(set.stream().findAny().get().getColumnKey());
+    }
+
+    public void testTableColumnMap1() {
+        Table<String, String, String> t = HashBasedTable.create();
+        t.put("Row", "Col", source());
+        Map<String, Map<String, String>> map = t.columnMap();
+        sink(map.get("Col").get("Row"));
+    }
+
+    public void testTableColumnMap2() {
+        Table<String, String, String> t = HashBasedTable.create();
+        t.put("Row", "Col", source());
+        Map<String, Map<String, String>> map = t.columnMap();
+        sink(map.get("Row").get("Col"));
+    }
+
+    public void testTableRowMap1() {
+        Table<String, String, String> t = HashBasedTable.create();
+        t.put("Row", "Col", source());
+        Map<String, Map<String, String>> map = t.rowMap();
+        sink(map.get("Row").get("Col"));
+    }
+
+    public void testTableRowMap2() {
+        Table<String, String, String> t = HashBasedTable.create();
+        t.put("Row", "Col", source());
+        Map<String, Map<String, String>> map = t.rowMap();
+        sink(map.get("Col").get("Row"));
     }
 }

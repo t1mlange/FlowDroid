@@ -29,6 +29,28 @@
                         type="[java.lang.Object[]]" />
         </access>
     </method>
+    <!-- columnKeySet() handled with fallback -->
+    <!-- TODO: columnMap -->
+    <method subsig="boolean contains(java.lang.Object,java.lang.Object)">
+        <!-- intentionally identity for now -->
+    </method>
+    <method subsig="boolean containsColumn(java.lang.Object)">
+        <!-- intentionally identity for now -->
+    </method>
+    <method subsig="boolean containsRow(java.lang.Object)">
+        <!-- intentionally identity for now -->
+    </method>
+    <!-- equals() handled with fallback -->
+    <method subsig="java.lang.Object get(java.lang.Object,java.lang.Object)">
+        <access>
+            <key idx="0" />
+            <key idx="1" />
+            <accessPath field="[com.google.common.collect.Table: java.lang.Object[] table]"
+                        type="[java.lang.Object[]]" />
+        </access>
+    </method>
+    <!-- hashCode() handled with fallback -->
+    <!-- isEmpty() handled with fallback -->
     <method subsig="java.lang.Object put(java.lang.Object,java.lang.Object,java.lang.Object)">
         <remove>
             <key idx="0" />
@@ -70,14 +92,6 @@
                         type="[java.lang.Object[]]" />
         </remove>
     </method>
-    <method subsig="java.lang.Object get(java.lang.Object,java.lang.Object)">
-        <access>
-            <key idx="0" />
-            <key idx="1" />
-            <accessPath field="[com.google.common.collect.Table: java.lang.Object[] table]"
-                        type="[java.lang.Object[]]" />
-        </access>
-    </method>
     <method subsig="java.util.Map row(java.lang.Object)">
         <access>
             <key idx="0" />
@@ -88,4 +102,8 @@
                         type="[java.lang.Object[]]" />
         </access>
     </method>
+    <!-- rowKeySet() handled with fallback -->
+    <!-- TODO: rowMap -->
+    <!-- size() handled with fallback -->
+    <!-- values() handled with fallback -->
 </collectionModel>
