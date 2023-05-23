@@ -21,12 +21,10 @@ import java.util.List;
 
 public class AccessOperation extends LocationDependentOperation {
     private final String returnField;
-    private final String returnFieldType;
 
-    public AccessOperation(Location[] keys, String field, String fieldType, String returnField, String returnFieldType) {
-        super(keys, field, fieldType);
+    public AccessOperation(Location[] keys, String field, String returnField) {
+        super(keys, field);
         this.returnField = returnField;
-        this.returnFieldType = returnFieldType;
     }
 
     @Override

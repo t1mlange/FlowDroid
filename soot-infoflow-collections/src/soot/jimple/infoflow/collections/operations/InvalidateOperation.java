@@ -19,8 +19,8 @@ import java.util.Collection;
 public class InvalidateOperation extends LocationDependentOperation {
     private final AccessPathTuple returnTuple;
 
-    public InvalidateOperation(Location[] locations, String field, String fieldType, AccessPathTuple returnTuple) {
-        super(locations, field, fieldType);
+    public InvalidateOperation(Location[] locations, String field, AccessPathTuple returnTuple) {
+        super(locations, field);
         this.returnTuple = returnTuple;
     }
 

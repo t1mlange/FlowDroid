@@ -17,8 +17,8 @@ import java.util.Collection;
 
 public class ShiftRightOperation extends AbstractShiftOperation {
 
-    public ShiftRightOperation(Location[] keys, String field, String fieldType) {
-        super(keys, field, fieldType);
+    public ShiftRightOperation(Location[] keys, String field) {
+        super(keys, field);
     }
 
     @Override

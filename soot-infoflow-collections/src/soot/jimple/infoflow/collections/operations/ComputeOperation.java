@@ -25,10 +25,10 @@ public class ComputeOperation extends LocationDependentOperation {
     private final int callbackDataIdx; // Index of the value parameter in the apply() function
     private final boolean doReturn;
 
-    public ComputeOperation(Location[] keys, String field, String fieldType, int data,
+    public ComputeOperation(Location[] keys, String field, int data,
                             int callbackIdx, int callbackBaseIdx, int callbackDataIdx,
                             boolean doReturn) {
-        super(keys, field, fieldType);
+        super(keys, field);
         this.data = data;
         this.callbackIdx = callbackIdx;
         this.callbackBaseIdx = callbackBaseIdx;

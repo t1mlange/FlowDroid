@@ -10,12 +10,10 @@ import soot.jimple.infoflow.typing.TypeUtils;
 public abstract class LocationDependentOperation implements ICollectionOperation {
     protected final Location[] locations;
     protected final String field;
-    protected final String fieldType;
 
-    public LocationDependentOperation(Location[] locations, String field, String fieldType) {
+    public LocationDependentOperation(Location[] locations, String field) {
         this.locations = locations;
         this.field = field;
-        this.fieldType = fieldType;
     }
 
     protected SootField safeGetField(String fieldSig) {

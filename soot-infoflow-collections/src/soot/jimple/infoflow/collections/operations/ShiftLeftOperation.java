@@ -7,8 +7,8 @@ import soot.jimple.infoflow.data.ContextDefinition;
 
 public class ShiftLeftOperation extends AbstractShiftOperation {
 
-    public ShiftLeftOperation(Location[] keys, String field, String fieldType) {
-        super(keys, field, fieldType);
+    public ShiftLeftOperation(Location[] keys, String field) {
+        super(keys, field);
     }
 
     @Override

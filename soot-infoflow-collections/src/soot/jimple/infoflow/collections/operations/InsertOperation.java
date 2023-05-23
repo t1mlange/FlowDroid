@@ -17,8 +17,8 @@ import java.util.Collection;
 public class InsertOperation extends LocationDependentOperation {
     private final int data;
 
-    public InsertOperation(Location[] keys, int data, String field, String fieldType) {
-        super(keys, field, fieldType);
+    public InsertOperation(Location[] keys, int data, String field) {
+        super(keys, field);
         this.data = data;
     }
 

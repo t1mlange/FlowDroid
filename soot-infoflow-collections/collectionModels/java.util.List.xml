@@ -2,164 +2,122 @@
 
 <collectionModel class="java.util.List" type="position">
     <method subsig="boolean add(java.lang.Object)">
-        <insert>
+        <insert field="[java.util.Collection: java.lang.Object[] innerArray]">
             <index idx="last" />
             <data idx="0" />
-            <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
-                        type="[java.lang.Object[]]" />
         </insert>
     </method>
     <method subsig="void add(int,java.lang.Object)">
-        <insert>
+        <insert field="[java.util.Collection: java.lang.Object[] innerArray]">
             <index idx="0" />
             <data idx="1" />
-            <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
-                        type="[java.lang.Object[]]" />
         </insert>
-        <shiftRight>
+        <shiftRight field="[java.util.Collection: java.lang.Object[] innerArray]">
             <index idx="0" />
-            <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
-                        type="[java.lang.Object[]]" />
         </shiftRight>
     </method>
     <!-- TODO: addAll() handled with fallback -->
     <method subsig="void clear()">
-        <remove>
+        <remove field="[java.util.Collection: java.lang.Object[] innerArray]">
             <index idx="all" />
-            <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
-                        type="[java.lang.Object[]]" />
         </remove>
     </method>
     <!-- contains() handled with fallback -->
     <!-- containsAll() handled with fallback -->
     <method subsig="java.lang.Object get(int)">
-        <access>
+        <access field="[java.util.Collection: java.lang.Object[] innerArray]">
             <index idx="0" />
-            <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
-                        type="[java.lang.Object[]]" />
         </access>
     </method>
     <!-- hashCode() handled with fallback -->
     <!-- indexOf() handled with fallback -->
     <!-- isEmpty() handled with fallback -->
     <method subsig="java.util.Iterator iterator()">
-        <invalidate>
+        <invalidate field="[java.util.Collection: java.lang.Object[] innerArray]">
             <index idx="0" />
             <return field="[java.util.Iterator: java.lang.Object innerCollection]"
                     type="[java.lang.Object]" />
-            <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
-                        type="[java.lang.Object[]]" />
         </invalidate>
     </method>
     <!-- lastIndexOf() handled with fallback -->
     <!-- listIterator() handled with fallback -->
     <method subsig="java.util.ListIterator listIterator()">
-        <invalidate>
+        <invalidate field="[java.util.Collection: java.lang.Object[] innerArray]">
             <index idx="0" />
             <return field="[java.util.Iterator: java.lang.Object innerCollection]"
                     type="[java.lang.Object]" />
-            <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
-                        type="[java.lang.Object[]]" />
         </invalidate>
     </method>
     <method subsig="java.util.ListIterator listIterator(int)">
-        <invalidate>
+        <invalidate field="[java.util.Collection: java.lang.Object[] innerArray]">
             <index idx="0" />
             <return field="[java.util.Iterator: java.lang.Object innerCollection]"
                     type="[java.lang.Object]" />
-            <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
-                        type="[java.lang.Object[]]" />
         </invalidate>
     </method>
     <method subsig="java.lang.Object remove(int)">
-        <remove>
+        <remove field="[java.util.Collection: java.lang.Object[] innerArray]">
             <index idx="0" />
-            <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
-                        type="[java.lang.Object[]]" />
         </remove>
-        <shiftLeft>
+        <shiftLeft field="[java.util.Collection: java.lang.Object[] innerArray]">
             <index idx="0" />
-            <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
-                        type="[java.lang.Object[]]" />
         </shiftLeft>
-        <access>
+        <access field="[java.util.Collection: java.lang.Object[] innerArray]">
             <index idx="0" />
-            <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
-                        type="[java.lang.Object[]]" />
         </access>
     </method>
     <method subsig="boolean remove(java.lang.Object)">
         <!-- We cannot remove any element but might shift -->
-        <shiftLeft>
+        <shiftLeft field="[java.util.Collection: java.lang.Object[] innerArray]">
             <index idx="all" />
-            <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
-                        type="[java.lang.Object[]]" />
         </shiftLeft>
     </method>
     <method subsig="boolean removeAll(java.util.Collection)">
-        <invalidate>
+        <invalidate field="[java.util.Collection: java.lang.Object[] innerArray]">
             <index idx="0" />
-            <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
-                        type="[java.lang.Object[]]" />
         </invalidate>
     </method>
     <method subsig="void replaceAll(java.util.function.UnaryOperator)">
-        <compute>
+        <compute field="[java.util.Collection: java.lang.Object[] innerArray]">
             <index idx="all" />
             <callback idx="0" />
             <callbackBase idx="0" />
-            <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
-                        type="[java.lang.Object[]]" />
         </compute>
     </method>
     <method subsig="boolean retainAll(java.util.Collection)">
-        <invalidate>
+        <invalidate field="[java.util.Collection: java.lang.Object[] innerArray]">
             <index idx="0" />
-            <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
-                        type="[java.lang.Object[]]" />
         </invalidate>
     </method>
     <method subsig="java.lang.Object set(int,java.lang.Object)">
-        <remove>
+        <remove field="[java.util.Collection: java.lang.Object[] innerArray]">
             <index idx="0" />
-            <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
-                        type="[java.lang.Object[]]" />
         </remove>
-        <access>
+        <access field="[java.util.Collection: java.lang.Object[] innerArray]">
             <index idx="0" />
-            <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
-                        type="[java.lang.Object[]]" />
         </access>
-        <insert>
+        <insert field="[java.util.Collection: java.lang.Object[] innerArray]">
             <index idx="0" />
             <data idx="1" />
-            <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
-                        type="[java.lang.Object[]]" />
         </insert>
     </method>
     <!-- size() handled with fallback -->
     <method subsig="void sort(java.util.Comparator)">
-        <invalidate>
+        <invalidate field="[java.util.Collection: java.lang.Object[] innerArray]">
             <index idx="0" />
-            <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
-                        type="[java.lang.Object[]]" />
         </invalidate>
     </method>
     <method subsig="java.util.Spliterator spliterator()">
-        <invalidate>
+        <invalidate field="[java.util.Collection: java.lang.Object[] innerArray]">
             <index idx="0" />
             <return />
-            <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
-                        type="[java.lang.Object[]]" />
         </invalidate>
     </method>
     <method subsig="java.util.List subList(int,int)">
-        <invalidate>
+        <invalidate field="[java.util.Collection: java.lang.Object[] innerArray]">
             <index idx="0" />
             <return field="[java.util.Collection: java.lang.Object[] innerArray]"
                     type="[java.lang.Object[]]" />
-            <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
-                        type="[java.lang.Object[]]" />
         </invalidate>
     </method>
     <!-- toArray() handled with fallback -->
