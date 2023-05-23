@@ -6,11 +6,13 @@ package soot.jimple.infoflow.collections.data;
 public enum ParamIndex {
     // Represents an index not used
     UNUSED(-42),
-    // Represents the base object
+    // Represents that the index isn't read but part of the result
+    COPY(-6),
     // Represents any index
     ALL(-5),
     // Represents that the access is the data argument
     RETURN(-4),
+    // Represents the base object
     BASE(-3),
     // Represents the first index (only for position based)
     FIRST_INDEX(-2),

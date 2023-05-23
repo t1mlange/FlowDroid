@@ -1,6 +1,34 @@
 <?xml version="1.0" ?>
 
 <collectionModel class="com.google.common.collect.Table" type="value">
+    <method subsig="java.util.Set cellSet()">
+        <access>
+            <key idx="all" />
+            <key idx="all" />
+            <return field="[java.util.Collection: java.lang.Object[] innerArray]"
+                    type="[java.lang.Object[]]" />
+            <accessPath field="[com.google.common.collect.Table: java.lang.Object[] table]"
+                        type="[java.lang.Object[]]" />
+        </access>
+    </method>
+    <method subsig="void clear()">
+        <invalidate>
+            <key idx="0" />
+            <key idx="1" />
+            <accessPath field="[com.google.common.collect.Table: java.lang.Object[] table]"
+                        type="[java.lang.Object[]]" />
+        </invalidate>
+    </method>
+    <method subsig="java.util.Map column(java.lang.Object)">
+        <access>
+            <key idx="copy" />
+            <key idx="0" />
+            <return field="[java.util.Map: java.lang.Object[] values]"
+                    type="[java.lang.Object[]]" />
+            <accessPath field="[com.google.common.collect.Table: java.lang.Object[] table]"
+                        type="[java.lang.Object[]]" />
+        </access>
+    </method>
     <method subsig="java.lang.Object put(java.lang.Object,java.lang.Object,java.lang.Object)">
         <remove>
             <key idx="0" />
@@ -46,6 +74,16 @@
         <access>
             <key idx="0" />
             <key idx="1" />
+            <accessPath field="[com.google.common.collect.Table: java.lang.Object[] table]"
+                        type="[java.lang.Object[]]" />
+        </access>
+    </method>
+    <method subsig="java.util.Map row(java.lang.Object)">
+        <access>
+            <key idx="0" />
+            <key idx="copy" />
+            <return field="[java.util.Map: java.lang.Object[] values]"
+                    type="[java.lang.Object[]]" />
             <accessPath field="[com.google.common.collect.Table: java.lang.Object[] table]"
                         type="[java.lang.Object[]]" />
         </access>

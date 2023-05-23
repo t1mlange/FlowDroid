@@ -3,6 +3,8 @@ package soot.jimple.infoflow.collections.test;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 
+import java.util.Map;
+
 import static soot.jimple.infoflow.collections.test.Helper.sink;
 import static soot.jimple.infoflow.collections.test.Helper.source;
 
@@ -60,5 +62,26 @@ public class ConstantKeyTableTestCode {
         Table<String, String, String> t2 = HashBasedTable.create();
         t2.putAll(t);
         sink(t2.get("Row", "Col2"));
+    }
+
+    public void testTableRow1() {
+        Table<String, String, String> t = HashBasedTable.create();
+        t.put("Key", "Key", source());
+        Map<String, String> map = t.row("Key");
+        sink(map.get("Key"));
+    }
+
+    public void testTableRow2() {
+        Table<String, String, String> t = HashBasedTable.create();
+        t.put("Key", "Key", source());
+        Map<String, String> map = t.row("Key");
+        sink(map.get("Key2"));
+    }
+
+    public void testTableRow3() {
+        Table<String, String, String> t = HashBasedTable.create();
+        t.put("Key", "Key", source());
+        Map<String, String> map = t.row("Key2");
+        sink(map.get("Key2"));
     }
 }

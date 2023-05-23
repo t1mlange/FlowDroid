@@ -18,6 +18,17 @@ public class AccessPathFragment {
 	private final ContextDefinition[] context;
 
 	/**
+	 * Creates a new {@link AccessPathFragment} without a context and using the fields type
+	 *
+	 * @param field     The field that is dereferenced
+	 */
+	public AccessPathFragment(SootField field) {
+		this.field = field;
+		this.fieldType = field.getType();
+		this.context = null;
+	}
+
+	/**
 	 * Creates a new {@link AccessPathFragment} without a context
 	 * 
 	 * @param field     The field that is dereferenced

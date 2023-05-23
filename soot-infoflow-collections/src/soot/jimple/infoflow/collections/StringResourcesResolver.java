@@ -21,7 +21,7 @@ import java.util.Collection;
 import java.util.HashSet;
 
 /**
- * Resolves Android String resources to constants in the code
+ * Resolves Android String resources to constants in the code.
  *
  * @author Tim Lange
  */
@@ -76,12 +76,16 @@ public class StringResourcesResolver implements ICodeOptimizer {
         try {
             parser = ARSCFileParser.getInstance(new File(fileName));
         } catch (IOException e) {
-            logger.error("Could not parse the ARSC file!", e);
+            logger.error("Could not parse the ARSC file! Aborting string resource resolving...", e);
             return;
         }
         assert parser != null;
 
         SootClass contextClass = Scene.v().getSootClassUnsafe(CONTEXT_CLASS);
+        if (contextClass == null) {
+            logger.error("Could not load class " + CONTEXT_CLASS + ". Aborting string resource resolving...");
+            return;
+        }
 
         // First pass: Collect all statements to be replaced
         HashSet<ReplacementCandidate> toBeReplaced = new HashSet<>();
@@ -94,7 +98,7 @@ public class StringResourcesResolver implements ICodeOptimizer {
             UnitPatchingChain chain = method.getActiveBody().getUnits();
             for (Unit unit : chain) {
                 Stmt stmt = (Stmt) unit;
-                // We only care for calls to two methods, where the result is not ignored
+                // We only care for calls to a method where the returned value is used
                 if (!stmt.containsInvokeExpr() || !(stmt instanceof AssignStmt))
                     continue;
 
@@ -107,6 +111,7 @@ public class StringResourcesResolver implements ICodeOptimizer {
 
                 // Extract the resource id
                 Value arg0 = stmt.getInvokeExpr().getArg(0);
+                // We expect an integer constant here
                 if (!(arg0 instanceof IntConstant))
                     continue;
                 int resourceId = ((IntConstant) arg0).value;
@@ -117,14 +122,14 @@ public class StringResourcesResolver implements ICodeOptimizer {
                     continue;
                 String str = ((ARSCFileParser.StringResource) res).getValue();
 
-                // Construct new constant assignment
+                // Construct a new constant assignment
                 AssignStmt constantAssign = Jimple.v().newAssignStmt(((AssignStmt) stmt).getLeftOp(), StringConstant.v(str));
                 constantAssign.addTag(SimulatedCodeElementTag.TAG);
                 toBeReplaced.add(new ReplacementCandidate(method, stmt, constantAssign));
             }
         }
 
-        // Second pass: replace statements
+        // Second pass: replace call statements with constant assignments
         for (ReplacementCandidate r : toBeReplaced)
             r.replace(manager.getICFG());
 
