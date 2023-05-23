@@ -35,8 +35,8 @@
                 </xs:choice>
             </xs:sequence>
             <xs:element name="return" minOccurs="0" />
-            <xs:element name="accessPath" type="accessPath" />
         </xs:sequence>
+        <xs:attribute name="field" type="xs:string" use="required" />
     </xs:complexType>
 
     <xs:complexType name="insert">
@@ -48,8 +48,8 @@
                 </xs:choice>
             </xs:sequence>
             <xs:element name="data" type="paramIdx" />
-            <xs:element name="accessPath" type="accessPath" />
         </xs:sequence>
+        <xs:attribute name="field" type="xs:string" use="required" />
     </xs:complexType>
 
     <xs:complexType name="remove">
@@ -60,8 +60,8 @@
                     <xs:element name="index" type="index" />
                 </xs:choice>
             </xs:sequence>
-            <xs:element name="accessPath" type="accessPath" />
         </xs:sequence>
+        <xs:attribute name="field" type="xs:string" use="required" />
     </xs:complexType>
 
     <xs:complexType name="copy">
@@ -77,8 +77,8 @@
                 <xs:element name="key" type="key" />
                 <xs:element name="index" type="index" />
             </xs:choice>
-            <xs:element name="accessPath" type="accessPath" />
         </xs:sequence>
+        <xs:attribute name="field" type="xs:string" use="required" />
     </xs:complexType>
 
     <xs:complexType name="invalidate">
@@ -90,8 +90,8 @@
                 </xs:choice>
             </xs:sequence>
             <xs:element name="return" minOccurs="0" />
-            <xs:element name="accessPath" type="accessPath" />
         </xs:sequence>
+        <xs:attribute name="field" type="xs:string" use="required" />
     </xs:complexType>
 
     <xs:complexType name="compute">
@@ -105,8 +105,8 @@
             <xs:element name="callbackBase" type="paramIdx" minOccurs="0" />
             <xs:element name="callbackData" type="paramIdx" minOccurs="0" />
             <xs:element name="return" minOccurs="0" />
-            <xs:element name="accessPath" type="accessPath" />
         </xs:sequence>
+        <xs:attribute name="field" type="xs:string" use="required" />
     </xs:complexType>
 
     <xs:complexType name="index">

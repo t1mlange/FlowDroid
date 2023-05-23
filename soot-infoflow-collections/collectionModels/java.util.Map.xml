@@ -4,39 +4,31 @@
     <method subsig="void clear()">
         <!-- StubDroid is also able to handle this
              TODO: do we need remove all for other data structures? -->
-        <remove>
+        <remove field="[java.util.Map: java.lang.Object[] values]">
             <key idx="all" />
-            <accessPath field="[java.util.Map: java.lang.Object[] values]"
-                        type="[java.lang.Object[]]" />
         </remove>
     </method>
     <method subsig="java.lang.Object compute(java.lang.Object,java.util.function.BiFunction)">
-        <compute>
+        <compute field="[java.util.Map: java.lang.Object[] values]">
             <key idx="0" />
             <callback idx="1" />
             <callbackBase idx="1" />
             <return />
-            <accessPath field="[java.util.Map: java.lang.Object[] values]"
-                        type="[java.lang.Object[]]" />
         </compute>
     </method>
     <method subsig="java.lang.Object computeIfPresent(java.lang.Object,java.util.function.BiFunction)">
-        <compute>
+        <compute field="[java.util.Map: java.lang.Object[] values]">
             <key idx="0" />
             <callback idx="1" />
             <callbackBase idx="1" />
             <return />
-            <accessPath field="[java.util.Map: java.lang.Object[] values]"
-                        type="[java.lang.Object[]]" />
         </compute>
     </method>
     <method subsig="java.lang.Object computeIfAbsent(java.lang.Object,java.util.function.Function)">
-        <compute>
+        <compute field="[java.util.Map: java.lang.Object[] values]">
             <key idx="0" />
             <callback idx="1" />
             <return />
-            <accessPath field="[java.util.Map: java.lang.Object[] values]"
-                        type="[java.lang.Object[]]" />
         </compute>
     </method>
     <!-- boolean containsKey(java.lang.Object) fallbacks -->
@@ -46,17 +38,13 @@
     <!-- entrySet() fallbacks -->
     <!-- equals() fallbacks -->
     <method subsig="java.lang.Object get(java.lang.Object)">
-        <access>
+        <access field="[java.util.Map: java.lang.Object[] values]">
             <key idx="0" />
-            <accessPath field="[java.util.Map: java.lang.Object[] values]"
-                        type="[java.lang.Object[]]" />
         </access>
     </method>
     <method subsig="java.lang.Object getOrDefault(java.lang.Object,java.lang.Object)">
-        <access>
+        <access field="[java.util.Map: java.lang.Object[] values]">
             <key idx="0" />
-            <accessPath field="[java.util.Map: java.lang.Object[] values]"
-                        type="[java.lang.Object[]]" />
         </access>
         <copy>
             <from idx="1" />
@@ -67,33 +55,25 @@
     <!-- isEmpty() fallbacks -->
     <!-- keySet() fallbacks -->
     <method subsig="java.lang.Object merge(java.lang.Object,java.lang.Object,java.util.function.BiFunction)">
-        <compute>
+        <compute field="[java.util.Map: java.lang.Object[] values]">
             <key idx="0" />
             <data idx="1" />
             <callback idx="2" />
             <callbackBase idx="0" />
             <callbackData idx="1" />
             <return />
-            <accessPath field="[java.util.Map: java.lang.Object[] values]"
-                        type="[java.lang.Object[]]" />
         </compute>
     </method>
     <method subsig="java.lang.Object put(java.lang.Object,java.lang.Object)">
-        <remove>
+        <remove field="[java.util.Map: java.lang.Object[] values]">
             <key idx="0" />
-            <accessPath field="[java.util.Map: java.lang.Object[] values]"
-                        type="[java.lang.Object[]]" />
         </remove>
-        <access>
+        <access field="[java.util.Map: java.lang.Object[] values]">
             <key idx="0" />
-            <accessPath field="[java.util.Map: java.lang.Object[] values]"
-                        type="[java.lang.Object[]]" />
         </access>
-        <insert>
+        <insert field="[java.util.Map: java.lang.Object[] values]">
             <key idx="0" />
             <data idx="1" />
-            <accessPath field="[java.util.Map: java.lang.Object[] values]"
-                        type="[java.lang.Object[]]" />
         </insert>
     </method>
     <method subsig="void putAll(java.util.Map)">
@@ -103,16 +83,12 @@
         </copy>
     </method>
     <method subsig="java.lang.Object putIfAbsent(java.lang.Object,java.lang.Object)">
-        <access>
+        <access field="[java.util.Map: java.lang.Object[] values]">
             <key idx="0" />
-            <accessPath field="[java.util.Map: java.lang.Object[] values]"
-                        type="[java.lang.Object[]]" />
         </access>
-        <insert>
+        <insert field="[java.util.Map: java.lang.Object[] values]">
             <key idx="0" />
             <data idx="1" />
-            <accessPath field="[java.util.Map: java.lang.Object[] values]"
-                        type="[java.lang.Object[]]" />
         </insert>
         <copy>
             <from idx="1" />
@@ -120,55 +96,41 @@
         </copy>
     </method>
     <method subsig="java.lang.Object remove(java.lang.Object)">
-        <remove>
+        <remove field="[java.util.Map: java.lang.Object[] values]">
             <key idx="0" />
-            <accessPath field="[java.util.Map: java.lang.Object[] values]"
-                        type="[java.lang.Object[]]" />
         </remove>
-        <access>
+        <access field="[java.util.Map: java.lang.Object[] values]">
             <key idx="0" />
-            <accessPath field="[java.util.Map: java.lang.Object[] values]"
-                        type="[java.lang.Object[]]" />
         </access>
     </method>
     <method subsig="boolean remove(java.lang.Object,java.lang.Object)">
         <!-- intentionally identity because we don't reason about equality of the values -->
     </method>
     <method subsig="java.lang.Object replace(java.lang.Object,java.lang.Object)">
-        <remove>
+        <remove field="[java.util.Map: java.lang.Object[] values]">
             <key idx="0" />
-            <accessPath field="[java.util.Map: java.lang.Object[] values]"
-                        type="[java.lang.Object[]]" />
         </remove>
-        <access>
+        <access field="[java.util.Map: java.lang.Object[] values]">
             <key idx="0" />
-            <accessPath field="[java.util.Map: java.lang.Object[] values]"
-                        type="[java.lang.Object[]]" />
         </access>
-        <insert>
+        <insert field="[java.util.Map: java.lang.Object[] values]">
             <key idx="0" />
             <data idx="1" />
-            <accessPath field="[java.util.Map: java.lang.Object[] values]"
-                        type="[java.lang.Object[]]" />
         </insert>
     </method>
     <method subsig="java.lang.Object replace(java.lang.Object,java.lang.Object,java.lang.Object)">
         <!-- no remove operation because we don't reason about value equality -->
         <!-- no access because doesn't seem to be relevant -->
-        <insert>
+        <insert field="[java.util.Map: java.lang.Object[] values]">
             <key idx="0" />
             <data idx="1" />
-            <accessPath field="[java.util.Map: java.lang.Object[] values]"
-                        type="[java.lang.Object[]]" />
         </insert>
     </method>
     <method subsig="void replaceAll(java.util.function.BiFunction)">
-        <compute>
+        <compute field="[java.util.Map: java.lang.Object[] values]">
             <key idx="all" />
             <callback idx="0" />
             <callbackBase idx="1" />
-            <accessPath field="[java.util.Map: java.lang.Object[] values]"
-                        type="[java.lang.Object[]]" />
         </compute>
     </method>
 </collectionModel>

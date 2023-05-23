@@ -2,30 +2,22 @@
 
 <collectionModel class="java.util.Stack" type="position">
     <method subsig="java.lang.Object peek()">
-        <access>
+        <access field="[java.util.Collection: java.lang.Object[] innerArray]">
             <key idx="last" />
-            <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
-                        type="[java.lang.Object[]]" />
         </access>
     </method>
     <method subsig="java.lang.Object pop()">
-        <remove>
+        <remove field="[java.util.Collection: java.lang.Object[] innerArray]">
             <key idx="last" />
-            <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
-                        type="[java.lang.Object[]]" />
         </remove>
-        <access>
+        <access field="[java.util.Collection: java.lang.Object[] innerArray]">
             <key idx="last" />
-            <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
-                        type="[java.lang.Object[]]" />
         </access>
     </method>
     <method subsig="java.lang.Object push(java.lang.Object)">
-        <insert>
+        <insert field="[java.util.Collection: java.lang.Object[] innerArray]">
             <key idx="last" />
             <data idx="0" />
-            <accessPath field="[java.util.Collection: java.lang.Object[] innerArray]"
-                        type="[java.lang.Object[]]" />
         </insert>
         <copy>
             <from idx="0" />

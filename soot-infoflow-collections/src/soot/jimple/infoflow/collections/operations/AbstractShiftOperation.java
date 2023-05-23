@@ -18,8 +18,8 @@ import java.util.Collection;
 
 public abstract class AbstractShiftOperation extends LocationDependentOperation {
 
-    public AbstractShiftOperation(Location[] keys, String field, String fieldType) {
-        super(keys, field, fieldType);
+    public AbstractShiftOperation(Location[] keys, String field) {
+        super(keys, field);
         assert keys.length == 1; // TODO: generalize
     }
 

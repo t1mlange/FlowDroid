@@ -34,9 +34,7 @@ public class CollectionXMLParser {
         private Location[] keys;
         private int dataIdx;
         private String accessPathField;
-        private String accessPathType;
         private String returnAccessPathField;
-        private String returnAccessPathType;
         private boolean doReturn;
         private int callbackIdx;
         private int callbackBaseIdx;
@@ -71,6 +69,16 @@ public class CollectionXMLParser {
                 case METHOD_TAG:
                     subSig = attributes.getValue(SUBSIG_ATTR);
                     break;
+                case ACCESS_TAG:
+                case INSERT_TAG:
+                case SHIFT_LEFT_TAG:
+                case SHIFT_RIGHT_TAG:
+                case REMOVE_TAG:
+                case INVALIDATE_TAG:
+                case COMPUTE_TAG:
+                    accessPathField = attributes.getValue(FIELD_ATTR);
+                    accessPathField = "<" + accessPathField.substring(1, accessPathField.length() - 1) + ">";
+                    break;
                 case KEY_TAG:
                     readKeyOrIndex(attributes, false);
                     break;
@@ -89,12 +97,6 @@ public class CollectionXMLParser {
                 case CALLBACK_DATA_TAG:
                     callbackDataIdx = Integer.parseInt(attributes.getValue(PARAM_IDX_ATTR));
                     break;
-                case ACCESS_PATH_TAG:
-                    accessPathField = attributes.getValue(FIELD_ATTR);
-                    accessPathField = "<" + accessPathField.substring(1, accessPathField.length() - 1) + ">";
-                    accessPathType = attributes.getValue(TYPE_ATTR);
-                    accessPathType = accessPathType.substring(1, accessPathType.length() - 1);
-                    break;
                 case FROM_TAG:
                     fromIdx = getParamIndex(attributes.getValue(PARAM_IDX_ATTR));
                     break;
@@ -106,9 +108,6 @@ public class CollectionXMLParser {
                     returnAccessPathField = attributes.getValue(FIELD_ATTR);
                     if (returnAccessPathField != null)
                         returnAccessPathField = "<" + returnAccessPathField.substring(1, returnAccessPathField.length() - 1) + ">";
-                    returnAccessPathType = attributes.getValue(TYPE_ATTR);
-                    if (returnAccessPathType != null)
-                        returnAccessPathType = returnAccessPathType.substring(1, returnAccessPathType.length() - 1);
                     break;
             }
         }
@@ -126,23 +125,23 @@ public class CollectionXMLParser {
                     resetAfterMethod();
                     break;
                 case ACCESS_TAG:
-                    operations.add(new AccessOperation(trimKeys(keys), accessPathField, accessPathType, returnAccessPathField, returnAccessPathType));
+                    operations.add(new AccessOperation(trimKeys(keys), accessPathField, returnAccessPathField));
                     resetAfterOperation();
                     break;
                 case INSERT_TAG:
-                    operations.add(new InsertOperation(trimKeys(keys), dataIdx, accessPathField, accessPathType));
+                    operations.add(new InsertOperation(trimKeys(keys), dataIdx, accessPathField));
                     resetAfterOperation();
                     break;
                 case SHIFT_LEFT_TAG:
-                    operations.add(new ShiftLeftOperation(trimKeys(keys), accessPathField, accessPathType));
+                    operations.add(new ShiftLeftOperation(trimKeys(keys), accessPathField));
                     resetAfterOperation();
                     break;
                 case SHIFT_RIGHT_TAG:
-                    operations.add(new ShiftRightOperation(trimKeys(keys), accessPathField, accessPathType));
+                    operations.add(new ShiftRightOperation(trimKeys(keys), accessPathField));
                     resetAfterOperation();
                     break;
                 case REMOVE_TAG:
-                    operations.add(new RemoveOperation(trimKeys(keys), accessPathField, accessPathType));
+                    operations.add(new RemoveOperation(trimKeys(keys), accessPathField));
                     resetAfterOperation();
                     break;
                 case COPY_TAG:
@@ -152,14 +151,14 @@ public class CollectionXMLParser {
                 case INVALIDATE_TAG:
                     AccessPathTuple retTuple = null;
                     if (returnAccessPathField != null)
-                        retTuple = AccessPathTuple.fromPathElements(returnAccessPathField, returnAccessPathType, SourceSinkType.Neither);
-                    operations.add(new InvalidateOperation(trimKeys(keys), accessPathField, accessPathType, retTuple));
+                        retTuple = AccessPathTuple.fromPathElements(returnAccessPathField, null, SourceSinkType.Neither);
+                    operations.add(new InvalidateOperation(trimKeys(keys), accessPathField, retTuple));
                     resetAfterOperation();
                     break;
                 case COMPUTE_TAG:
                     if (dataIdx != ParamIndex.UNUSED.toInt() && callbackDataIdx == ParamIndex.UNUSED.toInt())
                         throw new RuntimeException("callbackData must be set if data is set!");
-                    operations.add(new ComputeOperation(trimKeys(keys), accessPathField, accessPathType, dataIdx,
+                    operations.add(new ComputeOperation(trimKeys(keys), accessPathField, dataIdx,
                             callbackIdx, callbackBaseIdx, callbackDataIdx, doReturn));
                     resetAfterOperation();
                     break;
@@ -232,9 +231,7 @@ public class CollectionXMLParser {
             callbackDataIdx = ParamIndex.UNUSED.toInt();
             doReturn = false;
             accessPathField = null;
-            accessPathType = null;
             returnAccessPathField = null;
-            returnAccessPathType = null;
         }
 
         protected void resetAfterMethod() {

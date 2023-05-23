@@ -14,8 +14,8 @@ import soot.jimple.infoflow.data.ContextDefinition;
 import java.util.Collection;
 
 public class RemoveOperation extends LocationDependentOperation {
-    public RemoveOperation(Location[] keys, String field, String fieldType) {
-        super(keys, field, fieldType);
+    public RemoveOperation(Location[] keys, String field) {
+        super(keys, field);
     }
 
     @Override

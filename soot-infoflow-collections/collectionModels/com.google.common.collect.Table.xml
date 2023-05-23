@@ -2,31 +2,25 @@
 
 <collectionModel class="com.google.common.collect.Table" type="value">
     <method subsig="java.util.Set cellSet()">
-        <access>
+        <access field="[com.google.common.collect.Table: java.lang.Object[] table]">
             <key idx="all" />
             <key idx="all" />
             <return field="[java.util.Collection: java.lang.Object[] innerArray]"
                     type="[java.lang.Object[]]" />
-            <accessPath field="[com.google.common.collect.Table: java.lang.Object[] table]"
-                        type="[java.lang.Object[]]" />
         </access>
     </method>
     <method subsig="void clear()">
-        <invalidate>
+        <invalidate field="[com.google.common.collect.Table: java.lang.Object[] table]">
             <key idx="0" />
             <key idx="1" />
-            <accessPath field="[com.google.common.collect.Table: java.lang.Object[] table]"
-                        type="[java.lang.Object[]]" />
         </invalidate>
     </method>
     <method subsig="java.util.Map column(java.lang.Object)">
-        <access>
+        <access field="[com.google.common.collect.Table: java.lang.Object[] table]">
             <key idx="copy" />
             <key idx="0" />
             <return field="[java.util.Map: java.lang.Object[] values]"
                     type="[java.lang.Object[]]" />
-            <accessPath field="[com.google.common.collect.Table: java.lang.Object[] table]"
-                        type="[java.lang.Object[]]" />
         </access>
     </method>
     <!-- columnKeySet() handled with fallback -->
@@ -42,34 +36,26 @@
     </method>
     <!-- equals() handled with fallback -->
     <method subsig="java.lang.Object get(java.lang.Object,java.lang.Object)">
-        <access>
+        <access field="[com.google.common.collect.Table: java.lang.Object[] table]">
             <key idx="0" />
             <key idx="1" />
-            <accessPath field="[com.google.common.collect.Table: java.lang.Object[] table]"
-                        type="[java.lang.Object[]]" />
         </access>
     </method>
     <!-- hashCode() handled with fallback -->
     <!-- isEmpty() handled with fallback -->
     <method subsig="java.lang.Object put(java.lang.Object,java.lang.Object,java.lang.Object)">
-        <remove>
+        <remove field="[com.google.common.collect.Table: java.lang.Object[] table]">
             <key idx="0" />
             <key idx="1" />
-            <accessPath field="[com.google.common.collect.Table: java.lang.Object[] table]"
-                        type="[java.lang.Object[]]" />
         </remove>
-        <access>
+        <access field="[com.google.common.collect.Table: java.lang.Object[] table]">
             <key idx="0" />
             <key idx="1" />
-            <accessPath field="[com.google.common.collect.Table: java.lang.Object[] table]"
-                        type="[java.lang.Object[]]" />
         </access>
-        <insert>
+        <insert field="[com.google.common.collect.Table: java.lang.Object[] table]">
             <key idx="0" />
             <key idx="1" />
             <data idx="2" />
-            <accessPath field="[com.google.common.collect.Table: java.lang.Object[] table]"
-                        type="[java.lang.Object[]]" />
         </insert>
     </method>
     <method subsig="void putAll(com.google.common.collect.Table)">
@@ -79,27 +65,21 @@
         </copy>
     </method>
     <method subsig="java.lang.Object remove(java.lang.Object,java.lang.Object)">
-        <access>
+        <access field="[com.google.common.collect.Table: java.lang.Object[] table]">
             <key idx="0" />
             <key idx="1" />
-            <accessPath field="[com.google.common.collect.Table: java.lang.Object[] table]"
-                        type="[java.lang.Object[]]" />
         </access>
-        <remove>
+        <remove field="[com.google.common.collect.Table: java.lang.Object[] table]">
             <key idx="0" />
             <key idx="1" />
-            <accessPath field="[com.google.common.collect.Table: java.lang.Object[] table]"
-                        type="[java.lang.Object[]]" />
         </remove>
     </method>
     <method subsig="java.util.Map row(java.lang.Object)">
-        <access>
+        <access field="[com.google.common.collect.Table: java.lang.Object[] table]">
             <key idx="0" />
             <key idx="copy" />
             <return field="[java.util.Map: java.lang.Object[] values]"
                     type="[java.lang.Object[]]" />
-            <accessPath field="[com.google.common.collect.Table: java.lang.Object[] table]"
-                        type="[java.lang.Object[]]" />
         </access>
     </method>
     <!-- rowKeySet() handled with fallback -->
