@@ -47,7 +47,8 @@ public class WrapperPropagationRule extends AbstractTaintPropagationRule {
 	 * @param source The taint source
 	 * @return The taints computed by the wrapper
 	 */
-	private Set<Abstraction> computeWrapperTaints(Abstraction d1, final Stmt iStmt, Abstraction source) {
+	private Set<Abstraction> computeWrapperTaints(Abstraction d1, final Stmt iStmt, Abstraction source,
+												  ByReferenceBoolean killSource) {
 		// Do not process zero abstractions
 		if (source == getZeroValue())
 			return null;
@@ -102,6 +103,10 @@ public class WrapperPropagationRule extends AbstractTaintPropagationRule {
 			res = resWithAliases;
 		}
 
+		// We assume that a taint wrapper returns the complete set of taints for exclusive methods. Thus, if the
+		// incoming taint should be kept alive, the taint wrapper needs to add it to the outgoing set.
+		killSource.value = manager.getTaintWrapper() != null && manager.getTaintWrapper().isExclusive(iStmt, source);
+
 		return res;
 	}
 
@@ -145,13 +150,7 @@ public class WrapperPropagationRule extends AbstractTaintPropagationRule {
 	public Collection<Abstraction> propagateCallToReturnFlow(Abstraction d1, Abstraction source, Stmt stmt,
 			ByReferenceBoolean killSource, ByReferenceBoolean killAll) {
 		// Compute the taint wrapper taints
-		Collection<Abstraction> wrapperTaints = computeWrapperTaints(d1, stmt, source);
-
-		// We assume each taint wrapper returns the complete set of taints. Thus, if the source should be kept alive,
-		// the taint wrapper already added it to the outgoing set.
-		killSource.value = manager.getTaintWrapper() != null && manager.getTaintWrapper().isExclusive(stmt, source);
-
-		return wrapperTaints;
+		return computeWrapperTaints(d1, stmt, source, killSource);
 	}
 
 	@Override
