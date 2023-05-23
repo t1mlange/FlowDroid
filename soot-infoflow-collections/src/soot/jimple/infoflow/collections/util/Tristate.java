@@ -53,4 +53,9 @@ public class Tristate {
 
         return MAYBE();
     }
+
+    @Override
+    public String toString() {
+        return internal.toString();
+    }
 }
