@@ -20,6 +20,8 @@ import soot.jimple.infoflow.data.ContextDefinition;
 import soot.jimple.infoflow.handlers.PreAnalysisHandler;
 import soot.jimple.infoflow.solver.IFollowReturnsPastSeedsHandler;
 import soot.jimple.infoflow.taintWrappers.ITaintPropagationWrapper;
+import soot.jimple.toolkits.pointer.LocalMayAliasAnalysis;
+import soot.jimple.toolkits.pointer.LocalMustAliasAnalysis;
 import soot.util.ConcurrentHashMultiMap;
 import soot.util.HashMultiMap;
 import soot.util.MultiMap;

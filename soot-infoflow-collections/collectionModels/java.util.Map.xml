@@ -46,7 +46,7 @@
         <access field="[java.util.Map: java.lang.Object[] values]">
             <key idx="0" />
         </access>
-        <copy>
+        <copy mode="update">
             <from idx="1" />
             <to idx="return" />
         </copy>
@@ -77,7 +77,7 @@
         </insert>
     </method>
     <method subsig="void putAll(java.util.Map)">
-        <copy>
+        <copy mode="update">
             <from idx="0" />
             <to idx="base" />
         </copy>
@@ -90,7 +90,7 @@
             <key idx="0" />
             <data idx="1" />
         </insert>
-        <copy>
+        <copy mode="update">
             <from idx="1" />
             <to idx="return" />
         </copy>

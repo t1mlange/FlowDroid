@@ -59,7 +59,7 @@
         </insert>
     </method>
     <method subsig="void putAll(com.google.common.collect.Table)">
-        <copy>
+        <copy mode="update">
             <from idx="0" />
             <to idx="base" />
         </copy>
