@@ -399,14 +399,4 @@ public class TypeUtils {
 		FastHierarchy hierarchy = manager.getHierarchy();
 		return isOverriden(hierarchy, originalSubSig, overriden);
 	}
-
-	public static boolean isPrimitiveOrString(Abstraction abs) {
-		if (abs.getAccessPath().getBaseType() instanceof PrimType)
-			return true;
-		if (TypeUtils.isStringType(abs.getAccessPath().getBaseType())
-				&& !abs.getAccessPath().getCanHaveImmutableAliases())
-			return true;
-
-		return false;
-	}
 }
