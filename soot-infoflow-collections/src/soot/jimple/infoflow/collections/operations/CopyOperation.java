@@ -1,6 +1,5 @@
 package soot.jimple.infoflow.collections.operations;
 
-import fj.P;
 import soot.Value;
 import soot.jimple.AssignStmt;
 import soot.jimple.InstanceInvokeExpr;
@@ -29,16 +28,20 @@ public class CopyOperation implements ICollectionOperation {
             return false;
 
         Value value;
-        if (to == ParamIndex.BASE.toInt())
-            value = iie.getBase();
-        else if (to == ParamIndex.RETURN.toInt()) {
-            if (!(stmt instanceof AssignStmt))
-                return false;
-            value = ((AssignStmt) stmt).getLeftOp();
-        } else if (to >= 0)
-            value = iie.getArg(to);
-        else
-            throw new RuntimeException("Unexpected to index: " + to);
+        switch (to) {
+            case ParamIndex.BASE:
+                value = iie.getBase();
+                break;
+            case ParamIndex.RETURN:
+                if (!(stmt instanceof AssignStmt))
+                    return false;
+                value = ((AssignStmt) stmt).getLeftOp();
+                break;
+            default:
+                if (to < 0)
+                    throw new RuntimeException("Unexpected to index: " + to);
+                value = iie.getArg(to);
+        }
 
         AccessPath ap = manager.getAccessPathFactory().copyWithNewValue(incoming.getAccessPath(), value);
         Abstraction abs = incoming.deriveNewAbstraction(ap, stmt);

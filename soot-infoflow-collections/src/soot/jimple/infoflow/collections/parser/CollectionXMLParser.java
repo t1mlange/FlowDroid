@@ -152,11 +152,11 @@ public class CollectionXMLParser {
                     AccessPathTuple retTuple = null;
                     if (returnAccessPathField != null)
                         retTuple = AccessPathTuple.fromPathElements(returnAccessPathField, null, SourceSinkType.Neither);
-                    operations.add(new InvalidateOperation(trimKeys(keys), accessPathField, retTuple));
+                    operations.add(new InvalidateOperation(accessPathField, retTuple));
                     resetAfterOperation();
                     break;
                 case COMPUTE_TAG:
-                    if (dataIdx != ParamIndex.UNUSED.toInt() && callbackDataIdx == ParamIndex.UNUSED.toInt())
+                    if (dataIdx != ParamIndex.UNUSED && callbackDataIdx == ParamIndex.UNUSED)
                         throw new RuntimeException("callbackData must be set if data is set!");
                     operations.add(new ComputeOperation(trimKeys(keys), accessPathField, dataIdx,
                             callbackIdx, callbackBaseIdx, callbackDataIdx, doReturn));
@@ -171,16 +171,16 @@ public class CollectionXMLParser {
                     String v = attributes.getValue(PARAM_IDX_ATTR);
                     switch (v) {
                         case ALL:
-                            keys[i] = isIndex ? new Index(ParamIndex.ALL.toInt()) : new Key(ParamIndex.ALL.toInt());
+                            keys[i] = isIndex ? new Index(ParamIndex.ALL) : new Key(ParamIndex.ALL);
                             break;
                         case FIRST_INDEX:
-                            keys[i] = isIndex ? new Index(ParamIndex.FIRST_INDEX.toInt()) : new Key(ParamIndex.FIRST_INDEX.toInt());
+                            keys[i] = isIndex ? new Index(ParamIndex.FIRST_INDEX) : new Key(ParamIndex.FIRST_INDEX);
                             break;
                         case LAST_INDEX:
-                            keys[i] = isIndex ? new Index(ParamIndex.LAST_INDEX.toInt()) : new Key(ParamIndex.LAST_INDEX.toInt());
+                            keys[i] = isIndex ? new Index(ParamIndex.LAST_INDEX) : new Key(ParamIndex.LAST_INDEX);
                             break;
                         case COPY_TAG:
-                            keys[i] = isIndex ? new Index(ParamIndex.COPY.toInt()) : new Key(ParamIndex.COPY.toInt());
+                            keys[i] = isIndex ? new Index(ParamIndex.COPY) : new Key(ParamIndex.COPY);
                             break;
                         default:
                             try {
@@ -198,9 +198,9 @@ public class CollectionXMLParser {
         protected int getParamIndex(String value) {
             switch (value) {
                 case BASE_INDEX:
-                    return ParamIndex.BASE.toInt();
+                    return ParamIndex.BASE;
                 case RETURN_INDEX:
-                    return ParamIndex.RETURN.toInt();
+                    return ParamIndex.RETURN;
                 default:
                     try {
                         return Integer.parseInt(value);
@@ -223,12 +223,12 @@ public class CollectionXMLParser {
 
         protected void resetAfterOperation() {
             keys = new Location[MAX_KEYS];
-            dataIdx = ParamIndex.UNUSED.toInt();
-            fromIdx = ParamIndex.UNUSED.toInt();
-            toIdx = ParamIndex.UNUSED.toInt();
-            callbackIdx = ParamIndex.UNUSED.toInt();
-            callbackBaseIdx = ParamIndex.UNUSED.toInt();
-            callbackDataIdx = ParamIndex.UNUSED.toInt();
+            dataIdx = ParamIndex.UNUSED;
+            fromIdx = ParamIndex.UNUSED;
+            toIdx = ParamIndex.UNUSED;
+            callbackIdx = ParamIndex.UNUSED;
+            callbackBaseIdx = ParamIndex.UNUSED;
+            callbackDataIdx = ParamIndex.UNUSED;
             doReturn = false;
             accessPathField = null;
             returnAccessPathField = null;

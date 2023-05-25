@@ -41,12 +41,15 @@ public abstract class AbstractShiftOperation extends LocationDependentOperation 
         assert ctxts.length == 1;
         ContextDefinition ctxt = ctxts[0];
 
+        int idx = locations[0].getParamIdx();
         Tristate t;
-        if (locations[0].getParamIdx() == ParamIndex.ALL.toInt()) {
+        if (idx == ParamIndex.ALL) {
             t = Tristate.MAYBE();
-        } else {
+        } else if (idx >= 0) {
             ContextDefinition stmtCtxt = strategy.getIndexContext(iie.getArg(locations[0].getParamIdx()), stmt);
             t = strategy.lessThanEqual(stmtCtxt, ctxt);
+        } else {
+            throw new RuntimeException("Unexpected shift index: " + idx);
         }
 
         // If the insert might be in front of this index, we have to shift
@@ -60,7 +63,8 @@ public abstract class AbstractShiftOperation extends LocationDependentOperation 
             else
                 fragments[0] = fragment.copyWithNewContext(new ContextDefinition[]{ newCtxt });
             AccessPath ap = manager.getAccessPathFactory().createAccessPath(base, fragments, incoming.getAccessPath().getTaintSubFields());
-            out.add(incoming.deriveNewAbstraction(ap, stmt));
+            if (ap != null)
+                out.add(incoming.deriveNewAbstraction(ap, stmt));
             return true;
         }
 

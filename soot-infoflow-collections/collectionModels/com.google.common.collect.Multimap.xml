@@ -8,9 +8,9 @@
         </copy>
     </method>
     <method subsig="void clear()">
-        <invalidate field="[com.google.common.collect.Multimap: java.lang.Object[] values]">
-            <key idx="0" />
-        </invalidate>
+        <remove field="[com.google.common.collect.Multimap: java.lang.Object[] values]">
+            <key idx="all" />
+        </remove>
     </method>
     <method subsig="boolean containsEntry(java.lang.Object,java.lang.Object)">
         <!-- intentionally identity for now -->

@@ -16,11 +16,12 @@ import soot.jimple.infoflow.sourcesSinks.definitions.AccessPathTuple;
 
 import java.util.Collection;
 
-public class InvalidateOperation extends LocationDependentOperation {
+public class InvalidateOperation extends AbstractOperation {
+    private final String field;
     private final AccessPathTuple returnTuple;
 
-    public InvalidateOperation(Location[] locations, String field, AccessPathTuple returnTuple) {
-        super(locations, field);
+    public InvalidateOperation(String field, AccessPathTuple returnTuple) {
+        this.field = field;
         this.returnTuple = returnTuple;
     }
 
@@ -52,19 +53,10 @@ public class InvalidateOperation extends LocationDependentOperation {
         if (!fragment.getField().getSignature().equals(this.field) || !fragment.hasContext())
             return false;
 
-        ContextDefinition[] ctxt = fragment.getContext().clone();
-        for (Location key : locations) {
-            // Invalidate the n-th key
-            ctxt[key.getParamIdx()] = UnknownContext.v();
-        }
-        // Maybe fully smash the context if there's no useful information left
-        if (strategy.shouldSmash(ctxt))
-            ctxt = null;
-
         AccessPathFragment[] oldFragments = incoming.getAccessPath().getFragments();
         AccessPathFragment[] fragments = new AccessPathFragment[oldFragments.length];
         System.arraycopy(oldFragments, 1, fragments, 1, fragments.length - 1);
-        fragments[0] = oldFragments[0].copyWithNewContext(ctxt);
+        fragments[0] = oldFragments[0].copyWithNewContext(null);
         AccessPath ap = manager.getAccessPathFactory().createAccessPath(base, fragments, incoming.getAccessPath().getTaintSubFields());
         out.add(incoming.deriveNewAbstraction(ap, stmt));
 

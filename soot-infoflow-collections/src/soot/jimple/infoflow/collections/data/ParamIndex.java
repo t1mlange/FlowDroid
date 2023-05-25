@@ -3,29 +3,19 @@ package soot.jimple.infoflow.collections.data;
 /**
  * Maps special indices to ints
  */
-public enum ParamIndex {
+public final class ParamIndex {
     // Represents an index not used
-    UNUSED(-42),
-    // Represents that the index isn't read but part of the result
-    COPY(-6),
+    public static final int UNUSED = -42;
+    // Represents that the location isn't read but part of the result
+    public static final int COPY = -6;
     // Represents any index
-    ALL(-5),
-    // Represents that the access is the data argument
-    RETURN(-4),
-    // Represents the base object
-    BASE(-3),
+    public static final int ALL = -5;
     // Represents the first index (only for position based)
-    FIRST_INDEX(-2),
+    public static final int FIRST_INDEX = -4;
     // Represents the last index (only for position based)
-    LAST_INDEX(-1);
-
-    private final int value;
-
-    ParamIndex(int value) {
-        this.value = value;
-    }
-
-    public int toInt() {
-        return value;
-    }
+    public static final int LAST_INDEX = -3;
+    // Represents that the access is the data argument
+    public static final int RETURN = -2;
+    // Represents the base object
+    public static final int BASE = -1;
 }
