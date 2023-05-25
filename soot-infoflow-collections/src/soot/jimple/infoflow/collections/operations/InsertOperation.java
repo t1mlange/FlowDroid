@@ -28,28 +28,10 @@ public class InsertOperation extends LocationDependentOperation {
         if (!manager.getAliasing().mayAlias(incoming.getAccessPath().getPlainValue(), iie.getArg(data)))
             return false;
 
-        Value base = iie.getBase();
-        ContextDefinition[] ctxt = new ContextDefinition[locations.length];
-        for (int i = 0; i < ctxt.length; i++) {
-            if (locations[i].getParamIdx() == ParamIndex.LAST_INDEX.toInt())
-                ctxt[i] = strategy.getNextPosition(base, stmt);
-            else if (locations[i].isValueBased())
-                ctxt[i] = strategy.getIndexContext(iie.getArg(locations[i].getParamIdx()), stmt);
-            else
-                ctxt[i] = strategy.getKeyContext(iie.getArg(locations[i].getParamIdx()), stmt);
-        }
-        if (strategy.shouldSmash(ctxt))
-            ctxt = null;
-
-        AccessPathFragment[] oldFragments = incoming.getAccessPath().getFragments();
-        int len = oldFragments == null ? 0 : oldFragments.length;
-        AccessPathFragment[] fragments = new AccessPathFragment[len + 1];
-        if (oldFragments != null)
-            System.arraycopy(oldFragments, 0, fragments, 1, len);
-        SootField f = safeGetField(field);
-        fragments[0] = new AccessPathFragment(f, f.getType(), ctxt);
-        AccessPath ap = manager.getAccessPathFactory().createAccessPath(base, fragments, incoming.getAccessPath().getTaintSubFields());
-        out.add(incoming.deriveNewAbstraction(ap, stmt));
+        ContextDefinition[] ctxt = buildContext(strategy, iie, stmt);
+        AccessPath ap = taintCollectionWithContext(iie.getBase(), ctxt, incoming.getAccessPath(), manager);
+        if (ap != null)
+            out.add(incoming.deriveNewAbstraction(ap, stmt));
 
         // Insert never removes an element
         return false;

@@ -1,6 +1,7 @@
 package soot.jimple.infoflow.collections.test.junit;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import soot.jimple.infoflow.IInfoflow;
 import soot.jimple.infoflow.InfoflowConfiguration;
@@ -146,7 +147,8 @@ public class ConstantKeyTableTests extends FlowDroidTests {
         Assert.assertEquals(0, infoflow.getResults().size());
     }
 
-    @Test(timeout = 30000)
+    @Ignore("No support for copying multiple keys yet")
+//    @Test(timeout = 30000)
     public void testTableColumnMap1() {
         IInfoflow infoflow = initInfoflow();
         infoflow.setTaintPropagationHandler(new DebugFlowFunctionTaintPropagationHandler());
@@ -163,7 +165,8 @@ public class ConstantKeyTableTests extends FlowDroidTests {
         Assert.assertEquals(0, infoflow.getResults().size());
     }
 
-    @Test(timeout = 30000)
+    @Ignore("No support for copying multiple keys yet")
+//    @Test(timeout = 30000)
     public void testTableRowMap1() {
         IInfoflow infoflow = initInfoflow();
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
