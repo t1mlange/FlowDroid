@@ -7,6 +7,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 import soot.jimple.infoflow.collections.data.*;
 import soot.jimple.infoflow.collections.operations.*;
+import soot.jimple.infoflow.collections.operations.forward.*;
 import soot.jimple.infoflow.sourcesSinks.definitions.AccessPathTuple;
 import soot.jimple.infoflow.sourcesSinks.definitions.SourceSinkType;
 import soot.jimple.infoflow.util.ResourceUtils;
@@ -45,6 +46,7 @@ public class CollectionXMLParser {
         // Used inside a CollectionMethod
         private String subSig;
         private List<ICollectionOperation> operations;
+        private List<ICollectionOperation> aliasOperations;
 
         // Used inside a CollectionClass
         private String collectionType;
@@ -120,7 +122,7 @@ public class CollectionXMLParser {
                     resetAfterCollection();
                     break;
                 case METHOD_TAG:
-                    if (methods.put(subSig, new CollectionMethod(subSig, operations)) != null)
+                    if (methods.put(subSig, new CollectionMethod(subSig, operations, aliasOperations)) != null)
                         logger.error("Duplicate collection method found for <" + className + ": " + subSig + ">");
                     resetAfterMethod();
                     break;
@@ -237,6 +239,7 @@ public class CollectionXMLParser {
         protected void resetAfterMethod() {
             subSig = "";
             operations = new ArrayList<>();
+            aliasOperations = new ArrayList<>();
         }
 
         protected void resetAfterCollection() {

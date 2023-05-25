@@ -8,13 +8,13 @@ import soot.jimple.infoflow.util.DebugFlowFunctionTaintPropagationHandler;
 
 import java.util.Collections;
 
-public class ConstantIndexStackTests extends FlowDroidTests {
+public class SimpleStackTests extends FlowDroidTests {
     @Override
     protected void setConfiguration(InfoflowConfiguration config) {
 
     }
 
-    private static final String testCodeClass = "soot.jimple.infoflow.collections.test.ConstantIndexStackTestCode";
+    private static final String testCodeClass = "soot.jimple.infoflow.collections.test.SimpleStackTestCode";
 
     @Test(timeout = 30000)
     public void testStackPushPop1() {

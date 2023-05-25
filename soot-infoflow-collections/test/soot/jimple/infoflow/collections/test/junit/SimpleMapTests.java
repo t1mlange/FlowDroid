@@ -8,13 +8,13 @@ import soot.jimple.infoflow.util.DebugFlowFunctionTaintPropagationHandler;
 
 import java.util.Collections;
 
-public class ConstantKeyMapTests extends FlowDroidTests {
+public class SimpleMapTests extends FlowDroidTests {
     @Override
     protected void setConfiguration(InfoflowConfiguration config) {
 
     }
 
-    private static final String testCodeClass = "soot.jimple.infoflow.collections.test.ConstantKeyMapTestCode";
+    private static final String testCodeClass = "soot.jimple.infoflow.collections.test.SimpleMapTestCode";
 
     @Test(timeout = 30000)
     public void testMapPutGet1() {

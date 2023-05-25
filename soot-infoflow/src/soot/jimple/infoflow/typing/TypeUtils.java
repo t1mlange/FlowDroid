@@ -22,6 +22,7 @@ import soot.SootClass;
 import soot.SootMethod;
 import soot.Type;
 import soot.jimple.infoflow.InfoflowManager;
+import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.data.AccessPath;
 
 /**
@@ -397,5 +398,15 @@ public class TypeUtils {
 	public boolean isOverriden(MethodSubSignature originalSubSig, SootMethod overriden) {
 		FastHierarchy hierarchy = manager.getHierarchy();
 		return isOverriden(hierarchy, originalSubSig, overriden);
+	}
+
+	public static boolean isPrimitiveOrString(Abstraction abs) {
+		if (abs.getAccessPath().getBaseType() instanceof PrimType)
+			return true;
+		if (TypeUtils.isStringType(abs.getAccessPath().getBaseType())
+				&& !abs.getAccessPath().getCanHaveImmutableAliases())
+			return true;
+
+		return false;
 	}
 }

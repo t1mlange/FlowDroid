@@ -6,14 +6,21 @@ import java.util.List;
 
 public class CollectionMethod {
     private final String subSig;
-    private final List<ICollectionOperation> operations;
+    private final ICollectionOperation[] operations;
+    private final ICollectionOperation[] aliasOperations;
 
-    public CollectionMethod(String subSig, List<ICollectionOperation> operations) {
+    public CollectionMethod(String subSig, List<ICollectionOperation> operations,
+                            List<ICollectionOperation> aliasOperations) {
         this.subSig = subSig;
-        this.operations = operations;
+        this.operations = operations.toArray(new ICollectionOperation[0]);
+        this.aliasOperations = aliasOperations.toArray(new ICollectionOperation[0]);
     }
 
-    public List<ICollectionOperation> operations() {
+    public ICollectionOperation[] operations() {
         return operations;
+    }
+
+    public ICollectionOperation[] aliasOperations() {
+        return aliasOperations;
     }
 }

@@ -1,4 +1,4 @@
-package soot.jimple.infoflow.collections.operations;
+package soot.jimple.infoflow.collections.operations.forward;
 
 import soot.Scene;
 import soot.SootField;
@@ -10,6 +10,7 @@ import soot.jimple.Stmt;
 import soot.jimple.infoflow.InfoflowManager;
 import soot.jimple.infoflow.collections.context.UnknownContext;
 import soot.jimple.infoflow.collections.data.Location;
+import soot.jimple.infoflow.collections.operations.AbstractOperation;
 import soot.jimple.infoflow.collections.strategies.IContainerStrategy;
 import soot.jimple.infoflow.data.*;
 import soot.jimple.infoflow.sourcesSinks.definitions.AccessPathTuple;

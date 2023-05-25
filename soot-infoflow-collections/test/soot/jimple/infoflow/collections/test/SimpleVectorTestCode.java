@@ -5,7 +5,7 @@ import java.util.Vector;
 import static soot.jimple.infoflow.collections.test.Helper.sink;
 import static soot.jimple.infoflow.collections.test.Helper.source;
 
-public class ConstantIndexVectorTestCode {
+public class SimpleVectorTestCode {
 
     public void testVectorFirstElement1() {
         Vector<String> v = new Vector<>();

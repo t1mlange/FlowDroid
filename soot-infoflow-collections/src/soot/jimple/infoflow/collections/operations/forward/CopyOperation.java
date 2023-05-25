@@ -1,4 +1,4 @@
-package soot.jimple.infoflow.collections.operations;
+package soot.jimple.infoflow.collections.operations.forward;
 
 import soot.Value;
 import soot.jimple.AssignStmt;
@@ -6,6 +6,7 @@ import soot.jimple.InstanceInvokeExpr;
 import soot.jimple.Stmt;
 import soot.jimple.infoflow.InfoflowManager;
 import soot.jimple.infoflow.collections.data.ParamIndex;
+import soot.jimple.infoflow.collections.operations.ICollectionOperation;
 import soot.jimple.infoflow.collections.strategies.IContainerStrategy;
 import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.data.AccessPath;

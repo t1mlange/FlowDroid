@@ -12,7 +12,6 @@ import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.data.AccessPath;
 import soot.jimple.infoflow.data.AccessPathFragment;
 import soot.jimple.infoflow.data.ContextDefinition;
-import soot.jimple.infoflow.typing.TypeUtils;
 
 import java.util.List;
 
@@ -133,8 +132,8 @@ public abstract class LocationDependentOperation extends AbstractOperation {
      *
      * @param base      base value, i.e. the collection local
      * @param ctxt      new context, possibly already smashed
-     * @param incoming  incoming abstraction
-     * @param manager   infolfow manager
+     * @param oldAp     incoming access path
+     * @param manager   infoflow manager
      * @return access path for the collection
      */
     protected AccessPath taintCollectionWithContext(Value base, ContextDefinition[] ctxt, AccessPath oldAp,
