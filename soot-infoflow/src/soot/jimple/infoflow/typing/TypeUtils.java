@@ -3,22 +3,7 @@ package soot.jimple.infoflow.typing;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import soot.ArrayType;
-import soot.BooleanType;
-import soot.ByteType;
-import soot.CharType;
-import soot.DoubleType;
-import soot.FastHierarchy;
-import soot.FloatType;
-import soot.Hierarchy;
-import soot.IntType;
-import soot.LongType;
-import soot.PrimType;
-import soot.RefType;
-import soot.Scene;
-import soot.ShortType;
-import soot.SootClass;
-import soot.Type;
+import soot.*;
 import soot.jimple.infoflow.InfoflowManager;
 import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.data.AccessPath;
@@ -352,10 +337,10 @@ public class TypeUtils {
 		return fh.canStoreType(child, parent);
 	}
 
-	public static boolean isPrimitiveOrString(Abstraction abs) {
-		if (abs.getAccessPath().getBaseType() instanceof PrimType)
+	public static boolean isPrimitiveOrString(Value val, Abstraction abs) {
+		if (val instanceof PrimType)
 			return true;
-		if (TypeUtils.isStringType(abs.getAccessPath().getBaseType())
+		if (TypeUtils.isStringType(val.getType())
 				&& !abs.getAccessPath().getCanHaveImmutableAliases())
 			return true;
 
