@@ -6,7 +6,7 @@ import java.util.Map;
 import static soot.jimple.infoflow.collections.test.Helper.sink;
 import static soot.jimple.infoflow.collections.test.Helper.source;
 
-public class ConstantKeyMapTestCode {
+public class SimpleMapTestCode {
     public void testMapPutGet1() {
         Map<String, String> map = new HashMap<>();
         String tainted = source();

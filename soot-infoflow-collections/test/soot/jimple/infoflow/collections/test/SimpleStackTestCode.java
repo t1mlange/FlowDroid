@@ -5,7 +5,7 @@ import java.util.Stack;
 import static soot.jimple.infoflow.collections.test.Helper.sink;
 import static soot.jimple.infoflow.collections.test.Helper.source;
 
-public class ConstantIndexStackTestCode {
+public class SimpleStackTestCode {
     class A {
         String f;
     }

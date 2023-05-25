@@ -8,7 +8,7 @@ import java.util.Collection;
 import static soot.jimple.infoflow.collections.test.Helper.sink;
 import static soot.jimple.infoflow.collections.test.Helper.source;
 
-public class ConstantKeyMultimapTestCode {
+public class SimpleMultimapTestCode {
     class A {
         String str;
         String unrelated;

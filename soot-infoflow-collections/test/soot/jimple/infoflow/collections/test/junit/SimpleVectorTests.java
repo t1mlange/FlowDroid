@@ -8,13 +8,13 @@ import soot.jimple.infoflow.util.DebugFlowFunctionTaintPropagationHandler;
 
 import java.util.Collections;
 
-public class ConstantIndexVectorTests extends FlowDroidTests {
+public class SimpleVectorTests extends FlowDroidTests {
     @Override
     protected void setConfiguration(InfoflowConfiguration config) {
 
     }
 
-    private static final String testCodeClass = "soot.jimple.infoflow.collections.test.ConstantIndexVectorTestCode";
+    private static final String testCodeClass = "soot.jimple.infoflow.collections.test.SimpleVectorTestCode";
 
     @Test(timeout = 30000)
     public void testVectorFirstElement1() {

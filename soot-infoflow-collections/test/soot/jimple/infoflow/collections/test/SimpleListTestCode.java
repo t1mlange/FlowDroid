@@ -5,7 +5,7 @@ import java.util.*;
 import static soot.jimple.infoflow.collections.test.Helper.sink;
 import static soot.jimple.infoflow.collections.test.Helper.source;
 
-public class ConstantIndexListTestCode {
+public class SimpleListTestCode {
     public void testListAdd1() {
         List<String> lst = new ArrayList<>();
         String tainted = source();

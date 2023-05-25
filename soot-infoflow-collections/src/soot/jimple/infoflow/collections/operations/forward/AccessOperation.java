@@ -1,4 +1,4 @@
-package soot.jimple.infoflow.collections.operations;
+package soot.jimple.infoflow.collections.operations.forward;
 
 import soot.Value;
 import soot.jimple.AssignStmt;
@@ -6,6 +6,7 @@ import soot.jimple.InstanceInvokeExpr;
 import soot.jimple.Stmt;
 import soot.jimple.infoflow.InfoflowManager;
 import soot.jimple.infoflow.collections.data.Location;
+import soot.jimple.infoflow.collections.operations.LocationDependentOperation;
 import soot.jimple.infoflow.collections.strategies.IContainerStrategy;
 import soot.jimple.infoflow.collections.util.Tristate;
 import soot.jimple.infoflow.data.Abstraction;

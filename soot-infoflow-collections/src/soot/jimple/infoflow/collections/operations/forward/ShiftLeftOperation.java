@@ -1,4 +1,4 @@
-package soot.jimple.infoflow.collections.operations;
+package soot.jimple.infoflow.collections.operations.forward;
 
 import soot.jimple.Stmt;
 import soot.jimple.infoflow.collections.data.Location;

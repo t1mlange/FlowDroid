@@ -9,7 +9,7 @@ import java.util.Set;
 import static soot.jimple.infoflow.collections.test.Helper.sink;
 import static soot.jimple.infoflow.collections.test.Helper.source;
 
-public class ConstantKeyTableTestCode {
+public class SimpleTableTestCode {
     public void testTablePutGet1() {
         Table<String, String, String> t = HashBasedTable.create();
         t.put("Row", "Col", source());

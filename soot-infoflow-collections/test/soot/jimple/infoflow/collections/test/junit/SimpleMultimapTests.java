@@ -8,13 +8,13 @@ import soot.jimple.infoflow.util.DebugFlowFunctionTaintPropagationHandler;
 
 import java.util.Collections;
 
-public class ConstantKeyMultimapTests extends FlowDroidTests {
+public class SimpleMultimapTests extends FlowDroidTests {
     @Override
     protected void setConfiguration(InfoflowConfiguration config) {
 
     }
 
-    private static final String testCodeClass = "soot.jimple.infoflow.collections.test.ConstantKeyMultimapTestCode";
+    private static final String testCodeClass = "soot.jimple.infoflow.collections.test.SimpleMultimapTestCode";
 
     @Test(timeout = 30000)
     public void testMultimapPutGet1() {

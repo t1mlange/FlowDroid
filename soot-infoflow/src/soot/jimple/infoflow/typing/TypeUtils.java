@@ -20,6 +20,7 @@ import soot.ShortType;
 import soot.SootClass;
 import soot.Type;
 import soot.jimple.infoflow.InfoflowManager;
+import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.data.AccessPath;
 
 /**
@@ -351,4 +352,13 @@ public class TypeUtils {
 		return fh.canStoreType(child, parent);
 	}
 
+	public static boolean isPrimitiveOrString(Abstraction abs) {
+		if (abs.getAccessPath().getBaseType() instanceof PrimType)
+			return true;
+		if (TypeUtils.isStringType(abs.getAccessPath().getBaseType())
+				&& !abs.getAccessPath().getCanHaveImmutableAliases())
+			return true;
+
+		return false;
+	}
 }
