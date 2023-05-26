@@ -14,16 +14,15 @@ import soot.jimple.infoflow.data.AccessPath;
 import java.util.Collection;
 
 public class CopyOperation implements ICollectionOperation {
-    private final int from;
-    private final int to;
+    protected final int from;
+    protected final int to;
 
     public CopyOperation(int from, int to) {
         this.from = from;
         this.to = to;
     }
 
-    @Override
-    public boolean apply(Abstraction d1, Abstraction incoming, Stmt stmt, InfoflowManager manager, IContainerStrategy keyStrategy, Collection<Abstraction> out) {
+    protected boolean innerApply(int from, int to, Abstraction incoming, Stmt stmt, InfoflowManager manager, Collection<Abstraction> out) {
         InstanceInvokeExpr iie = ((InstanceInvokeExpr) stmt.getInvokeExpr());
         if (!manager.getAliasing().mayAlias(incoming.getAccessPath().getPlainValue(), iie.getArg(from)))
             return false;
@@ -49,5 +48,11 @@ public class CopyOperation implements ICollectionOperation {
         if (abs != null)
             out.add(abs);
         return false;
+    }
+
+    @Override
+    public boolean apply(Abstraction d1, Abstraction incoming, Stmt stmt, InfoflowManager manager,
+                         IContainerStrategy strategy, Collection<Abstraction> out) {
+        return innerApply(from, to, incoming, stmt, manager, out);
     }
 }

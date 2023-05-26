@@ -1,7 +1,9 @@
 package soot.jimple.infoflow.collections.operations.forward;
 
 import heros.solver.PathEdge;
-import soot.*;
+import soot.Local;
+import soot.SootMethod;
+import soot.Unit;
 import soot.jimple.AssignStmt;
 import soot.jimple.InstanceInvokeExpr;
 import soot.jimple.Stmt;
@@ -18,7 +20,6 @@ import soot.jimple.infoflow.data.AccessPathFragment;
 import soot.jimple.infoflow.data.ContextDefinition;
 
 import java.util.Collection;
-import java.util.stream.Stream;
 
 public class ComputeOperation extends LocationDependentOperation {
     private final int data; // Index of data provided to a map

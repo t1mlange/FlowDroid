@@ -3,7 +3,10 @@ package soot.jimple.infoflow.collections;
 import heros.SynchronizedBy;
 import heros.solver.Pair;
 import heros.solver.PathEdge;
-import soot.*;
+import soot.SootClass;
+import soot.SootMethod;
+import soot.Unit;
+import soot.Value;
 import soot.jimple.ReturnStmt;
 import soot.jimple.Stmt;
 import soot.jimple.infoflow.InfoflowManager;
@@ -20,8 +23,6 @@ import soot.jimple.infoflow.data.ContextDefinition;
 import soot.jimple.infoflow.handlers.PreAnalysisHandler;
 import soot.jimple.infoflow.solver.IFollowReturnsPastSeedsHandler;
 import soot.jimple.infoflow.taintWrappers.ITaintPropagationWrapper;
-import soot.jimple.toolkits.pointer.LocalMayAliasAnalysis;
-import soot.jimple.toolkits.pointer.LocalMustAliasAnalysis;
 import soot.util.ConcurrentHashMultiMap;
 import soot.util.HashMultiMap;
 import soot.util.MultiMap;
@@ -227,9 +228,26 @@ public class CollectionTaintWrapper implements ITaintPropagationWrapper {
 
     @Override
     public Set<Abstraction> getAliasesForMethod(Stmt stmt, Abstraction d1, Abstraction taintedPath) {
-        if (fallbackWrapper != null)
-            return fallbackWrapper.getAliasesForMethod(stmt, d1, taintedPath);
-        return null;
+        if (!stmt.containsInvokeExpr())
+            return fallbackTaintsForMethod(stmt, d1, taintedPath);
+
+        SootMethod sm = stmt.getInvokeExpr().getMethod();
+        CollectionMethod method = getCollectionMethodForSootMethod(sm);
+        if (method == null)
+            return fallbackTaintsForMethod(stmt, d1, taintedPath);
+
+        wrapperHits++;
+
+        Set<Abstraction> outSet = new HashSet<>();
+        boolean killCurrentTaint = false;
+        for (ICollectionOperation op : method.aliasOperations()) {
+            killCurrentTaint |= op.apply(d1, taintedPath, stmt, manager, strategy, outSet);
+        }
+
+        if (!killCurrentTaint)
+            outSet.add(taintedPath);
+
+        return outSet;
     }
 
     private CollectionMethod getCollectionMethodForSootMethod(SootMethod sm) {

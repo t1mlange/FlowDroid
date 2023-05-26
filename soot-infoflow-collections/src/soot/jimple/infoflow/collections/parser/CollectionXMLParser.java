@@ -6,7 +6,8 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 import soot.jimple.infoflow.collections.data.*;
-import soot.jimple.infoflow.collections.operations.*;
+import soot.jimple.infoflow.collections.operations.ICollectionOperation;
+import soot.jimple.infoflow.collections.operations.alias.*;
 import soot.jimple.infoflow.collections.operations.forward.*;
 import soot.jimple.infoflow.sourcesSinks.definitions.AccessPathTuple;
 import soot.jimple.infoflow.sourcesSinks.definitions.SourceSinkType;
@@ -19,7 +20,10 @@ import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
-import java.io.*;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -128,26 +132,32 @@ public class CollectionXMLParser {
                     break;
                 case ACCESS_TAG:
                     operations.add(new AccessOperation(trimKeys(keys), accessPathField, returnAccessPathField));
+                    aliasOperations.add(new AliasAccessOperation(trimKeys(keys), accessPathField, returnAccessPathField));
                     resetAfterOperation();
                     break;
                 case INSERT_TAG:
                     operations.add(new InsertOperation(trimKeys(keys), dataIdx, accessPathField));
+                    aliasOperations.add(new AliasInsertOperation(trimKeys(keys), dataIdx, accessPathField));
                     resetAfterOperation();
                     break;
                 case SHIFT_LEFT_TAG:
                     operations.add(new ShiftLeftOperation(trimKeys(keys), accessPathField));
+                    aliasOperations.add(new AliasShiftLeftOperation(trimKeys(keys), accessPathField));
                     resetAfterOperation();
                     break;
                 case SHIFT_RIGHT_TAG:
                     operations.add(new ShiftRightOperation(trimKeys(keys), accessPathField));
+                    aliasOperations.add(new AliasShiftRightOperation(trimKeys(keys), accessPathField));
                     resetAfterOperation();
                     break;
                 case REMOVE_TAG:
                     operations.add(new RemoveOperation(trimKeys(keys), accessPathField));
+                    aliasOperations.add(new AliasRemoveOperation(trimKeys(keys), accessPathField));
                     resetAfterOperation();
                     break;
                 case COPY_TAG:
                     operations.add(new CopyOperation(fromIdx, toIdx));
+                    aliasOperations.add(new AliasCopyOperation(fromIdx, toIdx));
                     resetAfterOperation();
                     break;
                 case INVALIDATE_TAG:
@@ -155,12 +165,16 @@ public class CollectionXMLParser {
                     if (returnAccessPathField != null)
                         retTuple = AccessPathTuple.fromPathElements(returnAccessPathField, null, SourceSinkType.Neither);
                     operations.add(new InvalidateOperation(accessPathField, retTuple));
+                    // TODO
+//                    aliasOperations.add(new InvalidateOperation(accessPathField, retTuple));
                     resetAfterOperation();
                     break;
                 case COMPUTE_TAG:
                     if (dataIdx != ParamIndex.UNUSED && callbackDataIdx == ParamIndex.UNUSED)
                         throw new RuntimeException("callbackData must be set if data is set!");
                     operations.add(new ComputeOperation(trimKeys(keys), accessPathField, dataIdx,
+                            callbackIdx, callbackBaseIdx, callbackDataIdx, doReturn));
+                    aliasOperations.add(new AliasComputeOperation(trimKeys(keys), accessPathField, dataIdx,
                             callbackIdx, callbackBaseIdx, callbackDataIdx, doReturn));
                     resetAfterOperation();
                     break;
