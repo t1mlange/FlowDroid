@@ -1,5 +1,6 @@
 package soot.jimple.infoflow.collections;
 
+import heros.DontSynchronize;
 import heros.SynchronizedBy;
 import heros.solver.Pair;
 import heros.solver.PathEdge;
@@ -10,21 +11,17 @@ import soot.Value;
 import soot.jimple.ReturnStmt;
 import soot.jimple.Stmt;
 import soot.jimple.infoflow.InfoflowManager;
-import soot.jimple.infoflow.collections.context.UnknownContext;
 import soot.jimple.infoflow.collections.data.CollectionMethod;
 import soot.jimple.infoflow.collections.data.CollectionModel;
 import soot.jimple.infoflow.collections.operations.ICollectionOperation;
 import soot.jimple.infoflow.collections.strategies.ConstantKeyStrategy;
 import soot.jimple.infoflow.collections.strategies.IContainerStrategy;
+import soot.jimple.infoflow.collections.util.AliasAbstractionSet;
 import soot.jimple.infoflow.data.Abstraction;
-import soot.jimple.infoflow.data.AccessPath;
-import soot.jimple.infoflow.data.AccessPathFragment;
-import soot.jimple.infoflow.data.ContextDefinition;
 import soot.jimple.infoflow.handlers.PreAnalysisHandler;
 import soot.jimple.infoflow.solver.IFollowReturnsPastSeedsHandler;
 import soot.jimple.infoflow.taintWrappers.ITaintPropagationWrapper;
 import soot.util.ConcurrentHashMultiMap;
-import soot.util.HashMultiMap;
 import soot.util.MultiMap;
 
 import java.util.*;
@@ -41,9 +38,9 @@ public class CollectionTaintWrapper implements ITaintPropagationWrapper {
     @SynchronizedBy("Read-only during analysis")
     private final ITaintPropagationWrapper fallbackWrapper;
 
-    @SynchronizedBy("Benign race")
+    @DontSynchronize("Benign race")
     private int wrapperHits;
-    @SynchronizedBy("Benign race")
+    @DontSynchronize("Benign race")
     private int wrapperMisses;
 
     private InfoflowManager manager;
@@ -83,75 +80,6 @@ public class CollectionTaintWrapper implements ITaintPropagationWrapper {
 
         wrapperMisses++;
         return null;
-    }
-
-    private ContextDefinition merge(ContextDefinition a, ContextDefinition b) {
-//        if (a instanceof ConstantContext && b instanceof ConstantContext) {
-//            HashSet<Constant> c = new HashSet<>();
-//            c.addAll(((ConstantContext) a).getConstants());
-//            c.addAll(((ConstantContext) b).getConstants());
-//            return new ConstantContext(c);
-//        }
-
-        return UnknownContext.v();
-    }
-
-    public Set<Abstraction> mergeAbstractions(Set<Abstraction> abs) {
-        MultiMap<Abstraction, Abstraction> mm = new HashMultiMap<>();
-
-        for (Abstraction curr : abs) {
-            if (curr.getAccessPath().getFragmentCount() == 0)
-                continue;
-
-            boolean foundEq = false;
-            for (Abstraction seen : mm.keySet()) {
-                if (seen.equalsWithoutContext(curr)) {
-                    mm.put(seen, curr);
-                    foundEq = true;
-                    break;
-                }
-            }
-            if (!foundEq)
-                mm.put(curr, curr);
-        }
-
-        Set<Abstraction> out = new HashSet<>();
-        for (Abstraction key : mm.keySet()) {
-            Map<Integer, ContextDefinition> newCtxt = new HashMap<>();
-            boolean smashed = false;
-            for (Abstraction eqAbs : mm.get(key)) {
-                AccessPathFragment f = eqAbs.getAccessPath().getFirstFragment();
-                if (!f.hasContext()) {
-                    out.add(eqAbs);
-                    smashed = true;
-                    break;
-                }
-                ContextDefinition[] ctxt = f.getContext();
-                for (int i = 0; i < ctxt.length; i++) {
-                    newCtxt.putIfAbsent(i, ctxt[i]);
-                    final int j = i;
-                    newCtxt.computeIfPresent(i, (k, v) -> merge(v, ctxt[j]));
-                }
-            }
-            if (!smashed) {
-                ContextDefinition[] ctxt = new ContextDefinition[newCtxt.size()];
-                for (int i = 0; i < ctxt.length; i++) {
-                    ctxt[i] = newCtxt.get(i);
-                }
-                if (strategy.shouldSmash(ctxt))
-                    ctxt = null;
-
-                AccessPathFragment[] oldFragments = key.getAccessPath().getFragments();
-                AccessPathFragment[] fragments = new AccessPathFragment[oldFragments.length];
-                System.arraycopy(oldFragments, 1, fragments, 1, fragments.length - 1);
-                fragments[0] = oldFragments[0].copyWithNewContext(ctxt);
-                AccessPath ap = manager.getAccessPathFactory().createAccessPath(key.getAccessPath().getPlainValue(), fragments,
-                        key.getAccessPath().getTaintSubFields());
-                out.add(key.deriveNewAbstraction(ap, null));
-            }
-        }
-
-        return out;
     }
 
     private static class Callback {
@@ -226,19 +154,27 @@ public class CollectionTaintWrapper implements ITaintPropagationWrapper {
         return false;
     }
 
+    private Set<Abstraction> fallbackAliasForMethod(Stmt stmt, Abstraction d1, Abstraction taintedPath) {
+        if (fallbackWrapper != null)
+            return fallbackWrapper.getAliasesForMethod(stmt, d1, taintedPath);
+
+        wrapperMisses++;
+        return null;
+    }
+
     @Override
     public Set<Abstraction> getAliasesForMethod(Stmt stmt, Abstraction d1, Abstraction taintedPath) {
         if (!stmt.containsInvokeExpr())
-            return fallbackTaintsForMethod(stmt, d1, taintedPath);
+            return fallbackAliasForMethod(stmt, d1, taintedPath);
 
         SootMethod sm = stmt.getInvokeExpr().getMethod();
         CollectionMethod method = getCollectionMethodForSootMethod(sm);
         if (method == null)
-            return fallbackTaintsForMethod(stmt, d1, taintedPath);
+            return fallbackAliasForMethod(stmt, d1, taintedPath);
 
         wrapperHits++;
 
-        Set<Abstraction> outSet = new HashSet<>();
+        Set<Abstraction> outSet = new AliasAbstractionSet();
         boolean killCurrentTaint = false;
         for (ICollectionOperation op : method.aliasOperations()) {
             killCurrentTaint |= op.apply(d1, taintedPath, stmt, manager, strategy, outSet);

@@ -1,6 +1,5 @@
 package soot.jimple.infoflow.collections.test.junit;
 
-import org.checkerframework.checker.units.qual.C;
 import org.junit.Assert;
 import org.junit.Before;
 import soot.SootMethod;
@@ -17,7 +16,6 @@ import soot.jimple.infoflow.taintWrappers.ITaintPropagationWrapper;
 import javax.xml.stream.XMLStreamException;
 import java.io.File;
 import java.io.IOException;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
