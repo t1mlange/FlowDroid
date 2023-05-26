@@ -1,18 +1,16 @@
 package soot.jimple.infoflow.collections.operations.forward;
 
-import soot.Scene;
 import soot.SootField;
-import soot.Type;
 import soot.Value;
 import soot.jimple.AssignStmt;
 import soot.jimple.InstanceInvokeExpr;
 import soot.jimple.Stmt;
 import soot.jimple.infoflow.InfoflowManager;
-import soot.jimple.infoflow.collections.context.UnknownContext;
-import soot.jimple.infoflow.collections.data.Location;
 import soot.jimple.infoflow.collections.operations.AbstractOperation;
 import soot.jimple.infoflow.collections.strategies.IContainerStrategy;
-import soot.jimple.infoflow.data.*;
+import soot.jimple.infoflow.data.Abstraction;
+import soot.jimple.infoflow.data.AccessPath;
+import soot.jimple.infoflow.data.AccessPathFragment;
 import soot.jimple.infoflow.sourcesSinks.definitions.AccessPathTuple;
 
 import java.util.Collection;

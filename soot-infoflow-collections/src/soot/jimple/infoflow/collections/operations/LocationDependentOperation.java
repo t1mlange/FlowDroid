@@ -1,6 +1,7 @@
 package soot.jimple.infoflow.collections.operations;
 
-import soot.*;
+import soot.SootField;
+import soot.Value;
 import soot.jimple.InstanceInvokeExpr;
 import soot.jimple.Stmt;
 import soot.jimple.infoflow.InfoflowManager;

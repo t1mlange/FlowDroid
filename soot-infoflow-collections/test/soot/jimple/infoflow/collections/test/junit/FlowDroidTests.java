@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -29,8 +30,8 @@ import java.util.Set;
 public abstract class FlowDroidTests {
     protected static String appPath, libPath;
 
-    protected static Collection<String> sources = Collections.singletonList("<soot.jimple.infoflow.collections.test.Helper: java.lang.String source()>");
-    protected static Collection<String> sinks = Collections.singletonList("<soot.jimple.infoflow.collections.test.Helper: void sink(java.lang.String)>");
+    protected static List<String> sources = Collections.singletonList("<soot.jimple.infoflow.collections.test.Helper: java.lang.String source()>");
+    protected static List<String> sinks = Collections.singletonList("<soot.jimple.infoflow.collections.test.Helper: void sink(java.lang.String)>");
 
     static void appendWithSeparator(StringBuilder sb, File f) throws IOException {
         if (f.exists()) {

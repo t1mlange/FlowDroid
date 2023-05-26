@@ -7,7 +7,6 @@ import soot.jimple.Stmt;
 import soot.jimple.infoflow.InfoflowManager;
 import soot.jimple.infoflow.collections.data.Location;
 import soot.jimple.infoflow.collections.operations.LocationDependentOperation;
-import soot.jimple.infoflow.collections.operations.forward.InsertOperation;
 import soot.jimple.infoflow.collections.strategies.IContainerStrategy;
 import soot.jimple.infoflow.collections.util.Tristate;
 import soot.jimple.infoflow.data.Abstraction;
@@ -18,10 +17,12 @@ import soot.jimple.infoflow.typing.TypeUtils;
 
 import java.util.Collection;
 
-public class AliasInsertOperation extends InsertOperation {
+public class AliasComputeOperation extends LocationDependentOperation {
 
-    public AliasInsertOperation(Location[] locations, int data, String field) {
-        super(locations, data, field);
+    public AliasComputeOperation(Location[] locations, String field, int data,
+                                 int callbackIdx, int callbackBaseIdx, int callbackDataIdx,
+                                 boolean doReturn) {
+        super(locations, field);
     }
 
     @Override
