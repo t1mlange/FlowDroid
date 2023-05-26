@@ -6,7 +6,6 @@ import soot.jimple.InstanceInvokeExpr;
 import soot.jimple.Stmt;
 import soot.jimple.infoflow.InfoflowManager;
 import soot.jimple.infoflow.collections.data.Location;
-import soot.jimple.infoflow.collections.operations.LocationDependentOperation;
 import soot.jimple.infoflow.collections.operations.forward.InsertOperation;
 import soot.jimple.infoflow.collections.strategies.IContainerStrategy;
 import soot.jimple.infoflow.collections.util.Tristate;
@@ -67,6 +66,6 @@ public class AliasInsertOperation extends InsertOperation {
             }
         }
 
-        return false;
+        return super.apply(d1, incoming, stmt, manager, strategy, out);
     }
 }

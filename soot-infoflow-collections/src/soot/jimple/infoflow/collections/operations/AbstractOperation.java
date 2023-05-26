@@ -1,9 +1,10 @@
 package soot.jimple.infoflow.collections.operations;
 
-import soot.Scene;
-import soot.SootClass;
-import soot.SootField;
-import soot.SootFieldRef;
+import soot.*;
+import soot.jimple.AssignStmt;
+import soot.jimple.InstanceInvokeExpr;
+import soot.jimple.Stmt;
+import soot.jimple.infoflow.collections.data.ParamIndex;
 import soot.jimple.infoflow.typing.TypeUtils;
 
 public abstract class AbstractOperation implements ICollectionOperation {
@@ -32,5 +33,24 @@ public abstract class AbstractOperation implements ICollectionOperation {
 
         SootFieldRef ref = Scene.v().makeFieldRef(sc, fieldName, TypeUtils.getTypeFromString(type), false);
         return ref.resolve();
+    }
+
+
+    protected Value getValueFromIndex(int idx, Stmt stmt) {
+        Value value;
+        switch (idx) {
+            case ParamIndex.BASE:
+                value = stmt.getInvokeExpr() instanceof InstanceInvokeExpr
+                            ? ((InstanceInvokeExpr) stmt.getInvokeExpr()).getBase() : null;
+                break;
+            case ParamIndex.RETURN:
+                value = stmt instanceof AssignStmt ? ((AssignStmt) stmt).getLeftOp() : null;
+                break;
+            default:
+                if (idx < 0)
+                    throw new RuntimeException("Unexpected to index: " + idx);
+                value = stmt.getInvokeExpr().getArg(idx);
+        }
+        return value;
     }
 }
