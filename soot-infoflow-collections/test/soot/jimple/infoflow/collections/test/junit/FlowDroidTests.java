@@ -9,8 +9,12 @@ import soot.jimple.infoflow.cfg.DefaultBiDiICFGFactory;
 import soot.jimple.infoflow.collections.CollectionTaintWrapper;
 import soot.jimple.infoflow.collections.StringResourcesResolver;
 import soot.jimple.infoflow.collections.parser.CollectionXMLParser;
+import soot.jimple.infoflow.collections.solver.fastSolver.WideningInfoflowSolver;
 import soot.jimple.infoflow.methodSummary.taintWrappers.SummaryTaintWrapper;
 import soot.jimple.infoflow.methodSummary.taintWrappers.TaintWrapperFactory;
+import soot.jimple.infoflow.problems.AbstractInfoflowProblem;
+import soot.jimple.infoflow.solver.IInfoflowSolver;
+import soot.jimple.infoflow.solver.executors.InterruptableExecutor;
 import soot.jimple.infoflow.taintWrappers.ITaintPropagationWrapper;
 
 import javax.xml.stream.XMLStreamException;
@@ -87,6 +91,12 @@ public abstract class FlowDroidTests {
                 StringResourcesResolver res = new StringResourcesResolver();
                 res.initialize(manager.getConfig());
                 res.run(manager, excludedMethods, manager.getSourceSinkManager(), manager.getTaintWrapper());
+            }
+
+            @Override
+            protected IInfoflowSolver createDataFlowSolver(InterruptableExecutor executor, AbstractInfoflowProblem problem,
+                                                           InfoflowConfiguration.SolverConfiguration solverConfig) {
+                return new WideningInfoflowSolver(problem, executor);
             }
         };
         result.setThrowExceptions(true);

@@ -1,4 +1,4 @@
-package soot.jimple.infoflow.collections.strategies;
+package soot.jimple.infoflow.collections.strategies.containers;
 
 import soot.Value;
 import soot.jimple.Stmt;
