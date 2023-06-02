@@ -134,9 +134,9 @@ public class IFDSSolver<N, D extends FastSolverLinkedNode<D, N>, I extends BiDiI
 	protected boolean solverId;
 
 	private Set<IMemoryBoundedSolverStatusNotification> notificationListeners = new HashSet<>();
-	private ISolverTerminationReason killFlag = null;
+	protected ISolverTerminationReason killFlag = null;
 
-	private int maxCalleesPerCallSite = 75;
+	protected int maxCalleesPerCallSite = 75;
 	private int maxAbstractionPathLength = 100;
 
 	protected ISchedulingStrategy<N, D> schedulingStrategy = new DefaultSchedulingStrategy<N, D, I>(
@@ -292,7 +292,7 @@ public class IFDSSolver<N, D extends FastSolverLinkedNode<D, N>, I extends BiDiI
 	 * 
 	 * @param edge an edge whose target node resembles a method call
 	 */
-	private void processCall(PathEdge<N, D> edge) {
+	protected void processCall(PathEdge<N, D> edge) {
 		final D d1 = edge.factAtSource();
 		final N n = edge.getTarget(); // a call node; line 14...
 

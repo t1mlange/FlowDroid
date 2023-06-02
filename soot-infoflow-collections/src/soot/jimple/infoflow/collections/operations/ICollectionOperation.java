@@ -2,7 +2,7 @@ package soot.jimple.infoflow.collections.operations;
 
 import soot.jimple.Stmt;
 import soot.jimple.infoflow.InfoflowManager;
-import soot.jimple.infoflow.collections.strategies.IContainerStrategy;
+import soot.jimple.infoflow.collections.strategies.containers.IContainerStrategy;
 import soot.jimple.infoflow.data.Abstraction;
 
 import java.util.Collection;

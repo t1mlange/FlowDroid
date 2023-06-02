@@ -7,23 +7,18 @@ import soot.jimple.infoflow.data.ContextDefinition;
 import java.util.HashSet;
 import java.util.Set;
 
-public class IntervalContext implements ContextDefinition {
+public class IntervalContext implements PositionBasedContext {
     private final int min;
     private final int max;
-
-    private final Set<Stmt> shiftStmts;
 
     public IntervalContext(int i) {
         min = i;
         max = i;
-        shiftStmts = new HashSet<>();
     }
 
-    public IntervalContext(int min, int max, Set<Stmt> shiftStmts, Stmt stmt) {
+    public IntervalContext(int min, int max) {
         this.min = min;
         this.max = max;
-        this.shiftStmts = new HashSet<>(shiftStmts);
-        this.shiftStmts.add(stmt);
     }
 
     public Tristate intersect(IntervalContext other) {
@@ -35,38 +30,26 @@ public class IntervalContext implements ContextDefinition {
     }
 
     public ContextDefinition shiftRight(Stmt stmt) {
-        if (shiftStmts.contains(stmt))
-            return UnknownContext.v();
-
         if (max < Integer.MAX_VALUE)
-            return new IntervalContext(min + 1, max + 1, shiftStmts, stmt);
+            return new IntervalContext(min + 1, max + 1);
         return this;
     }
 
     public ContextDefinition addRight(Stmt stmt) {
-        if (shiftStmts.contains(stmt))
-            return UnknownContext.v();
-
         if (max < Integer.MAX_VALUE)
-            return new IntervalContext(min, max + 1, shiftStmts, stmt);
+            return new IntervalContext(min, max + 1);
         return this;
     }
 
     public ContextDefinition shiftLeft(Stmt stmt) {
-        if (shiftStmts.contains(stmt))
-            return UnknownContext.v();
-
         if (max < Integer.MAX_VALUE)
-            return new IntervalContext(min - 1, max - 1, shiftStmts, stmt);
+            return new IntervalContext(min - 1, max - 1);
         return this;
     }
 
     public ContextDefinition subtractLeft(Stmt stmt) {
-        if (shiftStmts.contains(stmt))
-            return UnknownContext.v();
-
         if (max < Integer.MAX_VALUE)
-            return new IntervalContext(min - 1, max, shiftStmts, stmt);
+            return new IntervalContext(min - 1, max);
         return this;
     }
 

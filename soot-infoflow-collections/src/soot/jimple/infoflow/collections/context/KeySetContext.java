@@ -7,7 +7,7 @@ import soot.jimple.infoflow.data.ContextDefinition;
 import java.util.HashSet;
 import java.util.Set;
 
-public class KeySetContext implements ContextDefinition {
+public class KeySetContext implements ValueBasedContext {
     Set<Constant> keys;
 
     public KeySetContext(Constant key) {
