@@ -1,5 +1,7 @@
 package soot.jimple.infoflow.collections.test;
 
+import soot.jimple.infoflow.collections.test.junit.FlowDroidTest;
+
 import java.util.Stack;
 
 import static soot.jimple.infoflow.collections.test.Helper.sink;
@@ -10,6 +12,7 @@ public class SimpleStackTestCode {
         String f;
     }
 
+    @FlowDroidTest(expected = 1)
     public void testStackPushPop1() {
         Stack<String> s = new Stack<>();
         String tainted = source();
@@ -21,6 +24,7 @@ public class SimpleStackTestCode {
         sink(res);
     }
 
+    @FlowDroidTest(expected = 0)
     public void testStackPushPop2() {
         Stack<String> s = new Stack<>();
         String tainted = source();
@@ -40,6 +44,7 @@ public class SimpleStackTestCode {
         sink(res);
     }
 
+    @FlowDroidTest(expected = 1)
     public void testStackPushPopPeek1() {
         Stack<String> s = new Stack<>();
         String tainted = source();
@@ -57,6 +62,7 @@ public class SimpleStackTestCode {
         sink(res);
     }
 
+    @FlowDroidTest(expected = 1)
     public void testStackPushReturn1() {
         A a = new A();
         a.f = source();

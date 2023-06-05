@@ -1,11 +1,14 @@
 package soot.jimple.infoflow.collections.test;
 
+import soot.jimple.infoflow.collections.test.junit.FlowDroidTest;
+
 import java.util.*;
 
 import static soot.jimple.infoflow.collections.test.Helper.sink;
 import static soot.jimple.infoflow.collections.test.Helper.source;
 
 public class SimpleListTestCode {
+    @FlowDroidTest(expected = 1)
     public void testListAdd1() {
         List<String> lst = new ArrayList<>();
         String tainted = source();
@@ -14,6 +17,7 @@ public class SimpleListTestCode {
         sink(lst.get(1));
     }
 
+    @FlowDroidTest(expected = 0)
     public void testListAdd2() {
         List<String> lst = new ArrayList<>();
         String tainted = source();
@@ -22,6 +26,7 @@ public class SimpleListTestCode {
         sink(lst.get(0));
     }
 
+    @FlowDroidTest(expected = 1)
     public void testListAdd3(int x) {
         List<String> lst = new ArrayList<>();
         String tainted = source();
@@ -33,6 +38,7 @@ public class SimpleListTestCode {
         sink(lst.get(1));
     }
 
+    @FlowDroidTest(expected = 0)
     public void testListRemove1() {
         List<String> lst = new ArrayList<>();
         String tainted = source();
@@ -42,6 +48,7 @@ public class SimpleListTestCode {
         sink(lst.get(1));
     }
 
+    @FlowDroidTest(expected = 1)
     public void testListRemove2() {
         List<String> lst = new ArrayList<>();
         String tainted = source();
@@ -51,6 +58,7 @@ public class SimpleListTestCode {
         sink(removed);
     }
 
+    @FlowDroidTest(expected = 1)
     public void testListRemove3() {
         List<String> lst = new ArrayList<>();
         String tainted = source();
@@ -60,6 +68,7 @@ public class SimpleListTestCode {
         sink(lst.get(0));
     }
 
+    @FlowDroidTest(expected = 0)
     public void testListRemove4() {
         List<String> lst = new ArrayList<>();
         String tainted = source();
@@ -70,6 +79,7 @@ public class SimpleListTestCode {
         sink(lst.get(1));
     }
 
+    @FlowDroidTest(expected = 1)
     public void testListRemove5() {
         List<String> lst = new ArrayList<>();
         String tainted = source();
@@ -80,6 +90,7 @@ public class SimpleListTestCode {
         sink(lst.get(0));
     }
 
+    @FlowDroidTest(expected = 0)
     public void testListClear() {
         List<String> lst = new ArrayList<>();
         String tainted = source();
@@ -89,6 +100,7 @@ public class SimpleListTestCode {
         sink(lst.get(1));
     }
 
+    @FlowDroidTest(expected = 1)
     public void testListInsert1() {
         List<String> lst = new ArrayList<>();
         String tainted = source();
@@ -99,6 +111,7 @@ public class SimpleListTestCode {
         sink(lst.get(2));
     }
 
+    @FlowDroidTest(expected = 0)
     public void testListInsert2() {
         List<String> lst = new ArrayList<>();
         String tainted = source();
@@ -109,6 +122,7 @@ public class SimpleListTestCode {
         sink(lst.get(1));
     }
 
+    @FlowDroidTest(expected = 1)
     public void testListInsert3() {
         List<String> lst = new ArrayList<>();
         String tainted = source();
@@ -120,6 +134,7 @@ public class SimpleListTestCode {
         sink(lst.get(1));
     }
 
+    @FlowDroidTest(expected = 1)
     public void testListInsert4() {
         List<String> lst = new ArrayList<>();
         String tainted = source();
@@ -130,6 +145,7 @@ public class SimpleListTestCode {
         sink(lst.get(1)); // index 1 or 2 might be tainted
     }
 
+    @FlowDroidTest(expected = 1)
     public void testListInsert5() {
         List<String> lst = new ArrayList<>();
         String tainted = source();
@@ -140,6 +156,7 @@ public class SimpleListTestCode {
         sink(lst.get(2)); // index 1 or 2 might be tainted
     }
 
+    @FlowDroidTest(expected = 0)
     public void testListInsert6() {
         List<String> lst = new ArrayList<>();
         String tainted = source();
@@ -150,6 +167,7 @@ public class SimpleListTestCode {
         sink(lst.get(3)); // index 1 or 2 might be tainted
     }
 
+    @FlowDroidTest(expected = 1)
     public void testListInsertInLoop1() {
         List<String> lst = new ArrayList<>();
         String tainted = source();
@@ -160,6 +178,7 @@ public class SimpleListTestCode {
         sink(lst.get(0));
     }
 
+    @FlowDroidTest(expected = 1)
     public void testListReplaceAll1() {
         List<String> lst = new ArrayList<>();
         String tainted = source();
@@ -168,6 +187,7 @@ public class SimpleListTestCode {
         sink(lst.get(0));
     }
 
+    @FlowDroidTest(expected = 0)
     public void testListReplaceAll2() {
         List<String> lst = new ArrayList<>();
         String tainted = source();
@@ -176,6 +196,7 @@ public class SimpleListTestCode {
         sink(lst.get(0));
     }
 
+    @FlowDroidTest(expected = 1)
     public void testListSublist1() {
         List<String> lst = new ArrayList<>();
         String tainted = source();
@@ -186,6 +207,7 @@ public class SimpleListTestCode {
         sink(subList.get(1));
     }
 
+    @FlowDroidTest(expected = 1)
     public void testListSublist2() {
         List<String> lst = new ArrayList<>();
         String tainted = source();
@@ -196,6 +218,7 @@ public class SimpleListTestCode {
         sink(lst.get(1));
     }
 
+    @FlowDroidTest(expected = 1)
     public void testListIterator1() {
         List<String> lst = new ArrayList<>();
         String tainted = source();
@@ -204,6 +227,7 @@ public class SimpleListTestCode {
         sink(lst.get(1));
     }
 
+    @FlowDroidTest(expected = 1)
     public void testListIterator2() {
         List<String> lst = new ArrayList<>();
         String tainted = source();
@@ -212,6 +236,7 @@ public class SimpleListTestCode {
         sink(it.next());
     }
 
+    @FlowDroidTest(expected = 1)
     public void testListListIterator1() {
         List<String> lst = new ArrayList<>();
         String tainted = source();
@@ -220,6 +245,7 @@ public class SimpleListTestCode {
         sink(lst.get(1));
     }
 
+    @FlowDroidTest(expected = 1)
     public void testListListIterator2() {
         List<String> lst = new ArrayList<>();
         String tainted = source();
@@ -228,6 +254,7 @@ public class SimpleListTestCode {
         sink(it.next());
     }
 
+    @FlowDroidTest(expected = 0)
     public void testListSet1() {
         List<String> lst = new ArrayList<>();
         String tainted = source();
@@ -237,6 +264,7 @@ public class SimpleListTestCode {
         sink(lst.get(1));
     }
 
+    @FlowDroidTest(expected = 1)
     public void testListSet2() {
         List<String> lst = new ArrayList<>();
         String tainted = source();
@@ -246,6 +274,7 @@ public class SimpleListTestCode {
         sink(lst.get(1));
     }
 
+    @FlowDroidTest(expected = 1)
     public void testListRemoveAll1() {
         List<String> lst = new ArrayList<>();
         String tainted = source();
@@ -255,6 +284,7 @@ public class SimpleListTestCode {
         sink(lst.get(0));
     }
 
+    @FlowDroidTest(expected = 1)
     public void testListRetainAll1() {
         List<String> lst = new ArrayList<>();
         String tainted = source();
@@ -264,6 +294,7 @@ public class SimpleListTestCode {
         sink(lst.get(0));
     }
 
+    @FlowDroidTest(expected = 1)
     public void testListSort1() {
         List<String> lst = new ArrayList<>();
         String tainted = source();

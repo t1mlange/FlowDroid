@@ -24,7 +24,7 @@ public class AliasMapTests extends FlowDroidTests {
         infoflow.setTaintPropagationHandler(new DebugFlowFunctionTaintPropagationHandler());
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
-        Assert.assertEquals(1, infoflow.getResults().size());
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
     }
 
     @Test(timeout = 30000)
@@ -34,7 +34,7 @@ public class AliasMapTests extends FlowDroidTests {
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         IEntryPointCreator epc = new SequentialEntryPointCreator(Collections.singleton(epoint));
         infoflow.computeInfoflow(appPath, libPath, epc, sources, sinks);
-        Assert.assertEquals(0, infoflow.getResults().size());
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
     }
 
     @Test(timeout = 30000)
@@ -43,7 +43,7 @@ public class AliasMapTests extends FlowDroidTests {
         infoflow.setTaintPropagationHandler(new DebugFlowFunctionTaintPropagationHandler());
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
-        Assert.assertEquals(1, infoflow.getResults().size());
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
     }
 
     @Test(timeout = 30000)
@@ -52,7 +52,7 @@ public class AliasMapTests extends FlowDroidTests {
         infoflow.setTaintPropagationHandler(new DebugFlowFunctionTaintPropagationHandler());
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
-        Assert.assertEquals(0, infoflow.getResults().size());
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
     }
 
     @Test(timeout = 30000)
@@ -61,7 +61,7 @@ public class AliasMapTests extends FlowDroidTests {
         infoflow.setTaintPropagationHandler(new DebugFlowFunctionTaintPropagationHandler());
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
-        Assert.assertEquals(0, infoflow.getResults().size());
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
     }
 
     @Test(timeout = 30000)
@@ -70,7 +70,7 @@ public class AliasMapTests extends FlowDroidTests {
         infoflow.setTaintPropagationHandler(new DebugFlowFunctionTaintPropagationHandler());
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
-        Assert.assertEquals(1, infoflow.getResults().size());
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
     }
 
     @Test(timeout = 30000)
@@ -79,7 +79,7 @@ public class AliasMapTests extends FlowDroidTests {
         infoflow.setTaintPropagationHandler(new DebugFlowFunctionTaintPropagationHandler());
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
-        Assert.assertEquals(0, infoflow.getResults().size());
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
     }
 
     @Test(timeout = 30000)
@@ -88,6 +88,6 @@ public class AliasMapTests extends FlowDroidTests {
         infoflow.setTaintPropagationHandler(new DebugFlowFunctionTaintPropagationHandler());
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
-        Assert.assertEquals(0, infoflow.getResults().size());
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
     }
 }

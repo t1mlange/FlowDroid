@@ -23,7 +23,7 @@ public class SimpleTableTests extends FlowDroidTests {
         infoflow.setTaintPropagationHandler(new DebugFlowFunctionTaintPropagationHandler());
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
-        Assert.assertEquals(1, infoflow.getResults().size());
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
     }
 
     @Test(timeout = 30000)
@@ -31,7 +31,7 @@ public class SimpleTableTests extends FlowDroidTests {
         IInfoflow infoflow = initInfoflow();
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
-        Assert.assertEquals(0, infoflow.getResults().size());
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
     }
 
     @Test(timeout = 30000)
@@ -39,7 +39,7 @@ public class SimpleTableTests extends FlowDroidTests {
         IInfoflow infoflow = initInfoflow();
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
-        Assert.assertEquals(0, infoflow.getResults().size());
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
     }
 
     @Test(timeout = 30000)
@@ -48,7 +48,7 @@ public class SimpleTableTests extends FlowDroidTests {
         infoflow.setTaintPropagationHandler(new DebugFlowFunctionTaintPropagationHandler());
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
-        Assert.assertEquals(0, infoflow.getResults().size());
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
     }
 
     @Test(timeout = 30000)
@@ -56,7 +56,7 @@ public class SimpleTableTests extends FlowDroidTests {
         IInfoflow infoflow = initInfoflow();
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
-        Assert.assertEquals(1, infoflow.getResults().size());
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
     }
 
     @Test(timeout = 30000)
@@ -64,7 +64,7 @@ public class SimpleTableTests extends FlowDroidTests {
         IInfoflow infoflow = initInfoflow();
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
-        Assert.assertEquals(0, infoflow.getResults().size());
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
     }
 
     @Test(timeout = 30000)
@@ -72,7 +72,7 @@ public class SimpleTableTests extends FlowDroidTests {
         IInfoflow infoflow = initInfoflow();
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
-        Assert.assertEquals(1, infoflow.getResults().size());
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
     }
 
     @Test(timeout = 30000)
@@ -80,7 +80,7 @@ public class SimpleTableTests extends FlowDroidTests {
         IInfoflow infoflow = initInfoflow();
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
-        Assert.assertEquals(0, infoflow.getResults().size());
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
     }
 
     @Test(timeout = 30000)
@@ -88,7 +88,7 @@ public class SimpleTableTests extends FlowDroidTests {
         IInfoflow infoflow = initInfoflow();
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
-        Assert.assertEquals(1, infoflow.getResults().size());
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
     }
 
     @Test(timeout = 30000)
@@ -96,7 +96,7 @@ public class SimpleTableTests extends FlowDroidTests {
         IInfoflow infoflow = initInfoflow();
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
-        Assert.assertEquals(0, infoflow.getResults().size());
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
     }
 
     @Test(timeout = 30000)
@@ -104,7 +104,7 @@ public class SimpleTableTests extends FlowDroidTests {
         IInfoflow infoflow = initInfoflow();
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
-        Assert.assertEquals(0, infoflow.getResults().size());
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
     }
 
     @Test(timeout = 30000)
@@ -112,7 +112,7 @@ public class SimpleTableTests extends FlowDroidTests {
         IInfoflow infoflow = initInfoflow();
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
-        Assert.assertEquals(1, infoflow.getResults().size());
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
     }
 
     @Test(timeout = 30000)
@@ -120,7 +120,7 @@ public class SimpleTableTests extends FlowDroidTests {
         IInfoflow infoflow = initInfoflow();
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
-        Assert.assertEquals(0, infoflow.getResults().size());
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
     }
 
     @Test(timeout = 30000)
@@ -128,7 +128,7 @@ public class SimpleTableTests extends FlowDroidTests {
         IInfoflow infoflow = initInfoflow();
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
-        Assert.assertEquals(0, infoflow.getResults().size());
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
     }
 
     @Test(timeout = 30000)
@@ -136,7 +136,7 @@ public class SimpleTableTests extends FlowDroidTests {
         IInfoflow infoflow = initInfoflow();
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
-        Assert.assertEquals(1, infoflow.getResults().size());
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
     }
 
     @Test(timeout = 30000)
@@ -144,7 +144,7 @@ public class SimpleTableTests extends FlowDroidTests {
         IInfoflow infoflow = initInfoflow();
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
-        Assert.assertEquals(0, infoflow.getResults().size());
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
     }
 
     @Ignore("No support for copying multiple keys yet")
@@ -154,7 +154,7 @@ public class SimpleTableTests extends FlowDroidTests {
         infoflow.setTaintPropagationHandler(new DebugFlowFunctionTaintPropagationHandler());
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
-        Assert.assertEquals(1, infoflow.getResults().size());
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
     }
 
     @Test(timeout = 30000)
@@ -162,7 +162,7 @@ public class SimpleTableTests extends FlowDroidTests {
         IInfoflow infoflow = initInfoflow();
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
-        Assert.assertEquals(0, infoflow.getResults().size());
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
     }
 
     @Ignore("No support for copying multiple keys yet")
@@ -171,7 +171,7 @@ public class SimpleTableTests extends FlowDroidTests {
         IInfoflow infoflow = initInfoflow();
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
-        Assert.assertEquals(1, infoflow.getResults().size());
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
     }
 
     @Test(timeout = 30000)
@@ -179,6 +179,6 @@ public class SimpleTableTests extends FlowDroidTests {
         IInfoflow infoflow = initInfoflow();
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
-        Assert.assertEquals(0, infoflow.getResults().size());
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
     }
 }
