@@ -88,7 +88,7 @@ public class SimpleMapTests extends FlowDroidTests {
         Assert.assertEquals(0, infoflow.getResults().size());
     }
 
-    @Test//(timeout = 30000)
+    @Test(timeout = 30000)
     public void testMapValueSet1() {
         IInfoflow infoflow = initInfoflow();
         infoflow.setTaintPropagationHandler(new DebugFlowFunctionTaintPropagationHandler());

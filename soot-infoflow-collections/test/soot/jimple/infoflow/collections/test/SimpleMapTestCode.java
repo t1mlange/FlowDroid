@@ -1,5 +1,7 @@
 package soot.jimple.infoflow.collections.test;
 
+import soot.jimple.infoflow.collections.test.junit.FlowDroidTest;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -7,6 +9,7 @@ import static soot.jimple.infoflow.collections.test.Helper.sink;
 import static soot.jimple.infoflow.collections.test.Helper.source;
 
 public class SimpleMapTestCode {
+    @FlowDroidTest(expected = 1)
     public void testMapPutGet1() {
         Map<String, String> map = new HashMap<>();
         String tainted = source();
@@ -15,6 +18,7 @@ public class SimpleMapTestCode {
         sink(res);
     }
 
+    @FlowDroidTest(expected = 0)
     public void testMapPutGet2() {
         Map<String, String> map = new HashMap<>();
         String tainted = source();
@@ -23,6 +27,7 @@ public class SimpleMapTestCode {
         sink(res);
     }
 
+    @FlowDroidTest(expected = 1)
     public void testMapPutGetOrDefault1() {
         Map<String, String> map = new HashMap<>();
         String tainted = source();
@@ -31,6 +36,7 @@ public class SimpleMapTestCode {
         sink(res);
     }
 
+    @FlowDroidTest(expected = 0)
     public void testMapPutGetOrDefault2() {
         Map<String, String> map = new HashMap<>();
         String tainted = source();
@@ -39,6 +45,7 @@ public class SimpleMapTestCode {
         sink(res);
     }
 
+    @FlowDroidTest(expected = 1)
     public void testMapPutGetOrDefault3() {
         Map<String, String> map = new HashMap<>();
         String tainted = source();
@@ -47,6 +54,7 @@ public class SimpleMapTestCode {
         sink(res);
     }
 
+    @FlowDroidTest(expected = 0)
     public void testMapPutRemoveGet1() {
         Map<String, String> map = new HashMap<>();
         String tainted = source();
@@ -56,6 +64,7 @@ public class SimpleMapTestCode {
         sink(res);
     }
 
+    @FlowDroidTest(expected = 0)
     public void testMapClear1() {
         Map<String, String> map = new HashMap<>();
         String tainted = source();
@@ -65,6 +74,7 @@ public class SimpleMapTestCode {
         sink(res);
     }
 
+    @FlowDroidTest(expected = 1)
     public void testMapKeySet1() {
         Map<String, String> map = new HashMap<>();
         String tainted = source();
@@ -77,6 +87,7 @@ public class SimpleMapTestCode {
         sink(res);
     }
 
+    @FlowDroidTest(expected = 0)
     public void testMapKeySet2() {
         Map<String, String> map = new HashMap<>();
         String tainted = source();
@@ -87,6 +98,7 @@ public class SimpleMapTestCode {
         }
     }
 
+    @FlowDroidTest(expected = 1)
     public void testMapValueSet1() {
         Map<String, String> map = new HashMap<>();
         String tainted = source();
@@ -97,6 +109,7 @@ public class SimpleMapTestCode {
         }
     }
 
+    @FlowDroidTest(expected = 1)
     public void testMapPutAll1() {
         Map<String, String> map = new HashMap<>();
         Map<String, String> map2 = new HashMap<>();
@@ -107,6 +120,7 @@ public class SimpleMapTestCode {
         sink(map2.get("ConstantKey"));
     }
 
+    @FlowDroidTest(expected = 0)
     public void testMapPutAll2() {
         Map<String, String> map = new HashMap<>();
         Map<String, String> map2 = new HashMap<>();
@@ -117,6 +131,7 @@ public class SimpleMapTestCode {
         sink(map2.get("OtherKey"));
     }
 
+    @FlowDroidTest(expected = 1)
     public void testMapPutIfAbsent1() {
         Map<String, String> map = new HashMap<>();
         String tainted = source();
@@ -124,6 +139,7 @@ public class SimpleMapTestCode {
         sink(map.get("ConstantKey"));
     }
 
+    @FlowDroidTest(expected = 1)
     public void testMapPutIfAbsent2() {
         Map<String, String> map = new HashMap<>();
         String tainted = source();
@@ -131,6 +147,7 @@ public class SimpleMapTestCode {
         sink(out);
     }
 
+    @FlowDroidTest(expected = 1)
     public void testMapPutIfAbsent3() {
         Map<String, String> map = new HashMap<>();
         String tainted = source();
@@ -139,6 +156,7 @@ public class SimpleMapTestCode {
         sink(out);
     }
 
+    @FlowDroidTest(expected = 0)
     public void testMapPutIfAbsent4() {
         Map<String, String> map = new HashMap<>();
         String tainted = source();
@@ -146,6 +164,7 @@ public class SimpleMapTestCode {
         sink(map.get("OtherConstantKey"));
     }
 
+    @FlowDroidTest(expected = 1)
     public void testMapPutIfAbsent5() {
         Map<String, String> map = new HashMap<>();
         String tainted = source();
@@ -154,6 +173,7 @@ public class SimpleMapTestCode {
         sink(map.get("ConstantKey"));
     }
 
+    @FlowDroidTest(expected = 1)
     public void testMapCompute1() {
         Map<String, String> map = new HashMap<>();
         String tainted = source();
@@ -162,6 +182,7 @@ public class SimpleMapTestCode {
         sink(map.get("XXX"));
     }
 
+    @FlowDroidTest(expected = 0)
     public void testMapCompute2() {
         Map<String, String> map = new HashMap<>();
         String tainted = source();
@@ -170,6 +191,7 @@ public class SimpleMapTestCode {
         sink(map.get("XXX"));
     }
 
+    @FlowDroidTest(expected = 1)
     public void testMapCompute3() {
         Map<String, String> map = new HashMap<>();
         String tainted = source();
@@ -178,6 +200,8 @@ public class SimpleMapTestCode {
     }
 
     public String unusedStringField;
+
+    @FlowDroidTest(expected = 0)
     public void testMapCompute4() {
         Map<String, String> map = new HashMap<>();
         String tainted = source();
@@ -188,6 +212,7 @@ public class SimpleMapTestCode {
         sink(map.get("XXX"));
     }
 
+    @FlowDroidTest(expected = 1)
     public void testMapComputeIfAbsent1() {
         Map<String, String> map = new HashMap<>();
         String tainted = source();
@@ -195,6 +220,7 @@ public class SimpleMapTestCode {
         sink(map.get("XXX"));
     }
 
+    @FlowDroidTest(expected = 0)
     public void testMapComputeIfAbsent2() {
         Map<String, String> map = new HashMap<>();
         String tainted = source();
@@ -202,6 +228,7 @@ public class SimpleMapTestCode {
         sink(map.get("XXX"));
     }
 
+    @FlowDroidTest(expected = 1)
     public void testMapMerge1() {
         Map<String, String> map = new HashMap<>();
         String tainted = source();
@@ -210,6 +237,7 @@ public class SimpleMapTestCode {
         sink(map.get("XXX"));
     }
 
+    @FlowDroidTest(expected = 0)
     public void testMapMerge2() {
         Map<String, String> map = new HashMap<>();
         String tainted = source();
@@ -218,6 +246,7 @@ public class SimpleMapTestCode {
         sink(map.get("XXX"));
     }
 
+    @FlowDroidTest(expected = 1)
     public void testMapMerge3() {
         Map<String, String> map = new HashMap<>();
         String tainted = source();
@@ -225,6 +254,7 @@ public class SimpleMapTestCode {
         sink(map.get("XXX"));
     }
 
+    @FlowDroidTest(expected = 0)
     public void testMapMerge4() {
         Map<String, String> map = new HashMap<>();
         String tainted = source();
@@ -232,6 +262,7 @@ public class SimpleMapTestCode {
         sink(map.get("XXX"));
     }
 
+    @FlowDroidTest(expected = 0)
     public void testMapMerge5() {
         Map<String, String> map = new HashMap<>();
         String tainted = source();
@@ -239,7 +270,7 @@ public class SimpleMapTestCode {
         sink(map.get("XXX"));
     }
 
-
+    @FlowDroidTest(expected = 1)
     public void testMapMerge6() {
         Map<String, String> map = new HashMap<>();
         String tainted = source();
@@ -247,6 +278,7 @@ public class SimpleMapTestCode {
         sink(map.get("XXX"));
     }
 
+    @FlowDroidTest(expected = 1)
     public void testMapMerge7() {
         Map<String, String> map = new HashMap<>();
         String tainted = source();
@@ -255,6 +287,7 @@ public class SimpleMapTestCode {
         sink(map.get("XXX"));
     }
 
+    @FlowDroidTest(expected = 0)
     public void testMapMerge8() {
         Map<String, String> map = new HashMap<>();
         String tainted = source();
@@ -263,6 +296,7 @@ public class SimpleMapTestCode {
         sink(map.get("XXX"));
     }
 
+    @FlowDroidTest(expected = 1)
     public void testMapReplaceAll1() {
         Map<String, String> map = new HashMap<>();
         String tainted = source();
@@ -271,6 +305,7 @@ public class SimpleMapTestCode {
         sink(map.get("XXX"));
     }
 
+    @FlowDroidTest(expected = 0)
     public void testMapReplaceAll2() {
         Map<String, String> map = new HashMap<>();
         String tainted = source();
@@ -279,6 +314,7 @@ public class SimpleMapTestCode {
         sink(map.get("XXX"));
     }
 
+    @FlowDroidTest(expected = 1)
     public void testMapComputeReturn1() {
         Map<String, String> map = new HashMap<>();
         String tainted = source();
@@ -286,6 +322,7 @@ public class SimpleMapTestCode {
         sink(returned);
     }
 
+    @FlowDroidTest(expected = 1)
     public void testMapComputeReturn2() {
         Map<String, String> map = new HashMap<>();
         String tainted = source();
@@ -293,6 +330,7 @@ public class SimpleMapTestCode {
         sink(returned);
     }
 
+    @FlowDroidTest(expected = 1)
     public void testMapComputeReturn3() {
         Map<String, String> map = new HashMap<>();
         String tainted = source();
@@ -300,6 +338,7 @@ public class SimpleMapTestCode {
         sink(returned);
     }
 
+    @FlowDroidTest(expected = 1)
     public void testMapComputeReturn4() {
         Map<String, String> map = new HashMap<>();
         String tainted = source();
@@ -308,6 +347,7 @@ public class SimpleMapTestCode {
         sink(returned);
     }
 
+    @FlowDroidTest(expected = 1)
     public void testMapComputeReturn5() {
         Map<String, String> map = new HashMap<>();
         String tainted = source();
@@ -315,6 +355,7 @@ public class SimpleMapTestCode {
         sink(returned);
     }
 
+    @FlowDroidTest(expected = 0)
     public void testMapComputeReturn6() {
         Map<String, String> map = new HashMap<>();
         String tainted = source();
