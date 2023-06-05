@@ -10,7 +10,6 @@ import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.problems.AbstractInfoflowProblem;
 import soot.jimple.infoflow.solver.executors.InterruptableExecutor;
 import soot.jimple.infoflow.solver.fastSolver.InfoflowSolver;
-import soot.util.ConcurrentHashMultiMap;
 
 import java.util.Collection;
 import java.util.Set;
