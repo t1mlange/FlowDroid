@@ -2,6 +2,7 @@ package soot.jimple.infoflow.collections.test.junit;
 
 import org.junit.Assert;
 import org.junit.Before;
+import soot.Scene;
 import soot.SootMethod;
 import soot.jimple.infoflow.*;
 import soot.jimple.infoflow.android.SetupApplication;
@@ -16,12 +17,17 @@ import soot.jimple.infoflow.problems.AbstractInfoflowProblem;
 import soot.jimple.infoflow.solver.IInfoflowSolver;
 import soot.jimple.infoflow.solver.executors.InterruptableExecutor;
 import soot.jimple.infoflow.taintWrappers.ITaintPropagationWrapper;
+import soot.tagkit.AnnotationIntElem;
+import soot.tagkit.AnnotationTag;
+import soot.tagkit.Tag;
+import soot.tagkit.VisibilityAnnotationTag;
 
 import javax.xml.stream.XMLStreamException;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -66,6 +72,35 @@ public abstract class FlowDroidTests {
                 new File(System.getProperty("java.home") + File.separator + "lib" + File.separator + "rt.jar"));
         appendWithSeparator(libPathBuilder, new File("/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/rt.jar"));
         libPath = libPathBuilder.toString();
+    }
+
+    public static int getExpectedResultsForMethod(String sig) {
+        SootMethod sm = Scene.v().grabMethod(sig);
+        if (sm == null)
+            throw new RuntimeException("Could not find method!");
+
+        for (Tag t : sm.getTags()) {
+            if (!(t instanceof VisibilityAnnotationTag))
+                continue;
+
+            VisibilityAnnotationTag vat = (VisibilityAnnotationTag) t;
+            Optional<AnnotationTag> optTag = vat.getAnnotations().stream().findAny();
+            if (optTag.isEmpty())
+                continue;
+
+            AnnotationTag testTag = optTag.get();
+            if (!testTag.getType().equals("Lsoot/jimple/infoflow/collections/test/junit/FlowDroidTest;"))
+                continue;
+
+            int expected = testTag.getElems().stream()
+                    .filter(e -> e.getName().equals("expected"))
+                    .map(e -> (AnnotationIntElem) e)
+                    .findAny().get().getValue();
+
+            return expected;
+        }
+
+        throw new RuntimeException("Could not get expected results for method!");
     }
 
     protected ITaintPropagationWrapper getTaintWrapper() {

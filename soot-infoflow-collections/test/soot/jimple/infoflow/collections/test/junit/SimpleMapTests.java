@@ -21,7 +21,7 @@ public class SimpleMapTests extends FlowDroidTests {
         IInfoflow infoflow = initInfoflow();
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
-        Assert.assertEquals(1, infoflow.getResults().size());
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
     }
 
     @Test(timeout = 30000)
@@ -29,7 +29,7 @@ public class SimpleMapTests extends FlowDroidTests {
         IInfoflow infoflow = initInfoflow();
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
-        Assert.assertEquals(0, infoflow.getResults().size());
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
     }
 
     @Test(timeout = 30000)
@@ -37,7 +37,7 @@ public class SimpleMapTests extends FlowDroidTests {
         IInfoflow infoflow = initInfoflow();
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
-        Assert.assertEquals(1, infoflow.getResults().size());
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
     }
 
     @Test(timeout = 30000)
@@ -45,7 +45,7 @@ public class SimpleMapTests extends FlowDroidTests {
         IInfoflow infoflow = initInfoflow();
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
-        Assert.assertEquals(0, infoflow.getResults().size());
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
     }
 
     @Test(timeout = 30000)
@@ -53,7 +53,7 @@ public class SimpleMapTests extends FlowDroidTests {
         IInfoflow infoflow = initInfoflow();
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
-        Assert.assertEquals(1, infoflow.getResults().size());
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
     }
 
     @Test(timeout = 30000)
@@ -61,7 +61,7 @@ public class SimpleMapTests extends FlowDroidTests {
         IInfoflow infoflow = initInfoflow();
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
-        Assert.assertEquals(0, infoflow.getResults().size());
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
     }
 
     @Test(timeout = 30000)
@@ -69,7 +69,7 @@ public class SimpleMapTests extends FlowDroidTests {
         IInfoflow infoflow = initInfoflow();
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
-        Assert.assertEquals(0, infoflow.getResults().size());
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
     }
 
     @Test(timeout = 30000)
@@ -77,7 +77,7 @@ public class SimpleMapTests extends FlowDroidTests {
         IInfoflow infoflow = initInfoflow();
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
-        Assert.assertEquals(1, infoflow.getResults().size());
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
     }
 
     @Test(timeout = 30000)
@@ -85,7 +85,7 @@ public class SimpleMapTests extends FlowDroidTests {
         IInfoflow infoflow = initInfoflow();
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
-        Assert.assertEquals(0, infoflow.getResults().size());
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
     }
 
     @Test(timeout = 30000)
@@ -94,7 +94,7 @@ public class SimpleMapTests extends FlowDroidTests {
         infoflow.setTaintPropagationHandler(new DebugFlowFunctionTaintPropagationHandler());
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
-        Assert.assertEquals(1, infoflow.getResults().size());
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
     }
 
     @Test(timeout = 30000)
@@ -102,7 +102,7 @@ public class SimpleMapTests extends FlowDroidTests {
         IInfoflow infoflow = initInfoflow();
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
-        Assert.assertEquals(1, infoflow.getResults().size());
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
     }
 
     @Test(timeout = 30000)
@@ -110,7 +110,7 @@ public class SimpleMapTests extends FlowDroidTests {
         IInfoflow infoflow = initInfoflow();
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
-        Assert.assertEquals(0, infoflow.getResults().size());
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
     }
 
     @Test(timeout = 30000)
@@ -118,7 +118,7 @@ public class SimpleMapTests extends FlowDroidTests {
         IInfoflow infoflow = initInfoflow();
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
-        Assert.assertEquals(1, infoflow.getResults().size());
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
     }
 
     @Test(timeout = 30000)
@@ -126,7 +126,7 @@ public class SimpleMapTests extends FlowDroidTests {
         IInfoflow infoflow = initInfoflow();
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
-        Assert.assertEquals(1, infoflow.getResults().size());
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
     }
 
     @Test(timeout = 30000)
@@ -134,7 +134,7 @@ public class SimpleMapTests extends FlowDroidTests {
         IInfoflow infoflow = initInfoflow();
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
-        Assert.assertEquals(1, infoflow.getResults().size());
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
     }
 
     @Test(timeout = 30000)
@@ -142,7 +142,7 @@ public class SimpleMapTests extends FlowDroidTests {
         IInfoflow infoflow = initInfoflow();
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
-        Assert.assertEquals(0, infoflow.getResults().size());
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
     }
 
     @Test(timeout = 30000)
@@ -152,7 +152,7 @@ public class SimpleMapTests extends FlowDroidTests {
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
         // An execution would yield no leak, but we have to over-approximate putIfAbsent
         // because a precise flow function would not be distributive here.
-        Assert.assertEquals(1, infoflow.getResults().size());
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
     }
 
     @Test//(timeout = 30000)
@@ -161,7 +161,7 @@ public class SimpleMapTests extends FlowDroidTests {
         infoflow.setTaintPropagationHandler(new DebugFlowFunctionTaintPropagationHandler());
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
-        Assert.assertEquals(1, infoflow.getResults().size());
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
     }
 
     @Test(timeout = 30000)
@@ -169,7 +169,7 @@ public class SimpleMapTests extends FlowDroidTests {
         IInfoflow infoflow = initInfoflow();
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
-        Assert.assertEquals(0, infoflow.getResults().size());
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
     }
 
     @Test(timeout = 30000)
@@ -177,7 +177,7 @@ public class SimpleMapTests extends FlowDroidTests {
         IInfoflow infoflow = initInfoflow();
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
-        Assert.assertEquals(1, infoflow.getResults().size());
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
     }
 
     @Test(timeout = 30000)
@@ -185,7 +185,7 @@ public class SimpleMapTests extends FlowDroidTests {
         IInfoflow infoflow = initInfoflow();
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
-        Assert.assertEquals(0, infoflow.getResults().size());
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
     }
 
     @Test(timeout = 30000)
@@ -193,7 +193,7 @@ public class SimpleMapTests extends FlowDroidTests {
         IInfoflow infoflow = initInfoflow();
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
-        Assert.assertEquals(1, infoflow.getResults().size());
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
     }
 
     @Test(timeout = 30000)
@@ -201,7 +201,7 @@ public class SimpleMapTests extends FlowDroidTests {
         IInfoflow infoflow = initInfoflow();
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
-        Assert.assertEquals(0, infoflow.getResults().size());
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
     }
 
     @Test//(timeout = 30000)
@@ -210,7 +210,7 @@ public class SimpleMapTests extends FlowDroidTests {
         infoflow.setTaintPropagationHandler(new DebugFlowFunctionTaintPropagationHandler());
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
-        Assert.assertEquals(1, infoflow.getResults().size());
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
     }
 
     @Test(timeout = 30000)
@@ -218,7 +218,7 @@ public class SimpleMapTests extends FlowDroidTests {
         IInfoflow infoflow = initInfoflow();
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
-        Assert.assertEquals(0, infoflow.getResults().size());
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
     }
 
     @Test(timeout = 30000)
@@ -226,7 +226,7 @@ public class SimpleMapTests extends FlowDroidTests {
         IInfoflow infoflow = initInfoflow();
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
-        Assert.assertEquals(1, infoflow.getResults().size());
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
     }
 
     @Test(timeout = 30000)
@@ -234,7 +234,7 @@ public class SimpleMapTests extends FlowDroidTests {
         IInfoflow infoflow = initInfoflow();
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
-        Assert.assertEquals(0, infoflow.getResults().size());
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
     }
 
     @Test(timeout = 30000)
@@ -242,7 +242,7 @@ public class SimpleMapTests extends FlowDroidTests {
         IInfoflow infoflow = initInfoflow();
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
-        Assert.assertEquals(0, infoflow.getResults().size());
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
     }
 
     @Test(timeout = 30000)
@@ -250,7 +250,7 @@ public class SimpleMapTests extends FlowDroidTests {
         IInfoflow infoflow = initInfoflow();
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
-        Assert.assertEquals(1, infoflow.getResults().size());
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
     }
 
     @Test(timeout = 30000)
@@ -258,7 +258,7 @@ public class SimpleMapTests extends FlowDroidTests {
         IInfoflow infoflow = initInfoflow();
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
-        Assert.assertEquals(1, infoflow.getResults().size());
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
     }
 
     @Test(timeout = 30000)
@@ -266,7 +266,7 @@ public class SimpleMapTests extends FlowDroidTests {
         IInfoflow infoflow = initInfoflow();
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
-        Assert.assertEquals(0, infoflow.getResults().size());
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
     }
 
     @Test(timeout = 30000)
@@ -275,7 +275,7 @@ public class SimpleMapTests extends FlowDroidTests {
         infoflow.setTaintPropagationHandler(new DebugFlowFunctionTaintPropagationHandler());
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
-        Assert.assertEquals(1, infoflow.getResults().size());
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
     }
 
     @Test(timeout = 30000)
@@ -283,7 +283,7 @@ public class SimpleMapTests extends FlowDroidTests {
         IInfoflow infoflow = initInfoflow();
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
-        Assert.assertEquals(0, infoflow.getResults().size());
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
     }
 
     @Test(timeout = 30000)
@@ -291,7 +291,7 @@ public class SimpleMapTests extends FlowDroidTests {
         IInfoflow infoflow = initInfoflow();
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
-        Assert.assertEquals(1, infoflow.getResults().size());
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
     }
 
     @Test(timeout = 30000)
@@ -299,7 +299,7 @@ public class SimpleMapTests extends FlowDroidTests {
         IInfoflow infoflow = initInfoflow();
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
-        Assert.assertEquals(1, infoflow.getResults().size());
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
     }
 
     @Test(timeout = 30000)
@@ -307,7 +307,7 @@ public class SimpleMapTests extends FlowDroidTests {
         IInfoflow infoflow = initInfoflow();
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
-        Assert.assertEquals(1, infoflow.getResults().size());
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
     }
 
     @Test(timeout = 30000)
@@ -315,7 +315,7 @@ public class SimpleMapTests extends FlowDroidTests {
         IInfoflow infoflow = initInfoflow();
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
-        Assert.assertEquals(1, infoflow.getResults().size());
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
     }
 
     @Test(timeout = 30000)
@@ -323,7 +323,7 @@ public class SimpleMapTests extends FlowDroidTests {
         IInfoflow infoflow = initInfoflow();
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
-        Assert.assertEquals(1, infoflow.getResults().size());
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
     }
 
     @Test(timeout = 30000)
@@ -331,6 +331,6 @@ public class SimpleMapTests extends FlowDroidTests {
         IInfoflow infoflow = initInfoflow();
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
-        Assert.assertEquals(0, infoflow.getResults().size());
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
     }
 }
