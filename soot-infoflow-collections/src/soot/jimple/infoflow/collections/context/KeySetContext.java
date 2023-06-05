@@ -1,43 +1,46 @@
 package soot.jimple.infoflow.collections.context;
 
-import soot.jimple.Constant;
-import soot.jimple.infoflow.collections.util.Tristate;
-import soot.jimple.infoflow.data.ContextDefinition;
-
 import java.util.HashSet;
 import java.util.Set;
 
+import soot.jimple.Constant;
+import soot.jimple.infoflow.collections.util.Tristate;
+
 public class KeySetContext implements ValueBasedContext {
-    Set<Constant> keys;
+	Set<Constant> keys;
 
-    public KeySetContext(Constant key) {
-        this.keys = new HashSet<>();
-        this.keys.add(key);
-    }
+	public KeySetContext(Constant key) {
+		this.keys = new HashSet<>();
+		this.keys.add(key);
+	}
 
-    public Tristate intersect(KeySetContext other) {
-        boolean all = true;
-        boolean any = false;
-        for (Constant c : this.keys) {
-            if (other.keys.contains(c))
-                any = true;
-            else
-                all = false;
+	public KeySetContext(Set<Constant> keys) {
+		this.keys = keys;
+	}
 
-            if (any && !all)
-                return Tristate.MAYBE();
-        }
+	public Tristate intersect(KeySetContext other) {
+		boolean all = true;
+		boolean any = false;
+		for (Constant c : this.keys) {
+			if (other.keys.contains(c))
+				any = true;
+			else
+				all = false;
 
-        return Tristate.fromBoolean(any && all);
-    }
+			if (any && !all)
+				return Tristate.MAYBE();
+		}
 
-    @Override
-    public boolean containsInformation() {
-        return !keys.isEmpty();
-    }
+		return Tristate.fromBoolean(any && all);
+	}
 
-    @Override
-    public String toString() {
-        return keys.toString();
-    }
+	@Override
+	public boolean containsInformation() {
+		return !keys.isEmpty();
+	}
+
+	@Override
+	public String toString() {
+		return keys.toString();
+	}
 }
