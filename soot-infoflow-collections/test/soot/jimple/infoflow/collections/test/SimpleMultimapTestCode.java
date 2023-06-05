@@ -2,6 +2,7 @@ package soot.jimple.infoflow.collections.test;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
+import soot.jimple.infoflow.collections.test.junit.FlowDroidTest;
 
 import java.util.Collection;
 
@@ -14,6 +15,7 @@ public class SimpleMultimapTestCode {
         String unrelated;
     }
 
+    @FlowDroidTest(expected = 1)
     public void testMultimapPutGet1() {
         Multimap<String, A> mmap = HashMultimap.create();
         A a = new A();
@@ -23,6 +25,7 @@ public class SimpleMultimapTestCode {
         sink(c.iterator().next().str);
     }
 
+    @FlowDroidTest(expected = 0)
     public void testMultimapPutGet2() {
         Multimap<String, A> mmap = HashMultimap.create();
         A a = new A();
@@ -32,6 +35,7 @@ public class SimpleMultimapTestCode {
         sink(c.iterator().next().unrelated);
     }
 
+    @FlowDroidTest(expected = 0)
     public void testMultimapPutGet3() {
         Multimap<String, A> mmap = HashMultimap.create();
         A a = new A();

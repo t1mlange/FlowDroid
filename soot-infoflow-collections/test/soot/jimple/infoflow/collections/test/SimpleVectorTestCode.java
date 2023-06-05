@@ -1,5 +1,7 @@
 package soot.jimple.infoflow.collections.test;
 
+import soot.jimple.infoflow.collections.test.junit.FlowDroidTest;
+
 import java.util.Vector;
 
 import static soot.jimple.infoflow.collections.test.Helper.sink;
@@ -7,6 +9,7 @@ import static soot.jimple.infoflow.collections.test.Helper.source;
 
 public class SimpleVectorTestCode {
 
+    @FlowDroidTest(expected = 1)
     public void testVectorFirstElement1() {
         Vector<String> v = new Vector<>();
         v.addElement(source());
@@ -14,6 +17,7 @@ public class SimpleVectorTestCode {
         sink(v.firstElement());
     }
 
+    @FlowDroidTest(expected = 0)
     public void testVectorFirstElement2() {
         Vector<String> v = new Vector<>();
         v.addElement("Test");
@@ -21,6 +25,7 @@ public class SimpleVectorTestCode {
         sink(v.firstElement());
     }
 
+    @FlowDroidTest(expected = 1)
     public void testVectorHierarchySummaries1() {
         Vector<String> v = new Vector<>();
         v.add("Test");
@@ -28,6 +33,7 @@ public class SimpleVectorTestCode {
         sink(v.get(1));
     }
 
+    @FlowDroidTest(expected = 1)
     public void testVectorInsertElementAt1() {
         Vector<String> v = new Vector<>();
         v.addElement("Test");
@@ -35,6 +41,7 @@ public class SimpleVectorTestCode {
         sink(v.firstElement());
     }
 
+    @FlowDroidTest(expected = 0)
     public void testVectorInsertElementAt2() {
         Vector<String> v = new Vector<>();
         v.addElement("Test");
@@ -43,6 +50,7 @@ public class SimpleVectorTestCode {
         sink(v.firstElement());
     }
 
+    @FlowDroidTest(expected = 0)
     public void testVectorRemoveAllElements1() {
         Vector<String> v = new Vector<>();
         v.addElement(source());
@@ -51,6 +59,7 @@ public class SimpleVectorTestCode {
         sink(v.firstElement());
     }
 
+    @FlowDroidTest(expected = 1)
     public void testVectorRemoveElementAt1() {
         Vector<String> v = new Vector<>();
         v.addElement(source());
@@ -59,6 +68,7 @@ public class SimpleVectorTestCode {
         sink(v.firstElement());
     }
 
+    @FlowDroidTest(expected = 0)
     public void testVectorRemoveElementAt2() {
         Vector<String> v = new Vector<>();
         v.addElement("Test");
@@ -67,6 +77,7 @@ public class SimpleVectorTestCode {
         sink(v.firstElement());
     }
 
+    @FlowDroidTest(expected = 0)
     public void testVectorSetElementAt1() {
         Vector<String> v = new Vector<>();
         v.addElement("Test");
@@ -75,6 +86,7 @@ public class SimpleVectorTestCode {
         sink(v.get(1));
     }
 
+    @FlowDroidTest(expected = 1)
     public void testVectorSetElementAt2() {
         Vector<String> v = new Vector<>();
         v.addElement("Test");

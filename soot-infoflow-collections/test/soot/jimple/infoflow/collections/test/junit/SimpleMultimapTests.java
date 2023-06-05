@@ -24,7 +24,7 @@ public class SimpleMultimapTests extends FlowDroidTests {
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.getConfig().getPathConfiguration().setPathReconstructionMode(InfoflowConfiguration.PathReconstructionMode.Fast);
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
-        Assert.assertEquals(1, infoflow.getResults().size());
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
     }
 
     @Test(timeout = 30000)
@@ -32,7 +32,7 @@ public class SimpleMultimapTests extends FlowDroidTests {
         IInfoflow infoflow = initInfoflow();
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
-        Assert.assertEquals(0, infoflow.getResults().size());
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
     }
 
     @Test(timeout = 30000)
@@ -40,6 +40,6 @@ public class SimpleMultimapTests extends FlowDroidTests {
         IInfoflow infoflow = initInfoflow();
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
-        Assert.assertEquals(0, infoflow.getResults().size());
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
     }
 }

@@ -2,6 +2,7 @@ package soot.jimple.infoflow.collections.test;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
+import soot.jimple.infoflow.collections.test.junit.FlowDroidTest;
 
 import java.util.Map;
 import java.util.Set;
@@ -10,24 +11,29 @@ import static soot.jimple.infoflow.collections.test.Helper.sink;
 import static soot.jimple.infoflow.collections.test.Helper.source;
 
 public class SimpleTableTestCode {
+
+    @FlowDroidTest(expected = 1)
     public void testTablePutGet1() {
         Table<String, String, String> t = HashBasedTable.create();
         t.put("Row", "Col", source());
         sink(t.get("Row", "Col"));
     }
 
+    @FlowDroidTest(expected = 0)
     public void testTablePutGet2() {
         Table<String, String, String> t = HashBasedTable.create();
         t.put("Row", "Col2", source());
         sink(t.get("Row", "Col"));
     }
 
+    @FlowDroidTest(expected = 0)
     public void testTablePutGet3() {
         Table<String, String, String> t = HashBasedTable.create();
         t.put("Row2", "Col", source());
         sink(t.get("Row", "Col"));
     }
 
+    @FlowDroidTest(expected = 0)
     public void testTablePutRemove1() {
         Table<String, String, String> t = HashBasedTable.create();
         t.put("Row", "Col", source());
@@ -35,6 +41,7 @@ public class SimpleTableTestCode {
         sink(t.get("Row", "Col"));
     }
 
+    @FlowDroidTest(expected = 1)
     public void testTablePutRemove2() {
         Table<String, String, String> t = HashBasedTable.create();
         t.put("Row", "Col", source());
@@ -42,6 +49,7 @@ public class SimpleTableTestCode {
         sink(returned);
     }
 
+    @FlowDroidTest(expected = 0)
     public void testTablePutRemove3() {
         Table<String, String, String> t = HashBasedTable.create();
         t.put("Row", "Col", source());
@@ -49,6 +57,7 @@ public class SimpleTableTestCode {
         sink(returned);
     }
 
+    @FlowDroidTest(expected = 1)
     public void testTablePutAll1() {
         Table<String, String, String> t = HashBasedTable.create();
         t.put("Row", "Col", source());
@@ -57,6 +66,7 @@ public class SimpleTableTestCode {
         sink(t2.get("Row", "Col"));
     }
 
+    @FlowDroidTest(expected = 0)
     public void testTablePutAll2() {
         Table<String, String, String> t = HashBasedTable.create();
         t.put("Row", "Col", source());
@@ -65,6 +75,7 @@ public class SimpleTableTestCode {
         sink(t2.get("Row", "Col2"));
     }
 
+    @FlowDroidTest(expected = 1)
     public void testTableRow1() {
         Table<String, String, String> t = HashBasedTable.create();
         t.put("Row", "Col", source());
@@ -72,6 +83,7 @@ public class SimpleTableTestCode {
         sink(map.get("Col"));
     }
 
+    @FlowDroidTest(expected = 0)
     public void testTableRow2() {
         Table<String, String, String> t = HashBasedTable.create();
         t.put("Row", "Col", source());
@@ -80,6 +92,7 @@ public class SimpleTableTestCode {
         sink(map.get("Col"));
     }
 
+    @FlowDroidTest(expected = 0)
     public void testTableRow3() {
         Table<String, String, String> t = HashBasedTable.create();
         t.put("Row", "Col", source());
@@ -87,6 +100,7 @@ public class SimpleTableTestCode {
         sink(map.get("Row"));
     }
 
+    @FlowDroidTest(expected = 1)
     public void testTableColumn1() {
         Table<String, String, String> t = HashBasedTable.create();
         t.put("Row", "Col", source());
@@ -94,6 +108,7 @@ public class SimpleTableTestCode {
         sink(map.get("Row"));
     }
 
+    @FlowDroidTest(expected = 0)
     public void testTableColumn2() {
         Table<String, String, String> t = HashBasedTable.create();
         t.put("Row", "Col", source());
@@ -102,6 +117,7 @@ public class SimpleTableTestCode {
         sink(map.get("Col"));
     }
 
+    @FlowDroidTest(expected = 0)
     public void testTableColumn3() {
         Table<String, String, String> t = HashBasedTable.create();
         t.put("Row", "Col", source());
@@ -109,6 +125,7 @@ public class SimpleTableTestCode {
         sink(map.get("Col"));
     }
 
+    @FlowDroidTest(expected = 1)
     public void testTableCellSet1() {
         Table<String, String, String> t = HashBasedTable.create();
         t.put("Key", "Key", source());
@@ -118,6 +135,7 @@ public class SimpleTableTestCode {
         }
     }
 
+    @FlowDroidTest(expected = 0)
     public void testTableCellSet2() {
         Table<String, String, String> t = HashBasedTable.create();
         t.put("Key", "Key", source());
@@ -125,6 +143,7 @@ public class SimpleTableTestCode {
         sink(set.stream().findAny().get().getColumnKey());
     }
 
+    @FlowDroidTest(expected = 1)
     public void testTableColumnMap1() {
         Table<String, String, String> t = HashBasedTable.create();
         t.put("Row", "Col", source());
@@ -132,6 +151,7 @@ public class SimpleTableTestCode {
         sink(map.get("Col").get("Row"));
     }
 
+    @FlowDroidTest(expected = 0)
     public void testTableColumnMap2() {
         Table<String, String, String> t = HashBasedTable.create();
         t.put("Row", "Col", source());
@@ -139,6 +159,7 @@ public class SimpleTableTestCode {
         sink(map.get("Row").get("Col"));
     }
 
+    @FlowDroidTest(expected = 1)
     public void testTableRowMap1() {
         Table<String, String, String> t = HashBasedTable.create();
         t.put("Row", "Col", source());
@@ -146,6 +167,7 @@ public class SimpleTableTestCode {
         sink(map.get("Row").get("Col"));
     }
 
+    @FlowDroidTest(expected = 0)
     public void testTableRowMap2() {
         Table<String, String, String> t = HashBasedTable.create();
         t.put("Row", "Col", source());

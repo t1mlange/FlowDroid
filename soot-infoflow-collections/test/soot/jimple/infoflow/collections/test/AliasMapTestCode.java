@@ -1,5 +1,7 @@
 package soot.jimple.infoflow.collections.test;
 
+import soot.jimple.infoflow.collections.test.junit.FlowDroidTest;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -13,6 +15,7 @@ public class AliasMapTestCode {
 
     public Map<String, String> f;
 
+    @FlowDroidTest(expected = 1)
     public void testMapPutGet1() {
         Map<String, String> m = new HashMap<>();
         f = m;
@@ -20,6 +23,7 @@ public class AliasMapTestCode {
         sink(f.get("Secret"));
     }
 
+    @FlowDroidTest(expected = 0)
     public void testMapPutGet2() {
         Map<String, String> m = new HashMap<>();
         m.put("Secret", source());
@@ -27,6 +31,7 @@ public class AliasMapTestCode {
         f = m;
     }
 
+    @FlowDroidTest(expected = 1)
     public void testMapPutGet3() {
         Map<String, A> m = new HashMap<>();
         A a = new A();
@@ -36,6 +41,7 @@ public class AliasMapTestCode {
         sink(b.s);
     }
 
+    @FlowDroidTest(expected = 0)
     public void testMapPutGet4() {
         Map<String, A> m = new HashMap<>();
         A a = new A();
@@ -45,6 +51,7 @@ public class AliasMapTestCode {
         sink(b.s);
     }
 
+    @FlowDroidTest(expected = 0)
     public void testMapPutGet5() {
         Map<String, A> m = new HashMap<>();
         A a = new A();
@@ -54,6 +61,7 @@ public class AliasMapTestCode {
         sink(b.s);
     }
 
+    @FlowDroidTest(expected = 1)
     public void testMapPutGet6() {
         Map<String, A> m = new HashMap<>();
         A a = new A();
@@ -63,6 +71,7 @@ public class AliasMapTestCode {
         sink(b.s);
     }
 
+    @FlowDroidTest(expected = 0)
     public void testMapPutGet7() {
         Map<String, A> m = new HashMap<>();
         A a = new A();
@@ -72,6 +81,7 @@ public class AliasMapTestCode {
         m.put("Secret", a);
     }
 
+    @FlowDroidTest(expected = 0)
     public void testMapPutGet8() {
         Map<String, A> m = new HashMap<>();
         A a = new A();
