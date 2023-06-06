@@ -8,8 +8,20 @@ package soot.jimple.infoflow.data;
  *
  */
 public interface ContextDefinition {
+    /**
+     * Returns whether the context definition
+     *
+     * @return true if it still restricts
+     */
     boolean containsInformation();
 
-        // There are no restrictions to what a context could be. We expect the context factory to be tightly coupled with
+    /**
+     *
+     * @param other
+     * @return
+     */
+    boolean entails(ContextDefinition other);
+
+    // There are no restrictions to what a context could be. We expect the context factory to be tightly coupled with
     // the users of the contexts.
 }

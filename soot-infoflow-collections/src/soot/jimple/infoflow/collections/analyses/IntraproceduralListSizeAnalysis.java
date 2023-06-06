@@ -1,5 +1,7 @@
 package soot.jimple.infoflow.collections.analyses;
 
+import java.util.*;
+
 import soot.*;
 import soot.jimple.AssignStmt;
 import soot.jimple.InstanceInvokeExpr;
@@ -7,8 +9,6 @@ import soot.jimple.NewExpr;
 import soot.jimple.Stmt;
 import soot.toolkits.graph.DirectedGraph;
 import soot.toolkits.scalar.ForwardFlowAnalysis;
-
-import java.util.*;
 
 /**
  * Simple intraprocedural list size analysis performing constant propagation on the list size

@@ -1,5 +1,7 @@
 package soot.jimple.infoflow.collections.operations.forward.alias;
 
+import java.util.Collection;
+
 import soot.Value;
 import soot.jimple.AssignStmt;
 import soot.jimple.InstanceInvokeExpr;
@@ -12,8 +14,6 @@ import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.data.AccessPath;
 import soot.jimple.infoflow.data.ContextDefinition;
 import soot.jimple.infoflow.typing.TypeUtils;
-
-import java.util.Collection;
 
 public class AliasAccessOperation extends AccessOperation {
     public AliasAccessOperation(Location[] keys, String field, String returnField) {

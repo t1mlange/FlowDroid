@@ -409,15 +409,37 @@ public class AccessPath implements Cloneable {
 		if (this.value != null && !this.value.equals(a2.value))
 			return false;
 
+		// If other taints all subfields but this one does not, this does not entail other
+		if (!this.taintSubFields && a2.taintSubFields)
+			return false;
+
+		// This must at least taint everything of an array other taints
+		if (this.arrayTaintType != ArrayTaintType.ContentsAndLength && this.arrayTaintType != a2.arrayTaintType)
+			return false;
+
 		if (this.fragments != null && a2.fragments != null) {
 			// If this access path is deeper than the other one, it cannot entail it
 			if (this.fragments.length > a2.fragments.length)
 				return false;
 
 			// Check the fields in detail
-			for (int i = 0; i < this.fragments.length; i++)
+			for (int i = 0; i < this.fragments.length; i++) {
 				if (!this.fragments[i].getField().equals(a2.fragments[i].getField()))
 					return false;
+
+				// Check that if this has a context, the context also entails the other context
+				if (this.fragments[i].hasContext()) {
+					if (!a2.fragments[i].hasContext())
+						return false;
+
+					ContextDefinition[] ctxt1 = this.fragments[i].getContext();
+					ContextDefinition[] ctxt2 = a2.fragments[i].getContext();
+					for (int j = 0; j < ctxt1.length; j++) {
+						if (!ctxt1[j].entails(ctxt2[j]))
+							return false;
+					}
+				}
+			}
 		}
 		return true;
 	}

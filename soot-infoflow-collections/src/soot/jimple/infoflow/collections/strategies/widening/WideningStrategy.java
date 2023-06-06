@@ -1,6 +1,5 @@
 package soot.jimple.infoflow.collections.strategies.widening;
 
-import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.solver.fastSolver.FastSolverLinkedNode;
 
 /**

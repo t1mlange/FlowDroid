@@ -1,5 +1,7 @@
 package soot.jimple.infoflow.collections.operations.forward;
 
+import java.util.Collection;
+
 import soot.SootField;
 import soot.Value;
 import soot.jimple.AssignStmt;
@@ -12,8 +14,6 @@ import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.data.AccessPath;
 import soot.jimple.infoflow.data.AccessPathFragment;
 import soot.jimple.infoflow.sourcesSinks.definitions.AccessPathTuple;
-
-import java.util.Collection;
 
 public class InvalidateOperation extends AbstractOperation {
     private final String field;

@@ -146,6 +146,15 @@ public class SimpleListTests extends FlowDroidTests {
         // We mainly care about termination here
     }
 
+    @Test//(timeout = 30000)
+    public void testListInsertInLoop2() {
+        IInfoflow infoflow = initInfoflow();
+        infoflow.setTaintPropagationHandler(new DebugFlowFunctionTaintPropagationHandler());
+        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
+        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
+        // We mainly care about termination here
+    }
+
     @Test(timeout = 30000)
     public void testListReplaceAll1() {
         IInfoflow infoflow = initInfoflow();

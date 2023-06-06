@@ -1,5 +1,8 @@
 package soot.jimple.infoflow.collections.operations.forward;
 
+import java.util.ArrayList;
+import java.util.Collection;
+
 import soot.Value;
 import soot.jimple.AssignStmt;
 import soot.jimple.InstanceInvokeExpr;
@@ -13,9 +16,6 @@ import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.data.AccessPath;
 import soot.jimple.infoflow.data.AccessPathFragment;
 import soot.jimple.infoflow.data.ContextDefinition;
-
-import java.util.ArrayList;
-import java.util.Collection;
 
 public class AccessOperation extends LocationDependentOperation {
     private final String returnField;

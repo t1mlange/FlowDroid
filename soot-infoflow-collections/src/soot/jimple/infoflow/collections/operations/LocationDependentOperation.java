@@ -1,5 +1,7 @@
 package soot.jimple.infoflow.collections.operations;
 
+import java.util.List;
+
 import soot.SootField;
 import soot.Value;
 import soot.jimple.InstanceInvokeExpr;
@@ -13,8 +15,6 @@ import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.data.AccessPath;
 import soot.jimple.infoflow.data.AccessPathFragment;
 import soot.jimple.infoflow.data.ContextDefinition;
-
-import java.util.List;
 
 public abstract class LocationDependentOperation extends AbstractOperation {
     protected final Location[] locations;

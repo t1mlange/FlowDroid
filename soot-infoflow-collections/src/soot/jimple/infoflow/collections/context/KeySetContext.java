@@ -5,6 +5,7 @@ import java.util.Set;
 
 import soot.jimple.Constant;
 import soot.jimple.infoflow.collections.util.Tristate;
+import soot.jimple.infoflow.data.ContextDefinition;
 
 public class KeySetContext implements ValueBasedContext {
 	Set<Constant> keys;
@@ -32,6 +33,17 @@ public class KeySetContext implements ValueBasedContext {
 		}
 
 		return Tristate.fromBoolean(any && all);
+	}
+
+	public boolean entails(ContextDefinition other) {
+		if (!(other instanceof KeySetContext))
+			return false;
+
+		for (Constant key : keys)
+			if (!((KeySetContext) other).keys.contains(key))
+				return false;
+
+		return true;
 	}
 
 	@Override

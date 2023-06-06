@@ -1,11 +1,11 @@
 package soot.jimple.infoflow.collections.util;
 
+import java.util.HashSet;
+
 import soot.PrimType;
 import soot.Type;
 import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.typing.TypeUtils;
-
-import java.util.HashSet;
 
 public class AliasAbstractionSet extends HashSet<Abstraction> {
     private Abstraction checkAbstraction(Abstraction abs) {

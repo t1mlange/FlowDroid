@@ -170,9 +170,19 @@ public class SimpleListTestCode {
     @FlowDroidTest(expected = 1)
     public void testListInsertInLoop1() {
         List<String> lst = new ArrayList<>();
-        String tainted = source();
         lst.add(source()); // tainted @ idx=0
         while (new Random().nextBoolean()) {
+            lst.add(0, "Some element"); // tainted idx gets shifted by 1 each iteration
+        }
+        sink(lst.get(0));
+    }
+
+    @FlowDroidTest(expected = 1)
+    public void testListInsertInLoop2() {
+        List<String> lst = new ArrayList<>();
+        lst.add(source()); // tainted @ idx=0
+        while (new Random().nextBoolean()) {
+            lst.add(0, "Some element"); // tainted idx gets shifted by 1 each iteration
             lst.add(0, "Some element"); // tainted idx gets shifted by 1 each iteration
         }
         sink(lst.get(0));
