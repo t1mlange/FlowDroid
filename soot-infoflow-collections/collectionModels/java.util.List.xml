@@ -34,6 +34,7 @@
     <!-- isEmpty() handled with fallback -->
     <method subsig="java.util.Iterator iterator()">
         <invalidate field="[java.util.Collection: java.lang.Object[] innerArray]">
+            <target idx="base" />
             <return field="[java.util.Iterator: java.lang.Object innerCollection]"
                     type="[java.lang.Object]" />
         </invalidate>
@@ -42,12 +43,14 @@
     <!-- listIterator() handled with fallback -->
     <method subsig="java.util.ListIterator listIterator()">
         <invalidate field="[java.util.Collection: java.lang.Object[] innerArray]">
+            <target idx="base" />
             <return field="[java.util.Iterator: java.lang.Object innerCollection]"
                     type="[java.lang.Object]" />
         </invalidate>
     </method>
     <method subsig="java.util.ListIterator listIterator(int)">
         <invalidate field="[java.util.Collection: java.lang.Object[] innerArray]">
+            <target idx="base" />
             <return field="[java.util.Iterator: java.lang.Object innerCollection]"
                     type="[java.lang.Object]" />
         </invalidate>
@@ -70,7 +73,9 @@
         </shiftLeft>
     </method>
     <method subsig="boolean removeAll(java.util.Collection)">
-        <invalidate field="[java.util.Collection: java.lang.Object[] innerArray]" />
+        <invalidate field="[java.util.Collection: java.lang.Object[] innerArray]">
+            <target idx="base" />
+        </invalidate>
     </method>
     <method subsig="void replaceAll(java.util.function.UnaryOperator)">
         <compute field="[java.util.Collection: java.lang.Object[] innerArray]">
@@ -80,7 +85,9 @@
         </compute>
     </method>
     <method subsig="boolean retainAll(java.util.Collection)">
-        <invalidate field="[java.util.Collection: java.lang.Object[] innerArray]" />
+        <invalidate field="[java.util.Collection: java.lang.Object[] innerArray]">
+            <target idx="base" />
+        </invalidate>
     </method>
     <method subsig="java.lang.Object set(int,java.lang.Object)">
         <remove field="[java.util.Collection: java.lang.Object[] innerArray]">
@@ -96,15 +103,19 @@
     </method>
     <!-- size() handled with fallback -->
     <method subsig="void sort(java.util.Comparator)">
-        <invalidate field="[java.util.Collection: java.lang.Object[] innerArray]" />
+        <invalidate field="[java.util.Collection: java.lang.Object[] innerArray]">
+            <target idx="base" />
+        </invalidate>
     </method>
     <method subsig="java.util.Spliterator spliterator()">
         <invalidate field="[java.util.Collection: java.lang.Object[] innerArray]">
+            <target idx="base" />
             <return />
         </invalidate>
     </method>
     <method subsig="java.util.List subList(int,int)">
         <invalidate field="[java.util.Collection: java.lang.Object[] innerArray]">
+            <target idx="base" />
             <return field="[java.util.Collection: java.lang.Object[] innerArray]"
                     type="[java.lang.Object[]]" />
         </invalidate>

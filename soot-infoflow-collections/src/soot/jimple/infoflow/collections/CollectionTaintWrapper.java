@@ -1,6 +1,7 @@
 package soot.jimple.infoflow.collections;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import heros.DontSynchronize;
 import heros.SynchronizedBy;
@@ -16,6 +17,7 @@ import soot.jimple.infoflow.InfoflowManager;
 import soot.jimple.infoflow.collections.data.CollectionMethod;
 import soot.jimple.infoflow.collections.data.CollectionModel;
 import soot.jimple.infoflow.collections.operations.ICollectionOperation;
+import soot.jimple.infoflow.collections.operations.forward.AbstractShiftOperation;
 import soot.jimple.infoflow.collections.solver.fastSolver.CollectionInfoflowSolver;
 import soot.jimple.infoflow.collections.strategies.containers.ConstantKeyStrategy;
 import soot.jimple.infoflow.collections.strategies.containers.IContainerStrategy;
@@ -67,7 +69,14 @@ public class CollectionTaintWrapper implements ITaintPropagationWrapper {
 		this.strategy = getStrategy();
 		manager.getMainSolver().setFollowReturnsPastSeedsHandler(new CollectionCallbackHandler());
 
-		WideningStrategy w = new WideningOnRevisitStrategy(manager);
+		// Get all method subsignatures that may result in an infinite domain
+		Set<String> subSigs = this.models.values().stream()
+								.flatMap(model -> model.getAllMethods().stream())
+								.filter(method -> Arrays.stream(method.operations())
+													.anyMatch(o -> o instanceof AbstractShiftOperation))
+								.map(CollectionMethod::getSubSignature) // get the subsig
+								.collect(Collectors.toUnmodifiableSet());
+		WideningStrategy<Unit, Abstraction> w = new WideningOnRevisitStrategy(manager, subSigs);
 		if (manager.getMainSolver() instanceof CollectionInfoflowSolver)
 			((CollectionInfoflowSolver) manager.getMainSolver()).setWideningStrategy(w);
 		if (manager.getAliasSolver() instanceof CollectionInfoflowSolver)

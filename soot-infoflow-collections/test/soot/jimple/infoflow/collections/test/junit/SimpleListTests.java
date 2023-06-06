@@ -88,7 +88,7 @@ public class SimpleListTests extends FlowDroidTests {
         Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
     }
 
-    @Test//(timeout = 30000)
+    @Test(timeout = 30000)
     public void testListInsert1() {
         IInfoflow infoflow = initInfoflow();
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";

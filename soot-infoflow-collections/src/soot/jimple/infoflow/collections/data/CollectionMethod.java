@@ -16,6 +16,10 @@ public class CollectionMethod {
         this.aliasOperations = aliasOperations.toArray(new ICollectionOperation[0]);
     }
 
+    public String getSubSignature() {
+        return subSig;
+    }
+
     public ICollectionOperation[] operations() {
         return operations;
     }

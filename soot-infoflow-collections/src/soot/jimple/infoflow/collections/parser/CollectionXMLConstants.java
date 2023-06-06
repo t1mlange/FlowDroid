@@ -26,6 +26,7 @@ public class CollectionXMLConstants {
     public static final String FROM_TAG = "from";
     public static final String TO_TAG = "to";
     public static final String RETURN_TAG = "return";
+    public static final String TARGET_TAG = "target";
 
     public static final String PARAM_IDX_ATTR = "idx";
     public static final String SUBSIG_ATTR = "subsig";

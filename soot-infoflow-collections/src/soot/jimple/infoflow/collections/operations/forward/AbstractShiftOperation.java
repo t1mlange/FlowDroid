@@ -68,7 +68,7 @@ public abstract class AbstractShiftOperation extends LocationDependentOperation 
 		AccessPathFragment fragment = incoming.getAccessPath().getFirstFragment();
 		// Either when the field doesn't match or there is no index to shift, we can
 		// stop here
-		if (!fragment.getField().getSignature().equals(this.field) || !fragment.hasContext())
+		if (fragment == null || !fragment.getField().getSignature().equals(this.field) || !fragment.hasContext())
 			return false;
 
 		ContextDefinition[] ctxts = fragment.getContext();
@@ -93,6 +93,9 @@ public abstract class AbstractShiftOperation extends LocationDependentOperation 
 			boolean strongUpdate = isUnique && t.isTrue();
 
 			ContextDefinition newCtxt = shift(ctxt, stmt, strongUpdate, strategy);
+			if (newCtxt == null)
+				return true;
+
 			AccessPathFragment[] oldFragments = incoming.getAccessPath().getFragments();
 			AccessPathFragment[] fragments = new AccessPathFragment[oldFragments.length];
 			System.arraycopy(oldFragments, 0, fragments, 1, fragments.length - 1);
