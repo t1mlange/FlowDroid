@@ -1,5 +1,6 @@
 package soot.jimple.infoflow.collections.data;
 
+import java.util.Collection;
 import java.util.Map;
 
 import soot.jimple.infoflow.collections.parser.CollectionXMLConstants;
@@ -43,5 +44,9 @@ public class CollectionModel {
 
     public CollectionMethod getMethod(String subSig) {
         return methods.get(subSig);
+    }
+
+    public Collection<CollectionMethod> getAllMethods() {
+        return methods.values();
     }
 }

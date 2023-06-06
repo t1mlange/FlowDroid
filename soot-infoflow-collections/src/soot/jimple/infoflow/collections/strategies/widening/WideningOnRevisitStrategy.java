@@ -10,21 +10,25 @@ import soot.jimple.infoflow.data.AccessPathFragment;
 import soot.jimple.infoflow.data.ContextDefinition;
 import soot.util.ConcurrentHashMultiMap;
 
+import java.util.Set;
+
 /**
  * Widens each fact that revisits a statement
  *
  * @author Tim Lange
  */
 public class WideningOnRevisitStrategy implements WideningStrategy<Unit, Abstraction> {
-	private static final String INSERT_BEFORE_SUBSIG = "void add(int,java.lang.Object)";
-
 	private final InfoflowManager manager;
 
 	private final ConcurrentHashMultiMap<Unit, Abstraction> seenAbstractions;
 
-	public WideningOnRevisitStrategy(InfoflowManager manager) {
+	// Contains all subsignatures that may result in an infinite domain
+	private final Set<String> subSigs;
+
+	public WideningOnRevisitStrategy(InfoflowManager manager, Set<String> subSigs) {
 		this.manager = manager;
 		this.seenAbstractions = new ConcurrentHashMultiMap<>();
+		this.subSigs = subSigs;
 	}
 
 	private boolean isWideningCandidate(Abstraction abs) {
@@ -57,7 +61,7 @@ public class WideningOnRevisitStrategy implements WideningStrategy<Unit, Abstrac
 		Stmt stmt = (Stmt) u;
 		// Only shifting can produce infinite ascending chains
 		if (!stmt.containsInvokeExpr()
-				|| !stmt.getInvokeExpr().getMethod().getSubSignature().equals(INSERT_BEFORE_SUBSIG))
+				|| !subSigs.contains(stmt.getInvokeExpr().getMethod().getSubSignature()))
 			return abs;
 
 		boolean seen = false;

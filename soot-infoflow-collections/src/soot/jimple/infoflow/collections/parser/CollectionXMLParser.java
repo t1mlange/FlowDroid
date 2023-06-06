@@ -118,6 +118,9 @@ public class CollectionXMLParser {
 					returnAccessPathField = "<" + returnAccessPathField.substring(1, returnAccessPathField.length() - 1)
 							+ ">";
 				break;
+			case TARGET_TAG:
+				dataIdx = getParamIndex(attributes.getValue(PARAM_IDX_ATTR));
+				break;
 			}
 		}
 
@@ -167,7 +170,7 @@ public class CollectionXMLParser {
 				AccessPathTuple retTuple = null;
 				if (returnAccessPathField != null)
 					retTuple = AccessPathTuple.fromPathElements(returnAccessPathField, null, SourceSinkType.Neither);
-				operations.add(new InvalidateOperation(accessPathField, retTuple));
+				operations.add(new InvalidateOperation(dataIdx, accessPathField, retTuple));
 				// TODO
 //                    aliasOperations.add(new InvalidateOperation(accessPathField, retTuple));
 				resetAfterOperation();

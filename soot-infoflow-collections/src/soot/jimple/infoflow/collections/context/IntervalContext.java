@@ -52,6 +52,9 @@ public class IntervalContext implements PositionBasedContext {
 	}
 
 	public ContextDefinition shiftLeft(Stmt stmt) {
+		if (min == 0)
+			return null;
+
 		if (max < Integer.MAX_VALUE)
 			return new IntervalContext(min - 1, max - 1);
 		return this;

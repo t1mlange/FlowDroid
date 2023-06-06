@@ -16,10 +16,12 @@ import soot.jimple.infoflow.data.AccessPathFragment;
 import soot.jimple.infoflow.sourcesSinks.definitions.AccessPathTuple;
 
 public class InvalidateOperation extends AbstractOperation {
+    private final int data;
     private final String field;
     private final AccessPathTuple returnTuple;
 
-    public InvalidateOperation(String field, AccessPathTuple returnTuple) {
+    public InvalidateOperation(int data, String field, AccessPathTuple returnTuple) {
+        this.data = data;
         this.field = field;
         this.returnTuple = returnTuple;
     }
@@ -44,19 +46,19 @@ public class InvalidateOperation extends AbstractOperation {
 
     @Override
     public boolean apply(Abstraction d1, Abstraction incoming, Stmt stmt, InfoflowManager manager, IContainerStrategy strategy, Collection<Abstraction> out) {
-        Value base = ((InstanceInvokeExpr) stmt.getInvokeExpr()).getBase();
-        if (!manager.getAliasing().mayAlias(incoming.getAccessPath().getPlainValue(), base))
+        Value val = getValueFromIndex(data, stmt);
+        if (!manager.getAliasing().mayAlias(incoming.getAccessPath().getPlainValue(), val))
             return false;
 
         AccessPathFragment fragment = incoming.getAccessPath().getFirstFragment();
-        if (!fragment.getField().getSignature().equals(this.field) || !fragment.hasContext())
+        if (fragment == null || !fragment.getField().getSignature().equals(this.field) || !fragment.hasContext())
             return false;
 
         AccessPathFragment[] oldFragments = incoming.getAccessPath().getFragments();
         AccessPathFragment[] fragments = new AccessPathFragment[oldFragments.length];
         System.arraycopy(oldFragments, 1, fragments, 1, fragments.length - 1);
         fragments[0] = oldFragments[0].copyWithNewContext(null);
-        AccessPath ap = manager.getAccessPathFactory().createAccessPath(base, fragments, incoming.getAccessPath().getTaintSubFields());
+        AccessPath ap = manager.getAccessPathFactory().createAccessPath(val, fragments, incoming.getAccessPath().getTaintSubFields());
         out.add(incoming.deriveNewAbstraction(ap, stmt));
 
         if (returnTuple != null) {
