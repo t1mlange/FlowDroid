@@ -6,47 +6,51 @@ import java.util.Map;
 import soot.jimple.infoflow.collections.parser.CollectionXMLConstants;
 
 public class CollectionModel {
-    public enum CollectionType {
-        VALUE_BASED,
-        POSITION_BASED
-    }
+	public enum CollectionType {
+		VALUE_BASED, POSITION_BASED
+	}
 
-    private final String className;
-    private final CollectionType type;
-    private final Map<String, CollectionMethod> methods;
+	private final String className;
+	private final CollectionType type;
+	private final Map<String, CollectionMethod> methods;
 
-    public CollectionModel(String className, String type, Map<String, CollectionMethod> methods) {
-        this.className = className;
-        switch (type) {
-            case CollectionXMLConstants.VALUE:
-                this.type = CollectionType.VALUE_BASED;
-                break;
-            case CollectionXMLConstants.POSITION:
-                this.type = CollectionType.POSITION_BASED;
-                break;
-            default:
-                throw new RuntimeException("Unknown type string: " + type);
-        }
-        this.methods = methods;
-    }
+	public CollectionModel(String className, String type, Map<String, CollectionMethod> methods) {
+		this.className = className;
+		switch (type) {
+		case CollectionXMLConstants.VALUE:
+			this.type = CollectionType.VALUE_BASED;
+			break;
+		case CollectionXMLConstants.POSITION:
+			this.type = CollectionType.POSITION_BASED;
+			break;
+		default:
+			throw new RuntimeException("Unknown type string: " + type);
+		}
+		this.methods = methods;
+	}
 
-    public String getClassName() {
-        return className;
-    }
+	public String getClassName() {
+		return className;
+	}
 
-    public CollectionType getType() {
-        return type;
-    }
+	public CollectionType getType() {
+		return type;
+	}
 
-    public boolean hasMethod(String subSig) {
-        return methods.containsKey(subSig);
-    }
+	public boolean hasMethod(String subSig) {
+		return methods.containsKey(subSig);
+	}
 
-    public CollectionMethod getMethod(String subSig) {
-        return methods.get(subSig);
-    }
+	public CollectionMethod getMethod(String subSig) {
+		return methods.get(subSig);
+	}
 
-    public Collection<CollectionMethod> getAllMethods() {
-        return methods.values();
-    }
+	public Collection<CollectionMethod> getAllMethods() {
+		return methods.values();
+	}
+
+	@Override
+	public String toString() {
+		return "CollectionModel(" + className + ")";
+	}
 }
