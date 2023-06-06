@@ -1,12 +1,6 @@
 package soot.jimple.infoflow.collections;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import heros.DontSynchronize;
 import heros.SynchronizedBy;
@@ -22,7 +16,7 @@ import soot.jimple.infoflow.InfoflowManager;
 import soot.jimple.infoflow.collections.data.CollectionMethod;
 import soot.jimple.infoflow.collections.data.CollectionModel;
 import soot.jimple.infoflow.collections.operations.ICollectionOperation;
-import soot.jimple.infoflow.collections.solver.fastSolver.WideningInfoflowSolver;
+import soot.jimple.infoflow.collections.solver.fastSolver.CollectionInfoflowSolver;
 import soot.jimple.infoflow.collections.strategies.containers.ConstantKeyStrategy;
 import soot.jimple.infoflow.collections.strategies.containers.IContainerStrategy;
 import soot.jimple.infoflow.collections.strategies.widening.WideningOnRevisitStrategy;
@@ -74,10 +68,10 @@ public class CollectionTaintWrapper implements ITaintPropagationWrapper {
 		manager.getMainSolver().setFollowReturnsPastSeedsHandler(new CollectionCallbackHandler());
 
 		WideningStrategy w = new WideningOnRevisitStrategy(manager);
-		if (manager.getMainSolver() instanceof WideningInfoflowSolver)
-			((WideningInfoflowSolver) manager.getMainSolver()).setWideningStrategy(w);
-		if (manager.getAliasSolver() instanceof WideningInfoflowSolver)
-			((WideningInfoflowSolver) manager.getAliasSolver()).setWideningStrategy(w);
+		if (manager.getMainSolver() instanceof CollectionInfoflowSolver)
+			((CollectionInfoflowSolver) manager.getMainSolver()).setWideningStrategy(w);
+		if (manager.getAliasSolver() instanceof CollectionInfoflowSolver)
+			((CollectionInfoflowSolver) manager.getAliasSolver()).setWideningStrategy(w);
 	}
 
 	@Override

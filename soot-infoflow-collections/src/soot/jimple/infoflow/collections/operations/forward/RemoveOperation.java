@@ -1,5 +1,7 @@
 package soot.jimple.infoflow.collections.operations.forward;
 
+import java.util.Collection;
+
 import soot.jimple.InstanceInvokeExpr;
 import soot.jimple.Stmt;
 import soot.jimple.infoflow.InfoflowManager;
@@ -8,8 +10,6 @@ import soot.jimple.infoflow.collections.operations.LocationDependentOperation;
 import soot.jimple.infoflow.collections.strategies.containers.IContainerStrategy;
 import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.data.AccessPathFragment;
-
-import java.util.Collection;
 
 public class RemoveOperation extends LocationDependentOperation {
     public RemoveOperation(Location[] keys, String field) {

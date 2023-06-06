@@ -1,8 +1,8 @@
 package soot.jimple.infoflow.collections.data;
 
-import soot.jimple.infoflow.collections.operations.ICollectionOperation;
-
 import java.util.List;
+
+import soot.jimple.infoflow.collections.operations.ICollectionOperation;
 
 public class CollectionMethod {
     private final String subSig;

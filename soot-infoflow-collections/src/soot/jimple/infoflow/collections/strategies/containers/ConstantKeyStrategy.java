@@ -1,5 +1,7 @@
 package soot.jimple.infoflow.collections.strategies.containers;
 
+import java.util.concurrent.ConcurrentHashMap;
+
 import soot.Local;
 import soot.SootMethod;
 import soot.Value;
@@ -10,16 +12,9 @@ import soot.jimple.infoflow.InfoflowManager;
 import soot.jimple.infoflow.collections.analyses.IntraproceduralListSizeAnalysis;
 import soot.jimple.infoflow.collections.context.IntervalContext;
 import soot.jimple.infoflow.collections.context.KeySetContext;
-import soot.jimple.infoflow.collections.context.PositionBasedContext;
 import soot.jimple.infoflow.collections.context.UnknownContext;
-import soot.jimple.infoflow.collections.strategies.widening.WideningStrategy;
 import soot.jimple.infoflow.collections.util.Tristate;
-import soot.jimple.infoflow.data.Abstraction;
-import soot.jimple.infoflow.data.AccessPath;
-import soot.jimple.infoflow.data.AccessPathFragment;
 import soot.jimple.infoflow.data.ContextDefinition;
-
-import java.util.concurrent.ConcurrentHashMap;
 
 public class ConstantKeyStrategy implements IContainerStrategy {
     private final ConcurrentHashMap<SootMethod, IntraproceduralListSizeAnalysis> implicitIndices;

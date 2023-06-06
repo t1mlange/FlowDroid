@@ -1,8 +1,8 @@
 package soot.jimple.infoflow.collections.data;
 
-import soot.jimple.infoflow.collections.parser.CollectionXMLConstants;
-
 import java.util.Map;
+
+import soot.jimple.infoflow.collections.parser.CollectionXMLConstants;
 
 public class CollectionModel {
     public enum CollectionType {

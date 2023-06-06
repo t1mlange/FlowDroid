@@ -1,5 +1,7 @@
 package soot.jimple.infoflow.collections.operations.forward;
 
+import java.util.Collection;
+
 import soot.Value;
 import soot.jimple.Stmt;
 import soot.jimple.infoflow.InfoflowManager;
@@ -7,8 +9,6 @@ import soot.jimple.infoflow.collections.operations.AbstractOperation;
 import soot.jimple.infoflow.collections.strategies.containers.IContainerStrategy;
 import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.data.AccessPath;
-
-import java.util.Collection;
 
 public class CopyOperation extends AbstractOperation {
     protected final int from;

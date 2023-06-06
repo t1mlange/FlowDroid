@@ -18,4 +18,10 @@ public class UnknownContext implements ContextDefinition {
     public boolean containsInformation() {
         return false;
     }
+
+    @Override
+    public boolean entails(ContextDefinition other) {
+        // The unknown context entails all other contexts
+        return true;
+    }
 }
