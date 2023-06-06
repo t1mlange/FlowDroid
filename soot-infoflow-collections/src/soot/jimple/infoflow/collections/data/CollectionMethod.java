@@ -5,26 +5,31 @@ import java.util.List;
 import soot.jimple.infoflow.collections.operations.ICollectionOperation;
 
 public class CollectionMethod {
-    private final String subSig;
-    private final ICollectionOperation[] operations;
-    private final ICollectionOperation[] aliasOperations;
+	private final String subSig;
+	private final ICollectionOperation[] operations;
+	private final ICollectionOperation[] aliasOperations;
 
-    public CollectionMethod(String subSig, List<ICollectionOperation> operations,
-                            List<ICollectionOperation> aliasOperations) {
-        this.subSig = subSig;
-        this.operations = operations.toArray(new ICollectionOperation[0]);
-        this.aliasOperations = aliasOperations.toArray(new ICollectionOperation[0]);
-    }
+	public CollectionMethod(String subSig, List<ICollectionOperation> operations,
+			List<ICollectionOperation> aliasOperations) {
+		this.subSig = subSig;
+		this.operations = operations.toArray(new ICollectionOperation[0]);
+		this.aliasOperations = aliasOperations.toArray(new ICollectionOperation[0]);
+	}
 
-    public String getSubSignature() {
-        return subSig;
-    }
+	public String getSubSignature() {
+		return subSig;
+	}
 
-    public ICollectionOperation[] operations() {
-        return operations;
-    }
+	public ICollectionOperation[] operations() {
+		return operations;
+	}
 
-    public ICollectionOperation[] aliasOperations() {
-        return aliasOperations;
-    }
+	public ICollectionOperation[] aliasOperations() {
+		return aliasOperations;
+	}
+
+	@Override
+	public String toString() {
+		return "CollectionMethod(" + subSig + ")";
+	}
 }
