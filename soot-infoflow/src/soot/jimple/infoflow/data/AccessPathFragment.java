@@ -1,5 +1,6 @@
 package soot.jimple.infoflow.data;
 
+import java.util.Arrays;
 import java.util.Objects;
 
 import soot.SootField;
@@ -130,7 +131,11 @@ public class AccessPathFragment {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(context, field, fieldType);
+		return Objects.hash(Arrays.hashCode(context), field, fieldType);
+	}
+
+	public int hashCodeWithoutContext() {
+		return Objects.hash(field, fieldType);
 	}
 
 	@Override

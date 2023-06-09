@@ -36,7 +36,7 @@ public class IntervalContext implements PositionBasedContext {
 		if (!(obj instanceof IntervalContext))
 			return false;
 		IntervalContext other = (IntervalContext) obj;
-		return other.min <= this.min && this.max < other.max;
+		return this.min <= other.min && other.max <= this.max;
 	}
 
 	public ContextDefinition shiftRight(Stmt stmt) {

@@ -758,6 +758,7 @@ public abstract class AbstractInfoflow implements IInfoflow {
 
 			if (aliasingStrategy.getSolver() != null) {
 				aliasingStrategy.getSolver().getTabulationProblem().setActivationUnitsToCallSites(forwardProblem);
+				manager.setAliasSolver(aliasingStrategy.getSolver());
 			}
 
 			IInfoflowSolver additionalSolver = null;

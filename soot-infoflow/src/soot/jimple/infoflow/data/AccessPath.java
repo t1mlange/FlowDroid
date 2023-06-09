@@ -240,6 +240,30 @@ public class AccessPath implements Cloneable {
 		return this.hashCode;
 	}
 
+	private int hashCodeWOContext = 0;
+	public int hashCodeWithoutContext() {
+		if (hashCodeWOContext != 0)
+			return hashCodeWOContext;
+
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((value == null) ? 0 : value.hashCode());
+		result = prime * result + ((baseType == null) ? 0 : baseType.hashCode());
+
+		if (fragments == null)
+			result *= prime;
+		else
+			for (AccessPathFragment f : fragments)
+				result = prime * result + (f == null ? 0 : f.hashCodeWithoutContext());
+
+		result = prime * result + (this.taintSubFields ? 1 : 0);
+		result = prime * result + this.arrayTaintType.hashCode();
+		result = prime * result + (this.canHaveImmutableAliases ? 1 : 0);
+		this.hashCodeWOContext = result;
+
+		return this.hashCodeWOContext;
+	}
+
 	public int getHashCode() {
 		return hashCode;
 	}
@@ -290,7 +314,7 @@ public class AccessPath implements Cloneable {
 
 		AccessPath other = (AccessPath) obj;
 
-		if (this.hashCode != 0 && other.hashCode != 0 && this.hashCode != other.hashCode)
+		if (this.hashCodeWOContext != 0 && other.hashCodeWOContext != 0 && this.hashCodeWOContext != other.hashCodeWOContext)
 			return false;
 
 		if (value == null) {
@@ -304,13 +328,6 @@ public class AccessPath implements Cloneable {
 		} else if (!baseType.equals(other.baseType))
 			return false;
 
-		if (fragments.length != other.fragments.length)
-			return false;
-		for (int i = 0; i < fragments.length; i++) {
-			if (!fragments[i].equalsWithoutContext(other.fragments[i]))
-				return false;
-		}
-
 		if (this.taintSubFields != other.taintSubFields)
 			return false;
 		if (this.arrayTaintType != other.arrayTaintType)
@@ -319,6 +336,7 @@ public class AccessPath implements Cloneable {
 		if (this.canHaveImmutableAliases != other.canHaveImmutableAliases)
 			return false;
 
+		assert this.hashCodeWithoutContext() == other.hashCodeWithoutContext();
 		return true;
 	}
 

@@ -25,4 +25,6 @@ public interface WideningStrategy<N, D extends FastSolverLinkedNode<D, N>> {
      * @return possibly widened fact
      */
     D widen(D fact, N n);
+
+    D forceWiden(D fact, N n);
 }

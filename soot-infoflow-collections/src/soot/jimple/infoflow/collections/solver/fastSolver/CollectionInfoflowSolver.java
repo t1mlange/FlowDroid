@@ -3,6 +3,7 @@ package soot.jimple.infoflow.collections.solver.fastSolver;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import heros.DontSynchronize;
@@ -14,13 +15,16 @@ import soot.SootMethod;
 import soot.Unit;
 import soot.jimple.infoflow.collect.ConcurrentHashSet;
 import soot.jimple.infoflow.collect.MyConcurrentHashMap;
+import soot.jimple.infoflow.collections.solver.fastSolver.executors.AbstractionWithoutContextKey;
 import soot.jimple.infoflow.collections.strategies.subsuming.SubsumingStrategy;
 import soot.jimple.infoflow.collections.strategies.widening.WideningStrategy;
 import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.problems.AbstractInfoflowProblem;
+import soot.jimple.infoflow.solver.EndSummary;
 import soot.jimple.infoflow.solver.executors.InterruptableExecutor;
 import soot.jimple.infoflow.solver.fastSolver.InfoflowSolver;
 import soot.jimple.infoflow.solver.fastSolver.LocalWorklistTask;
+import soot.util.MultiMap;
 
 /**
  * Infoflow Solver that supports various optimizations for precisely tracking collection keys/indices
@@ -40,6 +44,8 @@ public class CollectionInfoflowSolver extends InfoflowSolver {
 	// Collects all
 	@SynchronizedBy("consistent lock on field")
 	protected final MyConcurrentHashMap<Pair<SootMethod, Abstraction>, MyConcurrentHashMap<Unit, Map<Abstraction, Abstraction>>> subIncoming = new MyConcurrentHashMap<>();
+
+	protected final MyConcurrentHashMap<Pair<SootMethod, AbstractionWithoutContextKey>, Map<Abstraction, EndSummary<Unit, Abstraction>>> summariesWContext = new MyConcurrentHashMap<>();
 
 	public CollectionInfoflowSolver(AbstractInfoflowProblem problem, InterruptableExecutor executor) {
 		super(problem, executor);
@@ -107,16 +113,37 @@ public class CollectionInfoflowSolver extends InfoflowSolver {
 							if (d3 == null)
 								continue;
 
+
+							if (subsuming != null && subsuming.hasContext(d3)) {
+								Map<Abstraction, EndSummary<Unit, Abstraction>> sums = summariesWContext.get(new Pair<>(sCalledProcUnit, new AbstractionWithoutContextKey(d3)));
+								// If we already know the abstraction, we have a context, so we don't need to search
+								if (sums != null && !sums.containsKey(d3)) {
+									Abstraction smallestExistingSum = null;
+									for (Abstraction sumD1 : sums.keySet()) {
+										if (sumD1.entails(d3)) {
+											// We want to use the most precise summary here
+											if (smallestExistingSum == null || smallestExistingSum.entails(sumD1))
+												smallestExistingSum = sumD1;
+										}
+									}
+
+									if (smallestExistingSum == null) {
+										Abstraction woCtxt = subsuming.removeContext(d3);
+										if (endSummary.containsKey(new Pair<>(sCalledProcUnit, woCtxt)))
+											smallestExistingSum = woCtxt;
+									}
+
+									if (smallestExistingSum != null) {
+										applyEndSummaryOnCall(d1, n, d2, returnSiteUnits, sCalledProcUnit, smallestExistingSum);
+										continue;
+									}
+								}
+							}
+
 							// for each callee's start point(s)
 							for (Unit sP : startPointsOf) {
 								// create initial self-loop
 								schedulingStrategy.propagateCallFlow(d3, sP, d3, n, false); // line 15
-							}
-
-							if (isElementOfIncoming(sCalledProcUnit, d3, n, d1, d2)) {
-								// We have a direct match for that, so we can use the default summary
-								applyEndSummaryOnCall(d1, n, d2, returnSiteUnits, sCalledProcUnit, d3);
-								continue;
 							}
 
 							// register the fact that <sp,d3> has an incoming edge from
@@ -154,6 +181,32 @@ public class CollectionInfoflowSolver extends InfoflowSolver {
 		}
 	}
 
+	@Override
+	protected boolean addEndSummary(SootMethod m, Abstraction d1, Unit eP, Abstraction d2) {
+		if (d1 == zeroValue)
+			return true;
+
+		EndSummary<Unit, Abstraction> newSummary;
+		{
+			Map<EndSummary<Unit, Abstraction>, EndSummary<Unit, Abstraction>> summaries = endSummary.putIfAbsentElseGet(new Pair<>(m, d1),
+					() -> new ConcurrentHashMap<>());
+			newSummary = new EndSummary<>(eP, d2, d1);
+			EndSummary<Unit, Abstraction> existingSummary = summaries.putIfAbsent(newSummary, newSummary);
+			if (existingSummary != null) {
+				existingSummary.calleeD1.addNeighbor(d2);
+				return false;
+			}
+		}
+
+		if (subsuming != null && subsuming.hasContext(d1)) {
+			Map<Abstraction, EndSummary<Unit, Abstraction>> summaries
+					= summariesWContext.putIfAbsentElseGet(new Pair<>(m, new AbstractionWithoutContextKey(d1)), ConcurrentHashMap::new);
+			summaries.put(d1, newSummary);
+		}
+
+		return true;
+	}
+
 	protected class ComparablePathEdgeProcessingTask extends PathEdgeProcessingTask implements Comparable<ComparablePathEdgeProcessingTask> {
 		public ComparablePathEdgeProcessingTask(PathEdge<Unit, Abstraction> edge, boolean solverId) {
 			super(edge, solverId);
@@ -161,7 +214,7 @@ public class CollectionInfoflowSolver extends InfoflowSolver {
 
 		@Override
 		public int compareTo(ComparablePathEdgeProcessingTask other) {
-			return subsuming.compare(this.edge.factAtTarget(), other.edge.factAtTarget());
+			return subsuming == null ? 0 : subsuming.compare(this.edge.factAtTarget(), other.edge.factAtTarget());
 		}
 	}
 
@@ -181,40 +234,40 @@ public class CollectionInfoflowSolver extends InfoflowSolver {
 		propagationCount++;
 	}
 
-	@Override
-	protected void propagate(Abstraction sourceVal, Unit target, Abstraction targetVal,
-			/* deliberately exposed to clients */ Unit relatedCallSite,
-			/* deliberately exposed to clients */ boolean isUnbalancedReturn, ScheduleTarget scheduleTarget) {
-		// Let the memory manager run
-		if (memoryManager != null) {
-			sourceVal = memoryManager.handleMemoryObject(sourceVal);
-			targetVal = memoryManager.handleMemoryObject(targetVal);
-			if (targetVal == null)
-				return;
-		}
-
-		// Check the path length
-		if (maxAbstractionPathLength >= 0 && targetVal.getPathLength() > maxAbstractionPathLength)
-			return;
-
-		final PathEdge<Unit, Abstraction> edge = new PathEdge<>(sourceVal, target, targetVal);
-		final Abstraction existingVal = addFunction(edge);
-		if (existingVal != null) {
-			if (existingVal != targetVal) {
-				// Check whether we need to retain this abstraction
-				boolean isEssential;
-				if (memoryManager == null)
-					isEssential = relatedCallSite != null && icfg.isCallStmt(relatedCallSite);
-				else
-					isEssential = memoryManager.isEssentialJoinPoint(targetVal, relatedCallSite);
-
-				if (maxJoinPointAbstractions < 0 || existingVal.getNeighborCount() < maxJoinPointAbstractions
-						|| isEssential) {
-					existingVal.addNeighbor(targetVal);
-				}
-			}
-		} else {
-			scheduleEdgeProcessing(edge, scheduleTarget);
-		}
-	}
+//	@Override
+//	protected void propagate(Abstraction sourceVal, Unit target, Abstraction targetVal,
+//			/* deliberately exposed to clients */ Unit relatedCallSite,
+//			/* deliberately exposed to clients */ boolean isUnbalancedReturn, ScheduleTarget scheduleTarget) {
+//		// Let the memory manager run
+//		if (memoryManager != null) {
+//			sourceVal = memoryManager.handleMemoryObject(sourceVal);
+//			targetVal = memoryManager.handleMemoryObject(targetVal);
+//			if (targetVal == null)
+//				return;
+//		}
+//
+//		// Check the path length
+//		if (maxAbstractionPathLength >= 0 && targetVal.getPathLength() > maxAbstractionPathLength)
+//			return;
+//
+//		final PathEdge<Unit, Abstraction> edge = new PathEdge<>(sourceVal, target, targetVal);
+//		final Abstraction existingVal = addFunction(edge);
+//		if (existingVal != null) {
+//			if (existingVal != targetVal) {
+//				// Check whether we need to retain this abstraction
+//				boolean isEssential;
+//				if (memoryManager == null)
+//					isEssential = relatedCallSite != null && icfg.isCallStmt(relatedCallSite);
+//				else
+//					isEssential = memoryManager.isEssentialJoinPoint(targetVal, relatedCallSite);
+//
+//				if (maxJoinPointAbstractions < 0 || existingVal.getNeighborCount() < maxJoinPointAbstractions
+//						|| isEssential) {
+//					existingVal.addNeighbor(targetVal);
+//				}
+//			}
+//		} else {
+//			scheduleEdgeProcessing(edge, scheduleTarget);
+//		}
+//	}
 }

@@ -45,7 +45,8 @@ public abstract class AbstractShiftOperation extends LocationDependentOperation 
 
 			// First, we check whether they must alias, which allows us to strong update
 			// here
-			boolean mustAlias = manager.getAliasing().mustAlias(incoming.getAccessPath().getPlainValue(), base, stmt);
+			boolean mustAlias = !incoming.getAccessPath().isStaticFieldRef()
+					&& manager.getAliasing().mustAlias(incoming.getAccessPath().getPlainValue(), base, stmt);
 			if (mustAlias) {
 				isUnique = true;
 			} else {

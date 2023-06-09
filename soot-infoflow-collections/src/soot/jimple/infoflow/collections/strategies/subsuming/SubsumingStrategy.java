@@ -20,4 +20,8 @@ public interface SubsumingStrategy<D> {
      * @return true if a subsumes b
      */
     boolean subsumes(D a, D b);
+
+    boolean hasContext(D fact);
+
+    D removeContext(D fact);
 }
