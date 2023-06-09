@@ -78,6 +78,11 @@ public class WideningOnRevisitStrategy implements WideningStrategy<Unit, Abstrac
 		if (!seen)
 			return abs;
 
+		return forceWiden(abs, u);
+	}
+
+	@Override
+	public Abstraction forceWiden(Abstraction abs, Unit unit) {
 		AccessPathFragment[] oldFragments = abs.getAccessPath().getFragments();
 		AccessPathFragment[] fragments = new AccessPathFragment[oldFragments.length];
 		System.arraycopy(oldFragments, 1, fragments, 1, fragments.length - 1);

@@ -664,7 +664,7 @@ public class IFDSSolver<N, D extends FastSolverLinkedNode<D, N>, I extends BiDiI
 		return map == null ? null : map.keySet();
 	}
 
-	private boolean addEndSummary(SootMethod m, D d1, N eP, D d2) {
+	protected boolean addEndSummary(SootMethod m, D d1, N eP, D d2) {
 		if (d1 == zeroValue)
 			return true;
 

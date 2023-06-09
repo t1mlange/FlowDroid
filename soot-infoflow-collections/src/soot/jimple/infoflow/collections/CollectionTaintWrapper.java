@@ -21,6 +21,8 @@ import soot.jimple.infoflow.collections.operations.forward.AbstractShiftOperatio
 import soot.jimple.infoflow.collections.solver.fastSolver.CollectionInfoflowSolver;
 import soot.jimple.infoflow.collections.strategies.containers.ConstantKeyStrategy;
 import soot.jimple.infoflow.collections.strategies.containers.IContainerStrategy;
+import soot.jimple.infoflow.collections.strategies.subsuming.LargerContextSubsumingStrategy;
+import soot.jimple.infoflow.collections.strategies.subsuming.SubsumingStrategy;
 import soot.jimple.infoflow.collections.strategies.widening.WideningOnRevisitStrategy;
 import soot.jimple.infoflow.collections.strategies.widening.WideningStrategy;
 import soot.jimple.infoflow.collections.util.AliasAbstractionSet;
@@ -77,10 +79,15 @@ public class CollectionTaintWrapper implements ITaintPropagationWrapper {
 								.map(CollectionMethod::getSubSignature) // get the subsig
 								.collect(Collectors.toUnmodifiableSet());
 		WideningStrategy<Unit, Abstraction> w = new WideningOnRevisitStrategy(manager, subSigs);
-		if (manager.getMainSolver() instanceof CollectionInfoflowSolver)
+		SubsumingStrategy<Abstraction> s = new LargerContextSubsumingStrategy(manager);
+		if (manager.getMainSolver() instanceof CollectionInfoflowSolver) {
 			((CollectionInfoflowSolver) manager.getMainSolver()).setWideningStrategy(w);
-		if (manager.getAliasSolver() instanceof CollectionInfoflowSolver)
+//			((CollectionInfoflowSolver) manager.getMainSolver()).setSubsuming(s);
+		}
+		if (manager.getAliasSolver() instanceof CollectionInfoflowSolver) {
 			((CollectionInfoflowSolver) manager.getAliasSolver()).setWideningStrategy(w);
+//			((CollectionInfoflowSolver) manager.getAliasSolver()).setSubsuming(s);
+		}
 	}
 
 	@Override
