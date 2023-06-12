@@ -3,11 +3,14 @@ package soot.jimple.infoflow.collections.test.junit;
 import org.junit.Assert;
 import org.junit.Test;
 import soot.SootMethod;
+import soot.Unit;
 import soot.jimple.infoflow.*;
 import soot.jimple.infoflow.cfg.DefaultBiDiICFGFactory;
 import soot.jimple.infoflow.collections.StringResourcesResolver;
 import soot.jimple.infoflow.collections.solver.fastSolver.CollectionInfoflowSolver;
 import soot.jimple.infoflow.collections.solver.fastSolver.executors.PriorityExecutorFactory;
+import soot.jimple.infoflow.data.Abstraction;
+import soot.jimple.infoflow.handlers.TaintPropagationHandler;
 import soot.jimple.infoflow.problems.AbstractInfoflowProblem;
 import soot.jimple.infoflow.solver.IInfoflowSolver;
 import soot.jimple.infoflow.solver.executors.InterruptableExecutor;
@@ -52,7 +55,25 @@ public class SummaryReuseTests extends FlowDroidTests {
     @Test//(timeout = 30000)
     public void testListCoarserSummaryReuse() {
         IInfoflow infoflow = initInfoflow();
-        infoflow.setTaintPropagationHandler(new DebugFlowFunctionTaintPropagationHandler());
+        infoflow.setTaintPropagationHandler(new TaintPropagationHandler() {
+            @Override
+            public void notifyFlowIn(Unit stmt, Abstraction taint, InfoflowManager manager, FlowFunctionType type) {
+
+            }
+
+            @Override
+            public Set<Abstraction> notifyFlowOut(Unit stmt, Abstraction d1, Abstraction incoming, Set<Abstraction> outgoing, InfoflowManager manager, FlowFunctionType type) {
+                // Delay the taint such that there definitely is a summary
+                if (stmt.toString().contains("println")) {
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+                return outgoing;
+            }
+        });
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
         Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
@@ -61,6 +82,15 @@ public class SummaryReuseTests extends FlowDroidTests {
 
     @Test//(timeout = 30000)
     public void testListCoarserSummaryReuse2() {
+        IInfoflow infoflow = initInfoflow();
+        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
+        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
+    }
+
+
+    @Test//(timeout = 30000)
+    public void testSummary() {
         IInfoflow infoflow = initInfoflow();
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);

@@ -16,7 +16,7 @@ public class LargerContextSubsumingStrategy implements SubsumingStrategy<Abstrac
         this.manager = manager;
     }
 
-    private int getContextSize(Abstraction abs) {
+    protected int getContextSize(Abstraction abs) {
         if (abs.getAccessPath().getFragmentCount() == 0)
             return 0;
 
@@ -31,7 +31,16 @@ public class LargerContextSubsumingStrategy implements SubsumingStrategy<Abstrac
 
     @Override
     public int compare(Abstraction a, Abstraction b) {
-        return Integer.compare(getContextSize(a), getContextSize(b));
+        // Prioritize empty contexts and then larger contexts
+        int pA = getContextSize(a);
+        if (pA == 0)
+            return -1;
+        int pB = getContextSize(b);
+        if (pB == 0)
+            return -1;
+        if (pA <= pB)
+            return -1;
+        return 1;
     }
 
     @Override
