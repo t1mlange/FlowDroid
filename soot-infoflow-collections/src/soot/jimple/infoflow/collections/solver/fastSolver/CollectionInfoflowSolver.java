@@ -1,6 +1,7 @@
 package soot.jimple.infoflow.collections.solver.fastSolver;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -61,21 +62,6 @@ public class CollectionInfoflowSolver extends InfoflowSolver {
 		this.subsuming = subsuming;
 	}
 
-	/**
-	 * Returns true if incoming already contains the queried edge
-	 */
-	protected boolean isElementOfIncoming(SootMethod m, Abstraction d3, Unit n, Abstraction d1, Abstraction d2) {
-		MyConcurrentHashMap<Unit, Map<Abstraction, Abstraction>> summaries = incoming.get(new Pair<>(m, d3));
-		if (summaries == null)
-			return false;
-
-		Map<Abstraction, Abstraction> set = summaries.get(n);
-		if (set == null)
-			return false;
-
-		return set.containsKey(d1);
-	}
-
 	@Override
 	protected void processCall(PathEdge<Unit, Abstraction> edge) {
 		final Abstraction d1 = edge.factAtSource();
@@ -113,7 +99,6 @@ public class CollectionInfoflowSolver extends InfoflowSolver {
 							if (d3 == null)
 								continue;
 
-
 							if (subsuming != null && subsuming.hasContext(d3)) {
 								Map<Abstraction, EndSummary<Unit, Abstraction>> sums = summariesWContext.get(new Pair<>(sCalledProcUnit, new AbstractionWithoutContextKey(d3)));
 								// If we already know the abstraction, we have a context, so we don't need to search
@@ -134,7 +119,7 @@ public class CollectionInfoflowSolver extends InfoflowSolver {
 									}
 
 									if (smallestExistingSum != null) {
-										applyEndSummaryOnCall(d1, n, d2, returnSiteUnits, sCalledProcUnit, smallestExistingSum);
+										applyEndSummaryOnCall(d1, n, d2, returnSiteUnits, sCalledProcUnit, d3, smallestExistingSum);
 										continue;
 									}
 								}
@@ -178,6 +163,52 @@ public class CollectionInfoflowSolver extends InfoflowSolver {
 					}
 				}
 			}
+		}
+	}
+
+
+	protected void applyEndSummaryOnCall(final Abstraction d1, final Unit n, final Abstraction d2, Collection<Unit> returnSiteNs,
+										 SootMethod sCalledProcN, Abstraction d3, Abstraction summaryLookup) {
+		// line 15.2
+		Set<EndSummary<Unit, Abstraction>> endSumm = endSummary(sCalledProcN, summaryLookup);
+
+		// still line 15.2 of Naeem/Lhotak/Rodriguez
+		// for each already-queried exit value <eP,d4> reachable
+		// from <sP,d3>, create new caller-side jump functions to
+		// the return sites because we have observed a potentially
+		// new incoming edge into <sP,d3>
+		if (endSumm != null && !endSumm.isEmpty()) {
+			for (EndSummary<Unit, Abstraction> entry : endSumm) {
+				Unit eP = entry.eP;
+				Abstraction d4 = entry.d4;
+
+				// We must acknowledge the incoming abstraction from the other path
+				entry.calleeD1.addNeighbor(d3);
+
+				// for each return site
+				for (Unit retSiteN : returnSiteNs) {
+					// compute return-flow function
+					FlowFunction<Abstraction> retFunction = flowFunctions.getReturnFlowFunction(n, sCalledProcN, eP, retSiteN);
+					Set<Abstraction> retFlowRes = computeReturnFlowFunction(retFunction, d3, d4, n, Collections.singleton(d1));
+					if (retFlowRes != null && !retFlowRes.isEmpty()) {
+						// for each target value of the function
+						for (Abstraction d5 : retFlowRes) {
+							if (memoryManager != null)
+								d5 = memoryManager.handleGeneratedMemoryObject(d4, d5);
+
+							// If we have not changed anything in
+							// the callee, we do not need the facts from
+							// there. Even if we change something:
+							// If we don't need the concrete path,
+							// we can skip the callee in the predecessor
+							// chain
+							Abstraction d5p = shortenPredecessors(d5, d2, d3, eP, n);
+							schedulingStrategy.propagateReturnFlow(d1, retSiteN, d5p, n, false);
+						}
+					}
+				}
+			}
+			onEndSummaryApplied(n, sCalledProcN, d3);
 		}
 	}
 
@@ -233,41 +264,4 @@ public class CollectionInfoflowSolver extends InfoflowSolver {
 		}
 		propagationCount++;
 	}
-
-//	@Override
-//	protected void propagate(Abstraction sourceVal, Unit target, Abstraction targetVal,
-//			/* deliberately exposed to clients */ Unit relatedCallSite,
-//			/* deliberately exposed to clients */ boolean isUnbalancedReturn, ScheduleTarget scheduleTarget) {
-//		// Let the memory manager run
-//		if (memoryManager != null) {
-//			sourceVal = memoryManager.handleMemoryObject(sourceVal);
-//			targetVal = memoryManager.handleMemoryObject(targetVal);
-//			if (targetVal == null)
-//				return;
-//		}
-//
-//		// Check the path length
-//		if (maxAbstractionPathLength >= 0 && targetVal.getPathLength() > maxAbstractionPathLength)
-//			return;
-//
-//		final PathEdge<Unit, Abstraction> edge = new PathEdge<>(sourceVal, target, targetVal);
-//		final Abstraction existingVal = addFunction(edge);
-//		if (existingVal != null) {
-//			if (existingVal != targetVal) {
-//				// Check whether we need to retain this abstraction
-//				boolean isEssential;
-//				if (memoryManager == null)
-//					isEssential = relatedCallSite != null && icfg.isCallStmt(relatedCallSite);
-//				else
-//					isEssential = memoryManager.isEssentialJoinPoint(targetVal, relatedCallSite);
-//
-//				if (maxJoinPointAbstractions < 0 || existingVal.getNeighborCount() < maxJoinPointAbstractions
-//						|| isEssential) {
-//					existingVal.addNeighbor(targetVal);
-//				}
-//			}
-//		} else {
-//			scheduleEdgeProcessing(edge, scheduleTarget);
-//		}
-//	}
 }

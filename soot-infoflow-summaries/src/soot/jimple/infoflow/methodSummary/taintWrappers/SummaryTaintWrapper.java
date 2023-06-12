@@ -570,7 +570,7 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 					return Collections.singleton(taintedAbs);
 				else {
 					reportMissingSummary(callee, stmt, taintedAbs);
-					return fallbackWrapper != null ? fallbackWrapper.getTaintsForMethod(stmt, d1, taintedAbs) : null;
+					return fallbackWrapper == null ? null : fallbackWrapper.getTaintsForMethod(stmt, d1, taintedAbs);
 				}
 			}
 		}

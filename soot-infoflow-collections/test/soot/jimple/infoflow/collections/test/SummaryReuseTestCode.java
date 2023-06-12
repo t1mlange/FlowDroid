@@ -23,50 +23,22 @@ public class SummaryReuseTestCode {
         lst.add(new Random().nextInt(), "Some Element"); // after: [0,1]
         sink(getElement(lst));
 
+        // Delay the taint
         System.out.println(tainted);
-        System.out.println(tainted);
-        System.out.println(tainted);
-        System.out.println(tainted);
-        System.out.println(tainted);
-        System.out.println(tainted);
-        System.out.println(tainted);
-        System.out.println(tainted);
-        System.out.println(tainted);
-        System.out.println(tainted);
-        System.out.println(tainted);
-        System.out.println(tainted);
-        System.out.println(tainted);
-        System.out.println(tainted);
-        System.out.println(tainted);
-        System.out.println(tainted);
-        System.out.println(tainted);
-        System.out.println(tainted);
-        System.out.println(tainted);
-        System.out.println(tainted);
-        System.out.println(tainted);
-        System.out.println(tainted);
-        System.out.println(tainted);
-        System.out.println(tainted);
-        System.out.println(tainted);
-        System.out.println(tainted);
-        System.out.println(tainted);
-        System.out.println(tainted);
-        System.out.println(tainted);
-        System.out.println(tainted);
-        System.out.println(tainted);
-        System.out.println(tainted);
-        System.out.println(tainted);
-        System.out.println(tainted);
-        System.out.println(tainted);
-        System.out.println(tainted);
-        System.out.println(tainted);
-        System.out.println(tainted);
-        System.out.println(tainted);
-        System.out.println(tainted);
-        System.out.println(tainted);
-        System.out.println(tainted);
+
         List<String> lst2 = new LinkedList<>();
         lst2.add(tainted); // after: [0,0]
         sink(getElement(lst2));
+    }
+
+    String id(String str) {
+        return str;
+    }
+
+    @FlowDroidTest(expected = 2)
+    public void testSummary() {
+        String tainted = source();
+        sink(id(tainted));
+        sink(id(tainted));
     }
 }

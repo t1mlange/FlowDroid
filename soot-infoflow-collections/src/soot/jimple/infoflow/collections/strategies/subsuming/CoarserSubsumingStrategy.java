@@ -10,9 +10,18 @@ public class CoarserSubsumingStrategy extends LargerContextSubsumingStrategy {
 
     @Override
     public int compare(Abstraction a, Abstraction b) {
-        if (a.getAccessPath().getFragmentCount() != a.getAccessPath().getFragmentCount())
+        // Prioritize empty contexts and then larger contexts
+        int pA = getContextSize(a);
+        int pB = getContextSize(b);
+        // if both have no context, go by access path length
+        if (pA == 0 && pB == 0)
             return Integer.compare(a.getAccessPath().getFragmentCount(), b.getAccessPath().getFragmentCount());
-
-        return super.compare(a, b);
+        if (pA == 0)
+            return -1;
+        if (pB == 0)
+            return -1;
+        if (pA <= pB)
+            return -1;
+        return 1;
     }
 }

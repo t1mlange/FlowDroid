@@ -16,11 +16,11 @@ import soot.jimple.infoflow.collections.context.UnknownContext;
 import soot.jimple.infoflow.collections.util.Tristate;
 import soot.jimple.infoflow.data.ContextDefinition;
 
-public class ConstantKeyStrategy implements IContainerStrategy {
+public class ConstantStrategy implements IContainerStrategy {
     private final ConcurrentHashMap<SootMethod, IntraproceduralListSizeAnalysis> implicitIndices;
     private final InfoflowManager manager;
 
-    public ConstantKeyStrategy(InfoflowManager manager) {
+    public ConstantStrategy(InfoflowManager manager) {
         this.implicitIndices = new ConcurrentHashMap<>();
         this.manager = manager;
     }

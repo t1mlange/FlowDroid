@@ -19,7 +19,7 @@ import soot.jimple.infoflow.collections.data.CollectionModel;
 import soot.jimple.infoflow.collections.operations.ICollectionOperation;
 import soot.jimple.infoflow.collections.operations.forward.AbstractShiftOperation;
 import soot.jimple.infoflow.collections.solver.fastSolver.CollectionInfoflowSolver;
-import soot.jimple.infoflow.collections.strategies.containers.ConstantKeyStrategy;
+import soot.jimple.infoflow.collections.strategies.containers.ConstantStrategy;
 import soot.jimple.infoflow.collections.strategies.containers.IContainerStrategy;
 import soot.jimple.infoflow.collections.strategies.subsuming.LargerContextSubsumingStrategy;
 import soot.jimple.infoflow.collections.strategies.subsuming.SubsumingStrategy;
@@ -82,11 +82,11 @@ public class CollectionTaintWrapper implements ITaintPropagationWrapper {
 		SubsumingStrategy<Abstraction> s = new LargerContextSubsumingStrategy(manager);
 		if (manager.getMainSolver() instanceof CollectionInfoflowSolver) {
 			((CollectionInfoflowSolver) manager.getMainSolver()).setWideningStrategy(w);
-//			((CollectionInfoflowSolver) manager.getMainSolver()).setSubsuming(s);
+			((CollectionInfoflowSolver) manager.getMainSolver()).setSubsuming(s);
 		}
 		if (manager.getAliasSolver() instanceof CollectionInfoflowSolver) {
 			((CollectionInfoflowSolver) manager.getAliasSolver()).setWideningStrategy(w);
-//			((CollectionInfoflowSolver) manager.getAliasSolver()).setSubsuming(s);
+			((CollectionInfoflowSolver) manager.getAliasSolver()).setSubsuming(s);
 		}
 	}
 
@@ -99,7 +99,7 @@ public class CollectionTaintWrapper implements ITaintPropagationWrapper {
 	}
 
 	protected IContainerStrategy getStrategy() {
-		return new ConstantKeyStrategy(manager);
+		return new ConstantStrategy(manager);
 	}
 
 	private Set<Abstraction> fallbackTaintsForMethod(Stmt stmt, Abstraction d1, Abstraction taintedPath) {
