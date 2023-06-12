@@ -44,7 +44,7 @@ public class CollectionInfoflowSolver extends InfoflowSolver {
 
 	// Collects all
 	@SynchronizedBy("consistent lock on field")
-	protected final MyConcurrentHashMap<Pair<SootMethod, Abstraction>, MyConcurrentHashMap<Unit, Map<Abstraction, Abstraction>>> subIncoming = new MyConcurrentHashMap<>();
+	protected final MyConcurrentHashMap<Pair<SootMethod, AbstractionWithoutContextKey>, ConcurrentHashSet<Abstraction>> incomingWContext = new MyConcurrentHashMap<>();
 
 	protected final MyConcurrentHashMap<Pair<SootMethod, AbstractionWithoutContextKey>, Map<Abstraction, EndSummary<Unit, Abstraction>>> summariesWContext = new MyConcurrentHashMap<>();
 
@@ -125,17 +125,24 @@ public class CollectionInfoflowSolver extends InfoflowSolver {
 								}
 							}
 
-							// for each callee's start point(s)
-							for (Unit sP : startPointsOf) {
-								// create initial self-loop
-								schedulingStrategy.propagateCallFlow(d3, sP, d3, n, false); // line 15
-							}
-
 							// register the fact that <sp,d3> has an incoming edge from
 							// <n,d2>
 							// line 15.1 of Unitaeem/Lhotak/Rodriguez
-							if (!addIncoming(sCalledProcUnit, d3, n, d1, d2))
+							if (!addIncoming(sCalledProcUnit, d3, n, d1, d2)) {
+								// for each callee's start point(s)
+								for (Unit sP : startPointsOf) {
+									// create initial self-loop
+									schedulingStrategy.propagateCallFlow(d3, sP, d3, n, false); // line 15
+								}
+
+								if (subsuming != null && subsuming.hasContext(d3)) {
+									Pair<SootMethod, AbstractionWithoutContextKey> key = new Pair<>(sCalledProcUnit, new AbstractionWithoutContextKey(d3));
+									Set<Abstraction> set = incomingWContext.putIfAbsentElseGet(key, new ConcurrentHashSet<>());
+									set.add(d3);
+								}
 								continue;
+							} else {
+							}
 
 							applyEndSummaryOnCall(d1, n, d2, returnSiteUnits, sCalledProcUnit, d3);
 						}
@@ -166,7 +173,9 @@ public class CollectionInfoflowSolver extends InfoflowSolver {
 		}
 	}
 
-
+	/**
+	 * Allows to use a different abstraction for lookup of end summaries
+	 */
 	protected void applyEndSummaryOnCall(final Abstraction d1, final Unit n, final Abstraction d2, Collection<Unit> returnSiteNs,
 										 SootMethod sCalledProcN, Abstraction d3, Abstraction summaryLookup) {
 		// line 15.2
