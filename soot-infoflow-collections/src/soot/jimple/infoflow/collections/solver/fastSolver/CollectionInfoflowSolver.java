@@ -5,7 +5,6 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 import heros.DontSynchronize;
 import heros.FlowFunction;
@@ -14,9 +13,7 @@ import heros.solver.Pair;
 import heros.solver.PathEdge;
 import soot.SootMethod;
 import soot.Unit;
-import soot.jimple.infoflow.collect.ConcurrentHashSet;
 import soot.jimple.infoflow.collect.MyConcurrentHashMap;
-import soot.jimple.infoflow.collections.solver.fastSolver.executors.AbstractionWithoutContextKey;
 import soot.jimple.infoflow.collections.strategies.subsuming.SubsumingStrategy;
 import soot.jimple.infoflow.collections.strategies.widening.WideningStrategy;
 import soot.jimple.infoflow.data.Abstraction;
@@ -25,6 +22,7 @@ import soot.jimple.infoflow.solver.EndSummary;
 import soot.jimple.infoflow.solver.executors.InterruptableExecutor;
 import soot.jimple.infoflow.solver.fastSolver.InfoflowSolver;
 import soot.jimple.infoflow.solver.fastSolver.LocalWorklistTask;
+import soot.util.ConcurrentHashMultiMap;
 import soot.util.MultiMap;
 
 /**
@@ -39,14 +37,17 @@ public class CollectionInfoflowSolver extends InfoflowSolver {
 	@DontSynchronize("Read-only")
 	private SubsumingStrategy<Abstraction> subsuming;
 
+	// We need to overwrite the default incoming, because we might have multiple elements per context
+	// e.g. when we add a more precise collection taint to use the summary of the coarser collection taint
 	@SynchronizedBy("Thread-safe data structure")
-	protected MyConcurrentHashMap<Pair<Unit, Abstraction>, ConcurrentHashSet<PathEdge<Unit, Abstraction>>> jumpFunctionsForSubsuming = new MyConcurrentHashMap<>();
+	protected final MyConcurrentHashMap<Pair<SootMethod, Abstraction>,
+										MyConcurrentHashMap<Unit, MultiMap<Abstraction, Abstraction>>> myIncoming = new MyConcurrentHashMap<>();
 
 	// Collects all
-	@SynchronizedBy("consistent lock on field")
-	protected final MyConcurrentHashMap<Pair<SootMethod, AbstractionWithoutContextKey>, ConcurrentHashSet<Abstraction>> incomingWContext = new MyConcurrentHashMap<>();
+	@SynchronizedBy("Thread-safe data structure")
+	protected final MultiMap<NoContextKey, Abstraction> incomingWContext = new ConcurrentHashMultiMap<>();
 
-	protected final MyConcurrentHashMap<Pair<SootMethod, AbstractionWithoutContextKey>, Map<Abstraction, EndSummary<Unit, Abstraction>>> summariesWContext = new MyConcurrentHashMap<>();
+	protected final MultiMap<NoContextKey, Abstraction> summariesWContext = new ConcurrentHashMultiMap<>();
 
 	public CollectionInfoflowSolver(AbstractInfoflowProblem problem, InterruptableExecutor executor) {
 		super(problem, executor);
@@ -60,6 +61,42 @@ public class CollectionInfoflowSolver extends InfoflowSolver {
 
 	public void setSubsuming(SubsumingStrategy<Abstraction> subsuming) {
 		this.subsuming = subsuming;
+	}
+
+	protected boolean incomingContains(SootMethod m, Abstraction d3, Unit n, Abstraction d1, Abstraction d2) {
+		MyConcurrentHashMap<Unit, MultiMap<Abstraction, Abstraction>> summaries
+				= myIncoming.putIfAbsentElseGet(new Pair<>(m, d3), MyConcurrentHashMap::new);
+		MultiMap<Abstraction, Abstraction> set = summaries.putIfAbsentElseGet(n, ConcurrentHashMultiMap::new);
+		return set.contains(d1, d2);
+	}
+
+
+	protected boolean addIncomingButNoSummary(SootMethod m, Abstraction d3, Unit n, Abstraction d1, Abstraction d2) {
+		MyConcurrentHashMap<Unit, MultiMap<Abstraction, Abstraction>> summaries
+				= myIncoming.putIfAbsentElseGet(new Pair<>(m, d3), MyConcurrentHashMap::new);
+		MultiMap<Abstraction, Abstraction> set = summaries.putIfAbsentElseGet(n, ConcurrentHashMultiMap::new);
+		return set.put(d1, d2);
+	}
+
+	@Override
+	protected boolean addIncoming(SootMethod m, Abstraction d3, Unit n, Abstraction d1, Abstraction d2) {
+		MyConcurrentHashMap<Unit, MultiMap<Abstraction, Abstraction>> summaries
+				= myIncoming.putIfAbsentElseGet(new Pair<>(m, d3), MyConcurrentHashMap::new);
+		MultiMap<Abstraction, Abstraction> set = summaries.putIfAbsentElseGet(n, ConcurrentHashMultiMap::new);
+
+		// Remember that we have seen a context-sensitive taint here
+		incomingWContext.put(new NoContextKey(m, d3), d3);
+
+		return set.put(d1, d2);
+	}
+
+	@Override
+	protected Map<Unit, Map<Abstraction, Abstraction>> incoming(Abstraction d1, SootMethod m) {
+		throw new RuntimeException("Use myIncoming(Abstraction, SootMethod) instead!");
+	}
+
+	protected Map<Unit, MultiMap<Abstraction, Abstraction>> myIncoming(Abstraction d1, SootMethod m) {
+		return myIncoming.get(new Pair<>(m, d1));
 	}
 
 	@Override
@@ -99,27 +136,27 @@ public class CollectionInfoflowSolver extends InfoflowSolver {
 							if (d3 == null)
 								continue;
 
+							// Maybe we already have seen a coarser taint for this method
 							if (subsuming != null && subsuming.hasContext(d3)) {
-								Map<Abstraction, EndSummary<Unit, Abstraction>> sums = summariesWContext.get(new Pair<>(sCalledProcUnit, new AbstractionWithoutContextKey(d3)));
+								if (incomingContains(sCalledProcUnit, d3, n, d1, d2)) {
+									// If we were already here with the same (context, taint),
+									// we can skip the rest
+									continue;
+								}
+
+								// Incoming does not know this, maybe we have the same abstraction with a larger
+								// context for this, so we can skip this callee
+								Set<Abstraction> inc = incomingWContext.get(new NoContextKey(sCalledProcUnit, d3));
 								// If we already know the abstraction, we have a context, so we don't need to search
-								if (sums != null && !sums.containsKey(d3)) {
-									Abstraction smallestExistingSum = null;
-									for (Abstraction sumD1 : sums.keySet()) {
-										if (sumD1.entails(d3)) {
-											// We want to use the most precise summary here
-											if (smallestExistingSum == null || smallestExistingSum.entails(sumD1))
-												smallestExistingSum = sumD1;
-										}
-									}
-
-									if (smallestExistingSum == null) {
-										Abstraction woCtxt = subsuming.removeContext(d3);
-										if (endSummary.containsKey(new Pair<>(sCalledProcUnit, woCtxt)))
-											smallestExistingSum = woCtxt;
-									}
-
+								if (inc != null) {
+									Abstraction smallestExistingSum = subsuming.chooseContext(inc, d3);
 									if (smallestExistingSum != null) {
-										applyEndSummaryOnCall(d1, n, d2, returnSiteUnits, sCalledProcUnit, d3, smallestExistingSum);
+										// Choose less precise incoming set instead of reanalyzing the method
+										addIncomingButNoSummary(sCalledProcUnit, smallestExistingSum, n, d1, d2);
+										applyEndSummaryOnCall(d1, n, d2, returnSiteUnits, sCalledProcUnit, d3);
+
+										// We have found a suiting coarser abstraction and thus, won't
+										// propagate this taint further in the callee.
 										continue;
 									}
 								}
@@ -127,21 +164,17 @@ public class CollectionInfoflowSolver extends InfoflowSolver {
 
 							// register the fact that <sp,d3> has an incoming edge from
 							// <n,d2>
-							// line 15.1 of Unitaeem/Lhotak/Rodriguez
+							// line 15.1 of Naeem/Lhotak/Rodriguez
 							if (!addIncoming(sCalledProcUnit, d3, n, d1, d2)) {
-								// for each callee's start point(s)
-								for (Unit sP : startPointsOf) {
-									// create initial self-loop
-									schedulingStrategy.propagateCallFlow(d3, sP, d3, n, false); // line 15
-								}
-
-								if (subsuming != null && subsuming.hasContext(d3)) {
-									Pair<SootMethod, AbstractionWithoutContextKey> key = new Pair<>(sCalledProcUnit, new AbstractionWithoutContextKey(d3));
-									Set<Abstraction> set = incomingWContext.putIfAbsentElseGet(key, new ConcurrentHashSet<>());
-									set.add(d3);
-								}
+								// If we were already here with the same (context, taint),
+								// we can skip the rest
 								continue;
-							} else {
+							}
+
+							// for each callee's start point(s)
+							for (Unit sP : startPointsOf) {
+								// create initial self-loop
+								schedulingStrategy.propagateCallFlow(d3, sP, d3, n, false); // line 15
 							}
 
 							applyEndSummaryOnCall(d1, n, d2, returnSiteUnits, sCalledProcUnit, d3);
@@ -173,13 +206,26 @@ public class CollectionInfoflowSolver extends InfoflowSolver {
 		}
 	}
 
-	/**
-	 * Allows to use a different abstraction for lookup of end summaries
-	 */
+	@Override
 	protected void applyEndSummaryOnCall(final Abstraction d1, final Unit n, final Abstraction d2, Collection<Unit> returnSiteNs,
-										 SootMethod sCalledProcN, Abstraction d3, Abstraction summaryLookup) {
+										 SootMethod sCalledProcN, Abstraction d3) {
 		// line 15.2
-		Set<EndSummary<Unit, Abstraction>> endSumm = endSummary(sCalledProcN, summaryLookup);
+		Set<EndSummary<Unit, Abstraction>> endSumm = endSummary(sCalledProcN, d3);
+
+		// Maybe we can use coarser summary here
+		if (endSumm == null || !endSumm.isEmpty()) {
+			if (subsuming != null && subsuming.hasContext(d3)) {
+				Set<Abstraction> sums = summariesWContext.get(new NoContextKey(sCalledProcN, d3));
+				// If we already know the abstraction, we have a context, so we don't need to search
+				if (sums != null) {
+					Abstraction smallestExistingSum = subsuming.chooseContext(sums, d3);
+					if (smallestExistingSum != null) {
+						// Use less precise summary in favor of reanalyzing the method
+						endSumm = endSummary(sCalledProcN, smallestExistingSum);
+					}
+				}
+			}
+		}
 
 		// still line 15.2 of Naeem/Lhotak/Rodriguez
 		// for each already-queried exit value <eP,d4> reachable
@@ -228,8 +274,8 @@ public class CollectionInfoflowSolver extends InfoflowSolver {
 
 		EndSummary<Unit, Abstraction> newSummary;
 		{
-			Map<EndSummary<Unit, Abstraction>, EndSummary<Unit, Abstraction>> summaries = endSummary.putIfAbsentElseGet(new Pair<>(m, d1),
-					() -> new ConcurrentHashMap<>());
+			Map<EndSummary<Unit, Abstraction>, EndSummary<Unit, Abstraction>> summaries
+					= endSummary.putIfAbsentElseGet(new Pair<>(m, d1), ConcurrentHashMap::new);
 			newSummary = new EndSummary<>(eP, d2, d1);
 			EndSummary<Unit, Abstraction> existingSummary = summaries.putIfAbsent(newSummary, newSummary);
 			if (existingSummary != null) {
@@ -238,13 +284,102 @@ public class CollectionInfoflowSolver extends InfoflowSolver {
 			}
 		}
 
+		// Register that we have a summary for this context-dependent taint
 		if (subsuming != null && subsuming.hasContext(d1)) {
-			Map<Abstraction, EndSummary<Unit, Abstraction>> summaries
-					= summariesWContext.putIfAbsentElseGet(new Pair<>(m, new AbstractionWithoutContextKey(d1)), ConcurrentHashMap::new);
-			summaries.put(d1, newSummary);
+			summariesWContext.put(new NoContextKey(m, d1), d1);
 		}
 
 		return true;
+	}
+
+	@Override
+	protected void processExit(PathEdge<Unit, Abstraction> edge) {
+		final Unit n = edge.getTarget(); // an exit node; line 21...
+		SootMethod methodThatNeedsSummary = icfg.getMethodOf(n);
+
+		final Abstraction d1 = edge.factAtSource();
+		final Abstraction d2 = edge.factAtTarget();
+
+		// for each of the method's start points, determine incoming calls
+
+		// line 21.1 of Naeem/Lhotak/Rodriguez
+		// register end-summary
+		if (!addEndSummary(methodThatNeedsSummary, d1, n, d2))
+			return;
+		Map<Unit, MultiMap<Abstraction, Abstraction>> inc = myIncoming(d1, methodThatNeedsSummary);
+
+		// for each incoming call edge already processed
+		// (see processCall(..))
+		if (inc != null && !inc.isEmpty())
+			for (Map.Entry<Unit, MultiMap<Abstraction, Abstraction>> entry : inc.entrySet()) {
+				// Early termination check
+				if (killFlag != null)
+					return;
+
+				// line 22
+				Unit c = entry.getKey();
+				Set<Abstraction> callerSideDs = entry.getValue().keySet();
+				// for each return site
+				for (Unit retSiteC : icfg.getReturnSitesOfCallAt(c)) {
+					// compute return-flow function
+					FlowFunction<Abstraction> retFunction = flowFunctions.getReturnFlowFunction(c, methodThatNeedsSummary, n,
+							retSiteC);
+					Set<Abstraction> targets = computeReturnFlowFunction(retFunction, d1, d2, c, callerSideDs);
+					// for each incoming-call value
+					if (targets != null && !targets.isEmpty()) {
+						for (final Abstraction d4 : entry.getValue().keySet()) {
+							for (final Abstraction predVal : entry.getValue().get(d4)) {
+								for (Abstraction d5 : targets) {
+									if (memoryManager != null)
+										d5 = memoryManager.handleGeneratedMemoryObject(d2, d5);
+									if (d5 == null)
+										continue;
+
+									// If we have not changed anything in the callee, we do not need the facts from
+									// there. Even if we change something: If we don't need the concrete path, we
+									// can skip the callee in the predecessor chain
+									Abstraction d5p = shortenPredecessors(d5, predVal, d1, n, c);
+									schedulingStrategy.propagateReturnFlow(d4, retSiteC, d5p, c, false);
+								}
+							}
+						}
+					}
+				}
+			}
+
+		// handling for unbalanced problems where we return out of a method with
+		// a fact for which we have no incoming flow
+		// note: we propagate that way only values that originate from ZERO, as
+		// conditionally generated values should only be propagated into callers that
+		// have an incoming edge for this condition
+		if (followReturnsPastSeeds && d1 == zeroValue && (inc == null || inc.isEmpty())) {
+			Collection<Unit> callers = icfg.getCallersOf(methodThatNeedsSummary);
+			for (Unit c : callers) {
+				for (Unit retSiteC : icfg.getReturnSitesOfCallAt(c)) {
+					FlowFunction<Abstraction> retFunction = flowFunctions.getReturnFlowFunction(c, methodThatNeedsSummary, n,
+							retSiteC);
+					Set<Abstraction> targets = computeReturnFlowFunction(retFunction, d1, d2, c,
+							Collections.singleton(zeroValue));
+					if (targets != null && !targets.isEmpty()) {
+						for (Abstraction d5 : targets) {
+							if (memoryManager != null)
+								d5 = memoryManager.handleGeneratedMemoryObject(d2, d5);
+							if (d5 != null)
+								schedulingStrategy.propagateReturnFlow(zeroValue, retSiteC, d5, c, true);
+						}
+					}
+				}
+			}
+			// in cases where there are no callers, the return statement would
+			// normally not be processed at all; this might be undesirable if the flow
+			// function has a side effect such as registering a taint; instead we thus call
+			// the return flow function will a null caller
+			if (callers.isEmpty()) {
+				FlowFunction<Abstraction> retFunction = flowFunctions.getReturnFlowFunction(null, methodThatNeedsSummary, n,
+						null);
+				retFunction.computeTargets(d2);
+			}
+		}
 	}
 
 	protected class ComparablePathEdgeProcessingTask extends PathEdgeProcessingTask implements Comparable<ComparablePathEdgeProcessingTask> {
