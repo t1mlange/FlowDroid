@@ -265,11 +265,11 @@ public class CollectionTaintWrapper implements ITaintPropagationWrapper {
 
 	@Override
 	public int getWrapperHits() {
-		return this.wrapperHits + fallbackWrapper.getWrapperHits();
+		return this.wrapperHits + (fallbackWrapper != null ? fallbackWrapper.getWrapperHits() : 0);
 	}
 
 	@Override
 	public int getWrapperMisses() {
-		return this.wrapperMisses + fallbackWrapper.getWrapperMisses();
+		return this.wrapperMisses + (fallbackWrapper != null ? fallbackWrapper.getWrapperMisses() : 0);
 	}
 }
