@@ -29,7 +29,7 @@ import soot.jimple.infoflow.taintWrappers.EasyTaintWrapper;
  */
 public abstract class EasyWrapperTests extends JUnitTests {
 
-	private final EasyTaintWrapper easyWrapper;
+	protected EasyTaintWrapper easyWrapper;
 
 	public EasyWrapperTests() throws IOException {
 		easyWrapper = new EasyTaintWrapper(new File("EasyTaintWrapperSource.txt"));
