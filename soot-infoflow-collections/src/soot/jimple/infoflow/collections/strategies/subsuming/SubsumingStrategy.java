@@ -1,5 +1,9 @@
 package soot.jimple.infoflow.collections.strategies.subsuming;
 
+import soot.jimple.infoflow.data.Abstraction;
+
+import java.util.Set;
+
 public interface SubsumingStrategy<D> {
 
     /**
@@ -24,4 +28,6 @@ public interface SubsumingStrategy<D> {
     boolean hasContext(D fact);
 
     D removeContext(D fact);
+
+    Abstraction chooseContext(Set<Abstraction> availableContexts, Abstraction currentContext);
 }

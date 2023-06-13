@@ -1,5 +1,6 @@
 package soot.jimple.infoflow.collections.strategies.subsuming;
 
+import heros.solver.Pair;
 import soot.jimple.infoflow.InfoflowManager;
 import soot.jimple.infoflow.collections.context.IntervalContext;
 import soot.jimple.infoflow.data.Abstraction;
@@ -8,6 +9,7 @@ import soot.jimple.infoflow.data.AccessPathFragment;
 import soot.jimple.infoflow.data.ContextDefinition;
 
 import java.util.Arrays;
+import java.util.Set;
 
 public class LargerContextSubsumingStrategy implements SubsumingStrategy<Abstraction> {
     private final InfoflowManager manager;
@@ -63,6 +65,20 @@ public class LargerContextSubsumingStrategy implements SubsumingStrategy<Abstrac
         AccessPath ap = manager.getAccessPathFactory().createAccessPath(abs.getAccessPath().getPlainValue(), fragments,
                 abs.getAccessPath().getTaintSubFields());
         return abs.deriveNewAbstraction(ap, null);
+    }
 
+    @Override
+    public Abstraction chooseContext(Set<Abstraction> availableContexts, Abstraction currentContext) {
+        Abstraction curr = null;
+        for (Abstraction sumD1 : availableContexts) {
+            // We don't have a summary, so we need a coarser summary...
+            if (sumD1.entails(currentContext)) {
+                // ...but from all coarser summaries, we want the closest to the current context
+                if (curr == null || curr.entails(sumD1))
+                    curr = sumD1;
+            }
+        }
+
+        return curr;
     }
 }

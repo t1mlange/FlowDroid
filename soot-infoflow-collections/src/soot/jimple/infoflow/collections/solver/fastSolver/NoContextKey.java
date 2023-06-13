@@ -1,12 +1,15 @@
-package soot.jimple.infoflow.collections.solver.fastSolver.executors;
+package soot.jimple.infoflow.collections.solver.fastSolver;
 
+import soot.SootMethod;
 import soot.jimple.infoflow.data.Abstraction;
 
-public class AbstractionWithoutContextKey {
+public class NoContextKey {
+    private final SootMethod sm;
     private final Abstraction abs;
     private int hashCode;
 
-    public AbstractionWithoutContextKey(Abstraction abs) {
+    public NoContextKey(SootMethod sm, Abstraction abs) {
+        this.sm = sm;
         this.abs = abs;
         this.hashCode = 0;
     }
@@ -18,6 +21,7 @@ public class AbstractionWithoutContextKey {
 
         final int prime = 31;
         int result = 1;
+        result = prime * result + ((sm == null) ? 0 : sm.hashCode());
         result = prime * result + ((abs.getSourceContext() == null) ? 0 : abs.getSourceContext().hashCode());
         result = prime * result + ((abs.getAccessPath() == null) ? 0 : abs.getAccessPath().hashCodeWithoutContext());
         result = prime * result + ((abs.getActivationUnit() == null) ? 0 : abs.getActivationUnit().hashCode());
@@ -36,9 +40,15 @@ public class AbstractionWithoutContextKey {
             return true;
         if (obj == null || getClass() != obj.getClass())
             return false;
-        AbstractionWithoutContextKey other = (AbstractionWithoutContextKey) obj;
+        NoContextKey other = (NoContextKey) obj;
 
         if (this.hashCode != 0 && other.hashCode != 0 && this.hashCode != other.hashCode)
+            return false;
+
+        if (sm == null) {
+            if (other.sm != null)
+                return false;
+        } else if (!sm.equals(other.sm))
             return false;
 
         if (abs.getAccessPath() == null) {
