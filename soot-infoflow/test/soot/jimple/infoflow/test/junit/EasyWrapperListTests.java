@@ -30,7 +30,7 @@ public abstract class EasyWrapperListTests extends JUnitTests {
 	protected EasyTaintWrapper easyWrapper;
 
 	public EasyWrapperListTests() throws IOException {
-		easyWrapper = new EasyTaintWrapper(new File("EasyTaintWrapperSource.txt"));
+		easyWrapper = EasyTaintWrapper.getDefault();
 	}
 
 	@Test(timeout = 300000)

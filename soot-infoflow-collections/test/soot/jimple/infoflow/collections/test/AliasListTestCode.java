@@ -8,6 +8,5 @@ public class AliasListTestCode {
 
     public void testListAdd1() {
         List<String> lst = new LinkedList<>();
-//        lst.add()
     }
 }

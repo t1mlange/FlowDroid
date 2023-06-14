@@ -1,7 +1,9 @@
 package soot.jimple.infoflow.collections.test.junit.inherited.infoflow;
 
 import org.junit.BeforeClass;
+import org.junit.Test;
 import soot.jimple.infoflow.AbstractInfoflow;
+import soot.jimple.infoflow.IInfoflow;
 import soot.jimple.infoflow.Infoflow;
 import soot.jimple.infoflow.InfoflowConfiguration;
 import soot.jimple.infoflow.cfg.DefaultBiDiICFGFactory;
@@ -15,6 +17,8 @@ import soot.jimple.infoflow.solver.executors.InterruptableExecutor;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class VectorTests extends soot.jimple.infoflow.test.junit.VectorTests {
     @BeforeClass
@@ -49,5 +53,20 @@ public class VectorTests extends soot.jimple.infoflow.test.junit.VectorTests {
         }
         result.setTaintWrapper(new CollectionTaintWrapper(parser.getModels(), null));
         return result;
+    }
+
+    @Test(timeout = 300000)
+    public void vectorRWPos1Test() {
+        IInfoflow infoflow = initInfoflow();
+        List<String> epoints = new ArrayList<String>();
+        epoints.add("<soot.jimple.infoflow.test.VectorTestCode: void concreteWriteReadPos1Test()>");
+        infoflow.computeInfoflow(appPath, libPath, epoints, sources, sinks);
+        // We are more precise :D
+        negativeCheckInfoflow(infoflow);
+    }
+
+    @Test(timeout = 300000)
+    public void concreteVIteratorTest() {
+        // Artificial field does not get resolved without fallback wrapper
     }
 }

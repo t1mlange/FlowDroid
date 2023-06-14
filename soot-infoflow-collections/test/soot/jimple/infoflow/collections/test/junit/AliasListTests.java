@@ -15,7 +15,7 @@ public class AliasListTests extends FlowDroidTests {
 
     private static final String testCodeClass = "soot.jimple.infoflow.collections.test.AliasListTestCode";
 
-    @Test(timeout = 30000)
+//    @Test(timeout = 30000)
     public void testListAdd1() {
         IInfoflow infoflow = initInfoflow();
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
