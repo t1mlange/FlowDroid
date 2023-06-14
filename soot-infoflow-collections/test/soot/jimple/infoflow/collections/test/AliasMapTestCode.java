@@ -90,4 +90,20 @@ public class AliasMapTestCode {
         sink(b.s);
         m.put("Secret", a);
     }
+
+    Map<String, A> aMap;
+    @FlowDroidTest(expected = 1)
+    public void testMapClear1() {
+        aMap = null;
+
+        Map<String, A> m = new HashMap<>();
+        aMap = m;
+        A a = new A();
+        a.s = source();
+        m.put("XXX", new A());
+        m.clear();
+        m.put("Secret", a);
+        A b = aMap.get("Secret");
+        sink(b.s);
+    }
 }

@@ -20,7 +20,6 @@ import soot.jimple.infoflow.taintWrappers.EasyTaintWrapper;
 public class EasyWrapperTests extends soot.jimple.infoflow.test.junit.EasyWrapperTests {
 	public EasyWrapperTests() throws IOException {
 		super();
-		easyWrapper = new EasyTaintWrapper(new File("../soot-infoflow/EasyTaintWrapperSource.txt"));
 	}
 
 	@BeforeClass

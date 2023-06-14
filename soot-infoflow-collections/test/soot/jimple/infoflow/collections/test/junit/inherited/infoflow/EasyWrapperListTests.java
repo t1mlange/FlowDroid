@@ -19,8 +19,6 @@ import soot.jimple.infoflow.taintWrappers.EasyTaintWrapper;
 
 public class EasyWrapperListTests extends soot.jimple.infoflow.test.junit.EasyWrapperListTests {
 	public EasyWrapperListTests() throws IOException {
-		super();
-		easyWrapper = new EasyTaintWrapper(new File("../soot-infoflow/EasyTaintWrapperSource.txt"));
 	}
 
 	@BeforeClass

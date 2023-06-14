@@ -16,6 +16,7 @@ import java.util.List;
 import org.junit.Test;
 
 import soot.jimple.infoflow.IInfoflow;
+import soot.jimple.infoflow.util.DebugFlowFunctionTaintPropagationHandler;
 
 /**
  * These tests check taint propagation in arrays, for instance the propagation
@@ -98,6 +99,7 @@ public abstract class ArrayTests extends JUnitTests {
 	@Test(timeout = 300000)
 	public void arrayAsListTest() {
 		IInfoflow infoflow = initInfoflow();
+		infoflow.setTaintPropagationHandler(new DebugFlowFunctionTaintPropagationHandler());
 		List<String> epoints = new ArrayList<String>();
 		epoints.add("<soot.jimple.infoflow.test.ArrayTestCode: void arrayAsListTest()>");
 		infoflow.computeInfoflow(appPath, libPath, epoints, sources, sinks);
