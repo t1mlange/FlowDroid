@@ -1,6 +1,9 @@
 package soot.jimple.infoflow.collections.strategies.subsuming;
 
 import heros.solver.Pair;
+import soot.SootMethod;
+import soot.Unit;
+import soot.jimple.Stmt;
 import soot.jimple.infoflow.InfoflowManager;
 import soot.jimple.infoflow.collections.context.IntervalContext;
 import soot.jimple.infoflow.data.Abstraction;
@@ -13,9 +16,11 @@ import java.util.Set;
 
 public class LargerContextSubsumingStrategy implements SubsumingStrategy<Abstraction> {
     private final InfoflowManager manager;
+    private final Set<String> methods;
 
-    public LargerContextSubsumingStrategy(InfoflowManager manager) {
+    public LargerContextSubsumingStrategy(InfoflowManager manager, Set<String> methods) {
         this.manager = manager;
+        this.methods = methods;
     }
 
     protected int getContextSize(Abstraction abs) {
@@ -80,5 +85,42 @@ public class LargerContextSubsumingStrategy implements SubsumingStrategy<Abstrac
         }
 
         return curr;
+    }
+
+    @Override
+    public boolean affectsContext(Abstraction incoming, Abstraction outgoing) {
+        AccessPath inAp = incoming.getAccessPath();
+        AccessPath outAp = outgoing.getAccessPath();
+
+        int next = 0;
+        for (int i = 0; i < inAp.getFragmentCount(); i++) {
+            AccessPathFragment fIn = inAp.getFragments()[i];
+            // No context = nothing to check
+            if (!fIn.hasContext())
+                continue;
+
+            boolean found = false;
+            for (int j = next; j < outAp.getFragmentCount(); j++) {
+                if (fIn.equals(outAp.getFragments()[j])) {
+                    found = true;
+                    // Make sure the order of fragments is preserved
+                    next = j + 1;
+                    break;
+                }
+            }
+
+            // If we cannot find the contexts in the same order
+            // this statement affected the context
+            if (!found)
+                return true;
+        }
+
+        return false;
+    }
+
+    @Override
+    public boolean affectsContext(Unit unit) {
+        Stmt stmt = (Stmt) unit;
+        return stmt.containsInvokeExpr() && methods.contains(stmt.getInvokeExpr().getMethod().getSubSignature());
     }
 }

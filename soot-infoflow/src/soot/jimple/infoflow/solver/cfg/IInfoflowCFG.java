@@ -103,6 +103,14 @@ public interface IInfoflowCFG extends BiDiInterproceduralCFG<Unit, SootMethod> {
 	public UnitContainer getDominatorOf(Unit u);
 
 	/**
+	 * Get all dominators of the given unit.
+	 *
+	 * @param u The unit for which tot get the dominators
+	 * @return The dominators of the given unit
+	 */
+	public List<Unit> getAllDominators(Unit u);
+
+	/**
 	 * Reconstructs if the unit is inside a conditional.
 	 * Needed for implicit backwards on an unbalanced return into a method.
 	 *

@@ -25,6 +25,7 @@ import soot.jimple.infoflow.solver.EndSummary;
 import soot.jimple.infoflow.solver.IFollowReturnsPastSeedsHandler;
 import soot.jimple.infoflow.solver.IInfoflowSolver;
 import soot.jimple.infoflow.solver.SolverPeerGroup;
+import soot.jimple.infoflow.solver.cfg.IInfoflowCFG;
 import soot.jimple.infoflow.solver.executors.InterruptableExecutor;
 import soot.jimple.infoflow.solver.functions.SolverCallFlowFunction;
 import soot.jimple.infoflow.solver.functions.SolverCallToReturnFlowFunction;
@@ -38,7 +39,7 @@ import soot.jimple.toolkits.ide.icfg.BiDiInterproceduralCFG;
  * edges containing new taint information
  * 
  */
-public class InfoflowSolver extends FlowInsensitiveSolver<Unit, Abstraction, BiDiInterproceduralCFG<Unit, SootMethod>>
+public class InfoflowSolver extends FlowInsensitiveSolver<Unit, Abstraction, IInfoflowCFG>
 		implements IInfoflowSolver {
 
 	private IFollowReturnsPastSeedsHandler followReturnsPastSeedsHandler = null;

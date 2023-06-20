@@ -47,7 +47,7 @@ import soot.jimple.toolkits.ide.icfg.BiDiInterproceduralCFG;
  *
  */
 public abstract class AbstractInfoflowProblem
-		extends DefaultJimpleIFDSTabulationProblem<Abstraction, BiDiInterproceduralCFG<Unit, SootMethod>> {
+		extends DefaultJimpleIFDSTabulationProblem<Abstraction, IInfoflowCFG> {
 
 	protected final InfoflowManager manager;
 

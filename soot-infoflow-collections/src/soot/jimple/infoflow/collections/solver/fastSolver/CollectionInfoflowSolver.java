@@ -27,6 +27,10 @@ import soot.util.MultiMap;
 
 /**
  * Infoflow Solver that supports various optimizations for precisely tracking collection keys/indices
+ * - Supports widening on CallToReturn edges
+ * - Applies coarser summaries when possible
+ *
+ * TODO: data races on processCall?
  *
  * @author Tim Lange
  */
@@ -43,7 +47,7 @@ public class CollectionInfoflowSolver extends InfoflowSolver {
 	protected final MyConcurrentHashMap<Pair<SootMethod, Abstraction>,
 										MyConcurrentHashMap<Unit, MultiMap<Abstraction, Abstraction>>> myIncoming = new MyConcurrentHashMap<>();
 
-	// Collects all
+	// Collects all incoming abstractions with a context and maps them to the possible summaries
 	@SynchronizedBy("Thread-safe data structure")
 	protected final MultiMap<NoContextKey, Abstraction> incomingWContext = new ConcurrentHashMultiMap<>();
 

@@ -7,16 +7,14 @@ import heros.DontSynchronize;
 import heros.SynchronizedBy;
 import heros.solver.Pair;
 import heros.solver.PathEdge;
-import soot.SootClass;
-import soot.SootMethod;
-import soot.Unit;
-import soot.Value;
+import soot.*;
 import soot.jimple.ReturnStmt;
 import soot.jimple.Stmt;
 import soot.jimple.infoflow.InfoflowManager;
 import soot.jimple.infoflow.collections.data.CollectionMethod;
 import soot.jimple.infoflow.collections.data.CollectionModel;
 import soot.jimple.infoflow.collections.operations.ICollectionOperation;
+import soot.jimple.infoflow.collections.operations.LocationDependentOperation;
 import soot.jimple.infoflow.collections.operations.forward.AbstractShiftOperation;
 import soot.jimple.infoflow.collections.solver.fastSolver.CollectionInfoflowSolver;
 import soot.jimple.infoflow.collections.strategies.containers.ConstantStrategy;
@@ -79,7 +77,12 @@ public class CollectionTaintWrapper implements ITaintPropagationWrapper {
 								.map(CollectionMethod::getSubSignature) // get the subsig
 								.collect(Collectors.toUnmodifiableSet());
 		WideningStrategy<Unit, Abstraction> w = new WideningOnRevisitStrategy(manager, subSigs);
-		SubsumingStrategy<Abstraction> s = new LargerContextSubsumingStrategy(manager);
+		Set<String> allSubSigs = this.models.values().stream()
+				.flatMap(model -> model.getAllMethods().stream())
+				.filter(method -> Arrays.stream(method.operations()).anyMatch(op -> op instanceof LocationDependentOperation))
+				.map(CollectionMethod::getSubSignature) // get the subsig
+				.collect(Collectors.toUnmodifiableSet());
+		SubsumingStrategy<Abstraction> s = new LargerContextSubsumingStrategy(manager, allSubSigs);
 		if (manager.getMainSolver() instanceof CollectionInfoflowSolver) {
 			((CollectionInfoflowSolver) manager.getMainSolver()).setWideningStrategy(w);
 			((CollectionInfoflowSolver) manager.getMainSolver()).setSubsuming(s);
@@ -99,7 +102,7 @@ public class CollectionTaintWrapper implements ITaintPropagationWrapper {
 	}
 
 	protected IContainerStrategy getStrategy() {
-		return new ConstantStrategy(manager);
+		return new ConstantStrategy(manager, this);
 	}
 
 	private Set<Abstraction> fallbackTaintsForMethod(Stmt stmt, Abstraction d1, Abstraction taintedPath) {
@@ -215,7 +218,7 @@ public class CollectionTaintWrapper implements ITaintPropagationWrapper {
 		return outSet;
 	}
 
-	private CollectionMethod getCollectionMethodForSootMethod(SootMethod sm) {
+	public CollectionMethod getCollectionMethodForSootMethod(SootMethod sm) {
 		CollectionModel model = models.get(sm.getDeclaringClass().getName());
 		if (model != null) {
 			CollectionMethod cm = model.getMethod(sm.getSubSignature());

@@ -14,6 +14,10 @@ public class NoContextKey {
         this.hashCode = 0;
     }
 
+    public Abstraction getAbstraction() {
+        return this.abs;
+    }
+
     @Override
     public int hashCode() {
         if (hashCode != 0)

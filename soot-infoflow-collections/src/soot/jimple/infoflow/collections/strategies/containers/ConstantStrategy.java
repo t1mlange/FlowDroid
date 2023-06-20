@@ -1,28 +1,35 @@
 package soot.jimple.infoflow.collections.strategies.containers;
 
+import java.util.Arrays;
 import java.util.concurrent.ConcurrentHashMap;
 
 import soot.Local;
 import soot.SootMethod;
 import soot.Value;
 import soot.jimple.Constant;
+import soot.jimple.InstanceInvokeExpr;
 import soot.jimple.IntConstant;
 import soot.jimple.Stmt;
 import soot.jimple.infoflow.InfoflowManager;
+import soot.jimple.infoflow.collections.CollectionTaintWrapper;
 import soot.jimple.infoflow.collections.analyses.IntraproceduralListSizeAnalysis;
 import soot.jimple.infoflow.collections.context.IntervalContext;
 import soot.jimple.infoflow.collections.context.KeySetContext;
 import soot.jimple.infoflow.collections.context.UnknownContext;
+import soot.jimple.infoflow.collections.data.CollectionMethod;
+import soot.jimple.infoflow.collections.operations.LocationDependentOperation;
 import soot.jimple.infoflow.collections.util.Tristate;
 import soot.jimple.infoflow.data.ContextDefinition;
 
 public class ConstantStrategy implements IContainerStrategy {
     private final ConcurrentHashMap<SootMethod, IntraproceduralListSizeAnalysis> implicitIndices;
     private final InfoflowManager manager;
+    private final CollectionTaintWrapper ctw;
 
-    public ConstantStrategy(InfoflowManager manager) {
+    public ConstantStrategy(InfoflowManager manager, CollectionTaintWrapper ctw) {
         this.implicitIndices = new ConcurrentHashMap<>();
         this.manager = manager;
+        this.ctw = ctw;
     }
 
     @Override
@@ -118,5 +125,20 @@ public class ConstantStrategy implements IContainerStrategy {
         }
 
         return true;
+    }
+
+    @Override
+    public boolean stmtDependsOnContext(Stmt stmt) {
+        if (!stmt.containsInvokeExpr())
+            return false;
+        CollectionMethod cm = ctw.getCollectionMethodForSootMethod(stmt.getInvokeExpr().getMethod());
+        if (cm == null)
+            return false;
+
+        return Arrays.stream(cm.operations())
+                .filter(op -> op instanceof LocationDependentOperation)
+                .map(op -> ((LocationDependentOperation) op).buildContext(this,
+                        (InstanceInvokeExpr) stmt.getInvokeExpr(), stmt))
+                .anyMatch(ctxt -> ctxt != null && !shouldSmash(ctxt));
     }
 }
