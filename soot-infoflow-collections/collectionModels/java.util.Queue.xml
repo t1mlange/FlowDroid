@@ -1,0 +1,48 @@
+<?xml version="1.0" ?>
+
+<collectionModel class="java.util.Queue" type="position">
+    <method subsig="boolean add(java.lang.Object)">
+        <insert field="[java.util.Collection: java.lang.Object[] innerArray]">
+            <key idx="last" />
+            <data idx="0" />
+        </insert>
+    </method>
+    <method subsig="boolean offer(java.lang.Object)">
+        <insert field="[java.util.Collection: java.lang.Object[] innerArray]">
+            <key idx="last" />
+            <data idx="0" />
+        </insert>
+    </method>
+    <method subsig="java.lang.Object element()">
+        <access field="[java.util.Collection: java.lang.Object[] innerArray]">
+            <key idx="first" />
+        </access>
+    </method>
+    <method subsig="java.lang.Object peek()">
+        <access field="[java.util.Collection: java.lang.Object[] innerArray]">
+            <key idx="first" />
+        </access>
+    </method>
+    <method subsig="java.lang.Object poll()">
+        <remove field="[java.util.Collection: java.lang.Object[] innerArray]">
+            <key idx="first" />
+        </remove>
+        <access field="[java.util.Collection: java.lang.Object[] innerArray]">
+            <key idx="first" />
+        </access>
+        <shiftLeft field="[java.util.Collection: java.lang.Object[] innerArray]">
+            <key idx="first" />
+        </shiftLeft>
+    </method>
+    <method subsig="java.lang.Object remove()">
+        <remove field="[java.util.Collection: java.lang.Object[] innerArray]">
+            <key idx="first" />
+        </remove>
+        <access field="[java.util.Collection: java.lang.Object[] innerArray]">
+            <key idx="first" />
+        </access>
+        <shiftLeft field="[java.util.Collection: java.lang.Object[] innerArray]">
+            <key idx="first" />
+        </shiftLeft>
+    </method>
+</collectionModel>
