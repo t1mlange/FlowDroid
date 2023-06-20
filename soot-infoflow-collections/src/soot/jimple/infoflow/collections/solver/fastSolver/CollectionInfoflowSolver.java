@@ -296,8 +296,7 @@ public class CollectionInfoflowSolver extends InfoflowSolver {
 		return true;
 	}
 
-	@Override
-	protected void processExit(PathEdge<Unit, Abstraction> edge) {
+	private void processExitIFDSSolver(PathEdge<Unit, Abstraction> edge) {
 		final Unit n = edge.getTarget(); // an exit node; line 21...
 		SootMethod methodThatNeedsSummary = icfg.getMethodOf(n);
 
@@ -383,6 +382,23 @@ public class CollectionInfoflowSolver extends InfoflowSolver {
 						null);
 				retFunction.computeTargets(d2);
 			}
+		}
+	}
+
+	@Override
+	protected void processExit(PathEdge<Unit, Abstraction> edge) {
+		processExitIFDSSolver(edge);
+
+		if (followReturnsPastSeeds && followReturnsPastSeedsHandler != null) {
+			final Abstraction d1 = edge.factAtSource();
+			final Unit u = edge.getTarget();
+			final Abstraction d2 = edge.factAtTarget();
+
+			final SootMethod methodThatNeedsSummary = icfg.getMethodOf(u);
+			final Map<Unit, MultiMap<Abstraction, Abstraction>> inc = myIncoming(d1, methodThatNeedsSummary);
+
+			if (inc == null || inc.isEmpty())
+				followReturnsPastSeedsHandler.handleFollowReturnsPastSeeds(d1, u, d2);
 		}
 	}
 
