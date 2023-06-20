@@ -41,7 +41,7 @@ import soot.jimple.infoflow.solver.functions.SolverReturnFlowFunction;
 public class InfoflowSolver extends IFDSSolver<Unit, Abstraction, IInfoflowCFG>
 		implements IInfoflowSolver {
 
-	private IFollowReturnsPastSeedsHandler followReturnsPastSeedsHandler = null;
+	protected IFollowReturnsPastSeedsHandler followReturnsPastSeedsHandler = null;
 	private final AbstractInfoflowProblem problem;
 
 	public InfoflowSolver(AbstractInfoflowProblem problem, InterruptableExecutor executor) {
