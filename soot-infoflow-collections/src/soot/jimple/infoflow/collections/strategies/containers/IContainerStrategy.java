@@ -94,4 +94,6 @@ public interface IContainerStrategy {
      * @return true if context contains no useful information and thus, the collection should be smashed
      */
     boolean shouldSmash(ContextDefinition[] ctxts);
+
+    boolean stmtDependsOnContext(Stmt stmt);
 }

@@ -84,6 +84,16 @@ public class InfoflowCFG implements IInfoflowCFG {
 
 	protected final BiDiInterproceduralCFG<Unit, SootMethod> delegate;
 
+	protected final LoadingCache<Unit, MHGDominatorsFinder<Unit>> unitsToDominatorFinder = IDESolver.DEFAULT_CACHE_BUILDER
+			.build(new CacheLoader<Unit, MHGDominatorsFinder<Unit>>() {
+				@Override
+				public MHGDominatorsFinder<Unit> load(Unit unit) throws Exception {
+					SootMethod method = getMethodOf(unit);
+					DirectedGraph<Unit> graph = delegate.getOrCreateUnitGraph(method);
+					return new MHGDominatorsFinder<>(graph);
+				}
+			});
+
 	protected final LoadingCache<Unit, UnitContainer> unitsToDominator = IDESolver.DEFAULT_CACHE_BUILDER
 			.build(new CacheLoader<Unit, UnitContainer>() {
 				@Override
@@ -180,6 +190,11 @@ public class InfoflowCFG implements IInfoflowCFG {
 	@Override
 	public UnitContainer getDominatorOf(Unit u) {
 		return unitsToDominator.getUnchecked(u);
+	}
+
+	@Override
+	public List<Unit> getAllDominators(Unit u) {
+		return unitsToDominatorFinder.getUnchecked(u).getDominators(u);
 	}
 
 	// delegate methods follow

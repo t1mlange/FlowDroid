@@ -25,7 +25,7 @@ public abstract class LocationDependentOperation extends AbstractOperation {
         this.field = field;
     }
 
-    protected ContextDefinition[] buildContext(IContainerStrategy strategy, InstanceInvokeExpr iie, Stmt stmt) {
+    public ContextDefinition[] buildContext(IContainerStrategy strategy, InstanceInvokeExpr iie, Stmt stmt) {
         ContextDefinition[] ctxt = new ContextDefinition[locations.length];
         for (int i = 0; i < ctxt.length; i++) {
             int idx = locations[i].getParamIdx();
