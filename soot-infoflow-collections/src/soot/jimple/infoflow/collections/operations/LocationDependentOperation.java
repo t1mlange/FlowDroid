@@ -62,6 +62,12 @@ public abstract class LocationDependentOperation extends AbstractOperation {
 
     protected Tristate matchContexts(AccessPathFragment fragment, InstanceInvokeExpr iie, Stmt stmt,
                                      IContainerStrategy strategy, List<ContextDefinition> copied) {
+        return matchContexts(fragment, iie, stmt, strategy, copied);
+    }
+
+    protected Tristate matchContexts(AccessPathFragment fragment, InstanceInvokeExpr iie, Stmt stmt,
+                                     IContainerStrategy strategy, List<ContextDefinition> copied,
+                                     boolean isAlias) {
         Tristate state = Tristate.TRUE();
 
         // We only have to check the keys if we have a context
@@ -83,7 +89,8 @@ public abstract class LocationDependentOperation extends AbstractOperation {
                         // Go to the next key
                         continue;
                     case ParamIndex.LAST_INDEX:
-                        locFromStmt = strategy.getLastPosition(iie.getBase(), stmt);
+                        locFromStmt = isAlias ? strategy.getNextPosition(iie.getBase(), stmt)
+                                : strategy.getLastPosition(iie.getBase(), stmt);
                         break;
                     case ParamIndex.FIRST_INDEX:
                         locFromStmt = strategy.getFirstPosition(iie.getBase(), stmt);

@@ -50,7 +50,7 @@ public class AliasComputeOperation extends LocationDependentOperation {
                 if (fragment == null)
                     return false;
 
-                Tristate state = matchContexts(fragment, iie, stmt, strategy, null);
+                Tristate state = matchContexts(fragment, iie, stmt, strategy, null, true);
 
                 // Context doesn't match up
                 if (state.isFalse())
