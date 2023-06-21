@@ -35,7 +35,6 @@ public abstract class AbstractOperation implements ICollectionOperation {
         return ref.resolve();
     }
 
-
     protected Value getValueFromIndex(int idx, Stmt stmt) {
         Value value;
         switch (idx) {
