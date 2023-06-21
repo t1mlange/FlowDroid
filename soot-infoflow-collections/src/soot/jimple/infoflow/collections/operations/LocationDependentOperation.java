@@ -62,7 +62,7 @@ public abstract class LocationDependentOperation extends AbstractOperation {
 
     protected Tristate matchContexts(AccessPathFragment fragment, InstanceInvokeExpr iie, Stmt stmt,
                                      IContainerStrategy strategy, List<ContextDefinition> copied) {
-        return matchContexts(fragment, iie, stmt, strategy, copied);
+        return matchContexts(fragment, iie, stmt, strategy, copied, false);
     }
 
     protected Tristate matchContexts(AccessPathFragment fragment, InstanceInvokeExpr iie, Stmt stmt,
