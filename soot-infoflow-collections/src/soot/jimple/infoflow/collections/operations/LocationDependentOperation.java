@@ -30,9 +30,6 @@ public abstract class LocationDependentOperation extends AbstractOperation {
         for (int i = 0; i < ctxt.length; i++) {
             int idx = locations[i].getParamIdx();
             switch (idx) {
-                case ParamIndex.ALL:
-                case ParamIndex.COPY:
-                    throw new RuntimeException("Unexpected location index to build context: " + idx);
                 case ParamIndex.LAST_INDEX:
                     ctxt[i] = strategy.getNextPosition(iie.getBase(), stmt);
                     break;
@@ -43,9 +40,9 @@ public abstract class LocationDependentOperation extends AbstractOperation {
                     if (idx < 0)
                         throw new RuntimeException("Unknown location index supplied: " + idx);
                     if (locations[i].isValueBased())
-                        ctxt[i] = strategy.getIndexContext(iie.getArg(locations[i].getParamIdx()), stmt);
+                        ctxt[i] = strategy.getIndexContext(iie.getArg(idx), stmt);
                     else
-                        ctxt[i] = strategy.getKeyContext(iie.getArg(locations[i].getParamIdx()), stmt);
+                        ctxt[i] = strategy.getKeyContext(iie.getArg(idx), stmt);
                     break;
             }
         }
