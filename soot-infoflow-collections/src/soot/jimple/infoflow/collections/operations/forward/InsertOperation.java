@@ -13,7 +13,7 @@ import soot.jimple.infoflow.data.AccessPath;
 import soot.jimple.infoflow.data.ContextDefinition;
 
 public class InsertOperation extends LocationDependentOperation {
-    private final int data;
+    protected final int data;
 
     public InsertOperation(Location[] keys, int data, String field) {
         super(keys, field);
