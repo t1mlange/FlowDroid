@@ -10,12 +10,11 @@ import soot.jimple.infoflow.InfoflowConfiguration;
 import soot.jimple.infoflow.cfg.DefaultBiDiICFGFactory;
 import soot.jimple.infoflow.collections.CollectionTaintWrapper;
 import soot.jimple.infoflow.collections.parser.CollectionXMLParser;
-import soot.jimple.infoflow.collections.solver.fastSolver.CollectionInfoflowSolver;
+import soot.jimple.infoflow.collections.solver.fastSolver.CollectionInfoflowSolverCoarser;
 import soot.jimple.infoflow.collections.solver.fastSolver.executors.PriorityExecutorFactory;
 import soot.jimple.infoflow.problems.AbstractInfoflowProblem;
 import soot.jimple.infoflow.solver.IInfoflowSolver;
 import soot.jimple.infoflow.solver.executors.InterruptableExecutor;
-import soot.jimple.infoflow.taintWrappers.EasyTaintWrapper;
 
 public class EasyWrapperTests extends soot.jimple.infoflow.test.junit.EasyWrapperTests {
 	public EasyWrapperTests() throws IOException {
@@ -40,7 +39,7 @@ public class EasyWrapperTests extends soot.jimple.infoflow.test.junit.EasyWrappe
 			@Override
 			protected IInfoflowSolver createDataFlowSolver(InterruptableExecutor executor,
 														   AbstractInfoflowProblem problem, InfoflowConfiguration.SolverConfiguration solverConfig) {
-				return new CollectionInfoflowSolver(problem, executor);
+				return new CollectionInfoflowSolverCoarser(problem, executor);
 			}
 		};
 		result.setExecutorFactory(new PriorityExecutorFactory());

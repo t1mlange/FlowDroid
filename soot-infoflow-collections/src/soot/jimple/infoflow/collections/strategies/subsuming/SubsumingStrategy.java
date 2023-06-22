@@ -5,7 +5,7 @@ import soot.jimple.infoflow.data.Abstraction;
 
 import java.util.Set;
 
-public interface SubsumingStrategy<D> {
+public interface SubsumingStrategy<N, D> {
 
     /**
      * Defines an ordering of data flow facts to provide a priority for the worklist.
@@ -30,8 +30,8 @@ public interface SubsumingStrategy<D> {
 
     D removeContext(D fact);
 
-    Abstraction chooseContext(Set<Abstraction> availableContexts, Abstraction currentContext);
+    D chooseContext(Set<D> availableContexts, D currentContext);
 
-    boolean affectsContext(Abstraction incoming, Abstraction outgoing);
-    boolean affectsContext(Unit stmt);
+    boolean affectsContext(D incoming, D outgoing);
+    boolean affectsContext(N stmt);
 }

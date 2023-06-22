@@ -17,16 +17,14 @@ import java.util.Set;
  *
  * @author Tim Lange
  */
-public class WideningOnRevisitStrategy implements WideningStrategy<Unit, Abstraction> {
-	private final InfoflowManager manager;
-
+public class WideningOnRevisitStrategy extends AbstractWidening {
 	private final ConcurrentHashMultiMap<Unit, Abstraction> seenAbstractions;
 
 	// Contains all subsignatures that may result in an infinite domain
 	private final Set<String> subSigs;
 
 	public WideningOnRevisitStrategy(InfoflowManager manager, Set<String> subSigs) {
-		this.manager = manager;
+		super(manager);
 		this.seenAbstractions = new ConcurrentHashMultiMap<>();
 		this.subSigs = subSigs;
 	}
@@ -79,16 +77,5 @@ public class WideningOnRevisitStrategy implements WideningStrategy<Unit, Abstrac
 			return abs;
 
 		return forceWiden(abs, u);
-	}
-
-	@Override
-	public Abstraction forceWiden(Abstraction abs, Unit unit) {
-		AccessPathFragment[] oldFragments = abs.getAccessPath().getFragments();
-		AccessPathFragment[] fragments = new AccessPathFragment[oldFragments.length];
-		System.arraycopy(oldFragments, 1, fragments, 1, fragments.length - 1);
-		fragments[0] = oldFragments[0].copyWithNewContext(null);
-		AccessPath ap = manager.getAccessPathFactory().createAccessPath(abs.getAccessPath().getPlainValue(), fragments,
-				abs.getAccessPath().getTaintSubFields());
-		return abs.deriveNewAbstraction(ap, null);
 	}
 }

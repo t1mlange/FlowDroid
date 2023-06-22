@@ -24,7 +24,7 @@ import soot.jimple.infoflow.cfg.DefaultBiDiICFGFactory;
 import soot.jimple.infoflow.collections.CollectionTaintWrapper;
 import soot.jimple.infoflow.collections.StringResourcesResolver;
 import soot.jimple.infoflow.collections.parser.CollectionXMLParser;
-import soot.jimple.infoflow.collections.solver.fastSolver.CollectionInfoflowSolver;
+import soot.jimple.infoflow.collections.solver.fastSolver.CollectionInfoflowSolverCoarser;
 import soot.jimple.infoflow.methodSummary.taintWrappers.SummaryTaintWrapper;
 import soot.jimple.infoflow.methodSummary.taintWrappers.TaintWrapperFactory;
 import soot.jimple.infoflow.problems.AbstractInfoflowProblem;
@@ -139,7 +139,7 @@ public abstract class FlowDroidTests {
 			@Override
 			protected IInfoflowSolver createDataFlowSolver(InterruptableExecutor executor,
 					AbstractInfoflowProblem problem, InfoflowConfiguration.SolverConfiguration solverConfig) {
-				return new CollectionInfoflowSolver(problem, executor);
+				return new CollectionInfoflowSolverCoarser(problem, executor);
 			}
 		};
 		result.setThrowExceptions(true);
