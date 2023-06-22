@@ -14,7 +14,7 @@ import soot.jimple.infoflow.data.ContextDefinition;
 import java.util.Arrays;
 import java.util.Set;
 
-public class LargerContextSubsumingStrategy implements SubsumingStrategy<Abstraction> {
+public class LargerContextSubsumingStrategy implements SubsumingStrategy<Unit, Abstraction> {
     private final InfoflowManager manager;
     private final Set<String> methods;
 

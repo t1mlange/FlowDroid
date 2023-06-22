@@ -44,6 +44,13 @@ public class SummaryReuseTestCode {
         // getElementTwo now has a summary for lst[0,1]
         sink(getElementTwo(lst));
 
+        List<String> unneccesary = new LinkedList<>();
+        unneccesary.add(tainted); // after: [0,0]
+        unneccesary.add(new Random().nextInt(), "Some Element"); // after: [0,1]
+        unneccesary.add(new Random().nextInt(), "Some Element"); // after: [0,2]
+        // getElementTwo now has a summary for lst[0,2]
+//        sink(getElementTwo(lst2));
+
         List<String> lst2 = new LinkedList<>();
         lst2.add(tainted); // after: [0,0]
         lst2.add(new Random().nextInt(), "Some Element"); // after: [0,1]
@@ -62,12 +69,16 @@ public class SummaryReuseTestCode {
         // getElementTwo now has a summary for lst[0,1]
         sink(getElementTwo(lst));
 
+        System.out.println("Delay");
+
         List<String> lst2 = new LinkedList<>();
         lst2.add(tainted); // after: [0,0]
         lst2.add(new Random().nextInt(), "Some Element"); // after: [0,1]
         lst2.add(new Random().nextInt(), "Some Element"); // after: [0,2]
         // getElementTwo now has a summary for lst[0,2]
         sink(getElementTwo(lst2));
+
+        System.out.println("Delay");
 
         List<String> lst3 = new LinkedList<>();
         lst3.add(tainted); // after: [0,0]
@@ -87,5 +98,25 @@ public class SummaryReuseTestCode {
         else
             tainted = source();
         sink(id(tainted));
+    }
+
+    @FlowDroidTest(expected = 0)
+    public void testNarrowingOnIdentity() {
+        String tainted = source();
+        List<String> lst = new LinkedList<>();
+        lst.add(tainted); // after: [0,0]
+        lst.add(new Random().nextInt(), "Some Element"); // after: [0,1]
+        // getElementOne now has a summary for lst[0,1]
+        getElementOne(lst);
+
+        System.out.println("Delay");
+
+        List<String> lst2 = new LinkedList<>();
+        lst2.add(tainted); // after: [0,0]
+        lst2.add(1, "Some Element"); // after: [0,1]
+        // The identity summary of lst[0,1] is applied
+        getElementOne(lst2);
+        // The identity should be narrowed again after the call to lst2[0]
+        sink(lst2.get(1));
     }
 }
