@@ -84,6 +84,15 @@ public class AbstractingCollectionInfoflowSolver extends CollectionInfoflowSolve
         return reuseSet.remove(d1, p) && addIncoming(m, d3, n, d1, d2, d3);
     }
 
+    protected boolean incomingCOntains(SootMethod m, Abstraction d3a, Unit n, Abstraction d1, Abstraction d2, Abstraction d3) {
+        MyConcurrentHashMap<Unit, MultiMap<Abstraction, Pair<Abstraction, Abstraction>>> reuseSummaries
+                = myIncoming.putIfAbsentElseGet(new Pair<>(m, d3a), MyConcurrentHashMap::new);
+        MultiMap<Abstraction, Pair<Abstraction, Abstraction>> reuseSet = reuseSummaries.get(n);
+        Pair<Abstraction, Abstraction> p = new Pair<>(d2, d3);
+
+        return reuseSet.contains(d1, p);
+    }
+
     protected Map<Unit, MultiMap<Abstraction, Pair<Abstraction, Abstraction>>> myIncoming(Abstraction d1, SootMethod m) {
         return myIncoming.get(new Pair<>(m, d1));
     }
@@ -363,8 +372,8 @@ public class AbstractingCollectionInfoflowSolver extends CollectionInfoflowSolve
                 }
             }
 
+            currMethod = icfg.getMethodOf(curr.getCurrentStmt());
             curr = curr.getPredecessor();
-            currMethod = curr == null ? null : icfg.getMethodOf(curr.getCurrentStmt());
         }
     }
 
@@ -436,8 +445,14 @@ public class AbstractingCollectionInfoflowSolver extends CollectionInfoflowSolve
             SootMethod sm = icfg.getMethodOf(target);
             Local local = sourceVal.getAccessPath().getPlainValue();
             // Mark the combination of (method, parameter) as not reusable
-            if (notReusable.add(new Pair<>(sm, local)))
-                reinject(sourceVal, sm);
+
+            Abstraction cc = sourceVal;
+            while (cc != null) {
+                notReusable.add(new Pair<>(icfg.getMethodOf(cc.getCurrentStmt()), cc.getAccessPath().getPlainValue()));
+                cc = cc.getPredecessor();
+            }
+
+            reinject(sourceVal, sm);
         }
 
         super.propagate(sourceVal, target, targetVal, relatedCallSite, isUnbalancedReturn, scheduleTarget);

@@ -233,11 +233,11 @@ public class AbstractingTests extends FlowDroidTests {
     public void testReinjectInCallee1() {
         while (true) {
             IInfoflow infoflow = initInfoflow();
-//        infoflow.setTaintPropagationHandler(new DebugFlowFunctionTaintPropagationHandler());
+        infoflow.setTaintPropagationHandler(new DebugFlowFunctionTaintPropagationHandler());
             String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
             infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
             var set = infoflow.getResults().getResultSet();
-            Assert.assertEquals(0, set == null ? 0 : set.size());
+            Assert.assertEquals(getExpectedResultsForMethod(epoint), set == null ? 0 : set.size());
             Assert.assertFalse(hasDuplicateSinkInFlow(set));
         }
     }
