@@ -1,23 +1,15 @@
 package soot.jimple.infoflow.collections.strategies.containers;
 
 import java.util.Arrays;
-import java.util.concurrent.ConcurrentHashMap;
 
-import soot.Local;
-import soot.SootMethod;
 import soot.Value;
 import soot.jimple.Constant;
 import soot.jimple.InstanceInvokeExpr;
-import soot.jimple.IntConstant;
 import soot.jimple.Stmt;
-import soot.jimple.infoflow.InfoflowManager;
 import soot.jimple.infoflow.collections.CollectionTaintWrapper;
-import soot.jimple.infoflow.collections.analyses.IntraproceduralListSizeAnalysis;
-import soot.jimple.infoflow.collections.context.IntervalContext;
 import soot.jimple.infoflow.collections.context.KeySetContext;
 import soot.jimple.infoflow.collections.context.UnknownContext;
 import soot.jimple.infoflow.collections.data.CollectionMethod;
-import soot.jimple.infoflow.collections.data.CollectionModel;
 import soot.jimple.infoflow.collections.operations.LocationDependentOperation;
 import soot.jimple.infoflow.collections.util.Tristate;
 import soot.jimple.infoflow.data.ContextDefinition;

@@ -1,12 +1,11 @@
 package soot.jimple.infoflow.collections.solver.fastSolver;
 
-import soot.Unit;
-import soot.jimple.infoflow.collections.strategies.subsuming.SubsumingStrategy;
-import soot.toolkits.graph.DirectedGraph;
-
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.HashSet;
+
+import soot.jimple.infoflow.collections.strategies.subsuming.SubsumingStrategy;
+import soot.toolkits.graph.DirectedGraph;
 
 public class ContainerDependenceAnalysis {
     public static <N, D> boolean analyze(DirectedGraph<N> ug, SubsumingStrategy<N, D> subsuming) {
@@ -24,6 +23,6 @@ public class ContainerDependenceAnalysis {
                     worklist.add(succ);
         }
 
-        return true;
+        return false;
     }
 }

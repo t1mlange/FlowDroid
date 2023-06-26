@@ -1,28 +1,23 @@
 package soot.jimple.infoflow.collections.strategies.containers;
 
-import java.util.Arrays;
 import java.util.concurrent.ConcurrentHashMap;
 
 import soot.Local;
 import soot.SootMethod;
 import soot.Value;
-import soot.jimple.Constant;
-import soot.jimple.InstanceInvokeExpr;
 import soot.jimple.IntConstant;
 import soot.jimple.Stmt;
 import soot.jimple.infoflow.InfoflowManager;
 import soot.jimple.infoflow.collections.CollectionTaintWrapper;
-import soot.jimple.infoflow.collections.analyses.IntraproceduralListSizeAnalysis;
+import soot.jimple.infoflow.collections.analyses.ListSizeAnalysis;
 import soot.jimple.infoflow.collections.context.IntervalContext;
 import soot.jimple.infoflow.collections.context.KeySetContext;
 import soot.jimple.infoflow.collections.context.UnknownContext;
-import soot.jimple.infoflow.collections.data.CollectionMethod;
-import soot.jimple.infoflow.collections.operations.LocationDependentOperation;
 import soot.jimple.infoflow.collections.util.Tristate;
 import soot.jimple.infoflow.data.ContextDefinition;
 
 public class ConstantStrategy extends ConstantMapStrategy {
-    private final ConcurrentHashMap<SootMethod, IntraproceduralListSizeAnalysis> implicitIndices;
+    private final ConcurrentHashMap<SootMethod, ListSizeAnalysis> implicitIndices;
     private final InfoflowManager manager;
 
     public ConstantStrategy(InfoflowManager manager, CollectionTaintWrapper ctw) {
@@ -98,8 +93,8 @@ public class ConstantStrategy extends ConstantMapStrategy {
         if (value instanceof Local) {
             SootMethod currMethod = manager.getICFG().getMethodOf(stmt);
             var lstSizeAnalysis = implicitIndices.computeIfAbsent(currMethod,
-                    sm -> new IntraproceduralListSizeAnalysis(manager.getICFG().getOrCreateUnitGraph(sm)));
-            IntraproceduralListSizeAnalysis.ListSize size = lstSizeAnalysis.getFlowBefore(stmt).get(value);
+                    sm -> new ListSizeAnalysis(manager.getICFG().getOrCreateUnitGraph(sm)));
+            ListSizeAnalysis.ListSize size = lstSizeAnalysis.getFlowBefore(stmt).get(value);
             if (size != null && !size.isBottom()) {
                 return new IntervalContext(decr ? size.getSize() - 1 : size.getSize());
             }

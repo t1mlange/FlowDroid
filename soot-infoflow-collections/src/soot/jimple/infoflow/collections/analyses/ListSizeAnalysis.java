@@ -15,7 +15,7 @@ import soot.toolkits.scalar.ForwardFlowAnalysis;
  *
  * @author Tim Lange
  */
-public class IntraproceduralListSizeAnalysis extends ForwardFlowAnalysis<Unit, Map<Local, IntraproceduralListSizeAnalysis.ListSize>> {
+public class ListSizeAnalysis extends ForwardFlowAnalysis<Unit, Map<Local, ListSizeAnalysis.ListSize>> {
 
     /**
      *  NOT YET INITIALIZED OR NO LIST -> implicitly null
@@ -32,7 +32,11 @@ public class IntraproceduralListSizeAnalysis extends ForwardFlowAnalysis<Unit, M
             this.size = size;
         }
 
-        ListSize() {
+        static ListSize bottom() {
+            return new ListSize();
+        }
+
+        private ListSize() {
             isBottom = true;
         }
 
@@ -60,8 +64,8 @@ public class IntraproceduralListSizeAnalysis extends ForwardFlowAnalysis<Unit, M
         public boolean equals(Object o) {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
-            ListSize listSize = (ListSize) o;
-            return size == listSize.size && isBottom == listSize.isBottom;
+            ListSize other = (ListSize) o;
+            return size == other.size && isBottom == other.isBottom;
         }
 
         @Override
@@ -72,15 +76,16 @@ public class IntraproceduralListSizeAnalysis extends ForwardFlowAnalysis<Unit, M
 
     private final SootClass listClass;
 
-    private final Set<String> incrementors;
-
-    public IntraproceduralListSizeAnalysis(DirectedGraph<Unit> graph) {
-        super(graph);
-        listClass = Scene.v().getSootClassUnsafe("java.util.List");
-        incrementors = new HashSet<>();
+    private static final Set<String> incrementors = new HashSet<>();
+    static {
         incrementors.add("boolean add(java.lang.Object)");
         incrementors.add("java.lang.Object push(java.lang.Object)");
         incrementors.add("void addElement(java.lang.Object)");
+    }
+
+    public ListSizeAnalysis(DirectedGraph<Unit> graph) {
+        super(graph);
+        listClass = Scene.v().getSootClassUnsafe("java.util.List");
         doAnalysis();
     }
 
@@ -150,7 +155,7 @@ public class IntraproceduralListSizeAnalysis extends ForwardFlowAnalysis<Unit, M
             else if (in2Const == null || in1Const.equals(in2Const))
                 out.put(local, in1Const);
             else
-                out.put(local, new ListSize());
+                out.put(local, ListSize.bottom());
         }
     }
 

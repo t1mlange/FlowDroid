@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import heros.DontSynchronize;
 import heros.FlowFunction;
 import heros.SynchronizedBy;
 import heros.solver.Pair;
@@ -14,13 +13,10 @@ import heros.solver.PathEdge;
 import soot.SootMethod;
 import soot.Unit;
 import soot.jimple.infoflow.collect.MyConcurrentHashMap;
-import soot.jimple.infoflow.collections.strategies.subsuming.SubsumingStrategy;
-import soot.jimple.infoflow.collections.strategies.widening.WideningStrategy;
 import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.problems.AbstractInfoflowProblem;
 import soot.jimple.infoflow.solver.EndSummary;
 import soot.jimple.infoflow.solver.executors.InterruptableExecutor;
-import soot.jimple.infoflow.solver.fastSolver.InfoflowSolver;
 import soot.jimple.infoflow.solver.fastSolver.LocalWorklistTask;
 import soot.util.ConcurrentHashMultiMap;
 import soot.util.MultiMap;
@@ -34,7 +30,7 @@ import soot.util.MultiMap;
  *
  * @author Tim Lange
  */
-public class CollectionInfoflowSolverCoarser extends CollectionInfoflowSolver {
+public class CoarserReuseCollectionInfoflowSolver extends CollectionInfoflowSolver {
 	// We need to overwrite the default incoming, because we might have multiple elements per context
 	// e.g. when we add a more precise collection taint to use the summary of the coarser collection taint
 	@SynchronizedBy("Thread-safe data structure")
@@ -47,7 +43,7 @@ public class CollectionInfoflowSolverCoarser extends CollectionInfoflowSolver {
 
 	protected final MultiMap<NoContextKey, Abstraction> summariesWContext = new ConcurrentHashMultiMap<>();
 
-	public CollectionInfoflowSolverCoarser(AbstractInfoflowProblem problem, InterruptableExecutor executor) {
+	public CoarserReuseCollectionInfoflowSolver(AbstractInfoflowProblem problem, InterruptableExecutor executor) {
 		super(problem, executor);
 	}
 
@@ -124,30 +120,28 @@ public class CollectionInfoflowSolverCoarser extends CollectionInfoflowSolver {
 							if (d3 == null)
 								continue;
 
-							synchronized (this) {
-								// Maybe we already have seen a coarser taint for this method
-								if (subsuming != null && subsuming.hasContext(d3)) {
-									if (incomingContains(sCalledProcUnit, d3, n, d1, d2)) {
-										// If we were already here with the same (context, taint),
-										// we can skip the rest
+							// Maybe we already have seen a coarser taint for this method
+							if (subsuming != null && subsuming.hasContext(d3)) {
+								if (incomingContains(sCalledProcUnit, d3, n, d1, d2)) {
+									// If we were already here with the same (context, taint),
+									// we can skip the rest
+									continue;
+								}
+
+								// Incoming does not know this, maybe we have the same abstraction with a larger
+								// context for this, so we can skip this callee
+								Set<Abstraction> inc = incomingWContext.get(new NoContextKey(sCalledProcUnit, d3));
+								// If we already know the abstraction, we have a context, so we don't need to search
+								if (inc != null) {
+									Abstraction smallestExistingSum = subsuming.chooseContext(inc, d3);
+									if (smallestExistingSum != null) {
+										// Choose less precise incoming set instead of reanalyzing the method
+										addIncomingButNoSummary(sCalledProcUnit, smallestExistingSum, n, d1, d2);
+										applyEndSummaryOnCall(d1, n, d2, returnSiteUnits, sCalledProcUnit, d3);
+
+										// We have found a suiting coarser abstraction and thus, won't
+										// propagate this taint further in the callee.
 										continue;
-									}
-
-									// Incoming does not know this, maybe we have the same abstraction with a larger
-									// context for this, so we can skip this callee
-									Set<Abstraction> inc = incomingWContext.get(new NoContextKey(sCalledProcUnit, d3));
-									// If we already know the abstraction, we have a context, so we don't need to search
-									if (inc != null) {
-										Abstraction smallestExistingSum = subsuming.chooseContext(inc, d3);
-										if (smallestExistingSum != null) {
-											// Choose less precise incoming set instead of reanalyzing the method
-											addIncomingButNoSummary(sCalledProcUnit, smallestExistingSum, n, d1, d2);
-											applyEndSummaryOnCall(d1, n, d2, returnSiteUnits, sCalledProcUnit, d3);
-
-											// We have found a suiting coarser abstraction and thus, won't
-											// propagate this taint further in the callee.
-											continue;
-										}
 									}
 								}
 							}

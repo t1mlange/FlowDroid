@@ -1,12 +1,10 @@
 package soot.jimple.infoflow.collections.solver.fastSolver;
 
+import java.util.Map;
+
 import soot.jimple.Stmt;
-import soot.jimple.infoflow.collect.ConcurrentHashSet;
 import soot.jimple.infoflow.collect.MyConcurrentHashMap;
 import soot.jimple.infoflow.data.Abstraction;
-
-import java.util.Map;
-import java.util.Set;
 
 public class MethodCallback {
     static class Callback {

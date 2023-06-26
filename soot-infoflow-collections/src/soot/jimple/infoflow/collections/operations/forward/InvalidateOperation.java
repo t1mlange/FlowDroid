@@ -5,7 +5,6 @@ import java.util.Collection;
 import soot.SootField;
 import soot.Value;
 import soot.jimple.AssignStmt;
-import soot.jimple.InstanceInvokeExpr;
 import soot.jimple.Stmt;
 import soot.jimple.infoflow.InfoflowManager;
 import soot.jimple.infoflow.collections.operations.AbstractOperation;

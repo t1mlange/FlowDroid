@@ -14,17 +14,13 @@ import org.junit.Before;
 
 import soot.Scene;
 import soot.SootMethod;
-import soot.jimple.infoflow.AbstractInfoflow;
-import soot.jimple.infoflow.IInfoflow;
-import soot.jimple.infoflow.Infoflow;
-import soot.jimple.infoflow.InfoflowConfiguration;
-import soot.jimple.infoflow.InfoflowManager;
+import soot.jimple.infoflow.*;
 import soot.jimple.infoflow.android.SetupApplication;
 import soot.jimple.infoflow.cfg.DefaultBiDiICFGFactory;
 import soot.jimple.infoflow.collections.CollectionTaintWrapper;
 import soot.jimple.infoflow.collections.StringResourcesResolver;
 import soot.jimple.infoflow.collections.parser.CollectionXMLParser;
-import soot.jimple.infoflow.collections.solver.fastSolver.CollectionInfoflowSolverCoarser;
+import soot.jimple.infoflow.collections.solver.fastSolver.CoarserReuseCollectionInfoflowSolver;
 import soot.jimple.infoflow.methodSummary.taintWrappers.SummaryTaintWrapper;
 import soot.jimple.infoflow.methodSummary.taintWrappers.TaintWrapperFactory;
 import soot.jimple.infoflow.problems.AbstractInfoflowProblem;
@@ -139,7 +135,7 @@ public abstract class FlowDroidTests {
 			@Override
 			protected IInfoflowSolver createDataFlowSolver(InterruptableExecutor executor,
 					AbstractInfoflowProblem problem, InfoflowConfiguration.SolverConfiguration solverConfig) {
-				return new CollectionInfoflowSolverCoarser(problem, executor);
+				return new CoarserReuseCollectionInfoflowSolver(problem, executor);
 			}
 		};
 		result.setThrowExceptions(true);

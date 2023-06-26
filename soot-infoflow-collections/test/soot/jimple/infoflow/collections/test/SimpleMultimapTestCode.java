@@ -1,13 +1,14 @@
 package soot.jimple.infoflow.collections.test;
 
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
-import soot.jimple.infoflow.collections.test.junit.FlowDroidTest;
+import static soot.jimple.infoflow.collections.test.Helper.sink;
+import static soot.jimple.infoflow.collections.test.Helper.source;
 
 import java.util.Collection;
 
-import static soot.jimple.infoflow.collections.test.Helper.sink;
-import static soot.jimple.infoflow.collections.test.Helper.source;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
+
+import soot.jimple.infoflow.collections.test.junit.FlowDroidTest;
 
 public class SimpleMultimapTestCode {
     class A {

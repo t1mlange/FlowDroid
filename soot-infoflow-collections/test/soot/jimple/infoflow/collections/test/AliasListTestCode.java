@@ -1,12 +1,12 @@
 package soot.jimple.infoflow.collections.test;
 
-import soot.jimple.infoflow.collections.test.junit.FlowDroidTest;
+import static soot.jimple.infoflow.collections.test.Helper.sink;
+import static soot.jimple.infoflow.collections.test.Helper.source;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static soot.jimple.infoflow.collections.test.Helper.sink;
-import static soot.jimple.infoflow.collections.test.Helper.source;
+import soot.jimple.infoflow.collections.test.junit.FlowDroidTest;
 
 public class AliasListTestCode {
     List<String> alias;

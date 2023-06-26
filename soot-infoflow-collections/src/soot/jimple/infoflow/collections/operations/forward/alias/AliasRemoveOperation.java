@@ -1,13 +1,13 @@
 package soot.jimple.infoflow.collections.operations.forward.alias;
 
+import java.util.Collection;
+
 import soot.jimple.Stmt;
 import soot.jimple.infoflow.InfoflowManager;
 import soot.jimple.infoflow.collections.data.Location;
 import soot.jimple.infoflow.collections.operations.LocationDependentOperation;
- import soot.jimple.infoflow.collections.strategies.containers.IContainerStrategy;
+import soot.jimple.infoflow.collections.strategies.containers.IContainerStrategy;
 import soot.jimple.infoflow.data.Abstraction;
-
-import java.util.Collection;
 
 public class AliasRemoveOperation extends LocationDependentOperation {
     public AliasRemoveOperation(Location[] keys, String field) {

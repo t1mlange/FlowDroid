@@ -1,11 +1,11 @@
 package soot.jimple.infoflow.collections.strategies.widening;
 
+import java.util.Set;
+
 import soot.Unit;
 import soot.jimple.Stmt;
 import soot.jimple.infoflow.InfoflowManager;
 import soot.jimple.infoflow.data.Abstraction;
-
-import java.util.Set;
 
 /**
  * Widens at each shift operation
