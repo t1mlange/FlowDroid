@@ -27,7 +27,7 @@ import soot.jimple.infoflow.solver.executors.InterruptableExecutor;
 public class AbstractingTests extends FlowDroidTests {
     /**
      * TaintPropagationHandler that sleeps on System.out.println.
-     * Use to enforce that a end summary is used
+     * Use to enforce that an end summary is used
      */
     private static class DelayOnPrintln implements TaintPropagationHandler {
         @Override
@@ -106,6 +106,11 @@ public class AbstractingTests extends FlowDroidTests {
         result.setTaintWrapper(getTaintWrapper());
         setConfiguration(result.getConfig());
 
+        SequentialTaintPropagationHandler tpg = new SequentialTaintPropagationHandler();
+        tpg.addHandler(new EnsureOnlyOneContext());
+        tpg.addHandler(new DelayOnPrintln());
+        result.setTaintPropagationHandler(tpg);
+
         return result;
     }
 
@@ -140,7 +145,6 @@ public class AbstractingTests extends FlowDroidTests {
     @Test(timeout = 30000)
     public void testReuse1() {
         IInfoflow infoflow = initInfoflow();
-        infoflow.setTaintPropagationHandler(new EnsureOnlyOneContext());
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
         var set = infoflow.getResults().getResultSet();
@@ -152,7 +156,6 @@ public class AbstractingTests extends FlowDroidTests {
     @Test(timeout = 30000)
     public void testReuse2() {
         IInfoflow infoflow = initInfoflow();
-        infoflow.setTaintPropagationHandler(new EnsureOnlyOneContext());
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
         var set = infoflow.getResults().getResultSet();
@@ -164,10 +167,6 @@ public class AbstractingTests extends FlowDroidTests {
     @Test(timeout = 30000)
     public void testReuse3() {
         IInfoflow infoflow = initInfoflow();
-        SequentialTaintPropagationHandler tpg = new SequentialTaintPropagationHandler();
-        tpg.addHandler(new EnsureOnlyOneContext());
-        tpg.addHandler(new DelayOnPrintln());
-        infoflow.setTaintPropagationHandler(tpg);
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
         var set = infoflow.getResults().getResultSet();
@@ -178,10 +177,49 @@ public class AbstractingTests extends FlowDroidTests {
     @Test(timeout = 30000)
     public void testReuse4() {
         IInfoflow infoflow = initInfoflow();
-        SequentialTaintPropagationHandler tpg = new SequentialTaintPropagationHandler();
-        tpg.addHandler(new EnsureOnlyOneContext());
-        tpg.addHandler(new DelayOnPrintln());
-        infoflow.setTaintPropagationHandler(tpg);
+        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
+        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
+        var set = infoflow.getResults().getResultSet();
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), set == null ? 0 : set.size());
+        Assert.assertFalse(hasDuplicateSinkInFlow(set));
+    }
+
+    @Test(timeout = 30000)
+    public void testGet1() {
+        IInfoflow infoflow = initInfoflow();
+        infoflow.getConfig().setWriteOutputFiles(true);
+        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
+        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
+        var set = infoflow.getResults().getResultSet();
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), set == null ? 0 : set.size());
+        Assert.assertFalse(hasDuplicateSourceInFlow(set));
+        Assert.assertFalse(hasDuplicateSinkInFlow(set));
+    }
+
+    @Test(timeout = 30000)
+    public void testGet2() {
+        IInfoflow infoflow = initInfoflow();
+        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
+        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
+        var set = infoflow.getResults().getResultSet();
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), set == null ? 0 : set.size());
+        Assert.assertFalse(hasDuplicateSinkInFlow(set));
+    }
+
+    @Test(timeout = 30000)
+    public void testRemove1() {
+        IInfoflow infoflow = initInfoflow();
+        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
+        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
+        var set = infoflow.getResults().getResultSet();
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), set == null ? 0 : set.size());
+        Assert.assertFalse(hasDuplicateSourceInFlow(set));
+        Assert.assertFalse(hasDuplicateSinkInFlow(set));
+    }
+
+    @Test(timeout = 30000)
+    public void testRemove2() {
+        IInfoflow infoflow = initInfoflow();
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
         var set = infoflow.getResults().getResultSet();

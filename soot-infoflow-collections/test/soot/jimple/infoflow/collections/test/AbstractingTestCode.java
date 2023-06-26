@@ -17,6 +17,14 @@ public class AbstractingTestCode {
         return sb.toString();
     }
 
+    String getXXX(Map<String, String> map) {
+        return map.get("XXX");
+    }
+
+    String removeXXX(Map<String, String> map) {
+        return map.get("XXX");
+    }
+
     @FlowDroidTest(expected = 2)
     public void testReuse1() {
         Map<String, String> map = new HashMap<>();
@@ -38,7 +46,6 @@ public class AbstractingTestCode {
 
         Map<String, String> map2 = new HashMap<>();
         map2.put("YYY", source());
-        unusedContext1(map2);
         sink(unusedContext1(map2));
     }
 
@@ -69,7 +76,58 @@ public class AbstractingTestCode {
 
         Map<String, String> map2 = new HashMap<>();
         map2.put("YYY", tainted);
-        unusedContext1(map2);
         sink(unusedContext1(map2));
+    }
+
+    @FlowDroidTest(expected = 1)
+    public void testGet1() {
+        Map<String, String> map = new HashMap<>();
+        map.put("XXX", source());
+        sink(getXXX(map));
+
+
+        Map<String, String> map2 = new HashMap<>();
+        map2.put("YYY", source());
+        sink(getXXX(map2));
+    }
+
+    @FlowDroidTest(expected = 1)
+    public void testGet2() {
+        Map<String, String> map = new HashMap<>();
+        String tainted = source();
+        map.put("XXX", tainted);
+        sink(getXXX(map));
+
+        System.out.println("Delay");
+
+        Map<String, String> map2 = new HashMap<>();
+        map2.put("YYY", tainted);
+        sink(getXXX(map2));
+    }
+
+    @FlowDroidTest(expected = 1)
+    public void testRemove1() {
+        Map<String, String> map = new HashMap<>();
+        map.put("XXX", source());
+        sink(removeXXX(map));
+
+
+        Map<String, String> map2 = new HashMap<>();
+        map2.put("YYY", source());
+        sink(removeXXX(map2));
+    }
+
+    @FlowDroidTest(expected = 1)
+    public void testRemove2() {
+        Map<String, String> map = new HashMap<>();
+        String tainted = source();
+        map.put("XXX", tainted);
+        sink(removeXXX(map));
+
+        System.out.println("Delay");
+
+        Map<String, String> map2 = new HashMap<>();
+        map2.put("YYY", tainted);
+        sink(removeXXX(map2));
     }
 }

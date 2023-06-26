@@ -80,8 +80,8 @@ public class AbstractingCollectionInfoflowSolver extends CollectionInfoflowSolve
                 = myIncoming.putIfAbsentElseGet(new Pair<>(m, d3a), MyConcurrentHashMap::new);
         MultiMap<Abstraction, Pair<Abstraction, Abstraction>> reuseSet = reuseSummaries.get(n);
         Pair<Abstraction, Abstraction> p = new Pair<>(d2, d3);
-        if (reuseSet != null)
-            reuseSet.remove(d1, p);
+        assert reuseSet != null;
+        reuseSet.remove(d1, p);
 
         return addIncoming(m, d3, n, d1, d2, d3);
     }
@@ -144,6 +144,7 @@ public class AbstractingCollectionInfoflowSolver extends CollectionInfoflowSolve
                                     } else {
                                         // Add the current abstraction into the incoming set of a similar abstraction
                                         addIncoming(sCalledProcN, prevSeenAbs, n, d1, d2, d3);
+
                                         // And do not propagate the abstraction in the caller but rather hope that
                                         // the similar abstraction can be reused in its summary
                                         applyEndSummaryOnCallWith(d1, n, d2, returnSiteNs, sCalledProcN, d3, prevSeenAbs);
@@ -201,23 +202,6 @@ public class AbstractingCollectionInfoflowSolver extends CollectionInfoflowSolve
         applyEndSummaryOnCallWith(d1, callSite, d2, returnSiteNs, callee, d3, d3);
     }
 
-    @Override
-    protected boolean addEndSummary(SootMethod m, Abstraction d1, Unit eP, Abstraction d2) {
-        if (d1 == zeroValue)
-            return false;
-
-        Map<EndSummary<Unit, Abstraction>, EndSummary<Unit, Abstraction>> summaries = endSummary.putIfAbsentElseGet(new Pair<>(m, d1),
-                () -> new ConcurrentHashMap<>());
-        EndSummary<Unit, Abstraction> newSummary = new EndSummary<>(eP, d2, d1);
-        EndSummary<Unit, Abstraction> existingSummary = summaries.putIfAbsent(newSummary, newSummary);
-        if (existingSummary != null) {
-            existingSummary.calleeD1.addNeighbor(d2);
-            return false;
-        }
-
-        return true;
-    }
-
     private void processExitIFDSSolver(PathEdge<Unit, Abstraction> edge) {
         final Unit n = edge.getTarget(); // an exit node; line 21...
         SootMethod methodThatNeedsSummary = icfg.getMethodOf(n);
@@ -262,7 +246,7 @@ public class AbstractingCollectionInfoflowSolver extends CollectionInfoflowSolve
                                     d1new = narrowAbs; // Replace the calling context
                                     // Special case: if we have an identity flow, we can skip diffing access paths
                                     d2new = d1.equals(d2) ? narrowAbs : subsuming.applyDiffOf(d1, d2, narrowAbs);
-//                                    d4new = predVal;
+                                    d4new = predVal;
                                 }
 
                                 // for each incoming-call value
@@ -344,11 +328,52 @@ public class AbstractingCollectionInfoflowSolver extends CollectionInfoflowSolve
         throw new RuntimeException("Use applyEndSummaryOnCallWith instead");
     }
 
+    private void reinject(Abstraction sourceVal, SootMethod sm) {
+        Map<Unit, MultiMap<Abstraction, Pair<Abstraction, Abstraction>>> inc = myIncoming(sourceVal, sm);
+        if (inc != null && !inc.isEmpty()) {
+            for (Unit u : inc.keySet()) {
+                MultiMap<Abstraction, Pair<Abstraction, Abstraction>> map = inc.get(u);
+                if (map == null)
+                    continue;
+
+                for (Abstraction d1 : map.keySet()) {
+                    Set<Pair<Abstraction, Abstraction>> pairs = map.get(d1);
+                    if (pairs == null)
+                        break;
+                    for (Pair<Abstraction, Abstraction> pair : pairs) {
+                        Abstraction d2 = pair.getO1();
+                        Abstraction d3 = pair.getO2();
+                        // The exemplary context propagated in the callee is still valid, only
+                        // all similar abstractions are not
+                        if (d3 != sourceVal) {
+                            // Reinject the similar abstractions at the method start
+                            if (!removeAndAddIncoming(sm, sourceVal, u, d1, d2, d3))
+                                continue;
+
+                            for (Unit sP : icfg.getStartPointsOf(sm)) {
+                                // create initial self-loop
+                                schedulingStrategy.propagateCallFlow(d3, sP, d3, u, false); // line 15
+                            }
+
+                            applyEndSummaryOnCallWith(d1, u, d2, icfg.getReturnSitesOfCallAt(u), sm, d3, d3);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     protected void applyEndSummaryOnCallWith(final Abstraction d1, final Unit n, final Abstraction d2, Collection<Unit> returnSiteNs,
                                      SootMethod sCalledProcN, Abstraction d3, Abstraction summaryQuery) {
         // line 15.2
         Set<EndSummary<Unit, Abstraction>> endSumm = endSummary(sCalledProcN, summaryQuery);
         boolean reuseOfSummary = d3 != summaryQuery;
+
+        Local local = d3.getAccessPath().getPlainValue();
+        // If the combination of (method, parameter) is not reusable, exit here
+        if (notReusable.contains(new Pair<>(sCalledProcN, local))) {
+            return;
+        }
 
         // still line 15.2 of Naeem/Lhotak/Rodriguez
         // for each already-queried exit value <eP,d4> reachable
@@ -401,44 +426,13 @@ public class AbstractingCollectionInfoflowSolver extends CollectionInfoflowSolve
     protected void propagate(Abstraction sourceVal, Unit target, Abstraction targetVal,
             /* deliberately exposed to clients */ Unit relatedCallSite,
             /* deliberately exposed to clients */ boolean isUnbalancedReturn, ScheduleTarget scheduleTarget) {
-        if (subsuming.affectsContext(target)) {
+        // Mark (method, param) as not reusable if needed
+        if (sourceVal != zeroValue && subsuming.affectsContext(target)) {
             SootMethod sm = icfg.getMethodOf(target);
             Local local = sourceVal.getAccessPath().getPlainValue();
             // Mark the combination of (method, parameter) as not reusable
-            notReusable.add(new Pair<>(sm, local));
-
-            Map<Unit, MultiMap<Abstraction, Pair<Abstraction, Abstraction>>> inc = myIncoming(sourceVal, sm);
-            if (inc != null && !inc.isEmpty()) {
-                for (Unit u : inc.keySet()) {
-                    MultiMap<Abstraction, Pair<Abstraction, Abstraction>> map = inc.get(u);
-                    if (map == null)
-                        continue;
-
-                    for (Abstraction d1 : map.keySet()) {
-                        Set<Pair<Abstraction, Abstraction>> pairs = map.get(d1);
-                        if (pairs == null)
-                            break;
-                        for (Pair<Abstraction, Abstraction> pair : pairs) {
-                            Abstraction d2 = pair.getO2();
-                            Abstraction d3 = pair.getO2();
-                            // The exemplary context propagated in the callee is still valid, only
-                            // all similar abstractions are not
-                            if (d3 != sourceVal) {
-                                // Reinject the similar abstractions at the method start
-                                if (!removeAndAddIncoming(sm, d3, u, d1, d2, d3))
-                                    continue;
-
-                                for (Unit sP : icfg.getStartPointsOf(sm)) {
-                                    // create initial self-loop
-                                    schedulingStrategy.propagateCallFlow(d3, sP, d3, u, false); // line 15
-                                }
-
-                                applyEndSummaryOnCallWith(d1, u, d2, icfg.getReturnSitesOfCallAt(u), sm, d3, d3);
-                            }
-                        }
-                    }
-                }
-            }
+            if (notReusable.add(new Pair<>(sm, local)))
+                reinject(sourceVal, sm);
         }
 
         super.propagate(sourceVal, target, targetVal, relatedCallSite, isUnbalancedReturn, scheduleTarget);
