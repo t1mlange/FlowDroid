@@ -130,4 +130,64 @@ public class AbstractingTestCode {
         map2.put("YYY", tainted);
         sink(removeXXX(map2));
     }
+
+    private String badCallee1(Map<String, String> map) {
+        return getXXX(map);
+    }
+
+    private String badCallee2(Map<String, String> map) {
+        return removeXXX(map);
+    }
+
+    @FlowDroidTest(expected = 1)
+    public void testReinjectInCallee1() {
+        Map<String, String> map = new HashMap<>();
+        map.put("XXX", source());
+        sink(badCallee1(map));
+
+
+        Map<String, String> map2 = new HashMap<>();
+        map2.put("YYY", source());
+        sink(badCallee1(map2));
+    }
+
+    @FlowDroidTest(expected = 1)
+    public void testReinjectInCallee2() {
+        Map<String, String> map = new HashMap<>();
+        String tainted = source();
+        map.put("XXX", tainted);
+        sink(badCallee1(map));
+
+        System.out.println("Delay");
+
+        Map<String, String> map2 = new HashMap<>();
+        map2.put("YYY", tainted);
+        sink(badCallee1(map2));
+    }
+
+    @FlowDroidTest(expected = 1)
+    public void testReinjectInCallee3() {
+        Map<String, String> map = new HashMap<>();
+        map.put("XXX", source());
+        sink(badCallee2(map));
+
+
+        Map<String, String> map2 = new HashMap<>();
+        map2.put("YYY", source());
+        sink(badCallee2(map2));
+    }
+
+    @FlowDroidTest(expected = 1)
+    public void testReinjectInCallee4() {
+        Map<String, String> map = new HashMap<>();
+        String tainted = source();
+        map.put("XXX", tainted);
+        sink(badCallee2(map));
+
+        System.out.println("Delay");
+
+        Map<String, String> map2 = new HashMap<>();
+        map2.put("YYY", tainted);
+        sink(badCallee2(map2));
+    }
 }

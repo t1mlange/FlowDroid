@@ -3,7 +3,6 @@ package soot.jimple.infoflow.collections.test.junit;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.Assert;
 import org.junit.Assume;
@@ -17,12 +16,14 @@ import soot.jimple.infoflow.cfg.DefaultBiDiICFGFactory;
 import soot.jimple.infoflow.collections.solver.fastSolver.AbstractingCollectionInfoflowSolver;
 import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.data.AccessPathFragment;
+import soot.jimple.infoflow.data.ContextDefinition;
 import soot.jimple.infoflow.handlers.SequentialTaintPropagationHandler;
 import soot.jimple.infoflow.handlers.TaintPropagationHandler;
 import soot.jimple.infoflow.problems.AbstractInfoflowProblem;
 import soot.jimple.infoflow.results.DataFlowResult;
 import soot.jimple.infoflow.solver.IInfoflowSolver;
 import soot.jimple.infoflow.solver.executors.InterruptableExecutor;
+import soot.jimple.infoflow.util.DebugFlowFunctionTaintPropagationHandler;
 
 public class AbstractingTests extends FlowDroidTests {
     /**
@@ -42,7 +43,7 @@ public class AbstractingTests extends FlowDroidTests {
             try {
                 Thread.sleep(3000);
             } catch (InterruptedException e) {
-                Assume.assumeTrue("Sleeping failed, test might not work!", false);
+                Assume.assumeTrue("Sleeping failed, test might not work!", true);
             }
         }
 
@@ -57,7 +58,7 @@ public class AbstractingTests extends FlowDroidTests {
      * two different context definitions
      */
     private static class EnsureOnlyOneContext implements TaintPropagationHandler {
-        final AtomicBoolean seenContext = new AtomicBoolean(false);
+        ContextDefinition[] seenContext = null;
         @Override
         public void notifyFlowIn(Unit stmt, Abstraction taint, InfoflowManager manager, TaintPropagationHandler.FlowFunctionType
         type) {
@@ -74,10 +75,11 @@ public class AbstractingTests extends FlowDroidTests {
             if (f == null || !f.hasContext())
                 return;
 
-            boolean oldValue = seenContext.getAndSet(true);
-            // Assert that we only see one context, i.e. reuse the summary
-            if (!oldValue)
-                Assert.assertFalse(oldValue);
+            synchronized (this) {
+                if (seenContext == null)
+                    seenContext = f.getContext();
+                Assert.assertArrayEquals(seenContext, f.getContext());
+            }
         }
 
         @Override
@@ -219,6 +221,49 @@ public class AbstractingTests extends FlowDroidTests {
 
     @Test(timeout = 30000)
     public void testRemove2() {
+        IInfoflow infoflow = initInfoflow();
+        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
+        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
+        var set = infoflow.getResults().getResultSet();
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), set == null ? 0 : set.size());
+        Assert.assertFalse(hasDuplicateSinkInFlow(set));
+    }
+
+    @Test//(timeout = 30000)
+    public void testReinjectInCallee1() {
+        while (true) {
+            IInfoflow infoflow = initInfoflow();
+//        infoflow.setTaintPropagationHandler(new DebugFlowFunctionTaintPropagationHandler());
+            String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
+            infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
+            var set = infoflow.getResults().getResultSet();
+            Assert.assertEquals(0, set == null ? 0 : set.size());
+            Assert.assertFalse(hasDuplicateSinkInFlow(set));
+        }
+    }
+
+    @Test(timeout = 30000)
+    public void testReinjectInCallee2() {
+        IInfoflow infoflow = initInfoflow();
+        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
+        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
+        var set = infoflow.getResults().getResultSet();
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), set == null ? 0 : set.size());
+        Assert.assertFalse(hasDuplicateSinkInFlow(set));
+    }
+
+    @Test(timeout = 30000)
+    public void testReinjectInCallee3() {
+        IInfoflow infoflow = initInfoflow();
+        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
+        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
+        var set = infoflow.getResults().getResultSet();
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), set == null ? 0 : set.size());
+        Assert.assertFalse(hasDuplicateSinkInFlow(set));
+    }
+
+    @Test(timeout = 30000)
+    public void testReinjectInCallee4() {
         IInfoflow infoflow = initInfoflow();
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
