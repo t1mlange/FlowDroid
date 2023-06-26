@@ -1,7 +1,6 @@
 package soot.jimple.infoflow.collections.operations.forward;
 
 import java.util.Collection;
-import java.util.HashSet;
 
 import heros.solver.PathEdge;
 import soot.Local;

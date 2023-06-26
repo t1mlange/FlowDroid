@@ -1,9 +1,9 @@
 package soot.jimple.infoflow.collections.strategies.subsuming;
 
+import java.util.Set;
+
 import soot.jimple.infoflow.InfoflowManager;
 import soot.jimple.infoflow.data.Abstraction;
-
-import java.util.Set;
 
 public class CoarserSubsumingStrategy extends LargerContextSubsumingStrategy {
     public CoarserSubsumingStrategy(InfoflowManager manager, Set<String> methods) {

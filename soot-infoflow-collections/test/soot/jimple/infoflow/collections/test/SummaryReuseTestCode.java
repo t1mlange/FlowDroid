@@ -1,13 +1,13 @@
 package soot.jimple.infoflow.collections.test;
 
-import soot.jimple.infoflow.collections.test.junit.FlowDroidTest;
+import static soot.jimple.infoflow.collections.test.Helper.sink;
+import static soot.jimple.infoflow.collections.test.Helper.source;
 
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
-import static soot.jimple.infoflow.collections.test.Helper.sink;
-import static soot.jimple.infoflow.collections.test.Helper.source;
+import soot.jimple.infoflow.collections.test.junit.FlowDroidTest;
 
 public class SummaryReuseTestCode {
     private String getElementOne(List<String> lst) {

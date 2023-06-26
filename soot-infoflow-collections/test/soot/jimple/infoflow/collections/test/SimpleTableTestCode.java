@@ -1,14 +1,15 @@
 package soot.jimple.infoflow.collections.test;
 
-import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.Table;
-import soot.jimple.infoflow.collections.test.junit.FlowDroidTest;
+import static soot.jimple.infoflow.collections.test.Helper.sink;
+import static soot.jimple.infoflow.collections.test.Helper.source;
 
 import java.util.Map;
 import java.util.Set;
 
-import static soot.jimple.infoflow.collections.test.Helper.sink;
-import static soot.jimple.infoflow.collections.test.Helper.source;
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Table;
+
+import soot.jimple.infoflow.collections.test.junit.FlowDroidTest;
 
 public class SimpleTableTestCode {
 

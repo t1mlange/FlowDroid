@@ -1,12 +1,13 @@
 package soot.jimple.infoflow.collections.test.junit;
 
-import org.junit.Assert;
-import org.junit.Test;
-import soot.jimple.infoflow.collections.data.CollectionModel;
-import soot.jimple.infoflow.collections.parser.CollectionXMLParser;
-
 import java.io.IOException;
 import java.util.Map;
+
+import org.junit.Assert;
+import org.junit.Test;
+
+import soot.jimple.infoflow.collections.data.CollectionModel;
+import soot.jimple.infoflow.collections.parser.CollectionXMLParser;
 
 public class XMLParserTests {
     private static final String MAP_GET_SUBSIG = "java.lang.Object get(java.lang.Object)";

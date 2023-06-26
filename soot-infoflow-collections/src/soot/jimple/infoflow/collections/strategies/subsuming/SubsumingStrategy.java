@@ -1,9 +1,8 @@
 package soot.jimple.infoflow.collections.strategies.subsuming;
 
-import soot.Unit;
-import soot.jimple.infoflow.data.Abstraction;
-
 import java.util.Set;
+
+import soot.jimple.infoflow.data.Abstraction;
 
 public interface SubsumingStrategy<N, D> {
 
@@ -34,4 +33,6 @@ public interface SubsumingStrategy<N, D> {
 
     boolean affectsContext(D incoming, D outgoing);
     boolean affectsContext(N stmt);
+
+    Abstraction applyDiffOf(Abstraction d1, Abstraction d2, Abstraction targetVal);
 }

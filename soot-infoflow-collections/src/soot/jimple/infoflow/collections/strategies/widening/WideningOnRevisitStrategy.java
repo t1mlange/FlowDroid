@@ -1,16 +1,15 @@
 package soot.jimple.infoflow.collections.strategies.widening;
 
+import java.util.Set;
+
 import soot.Unit;
 import soot.jimple.Stmt;
 import soot.jimple.infoflow.InfoflowManager;
 import soot.jimple.infoflow.collections.context.PositionBasedContext;
 import soot.jimple.infoflow.data.Abstraction;
-import soot.jimple.infoflow.data.AccessPath;
 import soot.jimple.infoflow.data.AccessPathFragment;
 import soot.jimple.infoflow.data.ContextDefinition;
 import soot.util.ConcurrentHashMultiMap;
-
-import java.util.Set;
 
 /**
  * Widens each fact that revisits a statement
@@ -18,6 +17,7 @@ import java.util.Set;
  * @author Tim Lange
  */
 public class WideningOnRevisitStrategy extends AbstractWidening {
+	// Cache of abstractions seen at a shift statement
 	private final ConcurrentHashMultiMap<Unit, Abstraction> seenAbstractions;
 
 	// Contains all subsignatures that may result in an infinite domain
@@ -46,7 +46,11 @@ public class WideningOnRevisitStrategy extends AbstractWidening {
 
 	@Override
 	public void recordNewFact(Abstraction fact, Unit u) {
-		if (isWideningCandidate(fact))
+		// Only shifting can produce infinite ascending chains
+		Stmt stmt = (Stmt) u;
+		if (stmt.containsInvokeExpr()
+				&& subSigs.contains(stmt.getInvokeExpr().getMethod().getSubSignature())
+				&& isWideningCandidate(fact))
 			seenAbstractions.put(u, fact);
 	}
 

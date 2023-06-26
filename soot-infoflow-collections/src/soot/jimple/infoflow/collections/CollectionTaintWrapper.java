@@ -7,7 +7,10 @@ import heros.DontSynchronize;
 import heros.SynchronizedBy;
 import heros.solver.Pair;
 import heros.solver.PathEdge;
-import soot.*;
+import soot.SootClass;
+import soot.SootMethod;
+import soot.Unit;
+import soot.Value;
 import soot.jimple.ReturnStmt;
 import soot.jimple.Stmt;
 import soot.jimple.infoflow.InfoflowManager;
@@ -17,7 +20,6 @@ import soot.jimple.infoflow.collections.operations.ICollectionOperation;
 import soot.jimple.infoflow.collections.operations.LocationDependentOperation;
 import soot.jimple.infoflow.collections.operations.forward.AbstractShiftOperation;
 import soot.jimple.infoflow.collections.solver.fastSolver.CollectionInfoflowSolver;
-import soot.jimple.infoflow.collections.solver.fastSolver.CollectionInfoflowSolverCoarser;
 import soot.jimple.infoflow.collections.strategies.containers.ConstantStrategy;
 import soot.jimple.infoflow.collections.strategies.containers.IContainerStrategy;
 import soot.jimple.infoflow.collections.strategies.subsuming.LargerContextSubsumingStrategy;
@@ -85,12 +87,12 @@ public class CollectionTaintWrapper implements ITaintPropagationWrapper {
 				.collect(Collectors.toUnmodifiableSet());
 		SubsumingStrategy<Unit, Abstraction> s = new LargerContextSubsumingStrategy(manager, allSubSigs);
 		if (manager.getMainSolver() instanceof CollectionInfoflowSolver) {
-			((CollectionInfoflowSolverCoarser) manager.getMainSolver()).setWideningStrategy(w);
-			((CollectionInfoflowSolverCoarser) manager.getMainSolver()).setSubsuming(s);
+			((CollectionInfoflowSolver) manager.getMainSolver()).setWideningStrategy(w);
+			((CollectionInfoflowSolver) manager.getMainSolver()).setSubsuming(s);
 		}
 		if (manager.getAliasSolver() instanceof CollectionInfoflowSolver) {
-			((CollectionInfoflowSolverCoarser) manager.getAliasSolver()).setWideningStrategy(w);
-			((CollectionInfoflowSolverCoarser) manager.getAliasSolver()).setSubsuming(s);
+			((CollectionInfoflowSolver) manager.getAliasSolver()).setWideningStrategy(w);
+			((CollectionInfoflowSolver) manager.getAliasSolver()).setSubsuming(s);
 		}
 	}
 
