@@ -80,10 +80,8 @@ public class AbstractingCollectionInfoflowSolver extends CollectionInfoflowSolve
                 = myIncoming.putIfAbsentElseGet(new Pair<>(m, d3a), MyConcurrentHashMap::new);
         MultiMap<Abstraction, Pair<Abstraction, Abstraction>> reuseSet = reuseSummaries.get(n);
         Pair<Abstraction, Abstraction> p = new Pair<>(d2, d3);
-        assert reuseSet != null;
-        reuseSet.remove(d1, p);
 
-        return addIncoming(m, d3, n, d1, d2, d3);
+        return reuseSet.remove(d1, p) && addIncoming(m, d3, n, d1, d2, d3);
     }
 
     protected Map<Unit, MultiMap<Abstraction, Pair<Abstraction, Abstraction>>> myIncoming(Abstraction d1, SootMethod m) {
@@ -329,37 +327,44 @@ public class AbstractingCollectionInfoflowSolver extends CollectionInfoflowSolve
     }
 
     private void reinject(Abstraction sourceVal, SootMethod sm) {
-        Map<Unit, MultiMap<Abstraction, Pair<Abstraction, Abstraction>>> inc = myIncoming(sourceVal, sm);
-        if (inc != null && !inc.isEmpty()) {
-            for (Unit u : inc.keySet()) {
-                MultiMap<Abstraction, Pair<Abstraction, Abstraction>> map = inc.get(u);
-                if (map == null)
-                    continue;
+        Abstraction curr = sourceVal;
+        SootMethod currMethod = sm;
+        while (curr != null) {
+            Map<Unit, MultiMap<Abstraction, Pair<Abstraction, Abstraction>>> inc = myIncoming(curr, currMethod);
+            if (inc != null && !inc.isEmpty()) {
+                for (Unit u : inc.keySet()) {
+                    MultiMap<Abstraction, Pair<Abstraction, Abstraction>> map = inc.get(u);
+                    if (map == null)
+                        continue;
 
-                for (Abstraction d1 : map.keySet()) {
-                    Set<Pair<Abstraction, Abstraction>> pairs = map.get(d1);
-                    if (pairs == null)
-                        break;
-                    for (Pair<Abstraction, Abstraction> pair : pairs) {
-                        Abstraction d2 = pair.getO1();
-                        Abstraction d3 = pair.getO2();
-                        // The exemplary context propagated in the callee is still valid, only
-                        // all similar abstractions are not
-                        if (d3 != sourceVal) {
-                            // Reinject the similar abstractions at the method start
-                            if (!removeAndAddIncoming(sm, sourceVal, u, d1, d2, d3))
-                                continue;
+                    for (Abstraction d1 : map.keySet()) {
+                        Set<Pair<Abstraction, Abstraction>> pairs = map.get(d1);
+                        if (pairs == null)
+                            break;
+                        for (Pair<Abstraction, Abstraction> pair : pairs) {
+                            Abstraction d2 = pair.getO1();
+                            Abstraction d3 = pair.getO2();
+                            // The exemplary context propagated in the callee is still valid, only
+                            // all similar abstractions are not
+                            if (d3 != curr) {
+                                // Reinject the similar abstractions at the method start
+                                if (!removeAndAddIncoming(currMethod, curr, u, d1, d2, d3))
+                                    continue;
 
-                            for (Unit sP : icfg.getStartPointsOf(sm)) {
-                                // create initial self-loop
-                                schedulingStrategy.propagateCallFlow(d3, sP, d3, u, false); // line 15
+                                for (Unit sP : icfg.getStartPointsOf(currMethod)) {
+                                    // create initial self-loop
+                                    schedulingStrategy.propagateCallFlow(d3, sP, d3, u, false); // line 15
+                                }
+
+                                applyEndSummaryOnCallWith(d1, u, d2, icfg.getReturnSitesOfCallAt(u), currMethod, d3, d3);
                             }
-
-                            applyEndSummaryOnCallWith(d1, u, d2, icfg.getReturnSitesOfCallAt(u), sm, d3, d3);
                         }
                     }
                 }
             }
+
+            curr = curr.getPredecessor();
+            currMethod = curr == null ? null : icfg.getMethodOf(curr.getCurrentStmt());
         }
     }
 
