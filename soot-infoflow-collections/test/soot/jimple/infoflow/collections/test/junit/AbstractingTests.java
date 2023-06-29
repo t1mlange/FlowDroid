@@ -147,7 +147,6 @@ public class AbstractingTests extends FlowDroidTests {
     @Test(timeout = 30000)
     public void testReuse1() {
         IInfoflow infoflow = initInfoflow();
-        infoflow.setTaintPropagationHandler(new DebugFlowFunctionTaintPropagationHandler());
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
         var set = infoflow.getResults().getResultSet();
@@ -187,9 +186,10 @@ public class AbstractingTests extends FlowDroidTests {
         Assert.assertFalse(hasDuplicateSinkInFlow(set));
     }
 
-    @Test//(timeout = 30000)
+    @Test(timeout = 300000)
     public void testGet1() {
-//        while (true) {
+        // Test that the solver doesn't race
+        for (int run = 0; run < 50; run++) {
             IInfoflow infoflow = initInfoflow();
             String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
             infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
@@ -197,19 +197,17 @@ public class AbstractingTests extends FlowDroidTests {
             Assert.assertEquals(getExpectedResultsForMethod(epoint), set == null ? 0 : set.size());
             Assert.assertFalse(hasDuplicateSourceInFlow(set));
             Assert.assertFalse(hasDuplicateSinkInFlow(set));
-//        }
+        }
     }
 
-    @Test//(timeout = 30000)
+    @Test(timeout = 30000)
     public void testGet2() {
-//        while (true) {
-            IInfoflow infoflow = initInfoflow();
-            String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
-            infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
-            var set = infoflow.getResults().getResultSet();
-            Assert.assertEquals(getExpectedResultsForMethod(epoint), set == null ? 0 : set.size());
-            Assert.assertFalse(hasDuplicateSinkInFlow(set));
-//        }
+        IInfoflow infoflow = initInfoflow();
+        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
+        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
+        var set = infoflow.getResults().getResultSet();
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), set == null ? 0 : set.size());
+        Assert.assertFalse(hasDuplicateSinkInFlow(set));
     }
 
     @Test(timeout = 30000)
