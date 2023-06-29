@@ -154,6 +154,9 @@ public class AbstractingCollectionInfoflowSolver extends CollectionInfoflowSolve
                                             applyEndSummaryOnCallWith(d1, n, d2, returnSiteNs, sCalledProcN, d3, prevSeenAbs);
                                         }
                                     } else {
+                                        // We might encountered a callee, we already know is not reusable, on another
+                                        // path. That means this path hasn't seen the context-dependent operation yet.
+                                        // See testReinjectOnAlreadySeenCallee1.
                                         reinject(d1, icfg.getMethodOf(n));
 
                                         // register the fact that <sp,d3> has an incoming edge from

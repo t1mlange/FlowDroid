@@ -6,6 +6,7 @@ import static soot.jimple.infoflow.collections.test.Helper.source;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.junit.Test;
 import soot.jimple.infoflow.collections.test.junit.FlowDroidTest;
 
 public class AbstractingTestCode {
@@ -17,6 +18,7 @@ public class AbstractingTestCode {
         return sb.toString();
     }
 
+    // but getXXX and removeXXX depend on the context
     String getXXX(Map<String, String> map) {
         return map.get("XXX");
     }
@@ -254,5 +256,25 @@ public class AbstractingTestCode {
         Map<String, String> map2 = new HashMap<>();
         map2.put("YYY", tainted);
         sink(calleeOfBadCallee2(map2));
+    }
+
+    @FlowDroidTest(expected = 2)
+    public void testReinjectOnAlreadySeenCallee1() {
+        Map<String, String> map = new HashMap<>();
+        String tainted = source();
+        map.put("XXX", tainted);
+        // Here we notice getXXX() is context-dependent
+        sink(getXXX(map));
+
+        Map<String, String> map2 = new HashMap<>();
+        map2.put("XXX", tainted);
+        map2.put("YYY", tainted);
+        // Here we start two calls with different keys such that the keys are
+        // merged. Later on in the call tree, the solver should encounter that
+        // getXXX is not reusable and reinject the abstraction correctly.
+        String r1 = badCallee1(map2);
+        String r2 = badCallee1(map2);
+        sink(r1);
+        sink(r2);
     }
 }
