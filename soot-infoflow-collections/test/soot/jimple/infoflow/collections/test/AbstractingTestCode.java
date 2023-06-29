@@ -190,4 +190,69 @@ public class AbstractingTestCode {
         map2.put("YYY", tainted);
         sink(badCallee2(map2));
     }
+
+    Map<String, String> f;
+    private String calleeOfBadCallee1(Map<String, String> map) {
+        f = map;
+        Map<String, String> alias = f;
+        return getXXX(alias);
+    }
+
+    private String calleeOfBadCallee2(Map<String, String> map) {
+        f = map;
+        Map<String, String> alias = f;
+        return removeXXX(map);
+    }
+
+    @FlowDroidTest(expected = 1)
+    public void testReinjectInCalleeOfCallee1() {
+        Map<String, String> map = new HashMap<>();
+        map.put("XXX", source());
+        sink(calleeOfBadCallee1(map));
+
+
+        Map<String, String> map2 = new HashMap<>();
+        map2.put("YYY", source());
+        sink(calleeOfBadCallee1(map2));
+    }
+
+    @FlowDroidTest(expected = 1)
+    public void testReinjectInCalleeOfCallee2() {
+        Map<String, String> map = new HashMap<>();
+        String tainted = source();
+        map.put("XXX", tainted);
+        sink(calleeOfBadCallee1(map));
+
+        System.out.println("Delay");
+
+        Map<String, String> map2 = new HashMap<>();
+        map2.put("YYY", tainted);
+        sink(calleeOfBadCallee1(map2));
+    }
+
+    @FlowDroidTest(expected = 1)
+    public void testReinjectInCalleeOfCallee3() {
+        Map<String, String> map = new HashMap<>();
+        map.put("XXX", source());
+        sink(calleeOfBadCallee2(map));
+
+
+        Map<String, String> map2 = new HashMap<>();
+        map2.put("YYY", source());
+        sink(calleeOfBadCallee2(map2));
+    }
+
+    @FlowDroidTest(expected = 1)
+    public void testReinjectInCalleeOfCallee4() {
+        Map<String, String> map = new HashMap<>();
+        String tainted = source();
+        map.put("XXX", tainted);
+        sink(calleeOfBadCallee2(map));
+
+        System.out.println("Delay");
+
+        Map<String, String> map2 = new HashMap<>();
+        map2.put("YYY", tainted);
+        sink(calleeOfBadCallee2(map2));
+    }
 }
