@@ -7,6 +7,7 @@ import java.util.function.Consumer;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 
+import com.sun.jdi.connect.Connector;
 import heros.FlowFunction;
 import heros.SynchronizedBy;
 import heros.solver.Pair;
@@ -132,11 +133,11 @@ public class AbstractingCollectionInfoflowSolver extends CollectionInfoflowSolve
                                     if (!notReusable.contains(new Pair<>(sCalledProcN, d3.getAccessPath().getPlainValue()))) {
                                         Abstraction prevSeenAbs = incomingWContext.putIfAbsent(new NoContextKey(sCalledProcN, d3), d3);
                                         if (prevSeenAbs == null) {
-                                            if (!addIncoming(sCalledProcN, d3, n, d1, d2, d3))
-                                                continue;
-
                                             if (d1 != zeroValue)
                                                 prevContext.put(d3, new Pair<>(icfg.getMethodOf(n), d1));
+
+                                            if (!addIncoming(sCalledProcN, d3, n, d1, d2, d3))
+                                                continue;
 
                                             for (Unit sP : startPointsOf) {
                                                 // create initial self-loop
@@ -153,7 +154,7 @@ public class AbstractingCollectionInfoflowSolver extends CollectionInfoflowSolve
                                             applyEndSummaryOnCallWith(d1, n, d2, returnSiteNs, sCalledProcN, d3, prevSeenAbs);
                                         }
                                     } else {
-                                        //reinject(d3, sCalledProcN);
+                                        reinject(d1, icfg.getMethodOf(n));
 
                                         // register the fact that <sp,d3> has an incoming edge from
                                         // <n,d2>
@@ -474,12 +475,21 @@ public class AbstractingCollectionInfoflowSolver extends CollectionInfoflowSolve
         // Mark (method, param) as not reusable if needed
         if (sourceVal != zeroValue && subsuming.affectsContext(target)) {
             SootMethod sm = icfg.getMethodOf(target);
-            reinject(sourceVal, sm);
+            if (!notReusable.contains(new Pair<>(sm, sourceVal.getAccessPath().getPlainValue()))) {
+                reinject(sourceVal, sm);
+            }
         }
 
         super.propagate(sourceVal, target, targetVal, relatedCallSite, isUnbalancedReturn, scheduleTarget);
     }
 
+    protected void markNotReusable() {
+
+    }
+
+    protected boolean isReusable(SootMethod sm, Abstraction context) {
+        return notReusable.contains(new Pair<>(sm, context.getAccessPath().getPlainValue()));
+    }
 
     @Override
     public void cleanup() {
