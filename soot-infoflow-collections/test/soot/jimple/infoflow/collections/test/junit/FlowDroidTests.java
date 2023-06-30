@@ -106,6 +106,12 @@ public abstract class FlowDroidTests {
 		throw new RuntimeException("Could not get expected results for method!");
 	}
 
+	public static IInfoflowSolver getSolver(InterruptableExecutor executor,
+											AbstractInfoflowProblem problem,
+											InfoflowConfiguration.SolverConfiguration solverConfig) {
+		return new AbstractingCollectionInfoflowSolver(problem, executor);
+	}
+
 	protected ITaintPropagationWrapper getTaintWrapper() {
 		try {
 			SummaryTaintWrapper tw = TaintWrapperFactory

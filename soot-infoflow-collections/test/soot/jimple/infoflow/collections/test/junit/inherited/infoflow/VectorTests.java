@@ -17,6 +17,7 @@ import soot.jimple.infoflow.collections.CollectionTaintWrapper;
 import soot.jimple.infoflow.collections.parser.CollectionXMLParser;
 import soot.jimple.infoflow.collections.solver.fastSolver.CoarserReuseCollectionInfoflowSolver;
 import soot.jimple.infoflow.collections.solver.fastSolver.executors.PriorityExecutorFactory;
+import soot.jimple.infoflow.collections.test.junit.FlowDroidTests;
 import soot.jimple.infoflow.problems.AbstractInfoflowProblem;
 import soot.jimple.infoflow.solver.IInfoflowSolver;
 import soot.jimple.infoflow.solver.executors.InterruptableExecutor;
@@ -40,7 +41,7 @@ public class VectorTests extends soot.jimple.infoflow.test.junit.VectorTests {
             @Override
             protected IInfoflowSolver createDataFlowSolver(InterruptableExecutor executor,
                                                            AbstractInfoflowProblem problem, InfoflowConfiguration.SolverConfiguration solverConfig) {
-                return new CoarserReuseCollectionInfoflowSolver(problem, executor);
+                return FlowDroidTests.getSolver(executor, problem, solverConfig);
             }
         };
         result.setExecutorFactory(new PriorityExecutorFactory());

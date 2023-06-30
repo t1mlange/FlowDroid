@@ -277,4 +277,16 @@ public class AbstractingTestCode {
         sink(r1);
         sink(r2);
     }
+
+    @FlowDroidTest(expected = 1)
+    public void testReinjectOnAlreadySeenCallee2() {
+        Map<String, String> map = new HashMap<>();
+        String tainted = source();
+        map.put("XXX", tainted);
+        sink(getXXX(map));
+
+        map.put("YYY", tainted);
+        String r1 = badCallee1(map);
+        sink(r1);
+    }
 }

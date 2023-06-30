@@ -303,6 +303,7 @@ public abstract class AbstractInfoflow implements IInfoflow {
 				Options.v().set_output_format(Options.output_format_jimple);
 			else
 				Options.v().set_output_format(Options.output_format_none);
+			Options.v().set_keep_line_number(config.getEnableLineNumbers());
 
 			// We only need to distinguish between application and library classes
 			// if we use the OnTheFly ICFG
