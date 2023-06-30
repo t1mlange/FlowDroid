@@ -30,6 +30,7 @@ import soot.util.MultiMap;
  *
  * @author Tim Lange
  */
+@Deprecated // Bad idea, the race is inevitable
 public class CoarserReuseCollectionInfoflowSolver extends CollectionInfoflowSolver {
 	// We need to overwrite the default incoming, because we might have multiple elements per context
 	// e.g. when we add a more precise collection taint to use the summary of the coarser collection taint

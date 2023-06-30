@@ -129,8 +129,8 @@ public class AbstractingCollectionInfoflowSolver extends CollectionInfoflowSolve
                                 if (d3 == null)
                                     continue;
 
-                                if (subsuming.hasContext(d3)) {
-                                    if (!notReusable.contains(new Pair<>(sCalledProcN, d3.getAccessPath().getPlainValue()))) {
+                                if (subsuming.hasContext(d3) && !d3.getAccessPath().isStaticFieldRef()) {
+                                    if (isReusable(sCalledProcN, d3)) {
                                         Abstraction prevSeenAbs = incomingWContext.putIfAbsent(new NoContextKey(sCalledProcN, d3), d3);
                                         if (prevSeenAbs == null) {
                                             if (d1 != zeroValue)
@@ -362,7 +362,7 @@ public class AbstractingCollectionInfoflowSolver extends CollectionInfoflowSolve
             Abstraction curr = p.getO2();
             SootMethod currMethod = p.getO1();
 
-            notReusable.add(new Pair<>(currMethod, curr.getAccessPath().getPlainValue()));
+            markNotReusable(currMethod, curr);
 
             firstVisit.addAll(prevContext.get(curr));
         }
@@ -418,9 +418,8 @@ public class AbstractingCollectionInfoflowSolver extends CollectionInfoflowSolve
         Set<EndSummary<Unit, Abstraction>> endSumm = endSummary(sCalledProcN, summaryQuery);
         boolean reuseOfSummary = d3 != summaryQuery;
 
-        Local local = d3.getAccessPath().getPlainValue();
         // If the combination of (method, parameter) is not reusable, exit here
-        if (notReusable.contains(new Pair<>(sCalledProcN, local))) {
+        if (!isReusable(sCalledProcN, d3)) {
             return;
         }
 
@@ -478,7 +477,9 @@ public class AbstractingCollectionInfoflowSolver extends CollectionInfoflowSolve
         // Mark (method, param) as not reusable if needed
         if (sourceVal != zeroValue && subsuming.affectsContext(target)) {
             SootMethod sm = icfg.getMethodOf(target);
-            if (!notReusable.contains(new Pair<>(sm, sourceVal.getAccessPath().getPlainValue()))) {
+            // We do not want to reinject everytime we see a context-dependent operation,
+            // but only when we encounter a new not-reusable method summary.
+            if (isReusable(sm, sourceVal)) {
                 reinject(sourceVal, sm);
             }
         }
@@ -486,12 +487,12 @@ public class AbstractingCollectionInfoflowSolver extends CollectionInfoflowSolve
         super.propagate(sourceVal, target, targetVal, relatedCallSite, isUnbalancedReturn, scheduleTarget);
     }
 
-    protected void markNotReusable() {
-
+    protected void markNotReusable(SootMethod sm, Abstraction context) {
+        notReusable.add(new Pair<>(sm, context.getAccessPath().getPlainValue()));
     }
 
     protected boolean isReusable(SootMethod sm, Abstraction context) {
-        return notReusable.contains(new Pair<>(sm, context.getAccessPath().getPlainValue()));
+        return !notReusable.contains(new Pair<>(sm, context.getAccessPath().getPlainValue()));
     }
 
     @Override
