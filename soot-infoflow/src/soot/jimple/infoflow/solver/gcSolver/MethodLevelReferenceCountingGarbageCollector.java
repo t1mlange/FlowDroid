@@ -10,9 +10,7 @@ import java.util.Set;
 
 public class MethodLevelReferenceCountingGarbageCollector<N, D>
 		extends AbstractReferenceCountingGarbageCollector<N, D, SootMethod> {
-	public MethodLevelReferenceCountingGarbageCollector(BiDiInterproceduralCFG<N, SootMethod> icfg,
-			ConcurrentHashMultiMap<SootMethod, PathEdge<N, D>> jumpFunctions,
-			IGCReferenceProvider<SootMethod> referenceProvider) {
+	public MethodLevelReferenceCountingGarbageCollector(IGCReferenceProvider<SootMethod> referenceProvider) {
 		super(icfg, jumpFunctions, referenceProvider);
 	}
 

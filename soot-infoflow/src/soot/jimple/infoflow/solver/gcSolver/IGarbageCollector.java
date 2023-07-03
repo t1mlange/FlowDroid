@@ -1,6 +1,7 @@
 package soot.jimple.infoflow.solver.gcSolver;
 
 import heros.solver.PathEdge;
+import soot.jimple.infoflow.solver.fastSolver.FastSolverLinkedNode;
 
 /**
  * Common interface for all garbage collector implementations oin the solver
@@ -53,5 +54,4 @@ public interface IGarbageCollector<N, D> {
 	 * its edges
 	 */
 	public void notifySolverTerminated();
-
 }

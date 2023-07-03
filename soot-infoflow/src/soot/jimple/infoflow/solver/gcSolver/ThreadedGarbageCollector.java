@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 
 import heros.solver.PathEdge;
 import soot.SootMethod;
+import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.toolkits.ide.icfg.BiDiInterproceduralCFG;
 import soot.util.ConcurrentHashMultiMap;
 
@@ -60,20 +61,18 @@ public class ThreadedGarbageCollector<N, D> extends MethodLevelReferenceCounting
 
 	private GCThread gcThread;
 
-	public ThreadedGarbageCollector(BiDiInterproceduralCFG<N, SootMethod> icfg,
-			ConcurrentHashMultiMap<SootMethod, PathEdge<N, D>> jumpFunctions,
-			IGCReferenceProvider<SootMethod> referenceProvider) {
-		super(icfg, jumpFunctions, referenceProvider);
+	public ThreadedGarbageCollector(IGCReferenceProvider<SootMethod> referenceProvider) {
+		super(referenceProvider);
 	}
 
-	public ThreadedGarbageCollector(BiDiInterproceduralCFG<N, SootMethod> icfg,
-			ConcurrentHashMultiMap<SootMethod, PathEdge<N, D>> jumpFunctions) {
-		super(icfg, jumpFunctions);
+	public ThreadedGarbageCollector() {
+		super();
 	}
 
 	@Override
-	protected void initialize() {
-		super.initialize();
+	public void initialize(BiDiInterproceduralCFG<N, SootMethod> icfg,
+						   ConcurrentHashMultiMap<SootMethod, PathEdge<N, D>> jumpFunctions) {
+		super.initialize(icfg, jumpFunctions);
 
 		// Start the garbage collection thread
 		gcThread = new GCThread();

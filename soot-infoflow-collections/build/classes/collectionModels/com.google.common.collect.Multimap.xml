@@ -1,0 +1,90 @@
+<?xml version="1.0" ?>
+
+<collectionModel class="com.google.common.collect.Multimap" type="value">
+    <method subsig="java.util.Set asMap()">
+        <copy mode="update">
+            <from idx="base" />
+            <to idx="return" />
+        </copy>
+    </method>
+    <method subsig="void clear()">
+        <remove field="[com.google.common.collect.Multimap: java.lang.Object[] values]">
+            <key idx="all" />
+        </remove>
+    </method>
+    <method subsig="boolean containsEntry(java.lang.Object,java.lang.Object)">
+        <!-- intentionally identity for now -->
+    </method>
+    <method subsig="boolean containsKey(java.lang.Object)">
+        <!-- intentionally identity for now -->
+    </method>
+    <method subsig="boolean containsValue(java.lang.Object)">
+        <!-- intentionally identity for now -->
+    </method>
+    <!-- equals() handled with fallback -->
+    <!-- forEach() handled with fallback -->
+    <method subsig="java.util.Collection get(java.lang.Object)">
+        <access field="[com.google.common.collect.Multimap: java.lang.Object[] values]">
+            <key idx="0" />
+            <return field="[java.util.Collection: java.lang.Object[] innerArray]"
+                    type="[java.lang.Object[]]" />
+        </access>
+    </method>
+    <!-- hashCode() handled with fallback -->
+    <!-- isEmpty() handled with fallback -->
+    <!-- keys() handled with fallback -->
+    <!-- keySet() handled with fallback -->
+    <method subsig="boolean put(java.lang.Object,java.lang.Object)">
+        <remove field="[com.google.common.collect.Multimap: java.lang.Object[] values]">
+            <key idx="0" />
+        </remove>
+        <insert field="[com.google.common.collect.Multimap: java.lang.Object[] values]">
+            <key idx="0" />
+            <data idx="1" />
+        </insert>
+    </method>
+    <method subsig="boolean putAll(java.lang.Object,java.lang.Iterable)">
+        <remove field="[com.google.common.collect.Multimap: java.lang.Object[] values]">
+            <key idx="0" />
+        </remove>
+        <insert field="[com.google.common.collect.Multimap: java.lang.Object[] values]">
+            <key idx="0" />
+            <data idx="1" />
+        </insert>
+    </method>
+    <method subsig="boolean putAll(com.google.common.collect.Multimap)">
+        <copy mode="update">
+            <from idx="0" />
+            <to idx="base" />
+        </copy>
+    </method>
+    <method subsig="boolean remove(java.lang.Object,java.lang.Object)">
+        <!-- intentionally identity for now -->
+    </method>
+    <method subsig="java.util.Collection removeAll(java.lang.Object)">
+        <access field="[com.google.common.collect.Multimap: java.lang.Object[] values]">
+            <key idx="0" />
+            <return field="[java.util.Collection: java.lang.Object[] innerArray]"
+                    type="[java.lang.Object[]]" />
+        </access>
+        <remove field="[com.google.common.collect.Multimap: java.lang.Object[] values]">
+            <key idx="0" />
+        </remove>
+    </method>
+    <method subsig="java.util.Collection replaceValues(java.lang.Object,java.lang.Iterable)">
+        <remove field="[com.google.common.collect.Multimap: java.lang.Object[] values]">
+            <key idx="0" />
+        </remove>
+        <access field="[com.google.common.collect.Multimap: java.lang.Object[] values]">
+            <key idx="0" />
+            <return field="[java.util.Collection: java.lang.Object[] innerArray]"
+                    type="[java.lang.Object[]]" />
+        </access>
+        <insert field="[com.google.common.collect.Multimap: java.lang.Object[] values]">
+            <key idx="0" />
+            <data idx="1" />
+        </insert>
+    </method>
+    <!-- size() handled with fallback -->
+    <!-- values() handled with fallback -->
+</collectionModel>

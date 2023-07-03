@@ -1,0 +1,1537 @@
+public class soot.jimple.infoflow.collections.test.SimpleMapTestCode extends java.lang.Object
+{
+    public java.lang.String unusedStringField;
+
+    public void <init>()
+    {
+        soot.jimple.infoflow.collections.test.SimpleMapTestCode r0;
+
+        r0 := @this: soot.jimple.infoflow.collections.test.SimpleMapTestCode;
+
+        specialinvoke r0.<java.lang.Object: void <init>()>();
+
+        return;
+    }
+
+    public void testMapPutGet1()
+    {
+        soot.jimple.infoflow.collections.test.SimpleMapTestCode r4;
+        java.util.HashMap $r0;
+        java.lang.Object $r2;
+        java.lang.String $r1, r3;
+
+        r4 := @this: soot.jimple.infoflow.collections.test.SimpleMapTestCode;
+
+        $r0 = new java.util.HashMap;
+
+        specialinvoke $r0.<java.util.HashMap: void <init>()>();
+
+        $r1 = staticinvoke <soot.jimple.infoflow.collections.test.Helper: java.lang.String source()>();
+
+        interfaceinvoke $r0.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>("ConstantKey", $r1);
+
+        $r2 = interfaceinvoke $r0.<java.util.Map: java.lang.Object get(java.lang.Object)>("ConstantKey");
+
+        r3 = (java.lang.String) $r2;
+
+        staticinvoke <soot.jimple.infoflow.collections.test.Helper: void sink(java.lang.String)>(r3);
+
+        return;
+    }
+
+    public void testMapPutGet2()
+    {
+        soot.jimple.infoflow.collections.test.SimpleMapTestCode r4;
+        java.util.HashMap $r0;
+        java.lang.Object $r2;
+        java.lang.String $r1, r3;
+
+        r4 := @this: soot.jimple.infoflow.collections.test.SimpleMapTestCode;
+
+        $r0 = new java.util.HashMap;
+
+        specialinvoke $r0.<java.util.HashMap: void <init>()>();
+
+        $r1 = staticinvoke <soot.jimple.infoflow.collections.test.Helper: java.lang.String source()>();
+
+        interfaceinvoke $r0.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>("ConstantKey", $r1);
+
+        $r2 = interfaceinvoke $r0.<java.util.Map: java.lang.Object get(java.lang.Object)>("OtherConstantKey");
+
+        r3 = (java.lang.String) $r2;
+
+        staticinvoke <soot.jimple.infoflow.collections.test.Helper: void sink(java.lang.String)>(r3);
+
+        return;
+    }
+
+    public void testMapPutGetOrDefault1()
+    {
+        soot.jimple.infoflow.collections.test.SimpleMapTestCode r4;
+        java.util.HashMap $r0;
+        java.lang.Object $r2;
+        java.lang.String $r1, r3;
+
+        r4 := @this: soot.jimple.infoflow.collections.test.SimpleMapTestCode;
+
+        $r0 = new java.util.HashMap;
+
+        specialinvoke $r0.<java.util.HashMap: void <init>()>();
+
+        $r1 = staticinvoke <soot.jimple.infoflow.collections.test.Helper: java.lang.String source()>();
+
+        interfaceinvoke $r0.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>("ConstantKey", $r1);
+
+        $r2 = interfaceinvoke $r0.<java.util.Map: java.lang.Object getOrDefault(java.lang.Object,java.lang.Object)>("ConstantKey", "Untainted");
+
+        r3 = (java.lang.String) $r2;
+
+        staticinvoke <soot.jimple.infoflow.collections.test.Helper: void sink(java.lang.String)>(r3);
+
+        return;
+    }
+
+    public void testMapPutGetOrDefault2()
+    {
+        soot.jimple.infoflow.collections.test.SimpleMapTestCode r4;
+        java.util.HashMap $r0;
+        java.lang.Object $r2;
+        java.lang.String $r1, r3;
+
+        r4 := @this: soot.jimple.infoflow.collections.test.SimpleMapTestCode;
+
+        $r0 = new java.util.HashMap;
+
+        specialinvoke $r0.<java.util.HashMap: void <init>()>();
+
+        $r1 = staticinvoke <soot.jimple.infoflow.collections.test.Helper: java.lang.String source()>();
+
+        interfaceinvoke $r0.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>("ConstantKey", $r1);
+
+        $r2 = interfaceinvoke $r0.<java.util.Map: java.lang.Object getOrDefault(java.lang.Object,java.lang.Object)>("OtherConstantKey", "Untainted");
+
+        r3 = (java.lang.String) $r2;
+
+        staticinvoke <soot.jimple.infoflow.collections.test.Helper: void sink(java.lang.String)>(r3);
+
+        return;
+    }
+
+    public void testMapPutGetOrDefault3()
+    {
+        soot.jimple.infoflow.collections.test.SimpleMapTestCode r4;
+        java.util.HashMap $r0;
+        java.lang.Object $r2;
+        java.lang.String $r1, r3;
+
+        r4 := @this: soot.jimple.infoflow.collections.test.SimpleMapTestCode;
+
+        $r0 = new java.util.HashMap;
+
+        specialinvoke $r0.<java.util.HashMap: void <init>()>();
+
+        $r1 = staticinvoke <soot.jimple.infoflow.collections.test.Helper: java.lang.String source()>();
+
+        interfaceinvoke $r0.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>("ConstantKey", "Not tainted");
+
+        $r2 = interfaceinvoke $r0.<java.util.Map: java.lang.Object getOrDefault(java.lang.Object,java.lang.Object)>("NonConstantKey", $r1);
+
+        r3 = (java.lang.String) $r2;
+
+        staticinvoke <soot.jimple.infoflow.collections.test.Helper: void sink(java.lang.String)>(r3);
+
+        return;
+    }
+
+    public void testMapPutRemoveGet1()
+    {
+        soot.jimple.infoflow.collections.test.SimpleMapTestCode r4;
+        java.util.HashMap $r0;
+        java.lang.Object $r2;
+        java.lang.String $r1, r3;
+
+        r4 := @this: soot.jimple.infoflow.collections.test.SimpleMapTestCode;
+
+        $r0 = new java.util.HashMap;
+
+        specialinvoke $r0.<java.util.HashMap: void <init>()>();
+
+        $r1 = staticinvoke <soot.jimple.infoflow.collections.test.Helper: java.lang.String source()>();
+
+        interfaceinvoke $r0.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>("ConstantKey", $r1);
+
+        interfaceinvoke $r0.<java.util.Map: java.lang.Object remove(java.lang.Object)>("ConstantKey");
+
+        $r2 = interfaceinvoke $r0.<java.util.Map: java.lang.Object get(java.lang.Object)>("ConstantKey");
+
+        r3 = (java.lang.String) $r2;
+
+        staticinvoke <soot.jimple.infoflow.collections.test.Helper: void sink(java.lang.String)>(r3);
+
+        return;
+    }
+
+    public void testMapClear1()
+    {
+        soot.jimple.infoflow.collections.test.SimpleMapTestCode r4;
+        java.util.HashMap $r0;
+        java.lang.Object $r2;
+        java.lang.String $r1, r3;
+
+        r4 := @this: soot.jimple.infoflow.collections.test.SimpleMapTestCode;
+
+        $r0 = new java.util.HashMap;
+
+        specialinvoke $r0.<java.util.HashMap: void <init>()>();
+
+        $r1 = staticinvoke <soot.jimple.infoflow.collections.test.Helper: java.lang.String source()>();
+
+        interfaceinvoke $r0.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>("ConstantKey", $r1);
+
+        interfaceinvoke $r0.<java.util.Map: void clear()>();
+
+        $r2 = interfaceinvoke $r0.<java.util.Map: java.lang.Object get(java.lang.Object)>("ConstantKey");
+
+        r3 = (java.lang.String) $r2;
+
+        staticinvoke <soot.jimple.infoflow.collections.test.Helper: void sink(java.lang.String)>(r3);
+
+        return;
+    }
+
+    public void testMapKeySet1()
+    {
+        java.util.Iterator $r3;
+        java.util.Set $r2;
+        java.util.HashMap $r0;
+        soot.jimple.infoflow.collections.test.SimpleMapTestCode r7;
+        java.lang.Object $r4, $r6;
+        java.lang.String $r1, r5, r8;
+        boolean $z0, $z1;
+
+        r7 := @this: soot.jimple.infoflow.collections.test.SimpleMapTestCode;
+
+        $r0 = new java.util.HashMap;
+
+        specialinvoke $r0.<java.util.HashMap: void <init>()>();
+
+        $r1 = staticinvoke <soot.jimple.infoflow.collections.test.Helper: java.lang.String source()>();
+
+        interfaceinvoke $r0.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>("ConstantKey", $r1);
+
+        r8 = "";
+
+        $r2 = interfaceinvoke $r0.<java.util.Map: java.util.Set keySet()>();
+
+        $r3 = interfaceinvoke $r2.<java.util.Set: java.util.Iterator iterator()>();
+
+     label1:
+        $z0 = interfaceinvoke $r3.<java.util.Iterator: boolean hasNext()>();
+
+        if $z0 == 0 goto label3;
+
+        $r4 = interfaceinvoke $r3.<java.util.Iterator: java.lang.Object next()>();
+
+        r5 = (java.lang.String) $r4;
+
+        $z1 = virtualinvoke r5.<java.lang.String: boolean equals(java.lang.Object)>("Some Value");
+
+        if $z1 == 0 goto label2;
+
+        $r6 = interfaceinvoke $r0.<java.util.Map: java.lang.Object get(java.lang.Object)>(r5);
+
+        r8 = (java.lang.String) $r6;
+
+     label2:
+        goto label1;
+
+     label3:
+        staticinvoke <soot.jimple.infoflow.collections.test.Helper: void sink(java.lang.String)>(r8);
+
+        return;
+    }
+
+    public void testMapKeySet2()
+    {
+        java.util.Iterator $r3;
+        java.util.Set $r2;
+        java.util.HashMap $r0;
+        soot.jimple.infoflow.collections.test.SimpleMapTestCode r6;
+        java.lang.Object $r4;
+        java.lang.String $r1, r5;
+        boolean $z0, $z1;
+
+        r6 := @this: soot.jimple.infoflow.collections.test.SimpleMapTestCode;
+
+        $r0 = new java.util.HashMap;
+
+        specialinvoke $r0.<java.util.HashMap: void <init>()>();
+
+        $r1 = staticinvoke <soot.jimple.infoflow.collections.test.Helper: java.lang.String source()>();
+
+        interfaceinvoke $r0.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>("ConstantKey", $r1);
+
+        $r2 = interfaceinvoke $r0.<java.util.Map: java.util.Set keySet()>();
+
+        $r3 = interfaceinvoke $r2.<java.util.Set: java.util.Iterator iterator()>();
+
+     label1:
+        $z0 = interfaceinvoke $r3.<java.util.Iterator: boolean hasNext()>();
+
+        if $z0 == 0 goto label3;
+
+        $r4 = interfaceinvoke $r3.<java.util.Iterator: java.lang.Object next()>();
+
+        r5 = (java.lang.String) $r4;
+
+        $z1 = virtualinvoke r5.<java.lang.String: boolean equals(java.lang.Object)>("Some Value");
+
+        if $z1 == 0 goto label2;
+
+        staticinvoke <soot.jimple.infoflow.collections.test.Helper: void sink(java.lang.String)>(r5);
+
+     label2:
+        goto label1;
+
+     label3:
+        return;
+    }
+
+    public void testMapValueSet1()
+    {
+        java.util.Iterator $r3;
+        java.util.Collection $r2;
+        java.util.HashMap $r0;
+        soot.jimple.infoflow.collections.test.SimpleMapTestCode r6;
+        java.lang.Object $r4;
+        java.lang.String $r1, r5;
+        boolean $z0, $z1;
+
+        r6 := @this: soot.jimple.infoflow.collections.test.SimpleMapTestCode;
+
+        $r0 = new java.util.HashMap;
+
+        specialinvoke $r0.<java.util.HashMap: void <init>()>();
+
+        $r1 = staticinvoke <soot.jimple.infoflow.collections.test.Helper: java.lang.String source()>();
+
+        interfaceinvoke $r0.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>("ConstantKey", $r1);
+
+        $r2 = interfaceinvoke $r0.<java.util.Map: java.util.Collection values()>();
+
+        $r3 = interfaceinvoke $r2.<java.util.Collection: java.util.Iterator iterator()>();
+
+     label1:
+        $z0 = interfaceinvoke $r3.<java.util.Iterator: boolean hasNext()>();
+
+        if $z0 == 0 goto label3;
+
+        $r4 = interfaceinvoke $r3.<java.util.Iterator: java.lang.Object next()>();
+
+        r5 = (java.lang.String) $r4;
+
+        $z1 = virtualinvoke r5.<java.lang.String: boolean equals(java.lang.Object)>("Some Value");
+
+        if $z1 == 0 goto label2;
+
+        staticinvoke <soot.jimple.infoflow.collections.test.Helper: void sink(java.lang.String)>(r5);
+
+     label2:
+        goto label1;
+
+     label3:
+        return;
+    }
+
+    public void testMapPutAll1()
+    {
+        soot.jimple.infoflow.collections.test.SimpleMapTestCode r5;
+        java.util.HashMap $r0, $r1;
+        java.lang.Object $r3;
+        java.lang.String $r2, $r4;
+
+        r5 := @this: soot.jimple.infoflow.collections.test.SimpleMapTestCode;
+
+        $r0 = new java.util.HashMap;
+
+        specialinvoke $r0.<java.util.HashMap: void <init>()>();
+
+        $r1 = new java.util.HashMap;
+
+        specialinvoke $r1.<java.util.HashMap: void <init>()>();
+
+        $r2 = staticinvoke <soot.jimple.infoflow.collections.test.Helper: java.lang.String source()>();
+
+        interfaceinvoke $r0.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>("ConstantKey", $r2);
+
+        interfaceinvoke $r1.<java.util.Map: void putAll(java.util.Map)>($r0);
+
+        $r3 = interfaceinvoke $r1.<java.util.Map: java.lang.Object get(java.lang.Object)>("ConstantKey");
+
+        $r4 = (java.lang.String) $r3;
+
+        staticinvoke <soot.jimple.infoflow.collections.test.Helper: void sink(java.lang.String)>($r4);
+
+        return;
+    }
+
+    public void testMapPutAll2()
+    {
+        soot.jimple.infoflow.collections.test.SimpleMapTestCode r5;
+        java.util.HashMap $r0, $r1;
+        java.lang.Object $r3;
+        java.lang.String $r2, $r4;
+
+        r5 := @this: soot.jimple.infoflow.collections.test.SimpleMapTestCode;
+
+        $r0 = new java.util.HashMap;
+
+        specialinvoke $r0.<java.util.HashMap: void <init>()>();
+
+        $r1 = new java.util.HashMap;
+
+        specialinvoke $r1.<java.util.HashMap: void <init>()>();
+
+        $r2 = staticinvoke <soot.jimple.infoflow.collections.test.Helper: java.lang.String source()>();
+
+        interfaceinvoke $r0.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>("ConstantKey", $r2);
+
+        interfaceinvoke $r1.<java.util.Map: void putAll(java.util.Map)>($r0);
+
+        $r3 = interfaceinvoke $r1.<java.util.Map: java.lang.Object get(java.lang.Object)>("OtherKey");
+
+        $r4 = (java.lang.String) $r3;
+
+        staticinvoke <soot.jimple.infoflow.collections.test.Helper: void sink(java.lang.String)>($r4);
+
+        return;
+    }
+
+    public void testMapPutIfAbsent1()
+    {
+        soot.jimple.infoflow.collections.test.SimpleMapTestCode r4;
+        java.util.HashMap $r0;
+        java.lang.Object $r2;
+        java.lang.String $r1, $r3;
+
+        r4 := @this: soot.jimple.infoflow.collections.test.SimpleMapTestCode;
+
+        $r0 = new java.util.HashMap;
+
+        specialinvoke $r0.<java.util.HashMap: void <init>()>();
+
+        $r1 = staticinvoke <soot.jimple.infoflow.collections.test.Helper: java.lang.String source()>();
+
+        interfaceinvoke $r0.<java.util.Map: java.lang.Object putIfAbsent(java.lang.Object,java.lang.Object)>("ConstantKey", $r1);
+
+        $r2 = interfaceinvoke $r0.<java.util.Map: java.lang.Object get(java.lang.Object)>("ConstantKey");
+
+        $r3 = (java.lang.String) $r2;
+
+        staticinvoke <soot.jimple.infoflow.collections.test.Helper: void sink(java.lang.String)>($r3);
+
+        return;
+    }
+
+    public void testMapPutIfAbsent2()
+    {
+        soot.jimple.infoflow.collections.test.SimpleMapTestCode r4;
+        java.util.HashMap $r0;
+        java.lang.Object $r2;
+        java.lang.String $r1, r3;
+
+        r4 := @this: soot.jimple.infoflow.collections.test.SimpleMapTestCode;
+
+        $r0 = new java.util.HashMap;
+
+        specialinvoke $r0.<java.util.HashMap: void <init>()>();
+
+        $r1 = staticinvoke <soot.jimple.infoflow.collections.test.Helper: java.lang.String source()>();
+
+        $r2 = interfaceinvoke $r0.<java.util.Map: java.lang.Object putIfAbsent(java.lang.Object,java.lang.Object)>("ConstantKey", $r1);
+
+        r3 = (java.lang.String) $r2;
+
+        staticinvoke <soot.jimple.infoflow.collections.test.Helper: void sink(java.lang.String)>(r3);
+
+        return;
+    }
+
+    public void testMapPutIfAbsent3()
+    {
+        soot.jimple.infoflow.collections.test.SimpleMapTestCode r4;
+        java.util.HashMap $r0;
+        java.lang.Object $r2;
+        java.lang.String $r1, r3;
+
+        r4 := @this: soot.jimple.infoflow.collections.test.SimpleMapTestCode;
+
+        $r0 = new java.util.HashMap;
+
+        specialinvoke $r0.<java.util.HashMap: void <init>()>();
+
+        $r1 = staticinvoke <soot.jimple.infoflow.collections.test.Helper: java.lang.String source()>();
+
+        interfaceinvoke $r0.<java.util.Map: java.lang.Object putIfAbsent(java.lang.Object,java.lang.Object)>("ConstantKey", $r1);
+
+        $r2 = interfaceinvoke $r0.<java.util.Map: java.lang.Object putIfAbsent(java.lang.Object,java.lang.Object)>("ConstantKey", "untainted");
+
+        r3 = (java.lang.String) $r2;
+
+        staticinvoke <soot.jimple.infoflow.collections.test.Helper: void sink(java.lang.String)>(r3);
+
+        return;
+    }
+
+    public void testMapPutIfAbsent4()
+    {
+        soot.jimple.infoflow.collections.test.SimpleMapTestCode r4;
+        java.util.HashMap $r0;
+        java.lang.Object $r2;
+        java.lang.String $r1, $r3;
+
+        r4 := @this: soot.jimple.infoflow.collections.test.SimpleMapTestCode;
+
+        $r0 = new java.util.HashMap;
+
+        specialinvoke $r0.<java.util.HashMap: void <init>()>();
+
+        $r1 = staticinvoke <soot.jimple.infoflow.collections.test.Helper: java.lang.String source()>();
+
+        interfaceinvoke $r0.<java.util.Map: java.lang.Object putIfAbsent(java.lang.Object,java.lang.Object)>("ConstantKey", $r1);
+
+        $r2 = interfaceinvoke $r0.<java.util.Map: java.lang.Object get(java.lang.Object)>("OtherConstantKey");
+
+        $r3 = (java.lang.String) $r2;
+
+        staticinvoke <soot.jimple.infoflow.collections.test.Helper: void sink(java.lang.String)>($r3);
+
+        return;
+    }
+
+    public void testMapPutIfAbsent5()
+    {
+        soot.jimple.infoflow.collections.test.SimpleMapTestCode r4;
+        java.util.HashMap $r0;
+        java.lang.Object $r2;
+        java.lang.String $r1, $r3;
+
+        r4 := @this: soot.jimple.infoflow.collections.test.SimpleMapTestCode;
+
+        $r0 = new java.util.HashMap;
+
+        specialinvoke $r0.<java.util.HashMap: void <init>()>();
+
+        $r1 = staticinvoke <soot.jimple.infoflow.collections.test.Helper: java.lang.String source()>();
+
+        interfaceinvoke $r0.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>("ConstantKey", "untainted");
+
+        interfaceinvoke $r0.<java.util.Map: java.lang.Object putIfAbsent(java.lang.Object,java.lang.Object)>("ConstantKey", $r1);
+
+        $r2 = interfaceinvoke $r0.<java.util.Map: java.lang.Object get(java.lang.Object)>("ConstantKey");
+
+        $r3 = (java.lang.String) $r2;
+
+        staticinvoke <soot.jimple.infoflow.collections.test.Helper: void sink(java.lang.String)>($r3);
+
+        return;
+    }
+
+    public void testMapCompute1()
+    {
+        soot.jimple.infoflow.collections.test.SimpleMapTestCode r5;
+        java.util.function.BiFunction $r2;
+        java.util.HashMap $r0;
+        java.lang.Object $r3;
+        java.lang.String $r1, $r4;
+
+        r5 := @this: soot.jimple.infoflow.collections.test.SimpleMapTestCode;
+
+        $r0 = new java.util.HashMap;
+
+        specialinvoke $r0.<java.util.HashMap: void <init>()>();
+
+        $r1 = staticinvoke <soot.jimple.infoflow.collections.test.Helper: java.lang.String source()>();
+
+        interfaceinvoke $r0.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>("XXX", $r1);
+
+        $r2 = staticinvoke <soot.jimple.infoflow.collections.test.SimpleMapTestCode$lambda_testMapCompute1_0__1: java.util.function.BiFunction bootstrap$()>();
+
+        interfaceinvoke $r0.<java.util.Map: java.lang.Object compute(java.lang.Object,java.util.function.BiFunction)>("XXX", $r2);
+
+        $r3 = interfaceinvoke $r0.<java.util.Map: java.lang.Object get(java.lang.Object)>("XXX");
+
+        $r4 = (java.lang.String) $r3;
+
+        staticinvoke <soot.jimple.infoflow.collections.test.Helper: void sink(java.lang.String)>($r4);
+
+        return;
+    }
+
+    public void testMapCompute2()
+    {
+        soot.jimple.infoflow.collections.test.SimpleMapTestCode r5;
+        java.util.function.BiFunction $r2;
+        java.util.HashMap $r0;
+        java.lang.Object $r3;
+        java.lang.String $r1, $r4;
+
+        r5 := @this: soot.jimple.infoflow.collections.test.SimpleMapTestCode;
+
+        $r0 = new java.util.HashMap;
+
+        specialinvoke $r0.<java.util.HashMap: void <init>()>();
+
+        $r1 = staticinvoke <soot.jimple.infoflow.collections.test.Helper: java.lang.String source()>();
+
+        interfaceinvoke $r0.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>("XXX", $r1);
+
+        $r2 = staticinvoke <soot.jimple.infoflow.collections.test.SimpleMapTestCode$lambda_testMapCompute2_1__2: java.util.function.BiFunction bootstrap$()>();
+
+        interfaceinvoke $r0.<java.util.Map: java.lang.Object computeIfPresent(java.lang.Object,java.util.function.BiFunction)>("XXX", $r2);
+
+        $r3 = interfaceinvoke $r0.<java.util.Map: java.lang.Object get(java.lang.Object)>("XXX");
+
+        $r4 = (java.lang.String) $r3;
+
+        staticinvoke <soot.jimple.infoflow.collections.test.Helper: void sink(java.lang.String)>($r4);
+
+        return;
+    }
+
+    public void testMapCompute3()
+    {
+        soot.jimple.infoflow.collections.test.SimpleMapTestCode r5;
+        java.util.function.BiFunction $r2;
+        java.util.HashMap $r0;
+        java.lang.Object $r3;
+        java.lang.String $r1, $r4;
+
+        r5 := @this: soot.jimple.infoflow.collections.test.SimpleMapTestCode;
+
+        $r0 = new java.util.HashMap;
+
+        specialinvoke $r0.<java.util.HashMap: void <init>()>();
+
+        $r1 = staticinvoke <soot.jimple.infoflow.collections.test.Helper: java.lang.String source()>();
+
+        $r2 = staticinvoke <soot.jimple.infoflow.collections.test.SimpleMapTestCode$lambda_testMapCompute3_2__3: java.util.function.BiFunction bootstrap$(java.lang.String)>($r1);
+
+        interfaceinvoke $r0.<java.util.Map: java.lang.Object computeIfPresent(java.lang.Object,java.util.function.BiFunction)>("XXX", $r2);
+
+        $r3 = interfaceinvoke $r0.<java.util.Map: java.lang.Object get(java.lang.Object)>("XXX");
+
+        $r4 = (java.lang.String) $r3;
+
+        staticinvoke <soot.jimple.infoflow.collections.test.Helper: void sink(java.lang.String)>($r4);
+
+        return;
+    }
+
+    public void testMapCompute4()
+    {
+        soot.jimple.infoflow.collections.test.SimpleMapTestCode r2;
+        java.util.function.BiFunction $r3;
+        java.util.HashMap $r0;
+        java.lang.Object $r4;
+        java.lang.String $r1, $r5;
+
+        r2 := @this: soot.jimple.infoflow.collections.test.SimpleMapTestCode;
+
+        $r0 = new java.util.HashMap;
+
+        specialinvoke $r0.<java.util.HashMap: void <init>()>();
+
+        $r1 = staticinvoke <soot.jimple.infoflow.collections.test.Helper: java.lang.String source()>();
+
+        $r3 = staticinvoke <soot.jimple.infoflow.collections.test.SimpleMapTestCode$lambda_testMapCompute4_3__4: java.util.function.BiFunction bootstrap$(soot.jimple.infoflow.collections.test.SimpleMapTestCode,java.lang.String)>(r2, $r1);
+
+        interfaceinvoke $r0.<java.util.Map: java.lang.Object compute(java.lang.Object,java.util.function.BiFunction)>("XXX", $r3);
+
+        $r4 = interfaceinvoke $r0.<java.util.Map: java.lang.Object get(java.lang.Object)>("XXX");
+
+        $r5 = (java.lang.String) $r4;
+
+        staticinvoke <soot.jimple.infoflow.collections.test.Helper: void sink(java.lang.String)>($r5);
+
+        return;
+    }
+
+    public void testMapComputeIfAbsent1()
+    {
+        soot.jimple.infoflow.collections.test.SimpleMapTestCode r5;
+        java.util.HashMap $r0;
+        java.lang.Object $r3;
+        java.lang.String $r1, $r4;
+        java.util.function.Function $r2;
+
+        r5 := @this: soot.jimple.infoflow.collections.test.SimpleMapTestCode;
+
+        $r0 = new java.util.HashMap;
+
+        specialinvoke $r0.<java.util.HashMap: void <init>()>();
+
+        $r1 = staticinvoke <soot.jimple.infoflow.collections.test.Helper: java.lang.String source()>();
+
+        $r2 = staticinvoke <soot.jimple.infoflow.collections.test.SimpleMapTestCode$lambda_testMapComputeIfAbsent1_4__5: java.util.function.Function bootstrap$(java.lang.String)>($r1);
+
+        interfaceinvoke $r0.<java.util.Map: java.lang.Object computeIfAbsent(java.lang.Object,java.util.function.Function)>("XXX", $r2);
+
+        $r3 = interfaceinvoke $r0.<java.util.Map: java.lang.Object get(java.lang.Object)>("XXX");
+
+        $r4 = (java.lang.String) $r3;
+
+        staticinvoke <soot.jimple.infoflow.collections.test.Helper: void sink(java.lang.String)>($r4);
+
+        return;
+    }
+
+    public void testMapComputeIfAbsent2()
+    {
+        soot.jimple.infoflow.collections.test.SimpleMapTestCode r4;
+        java.util.HashMap $r0;
+        java.lang.Object $r2;
+        java.lang.String $r3;
+        java.util.function.Function $r1;
+
+        r4 := @this: soot.jimple.infoflow.collections.test.SimpleMapTestCode;
+
+        $r0 = new java.util.HashMap;
+
+        specialinvoke $r0.<java.util.HashMap: void <init>()>();
+
+        staticinvoke <soot.jimple.infoflow.collections.test.Helper: java.lang.String source()>();
+
+        $r1 = staticinvoke <soot.jimple.infoflow.collections.test.SimpleMapTestCode$lambda_testMapComputeIfAbsent2_5__6: java.util.function.Function bootstrap$()>();
+
+        interfaceinvoke $r0.<java.util.Map: java.lang.Object computeIfAbsent(java.lang.Object,java.util.function.Function)>("XXX", $r1);
+
+        $r2 = interfaceinvoke $r0.<java.util.Map: java.lang.Object get(java.lang.Object)>("XXX");
+
+        $r3 = (java.lang.String) $r2;
+
+        staticinvoke <soot.jimple.infoflow.collections.test.Helper: void sink(java.lang.String)>($r3);
+
+        return;
+    }
+
+    public void testMapMerge1()
+    {
+        soot.jimple.infoflow.collections.test.SimpleMapTestCode r5;
+        java.util.function.BiFunction $r2;
+        java.util.HashMap $r0;
+        java.lang.Object $r3;
+        java.lang.String $r1, $r4;
+
+        r5 := @this: soot.jimple.infoflow.collections.test.SimpleMapTestCode;
+
+        $r0 = new java.util.HashMap;
+
+        specialinvoke $r0.<java.util.HashMap: void <init>()>();
+
+        $r1 = staticinvoke <soot.jimple.infoflow.collections.test.Helper: java.lang.String source()>();
+
+        interfaceinvoke $r0.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>("XXX", $r1);
+
+        $r2 = staticinvoke <soot.jimple.infoflow.collections.test.SimpleMapTestCode$lambda_testMapMerge1_6__7: java.util.function.BiFunction bootstrap$()>();
+
+        interfaceinvoke $r0.<java.util.Map: java.lang.Object merge(java.lang.Object,java.lang.Object,java.util.function.BiFunction)>("XXX", "Value", $r2);
+
+        $r3 = interfaceinvoke $r0.<java.util.Map: java.lang.Object get(java.lang.Object)>("XXX");
+
+        $r4 = (java.lang.String) $r3;
+
+        staticinvoke <soot.jimple.infoflow.collections.test.Helper: void sink(java.lang.String)>($r4);
+
+        return;
+    }
+
+    public void testMapMerge2()
+    {
+        soot.jimple.infoflow.collections.test.SimpleMapTestCode r5;
+        java.util.function.BiFunction $r2;
+        java.util.HashMap $r0;
+        java.lang.Object $r3;
+        java.lang.String $r1, $r4;
+
+        r5 := @this: soot.jimple.infoflow.collections.test.SimpleMapTestCode;
+
+        $r0 = new java.util.HashMap;
+
+        specialinvoke $r0.<java.util.HashMap: void <init>()>();
+
+        $r1 = staticinvoke <soot.jimple.infoflow.collections.test.Helper: java.lang.String source()>();
+
+        interfaceinvoke $r0.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>("XXX", $r1);
+
+        $r2 = staticinvoke <soot.jimple.infoflow.collections.test.SimpleMapTestCode$lambda_testMapMerge2_7__8: java.util.function.BiFunction bootstrap$()>();
+
+        interfaceinvoke $r0.<java.util.Map: java.lang.Object merge(java.lang.Object,java.lang.Object,java.util.function.BiFunction)>("XXX", "Value", $r2);
+
+        $r3 = interfaceinvoke $r0.<java.util.Map: java.lang.Object get(java.lang.Object)>("XXX");
+
+        $r4 = (java.lang.String) $r3;
+
+        staticinvoke <soot.jimple.infoflow.collections.test.Helper: void sink(java.lang.String)>($r4);
+
+        return;
+    }
+
+    public void testMapMerge3()
+    {
+        soot.jimple.infoflow.collections.test.SimpleMapTestCode r5;
+        java.util.function.BiFunction $r2;
+        java.util.HashMap $r0;
+        java.lang.Object $r3;
+        java.lang.String $r1, $r4;
+
+        r5 := @this: soot.jimple.infoflow.collections.test.SimpleMapTestCode;
+
+        $r0 = new java.util.HashMap;
+
+        specialinvoke $r0.<java.util.HashMap: void <init>()>();
+
+        $r1 = staticinvoke <soot.jimple.infoflow.collections.test.Helper: java.lang.String source()>();
+
+        $r2 = staticinvoke <soot.jimple.infoflow.collections.test.SimpleMapTestCode$lambda_testMapMerge3_8__9: java.util.function.BiFunction bootstrap$()>();
+
+        interfaceinvoke $r0.<java.util.Map: java.lang.Object merge(java.lang.Object,java.lang.Object,java.util.function.BiFunction)>("XXX", $r1, $r2);
+
+        $r3 = interfaceinvoke $r0.<java.util.Map: java.lang.Object get(java.lang.Object)>("XXX");
+
+        $r4 = (java.lang.String) $r3;
+
+        staticinvoke <soot.jimple.infoflow.collections.test.Helper: void sink(java.lang.String)>($r4);
+
+        return;
+    }
+
+    public void testMapMerge4()
+    {
+        soot.jimple.infoflow.collections.test.SimpleMapTestCode r5;
+        java.util.function.BiFunction $r2;
+        java.util.HashMap $r0;
+        java.lang.Object $r3;
+        java.lang.String $r1, $r4;
+
+        r5 := @this: soot.jimple.infoflow.collections.test.SimpleMapTestCode;
+
+        $r0 = new java.util.HashMap;
+
+        specialinvoke $r0.<java.util.HashMap: void <init>()>();
+
+        $r1 = staticinvoke <soot.jimple.infoflow.collections.test.Helper: java.lang.String source()>();
+
+        $r2 = staticinvoke <soot.jimple.infoflow.collections.test.SimpleMapTestCode$lambda_testMapMerge4_9__10: java.util.function.BiFunction bootstrap$()>();
+
+        interfaceinvoke $r0.<java.util.Map: java.lang.Object merge(java.lang.Object,java.lang.Object,java.util.function.BiFunction)>("XXX", $r1, $r2);
+
+        $r3 = interfaceinvoke $r0.<java.util.Map: java.lang.Object get(java.lang.Object)>("XXX");
+
+        $r4 = (java.lang.String) $r3;
+
+        staticinvoke <soot.jimple.infoflow.collections.test.Helper: void sink(java.lang.String)>($r4);
+
+        return;
+    }
+
+    public void testMapMerge5()
+    {
+        soot.jimple.infoflow.collections.test.SimpleMapTestCode r5;
+        java.util.function.BiFunction $r2;
+        java.util.HashMap $r0;
+        java.lang.Object $r3;
+        java.lang.String $r1, $r4;
+
+        r5 := @this: soot.jimple.infoflow.collections.test.SimpleMapTestCode;
+
+        $r0 = new java.util.HashMap;
+
+        specialinvoke $r0.<java.util.HashMap: void <init>()>();
+
+        $r1 = staticinvoke <soot.jimple.infoflow.collections.test.Helper: java.lang.String source()>();
+
+        $r2 = staticinvoke <soot.jimple.infoflow.collections.test.SimpleMapTestCode$lambda_testMapMerge5_10__11: java.util.function.BiFunction bootstrap$()>();
+
+        interfaceinvoke $r0.<java.util.Map: java.lang.Object merge(java.lang.Object,java.lang.Object,java.util.function.BiFunction)>("XXX", $r1, $r2);
+
+        $r3 = interfaceinvoke $r0.<java.util.Map: java.lang.Object get(java.lang.Object)>("XXX");
+
+        $r4 = (java.lang.String) $r3;
+
+        staticinvoke <soot.jimple.infoflow.collections.test.Helper: void sink(java.lang.String)>($r4);
+
+        return;
+    }
+
+    public void testMapMerge6()
+    {
+        soot.jimple.infoflow.collections.test.SimpleMapTestCode r5;
+        java.util.function.BiFunction $r2;
+        java.util.HashMap $r0;
+        java.lang.Object $r3;
+        java.lang.String $r1, $r4;
+
+        r5 := @this: soot.jimple.infoflow.collections.test.SimpleMapTestCode;
+
+        $r0 = new java.util.HashMap;
+
+        specialinvoke $r0.<java.util.HashMap: void <init>()>();
+
+        $r1 = staticinvoke <soot.jimple.infoflow.collections.test.Helper: java.lang.String source()>();
+
+        $r2 = staticinvoke <soot.jimple.infoflow.collections.test.SimpleMapTestCode$lambda_testMapMerge6_11__12: java.util.function.BiFunction bootstrap$()>();
+
+        interfaceinvoke $r0.<java.util.Map: java.lang.Object merge(java.lang.Object,java.lang.Object,java.util.function.BiFunction)>("XXX", $r1, $r2);
+
+        $r3 = interfaceinvoke $r0.<java.util.Map: java.lang.Object get(java.lang.Object)>("XXX");
+
+        $r4 = (java.lang.String) $r3;
+
+        staticinvoke <soot.jimple.infoflow.collections.test.Helper: void sink(java.lang.String)>($r4);
+
+        return;
+    }
+
+    public void testMapMerge7()
+    {
+        soot.jimple.infoflow.collections.test.SimpleMapTestCode r5;
+        java.util.function.BiFunction $r2;
+        java.util.HashMap $r0;
+        java.lang.Object $r3;
+        java.lang.String $r1, $r4;
+
+        r5 := @this: soot.jimple.infoflow.collections.test.SimpleMapTestCode;
+
+        $r0 = new java.util.HashMap;
+
+        specialinvoke $r0.<java.util.HashMap: void <init>()>();
+
+        $r1 = staticinvoke <soot.jimple.infoflow.collections.test.Helper: java.lang.String source()>();
+
+        interfaceinvoke $r0.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>("XXX", $r1);
+
+        $r2 = staticinvoke <soot.jimple.infoflow.collections.test.SimpleMapTestCode$lambda_testMapMerge7_12__13: java.util.function.BiFunction bootstrap$()>();
+
+        interfaceinvoke $r0.<java.util.Map: java.lang.Object merge(java.lang.Object,java.lang.Object,java.util.function.BiFunction)>("XXX", "Value", $r2);
+
+        $r3 = interfaceinvoke $r0.<java.util.Map: java.lang.Object get(java.lang.Object)>("XXX");
+
+        $r4 = (java.lang.String) $r3;
+
+        staticinvoke <soot.jimple.infoflow.collections.test.Helper: void sink(java.lang.String)>($r4);
+
+        return;
+    }
+
+    public void testMapMerge8()
+    {
+        soot.jimple.infoflow.collections.test.SimpleMapTestCode r5;
+        java.util.function.BiFunction $r2;
+        java.util.HashMap $r0;
+        java.lang.Object $r3;
+        java.lang.String $r1, $r4;
+
+        r5 := @this: soot.jimple.infoflow.collections.test.SimpleMapTestCode;
+
+        $r0 = new java.util.HashMap;
+
+        specialinvoke $r0.<java.util.HashMap: void <init>()>();
+
+        $r1 = staticinvoke <soot.jimple.infoflow.collections.test.Helper: java.lang.String source()>();
+
+        interfaceinvoke $r0.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>("XXX", $r1);
+
+        $r2 = staticinvoke <soot.jimple.infoflow.collections.test.SimpleMapTestCode$lambda_testMapMerge8_13__14: java.util.function.BiFunction bootstrap$()>();
+
+        interfaceinvoke $r0.<java.util.Map: java.lang.Object merge(java.lang.Object,java.lang.Object,java.util.function.BiFunction)>("XXX", "Value", $r2);
+
+        $r3 = interfaceinvoke $r0.<java.util.Map: java.lang.Object get(java.lang.Object)>("XXX");
+
+        $r4 = (java.lang.String) $r3;
+
+        staticinvoke <soot.jimple.infoflow.collections.test.Helper: void sink(java.lang.String)>($r4);
+
+        return;
+    }
+
+    public void testMapReplaceAll1()
+    {
+        soot.jimple.infoflow.collections.test.SimpleMapTestCode r5;
+        java.util.function.BiFunction $r2;
+        java.util.HashMap $r0;
+        java.lang.Object $r3;
+        java.lang.String $r1, $r4;
+
+        r5 := @this: soot.jimple.infoflow.collections.test.SimpleMapTestCode;
+
+        $r0 = new java.util.HashMap;
+
+        specialinvoke $r0.<java.util.HashMap: void <init>()>();
+
+        $r1 = staticinvoke <soot.jimple.infoflow.collections.test.Helper: java.lang.String source()>();
+
+        interfaceinvoke $r0.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>("XXX", $r1);
+
+        $r2 = staticinvoke <soot.jimple.infoflow.collections.test.SimpleMapTestCode$lambda_testMapReplaceAll1_14__15: java.util.function.BiFunction bootstrap$()>();
+
+        interfaceinvoke $r0.<java.util.Map: void replaceAll(java.util.function.BiFunction)>($r2);
+
+        $r3 = interfaceinvoke $r0.<java.util.Map: java.lang.Object get(java.lang.Object)>("XXX");
+
+        $r4 = (java.lang.String) $r3;
+
+        staticinvoke <soot.jimple.infoflow.collections.test.Helper: void sink(java.lang.String)>($r4);
+
+        return;
+    }
+
+    public void testMapReplaceAll2()
+    {
+        soot.jimple.infoflow.collections.test.SimpleMapTestCode r5;
+        java.util.function.BiFunction $r2;
+        java.util.HashMap $r0;
+        java.lang.Object $r3;
+        java.lang.String $r1, $r4;
+
+        r5 := @this: soot.jimple.infoflow.collections.test.SimpleMapTestCode;
+
+        $r0 = new java.util.HashMap;
+
+        specialinvoke $r0.<java.util.HashMap: void <init>()>();
+
+        $r1 = staticinvoke <soot.jimple.infoflow.collections.test.Helper: java.lang.String source()>();
+
+        interfaceinvoke $r0.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>("XXX", $r1);
+
+        $r2 = staticinvoke <soot.jimple.infoflow.collections.test.SimpleMapTestCode$lambda_testMapReplaceAll2_15__16: java.util.function.BiFunction bootstrap$()>();
+
+        interfaceinvoke $r0.<java.util.Map: void replaceAll(java.util.function.BiFunction)>($r2);
+
+        $r3 = interfaceinvoke $r0.<java.util.Map: java.lang.Object get(java.lang.Object)>("XXX");
+
+        $r4 = (java.lang.String) $r3;
+
+        staticinvoke <soot.jimple.infoflow.collections.test.Helper: void sink(java.lang.String)>($r4);
+
+        return;
+    }
+
+    public void testMapComputeReturn1()
+    {
+        soot.jimple.infoflow.collections.test.SimpleMapTestCode r5;
+        java.util.function.BiFunction $r2;
+        java.util.HashMap $r0;
+        java.lang.Object $r3;
+        java.lang.String $r1, r4;
+
+        r5 := @this: soot.jimple.infoflow.collections.test.SimpleMapTestCode;
+
+        $r0 = new java.util.HashMap;
+
+        specialinvoke $r0.<java.util.HashMap: void <init>()>();
+
+        $r1 = staticinvoke <soot.jimple.infoflow.collections.test.Helper: java.lang.String source()>();
+
+        $r2 = staticinvoke <soot.jimple.infoflow.collections.test.SimpleMapTestCode$lambda_testMapComputeReturn1_16__17: java.util.function.BiFunction bootstrap$(java.lang.String)>($r1);
+
+        $r3 = interfaceinvoke $r0.<java.util.Map: java.lang.Object compute(java.lang.Object,java.util.function.BiFunction)>("XXX", $r2);
+
+        r4 = (java.lang.String) $r3;
+
+        staticinvoke <soot.jimple.infoflow.collections.test.Helper: void sink(java.lang.String)>(r4);
+
+        return;
+    }
+
+    public void testMapComputeReturn2()
+    {
+        soot.jimple.infoflow.collections.test.SimpleMapTestCode r5;
+        java.util.HashMap $r0;
+        java.lang.Object $r3;
+        java.lang.String $r1, r4;
+        java.util.function.Function $r2;
+
+        r5 := @this: soot.jimple.infoflow.collections.test.SimpleMapTestCode;
+
+        $r0 = new java.util.HashMap;
+
+        specialinvoke $r0.<java.util.HashMap: void <init>()>();
+
+        $r1 = staticinvoke <soot.jimple.infoflow.collections.test.Helper: java.lang.String source()>();
+
+        $r2 = staticinvoke <soot.jimple.infoflow.collections.test.SimpleMapTestCode$lambda_testMapComputeReturn2_17__18: java.util.function.Function bootstrap$(java.lang.String)>($r1);
+
+        $r3 = interfaceinvoke $r0.<java.util.Map: java.lang.Object computeIfAbsent(java.lang.Object,java.util.function.Function)>("XXX", $r2);
+
+        r4 = (java.lang.String) $r3;
+
+        staticinvoke <soot.jimple.infoflow.collections.test.Helper: void sink(java.lang.String)>(r4);
+
+        return;
+    }
+
+    public void testMapComputeReturn3()
+    {
+        soot.jimple.infoflow.collections.test.SimpleMapTestCode r5;
+        java.util.function.BiFunction $r2;
+        java.util.HashMap $r0;
+        java.lang.Object $r3;
+        java.lang.String $r1, r4;
+
+        r5 := @this: soot.jimple.infoflow.collections.test.SimpleMapTestCode;
+
+        $r0 = new java.util.HashMap;
+
+        specialinvoke $r0.<java.util.HashMap: void <init>()>();
+
+        $r1 = staticinvoke <soot.jimple.infoflow.collections.test.Helper: java.lang.String source()>();
+
+        $r2 = staticinvoke <soot.jimple.infoflow.collections.test.SimpleMapTestCode$lambda_testMapComputeReturn3_18__19: java.util.function.BiFunction bootstrap$(java.lang.String)>($r1);
+
+        $r3 = interfaceinvoke $r0.<java.util.Map: java.lang.Object computeIfPresent(java.lang.Object,java.util.function.BiFunction)>("XXX", $r2);
+
+        r4 = (java.lang.String) $r3;
+
+        staticinvoke <soot.jimple.infoflow.collections.test.Helper: void sink(java.lang.String)>(r4);
+
+        return;
+    }
+
+    public void testMapComputeReturn4()
+    {
+        soot.jimple.infoflow.collections.test.SimpleMapTestCode r5;
+        java.util.function.BiFunction $r2;
+        java.util.HashMap $r0;
+        java.lang.Object $r3;
+        java.lang.String $r1, r4;
+
+        r5 := @this: soot.jimple.infoflow.collections.test.SimpleMapTestCode;
+
+        $r0 = new java.util.HashMap;
+
+        specialinvoke $r0.<java.util.HashMap: void <init>()>();
+
+        $r1 = staticinvoke <soot.jimple.infoflow.collections.test.Helper: java.lang.String source()>();
+
+        interfaceinvoke $r0.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>("XXX", $r1);
+
+        $r2 = staticinvoke <soot.jimple.infoflow.collections.test.SimpleMapTestCode$lambda_testMapComputeReturn4_19__20: java.util.function.BiFunction bootstrap$()>();
+
+        $r3 = interfaceinvoke $r0.<java.util.Map: java.lang.Object merge(java.lang.Object,java.lang.Object,java.util.function.BiFunction)>("XXX", "Value", $r2);
+
+        r4 = (java.lang.String) $r3;
+
+        staticinvoke <soot.jimple.infoflow.collections.test.Helper: void sink(java.lang.String)>(r4);
+
+        return;
+    }
+
+    public void testMapComputeReturn5()
+    {
+        soot.jimple.infoflow.collections.test.SimpleMapTestCode r5;
+        java.util.function.BiFunction $r2;
+        java.util.HashMap $r0;
+        java.lang.Object $r3;
+        java.lang.String $r1, r4;
+
+        r5 := @this: soot.jimple.infoflow.collections.test.SimpleMapTestCode;
+
+        $r0 = new java.util.HashMap;
+
+        specialinvoke $r0.<java.util.HashMap: void <init>()>();
+
+        $r1 = staticinvoke <soot.jimple.infoflow.collections.test.Helper: java.lang.String source()>();
+
+        $r2 = staticinvoke <soot.jimple.infoflow.collections.test.SimpleMapTestCode$lambda_testMapComputeReturn5_20__21: java.util.function.BiFunction bootstrap$()>();
+
+        $r3 = interfaceinvoke $r0.<java.util.Map: java.lang.Object merge(java.lang.Object,java.lang.Object,java.util.function.BiFunction)>("XXX", $r1, $r2);
+
+        r4 = (java.lang.String) $r3;
+
+        staticinvoke <soot.jimple.infoflow.collections.test.Helper: void sink(java.lang.String)>(r4);
+
+        return;
+    }
+
+    public void testMapComputeReturn6()
+    {
+        soot.jimple.infoflow.collections.test.SimpleMapTestCode r5;
+        java.util.function.BiFunction $r2;
+        java.util.HashMap $r0;
+        java.lang.Object $r3;
+        java.lang.String $r1, r4;
+
+        r5 := @this: soot.jimple.infoflow.collections.test.SimpleMapTestCode;
+
+        $r0 = new java.util.HashMap;
+
+        specialinvoke $r0.<java.util.HashMap: void <init>()>();
+
+        $r1 = staticinvoke <soot.jimple.infoflow.collections.test.Helper: java.lang.String source()>();
+
+        interfaceinvoke $r0.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>("XXX", $r1);
+
+        $r2 = staticinvoke <soot.jimple.infoflow.collections.test.SimpleMapTestCode$lambda_testMapComputeReturn6_21__22: java.util.function.BiFunction bootstrap$()>();
+
+        $r3 = interfaceinvoke $r0.<java.util.Map: java.lang.Object merge(java.lang.Object,java.lang.Object,java.util.function.BiFunction)>("XXX", "Value", $r2);
+
+        r4 = (java.lang.String) $r3;
+
+        staticinvoke <soot.jimple.infoflow.collections.test.Helper: void sink(java.lang.String)>(r4);
+
+        return;
+    }
+
+    public void testMapComputeFallback1()
+    {
+        soot.jimple.infoflow.collections.test.SimpleMapTestCode r4;
+        java.util.HashMap $r0;
+        java.lang.Object $r2;
+        java.lang.String $r1, $r3;
+
+        r4 := @this: soot.jimple.infoflow.collections.test.SimpleMapTestCode;
+
+        $r0 = new java.util.HashMap;
+
+        specialinvoke $r0.<java.util.HashMap: void <init>()>();
+
+        $r1 = staticinvoke <soot.jimple.infoflow.collections.test.Helper: java.lang.String source()>();
+
+        interfaceinvoke $r0.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>("XXX", $r1);
+
+        interfaceinvoke $r0.<java.util.Map: java.lang.Object compute(java.lang.Object,java.util.function.BiFunction)>("XXX", null);
+
+        $r2 = interfaceinvoke $r0.<java.util.Map: java.lang.Object get(java.lang.Object)>("XXX");
+
+        $r3 = (java.lang.String) $r2;
+
+        staticinvoke <soot.jimple.infoflow.collections.test.Helper: void sink(java.lang.String)>($r3);
+
+        return;
+    }
+
+    public void testMapComputeFallback2()
+    {
+        soot.jimple.infoflow.collections.test.SimpleMapTestCode r4;
+        java.util.HashMap $r0;
+        java.lang.Object $r2;
+        java.lang.String $r1, r3;
+
+        r4 := @this: soot.jimple.infoflow.collections.test.SimpleMapTestCode;
+
+        $r0 = new java.util.HashMap;
+
+        specialinvoke $r0.<java.util.HashMap: void <init>()>();
+
+        $r1 = staticinvoke <soot.jimple.infoflow.collections.test.Helper: java.lang.String source()>();
+
+        interfaceinvoke $r0.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>("XXX", $r1);
+
+        $r2 = interfaceinvoke $r0.<java.util.Map: java.lang.Object compute(java.lang.Object,java.util.function.BiFunction)>("XXX", null);
+
+        r3 = (java.lang.String) $r2;
+
+        staticinvoke <soot.jimple.infoflow.collections.test.Helper: void sink(java.lang.String)>(r3);
+
+        return;
+    }
+
+    public static java.lang.String lambda$testMapComputeReturn6$21(java.lang.String, java.lang.String)
+    {
+        java.lang.String r0, r1;
+
+        r1 := @parameter0: java.lang.String;
+
+        r0 := @parameter1: java.lang.String;
+
+        return r0;
+    }
+
+    public static java.lang.String lambda$testMapComputeReturn5$20(java.lang.String, java.lang.String)
+    {
+        java.lang.StringBuilder $r0, $r3;
+        java.lang.String r1, r2, $r4;
+
+        r1 := @parameter0: java.lang.String;
+
+        r2 := @parameter1: java.lang.String;
+
+        $r0 = new java.lang.StringBuilder;
+
+        specialinvoke $r0.<java.lang.StringBuilder: void <init>(java.lang.String)>(r1);
+
+        $r3 = virtualinvoke $r0.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(r2);
+
+        $r4 = virtualinvoke $r3.<java.lang.StringBuilder: java.lang.String toString()>();
+
+        return $r4;
+    }
+
+    public static java.lang.String lambda$testMapComputeReturn4$19(java.lang.String, java.lang.String)
+    {
+        java.lang.StringBuilder $r0, $r3;
+        java.lang.String r1, r2, $r4;
+
+        r1 := @parameter0: java.lang.String;
+
+        r2 := @parameter1: java.lang.String;
+
+        $r0 = new java.lang.StringBuilder;
+
+        specialinvoke $r0.<java.lang.StringBuilder: void <init>(java.lang.String)>(r1);
+
+        $r3 = virtualinvoke $r0.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(r2);
+
+        $r4 = virtualinvoke $r3.<java.lang.StringBuilder: java.lang.String toString()>();
+
+        return $r4;
+    }
+
+    public static java.lang.String lambda$testMapComputeReturn3$18(java.lang.String, java.lang.String, java.lang.String)
+    {
+        java.lang.String r0, r1, r2;
+
+        r0 := @parameter0: java.lang.String;
+
+        r1 := @parameter1: java.lang.String;
+
+        r2 := @parameter2: java.lang.String;
+
+        return r0;
+    }
+
+    public static java.lang.String lambda$testMapComputeReturn2$17(java.lang.String, java.lang.String)
+    {
+        java.lang.String r0, r1;
+
+        r0 := @parameter0: java.lang.String;
+
+        r1 := @parameter1: java.lang.String;
+
+        return r0;
+    }
+
+    public static java.lang.String lambda$testMapComputeReturn1$16(java.lang.String, java.lang.String, java.lang.String)
+    {
+        java.lang.String r0, r1, r2;
+
+        r0 := @parameter0: java.lang.String;
+
+        r1 := @parameter1: java.lang.String;
+
+        r2 := @parameter2: java.lang.String;
+
+        return r0;
+    }
+
+    public static java.lang.String lambda$testMapReplaceAll2$15(java.lang.String, java.lang.String)
+    {
+        java.lang.String r0, r1;
+
+        r0 := @parameter0: java.lang.String;
+
+        r1 := @parameter1: java.lang.String;
+
+        return "Overwrite";
+    }
+
+    public static java.lang.String lambda$testMapReplaceAll1$14(java.lang.String, java.lang.String)
+    {
+        java.lang.StringBuilder $r0, $r2;
+        java.lang.String r1, $r3, r4;
+
+        r4 := @parameter0: java.lang.String;
+
+        r1 := @parameter1: java.lang.String;
+
+        $r0 = new java.lang.StringBuilder;
+
+        specialinvoke $r0.<java.lang.StringBuilder: void <init>(java.lang.String)>("Prefix");
+
+        $r2 = virtualinvoke $r0.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(r1);
+
+        $r3 = virtualinvoke $r2.<java.lang.StringBuilder: java.lang.String toString()>();
+
+        return $r3;
+    }
+
+    public static java.lang.String lambda$testMapMerge8$13(java.lang.String, java.lang.String)
+    {
+        java.lang.String r0, r1;
+
+        r1 := @parameter0: java.lang.String;
+
+        r0 := @parameter1: java.lang.String;
+
+        return r0;
+    }
+
+    public static java.lang.String lambda$testMapMerge7$12(java.lang.String, java.lang.String)
+    {
+        java.lang.String r0, r1;
+
+        r0 := @parameter0: java.lang.String;
+
+        r1 := @parameter1: java.lang.String;
+
+        return r0;
+    }
+
+    public static java.lang.String lambda$testMapMerge6$11(java.lang.String, java.lang.String)
+    {
+        java.lang.String r0, r1;
+
+        r1 := @parameter0: java.lang.String;
+
+        r0 := @parameter1: java.lang.String;
+
+        return r0;
+    }
+
+    public static java.lang.String lambda$testMapMerge5$10(java.lang.String, java.lang.String)
+    {
+        java.lang.String r0, r1;
+
+        r0 := @parameter0: java.lang.String;
+
+        r1 := @parameter1: java.lang.String;
+
+        return r0;
+    }
+
+    public static java.lang.String lambda$testMapMerge4$9(java.lang.String, java.lang.String)
+    {
+        java.lang.String r0, r1;
+
+        r0 := @parameter0: java.lang.String;
+
+        r1 := @parameter1: java.lang.String;
+
+        return "Overwrite";
+    }
+
+    public static java.lang.String lambda$testMapMerge3$8(java.lang.String, java.lang.String)
+    {
+        java.lang.StringBuilder $r0, $r3;
+        java.lang.String r1, r2, $r4;
+
+        r1 := @parameter0: java.lang.String;
+
+        r2 := @parameter1: java.lang.String;
+
+        $r0 = new java.lang.StringBuilder;
+
+        specialinvoke $r0.<java.lang.StringBuilder: void <init>(java.lang.String)>(r1);
+
+        $r3 = virtualinvoke $r0.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(r2);
+
+        $r4 = virtualinvoke $r3.<java.lang.StringBuilder: java.lang.String toString()>();
+
+        return $r4;
+    }
+
+    public static java.lang.String lambda$testMapMerge2$7(java.lang.String, java.lang.String)
+    {
+        java.lang.String r0, r1;
+
+        r0 := @parameter0: java.lang.String;
+
+        r1 := @parameter1: java.lang.String;
+
+        return "Overwrite";
+    }
+
+    public static java.lang.String lambda$testMapMerge1$6(java.lang.String, java.lang.String)
+    {
+        java.lang.StringBuilder $r0, $r3;
+        java.lang.String r1, r2, $r4;
+
+        r1 := @parameter0: java.lang.String;
+
+        r2 := @parameter1: java.lang.String;
+
+        $r0 = new java.lang.StringBuilder;
+
+        specialinvoke $r0.<java.lang.StringBuilder: void <init>(java.lang.String)>(r1);
+
+        $r3 = virtualinvoke $r0.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(r2);
+
+        $r4 = virtualinvoke $r3.<java.lang.StringBuilder: java.lang.String toString()>();
+
+        return $r4;
+    }
+
+    public static java.lang.String lambda$testMapComputeIfAbsent2$5(java.lang.String)
+    {
+        java.lang.String r0;
+
+        r0 := @parameter0: java.lang.String;
+
+        return "Whatever";
+    }
+
+    public static java.lang.String lambda$testMapComputeIfAbsent1$4(java.lang.String, java.lang.String)
+    {
+        java.lang.String r0, r1;
+
+        r0 := @parameter0: java.lang.String;
+
+        r1 := @parameter1: java.lang.String;
+
+        return r0;
+    }
+
+    public java.lang.String lambda$testMapCompute4$3(java.lang.String, java.lang.String, java.lang.String)
+    {
+        soot.jimple.infoflow.collections.test.SimpleMapTestCode r0;
+        java.lang.String r1, r2, r3;
+
+        r0 := @this: soot.jimple.infoflow.collections.test.SimpleMapTestCode;
+
+        r1 := @parameter0: java.lang.String;
+
+        r2 := @parameter1: java.lang.String;
+
+        r3 := @parameter2: java.lang.String;
+
+        r0.<soot.jimple.infoflow.collections.test.SimpleMapTestCode: java.lang.String unusedStringField> = r1;
+
+        return "Overwrite";
+    }
+
+    public static java.lang.String lambda$testMapCompute3$2(java.lang.String, java.lang.String, java.lang.String)
+    {
+        java.lang.String r0, r1, r2;
+
+        r0 := @parameter0: java.lang.String;
+
+        r1 := @parameter1: java.lang.String;
+
+        r2 := @parameter2: java.lang.String;
+
+        return r0;
+    }
+
+    public static java.lang.String lambda$testMapCompute2$1(java.lang.String, java.lang.String)
+    {
+        java.lang.String r0, r1;
+
+        r0 := @parameter0: java.lang.String;
+
+        r1 := @parameter1: java.lang.String;
+
+        return "Overwritten";
+    }
+
+    public static java.lang.String lambda$testMapCompute1$0(java.lang.String, java.lang.String)
+    {
+        java.lang.String r0, r1;
+
+        r1 := @parameter0: java.lang.String;
+
+        r0 := @parameter1: java.lang.String;
+
+        return r0;
+    }
+}

@@ -1,0 +1,75 @@
+<?xml version="1.0" ?>
+
+<collectionModel class="java.util.Vector" type="position">
+    <!-- TODO: addAll -->
+    <method subsig="void addElement(java.lang.Object)">
+        <insert field="[java.util.Collection: java.lang.Object[] innerArray]">
+            <index idx="last" />
+            <data idx="0" />
+        </insert>
+    </method>
+    <!-- capacity() handled with fallback -->
+    <method subsig="void copyInto(java.lang.Object[])">
+        <!-- TODO: can be more precise if we handle arrays -->
+        <invalidate field="[java.util.Collection: java.lang.Object[] innerArray]">
+            <target idx="base" />
+        </invalidate>
+    </method>
+    <method subsig="java.lang.Object get(int)">
+        <access field="[java.util.Collection: java.lang.Object[] innerArray]">
+            <index idx="0" />
+        </access>
+    </method>
+    <!-- elements() handled with fallback -->
+    <!-- ensureCapacity() handled with fallback -->
+    <method subsig="java.lang.Object firstElement()">
+        <access field="[java.util.Collection: java.lang.Object[] innerArray]">
+            <index idx="first" />
+        </access>
+    </method>
+    <method subsig="void insertElementAt(java.lang.Object,int)">
+        <insert field="[java.util.Collection: java.lang.Object[] innerArray]">
+            <index idx="1" />
+            <data idx="0" />
+        </insert>
+        <shiftRight field="[java.util.Collection: java.lang.Object[] innerArray]">
+            <index idx="0" />
+        </shiftRight>
+    </method>
+    <method subsig="void removeAllElements()">
+        <remove field="[java.util.Collection: java.lang.Object[] innerArray]">
+            <index idx="all" />
+        </remove>
+    </method>
+    <method subsig="void removeElementAt(int)">
+        <remove field="[java.util.Collection: java.lang.Object[] innerArray]">
+            <index idx="0" />
+        </remove>
+        <shiftLeft field="[java.util.Collection: java.lang.Object[] innerArray]">
+            <index idx="0" />
+        </shiftLeft>
+    </method>
+    <method subsig="boolean removeElement(java.lang.Object)">
+        <!-- We cannot remove any element but might shift -->
+        <shiftLeft field="[java.util.Collection: java.lang.Object[] innerArray]">
+            <index idx="all" />
+        </shiftLeft>
+    </method>
+    <method subsig="boolean removeIf(java.util.function.Predicate)">
+        <invalidate field="[java.util.Collection: java.lang.Object[] innerArray]">
+            <target idx="base" />
+        </invalidate>
+    </method>
+    <!-- TODO: removeRange -->
+    <method subsig="void setElementAt(java.lang.Object,int)">
+        <remove field="[java.util.Collection: java.lang.Object[] innerArray]">
+            <index idx="1" />
+        </remove>
+        <insert field="[java.util.Collection: java.lang.Object[] innerArray]">
+            <index idx="1" />
+            <data idx="0" />
+        </insert>
+    </method>
+    <!-- setSize() handled by fallback -->
+    <!-- trimToSize() handled by fallback -->
+</collectionModel>

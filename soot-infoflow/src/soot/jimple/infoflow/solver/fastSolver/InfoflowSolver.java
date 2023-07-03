@@ -31,6 +31,7 @@ import soot.jimple.infoflow.solver.functions.SolverCallToReturnFlowFunction;
 import soot.jimple.infoflow.solver.functions.SolverNormalFlowFunction;
 import soot.jimple.infoflow.solver.functions.SolverReturnFlowFunction;
 import soot.jimple.toolkits.ide.icfg.BiDiInterproceduralCFG;
+import soot.util.ConcurrentHashMultiMap;
 
 /**
  * We are subclassing the JimpleIFDSSolver because we need the same executor for
@@ -111,7 +112,7 @@ public class InfoflowSolver extends IFDSSolver<Unit, Abstraction, BiDiInterproce
 
 	@Override
 	public void cleanup() {
-		this.jumpFunctions = new MyConcurrentHashMap<PathEdge<Unit, Abstraction>, Abstraction>();
+		this.jumpFunctions = new ConcurrentHashMultiMap<>();
 		this.incoming.clear();
 		this.endSummary.clear();
 		if (this.ffCache != null)
@@ -133,7 +134,7 @@ public class InfoflowSolver extends IFDSSolver<Unit, Abstraction, BiDiInterproce
 			final Abstraction d2 = edge.factAtTarget();
 
 			final SootMethod methodThatNeedsSummary = icfg.getMethodOf(u);
-			final Map<Unit, Map<Abstraction, Abstraction>> inc = incoming(d1, methodThatNeedsSummary);
+			final Set<IncomingRecord<Unit, Abstraction>> inc = incoming(d1, methodThatNeedsSummary);
 
 			if (inc == null || inc.isEmpty())
 				followReturnsPastSeedsHandler.handleFollowReturnsPastSeeds(d1, u, d2);
@@ -153,11 +154,6 @@ public class InfoflowSolver extends IFDSSolver<Unit, Abstraction, BiDiInterproce
 	@Override
 	public AbstractInfoflowProblem getTabulationProblem() {
 		return problem;
-	}
-
-	@Override
-	public void setPeerGroup(SolverPeerGroup solverPeerGroup) {
-		// we don't need peers
 	}
 
 	@Override

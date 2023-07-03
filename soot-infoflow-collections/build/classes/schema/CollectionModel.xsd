@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <xs:element name="collectionModel">
+        <xs:complexType>
+            <xs:sequence maxOccurs="unbounded">
+                <xs:element name="method" type="method" />
+            </xs:sequence>
+            <xs:attribute name="class" type="xs:string" use="required" />
+            <xs:attribute name="type" type="collectionType" use="required" />
+        </xs:complexType>
+    </xs:element>
+
+    <xs:complexType name="method">
+        <xs:sequence minOccurs="0" maxOccurs="unbounded">
+            <xs:choice>
+                <xs:element name="access" type="access" />
+                <xs:element name="insert" type="insert" />
+                <xs:element name="remove" type="remove" />
+                <xs:element name="copy" type="copy" />
+                <xs:element name="shiftLeft" type="shift" />
+                <xs:element name="shiftRight" type="shift" />
+                <xs:element name="compute" type="compute" />
+                <xs:element name="invalidate" type="invalidate" />
+            </xs:choice>
+        </xs:sequence>
+        <xs:attribute name="subsig" type="xs:string" use="required" />
+    </xs:complexType>
+
+    <xs:complexType name="access">
+        <xs:sequence>
+            <xs:sequence maxOccurs="2">
+                <xs:choice>
+                    <xs:element name="key" type="key" />
+                    <xs:element name="index" type="index" />
+                </xs:choice>
+            </xs:sequence>
+            <xs:element name="return" minOccurs="0" />
+        </xs:sequence>
+        <xs:attribute name="field" type="xs:string" use="required" />
+    </xs:complexType>
+
+    <xs:complexType name="insert">
+        <xs:sequence>
+            <xs:sequence maxOccurs="2">
+                <xs:choice>
+                    <xs:element name="key" type="key" />
+                    <xs:element name="index" type="index" />
+                </xs:choice>
+            </xs:sequence>
+            <xs:element name="data" type="paramIdx" />
+        </xs:sequence>
+        <xs:attribute name="field" type="xs:string" use="required" />
+    </xs:complexType>
+
+    <xs:complexType name="remove">
+        <xs:sequence>
+            <xs:sequence maxOccurs="2">
+                <xs:choice>
+                    <xs:element name="key" type="key" />
+                    <xs:element name="index" type="index" />
+                </xs:choice>
+            </xs:sequence>
+        </xs:sequence>
+        <xs:attribute name="field" type="xs:string" use="required" />
+    </xs:complexType>
+
+    <xs:complexType name="copy">
+        <xs:sequence>
+            <xs:element name="from" type="paramIdxOrBaseOrReturn" />
+            <xs:element name="to" type="paramIdxOrBaseOrReturn" />
+        </xs:sequence>
+        <xs:attribute name="mode" type="copyMode" use="required" />
+    </xs:complexType>
+
+    <xs:complexType name="shift">
+        <xs:sequence>
+            <xs:choice>
+                <xs:element name="key" type="key" />
+                <xs:element name="index" type="index" />
+            </xs:choice>
+        </xs:sequence>
+        <xs:attribute name="field" type="xs:string" use="required" />
+    </xs:complexType>
+
+    <xs:complexType name="invalidate">
+        <xs:sequence>
+            <xs:element name="target" type="paramIdxOrBase" />
+            <xs:element name="return" minOccurs="0" />
+        </xs:sequence>
+        <xs:attribute name="field" type="xs:string" use="required" />
+    </xs:complexType>
+
+    <xs:complexType name="compute">
+        <xs:sequence>
+            <xs:choice>
+                <xs:element name="key" type="key" />
+                <xs:element name="index" type="index" />
+            </xs:choice>
+            <xs:element name="data" type="paramIdx" minOccurs="0" />
+            <xs:element name="callback" type="paramIdx" />
+            <xs:element name="callbackBase" type="paramIdx" minOccurs="0" />
+            <xs:element name="callbackData" type="paramIdx" minOccurs="0" />
+            <xs:element name="return" minOccurs="0" />
+        </xs:sequence>
+        <xs:attribute name="field" type="xs:string" use="required" />
+    </xs:complexType>
+
+    <xs:complexType name="index">
+        <xs:attribute name="idx" type="idx" use="required" />
+    </xs:complexType>
+
+    <xs:complexType name="key">
+        <xs:attribute name="idx" type="idx" />
+    </xs:complexType>
+
+    <xs:simpleType name="idx">
+        <xs:union>
+            <xs:simpleType>
+                <xs:restriction base="xs:nonNegativeInteger" />
+            </xs:simpleType>
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:enumeration value="all" />
+                    <xs:enumeration value="first" />
+                    <xs:enumeration value="last" />
+                    <xs:enumeration value="copy" />
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:union>
+    </xs:simpleType>
+
+    <xs:complexType name="paramIdx">
+        <xs:attribute name="idx" type="xs:nonNegativeInteger" use="required" />
+    </xs:complexType>
+
+    <xs:complexType name="paramIdxOrBase">
+        <xs:attribute name="idx" use="required">
+            <xs:simpleType>
+                <xs:union>
+                    <xs:simpleType>
+                        <xs:restriction base="xs:nonNegativeInteger" />
+                    </xs:simpleType>
+                    <xs:simpleType>
+                        <xs:restriction base="xs:string">
+                            <xs:enumeration value="base" />
+                        </xs:restriction>
+                    </xs:simpleType>
+                </xs:union>
+            </xs:simpleType>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="paramIdxOrBaseOrReturn">
+        <xs:attribute name="idx" use="required">
+            <xs:simpleType>
+                <xs:union>
+                    <xs:simpleType>
+                        <xs:restriction base="xs:nonNegativeInteger" />
+                    </xs:simpleType>
+                    <xs:simpleType>
+                        <xs:restriction base="xs:string">
+                            <xs:enumeration value="base" />
+                            <xs:enumeration value="return" />
+                        </xs:restriction>
+                    </xs:simpleType>
+                </xs:union>
+            </xs:simpleType>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="accessPath">
+        <xs:attribute name="field" type="xs:string" use="required" />
+        <xs:attribute name="type" type="xs:string" use="required" />
+    </xs:complexType>
+
+    <xs:simpleType name="copyMode">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="update" />
+            <xs:enumeration value="append" />
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="collectionType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="value" />
+            <xs:enumeration value="position" />
+        </xs:restriction>
+    </xs:simpleType>
+</xs:schema>

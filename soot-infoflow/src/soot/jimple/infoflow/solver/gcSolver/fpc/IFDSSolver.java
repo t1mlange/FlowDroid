@@ -300,12 +300,13 @@ public class IFDSSolver<N, D extends FastSolverLinkedNode<D, N>, I extends BiDiI
 	 * @param edge        the edge to process
 	 * @param orgSrc      used for building abstraction dependency graph.
 	 */
-	protected void scheduleEdgeProcessing(boolean newSelfLoop, PathEdge<N, D> edge, Pair<SootMethod, D> orgSrc) {
+	protected void scheduleEdgeProcessing(PathEdge<N, D> edge, Pair<SootMethod, D> orgSrc) {
 		// If the executor has been killed, there is little point
 		// in submitting new tasks
 		if (killFlag != null || executor.isTerminating() || executor.isTerminated())
 			return;
 
+		boolean newSelfLoop = edge.factAtSource() == edge.factAtTarget() && icfg.isStartPoint(edge.getTarget());
 		// this condition is used to avoid the second limitation of CleanDroid.
 		if (newSelfLoop) {
 			SootMethod sm = icfg.getMethodOf(edge.getTarget());
@@ -689,8 +690,7 @@ public class IFDSSolver<N, D extends FastSolverLinkedNode<D, N>, I extends BiDiI
 				}
 			}
 		} else {
-			boolean isSelfLoopEdge = sourceVal == targetVal && icfg.isStartPoint(target);
-			scheduleEdgeProcessing(isSelfLoopEdge, edge, orgSrc);
+			scheduleEdgeProcessing(edge, orgSrc);
 		}
 	}
 

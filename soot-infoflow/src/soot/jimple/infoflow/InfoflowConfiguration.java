@@ -164,6 +164,26 @@ public class InfoflowConfiguration {
 		Precise
 	}
 
+	/**
+	 * Enumeration containing the options for the SparseContextFlowSensitive solver
+	 */
+	public static enum GarbageCollectionStrategy {
+		/**
+		 * Disable garbage collection
+		 */
+		None,
+		/**
+		 * Enable garbage collection as described in the paper "Sustainable Solving: Reducing
+		 * the Memory Footprint of IFDS-Based Data Flow Analyses Using Intelligent Garbage Collection"
+		 */
+		GC,
+		/**
+		 * Enable garbage collection as described in the paper "Reducing the Memory Footprint of
+		 * IFDS-based Data-Flow Analyses Using Fine-Grained Garbage Collection"
+		 */
+		FineGrained
+	}
+
 	public static enum DataFlowDirection {
 		/**
 		 * Use the default forwards infoflow search
@@ -996,6 +1016,7 @@ public class InfoflowConfiguration {
 	public static class SolverConfiguration {
 		private DataFlowSolver dataFlowSolver = DataFlowSolver.ContextFlowSensitive;
 		private SparsePropagationStrategy sparsePropagationStrategy = SparsePropagationStrategy.Precise;
+		private GarbageCollectionStrategy garbageCollectionStrategy = GarbageCollectionStrategy.None;
 		private int maxJoinPointAbstractions = 10;
 		private int maxCalleesPerCallSite = 75;
 		private int maxAbstractionPathLength = 100;
@@ -1009,6 +1030,7 @@ public class InfoflowConfiguration {
 		public void merge(SolverConfiguration solverConfig) {
 			this.dataFlowSolver = solverConfig.dataFlowSolver;
 			this.sparsePropagationStrategy = solverConfig.sparsePropagationStrategy;
+			this.garbageCollectionStrategy = solverConfig.garbageCollectionStrategy;
 			this.maxJoinPointAbstractions = solverConfig.maxJoinPointAbstractions;
 			this.maxCalleesPerCallSite = solverConfig.maxCalleesPerCallSite;
 			this.maxAbstractionPathLength = solverConfig.maxAbstractionPathLength;
@@ -1035,19 +1057,37 @@ public class InfoflowConfiguration {
 		/**
 		 * Gets the propagation strategy used in sparsePropagation
 		 *
-		 * @return The data flow solver to be used for the taint analysis
+		 * @return The propagation strategy used for sparse propagation
 		 */
 		public SparsePropagationStrategy getSparsePropagationStrategy() {
 			return this.sparsePropagationStrategy;
 		}
 
 		/**
-		 * Sets the data flow solver to be used for the taint analysis
+		 * Sets the propagation strategy for sparse propagation
 		 *
 		 * @param sparsePropagationStrategy The propagation strategy used for sparsification
 		 */
 		public void setSparsePropagationStrategy(SparsePropagationStrategy sparsePropagationStrategy) {
 			this.sparsePropagationStrategy = sparsePropagationStrategy;
+		}
+
+		/**
+		 * Gets the selected garbage collection strategy
+		 *
+		 * @return The garbage collection strategy to be used in the ifds solver
+		 */
+		public GarbageCollectionStrategy getGarbageCollectionStrategy() {
+			return this.garbageCollectionStrategy;
+		}
+
+		/**
+		 * Sets the strategy used for garbage collection
+		 *
+		 * @param garbageCollectionStrategy The garbage collection strategy
+		 */
+		public void setGarbageCollectionStrategy(GarbageCollectionStrategy garbageCollectionStrategy) {
+			this.garbageCollectionStrategy = garbageCollectionStrategy;
 		}
 
 		/**
@@ -1157,6 +1197,8 @@ public class InfoflowConfiguration {
 			result = prime * result + ((dataFlowSolver == null) ? 0 : dataFlowSolver.hashCode());
 			if (dataFlowSolver == DataFlowSolver.SparseContextFlowSensitive)
 				result = prime * result + sparsePropagationStrategy.hashCode();
+			result = prime * result + garbageCollectionStrategy.hashCode();
+			result = prime * result + sleepTime;
 			result = prime * result + maxCalleesPerCallSite;
 			result = prime * result + maxJoinPointAbstractions;
 			result = prime * result + maxAbstractionPathLength;
@@ -1177,6 +1219,10 @@ public class InfoflowConfiguration {
 			if (dataFlowSolver == DataFlowSolver.SparseContextFlowSensitive)
 				if (sparsePropagationStrategy != other.sparsePropagationStrategy)
 					return false;
+			if (garbageCollectionStrategy != other.garbageCollectionStrategy)
+				return false;
+			if (sleepTime != other.sleepTime)
+				return false;
 			if (maxCalleesPerCallSite != other.maxCalleesPerCallSite)
 				return false;
 			if (maxJoinPointAbstractions != other.maxJoinPointAbstractions)

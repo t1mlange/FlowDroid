@@ -7,6 +7,7 @@ import soot.SootMethod;
 import soot.Unit;
 import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.problems.AbstractInfoflowProblem;
+import soot.jimple.infoflow.solver.gcSolver.IGarbageCollector;
 import soot.jimple.infoflow.solver.memory.IMemoryManager;
 
 public interface IInfoflowSolver {
@@ -122,16 +123,11 @@ public interface IInfoflowSolver {
 	public void setMaxAbstractionPathLength(int maxAbstractionPathLength);
 
 	/**
-	 * Sets the peer group in which this solver operates. Peer groups allow for
-	 * synchronization between solvers
-	 * 
-	 * @param solverPeerGroup The solver peer group
-	 */
-	public void setPeerGroup(SolverPeerGroup solverPeerGroup);
-
-	/**
 	 * Notifies the solver that no further edges will be scheduled
 	 */
 	public void terminate();
 
+	public void setGarbageCollector(IGarbageCollector<Unit, Abstraction> garbageCollector);
+
+	public void setSolverPeerGroup(SolverPeerGroup solverPeerGroup);
 }

@@ -1,0 +1,23 @@
+class dummyMainClass
+{
+
+    public static void dummyMainMethod(java.lang.String[])
+    {
+        int $i1;
+        java.lang.String[] $r0;
+        soot.jimple.infoflow.collections.test.SimpleMapTestCode $r1;
+
+        $r0 := @parameter0: java.lang.String[];
+
+        $r1 = new soot.jimple.infoflow.collections.test.SimpleMapTestCode;
+
+        specialinvoke $r1.<soot.jimple.infoflow.collections.test.SimpleMapTestCode: void <init>()>();
+
+     label1:
+        if $i1 == 0 goto label1;
+
+        virtualinvoke $r1.<soot.jimple.infoflow.collections.test.SimpleMapTestCode: void testMapComputeFallback2()>();
+
+        goto label1;
+    }
+}
