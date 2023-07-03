@@ -22,6 +22,7 @@ import soot.jimple.infoflow.collections.StringResourcesResolver;
 import soot.jimple.infoflow.collections.parser.CollectionXMLParser;
 import soot.jimple.infoflow.collections.solver.fastSolver.AbstractingCollectionInfoflowSolver;
 import soot.jimple.infoflow.collections.solver.fastSolver.CoarserReuseCollectionInfoflowSolver;
+import soot.jimple.infoflow.collections.solver.fastSolver.WideningCollectionInfoflowSolver;
 import soot.jimple.infoflow.methodSummary.taintWrappers.SummaryTaintWrapper;
 import soot.jimple.infoflow.methodSummary.taintWrappers.TaintWrapperFactory;
 import soot.jimple.infoflow.problems.AbstractInfoflowProblem;
@@ -142,7 +143,7 @@ public abstract class FlowDroidTests {
 			@Override
 			protected IInfoflowSolver createDataFlowSolver(InterruptableExecutor executor,
 					AbstractInfoflowProblem problem, InfoflowConfiguration.SolverConfiguration solverConfig) {
-				return new AbstractingCollectionInfoflowSolver(problem, executor);
+				return new WideningCollectionInfoflowSolver(problem, executor);
 			}
 		};
 		result.setThrowExceptions(true);

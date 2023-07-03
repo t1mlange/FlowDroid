@@ -76,7 +76,7 @@ public class ComputeOperation extends LocationDependentOperation {
                             newAbs, strategy, manager);
                     Abstraction retAbs = newAbs.deriveNewAbstraction(ap2, stmt);
                     if (retAbs != null)
-                        out.add(newAbs);
+                        out.add(retAbs);
                 }
             }
 
@@ -107,7 +107,7 @@ public class ComputeOperation extends LocationDependentOperation {
                             newAbs, strategy, manager);
                     Abstraction retAbs = newAbs.deriveNewAbstraction(ap2, stmt);
                     if (retAbs != null)
-                        out.add(newAbs);
+                        out.add(retAbs);
                 }
             }
 
@@ -147,12 +147,13 @@ public class ComputeOperation extends LocationDependentOperation {
                         incoming, strategy, manager);
                 Abstraction retAbs = incoming.deriveNewAbstraction(ap2, stmt);
                 if (retAbs != null)
-                    out.add(incoming);
+                    out.add(retAbs);
             }
-            return true;
+
+            return false;
         }
 
-        return false;
+        return true;
     }
 
     private void maybeInitMethodBody(SootMethod sm, InfoflowManager manager) {

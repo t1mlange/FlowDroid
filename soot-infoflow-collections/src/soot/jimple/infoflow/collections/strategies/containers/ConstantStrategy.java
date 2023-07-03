@@ -76,7 +76,7 @@ public class ConstantStrategy extends ConstantMapStrategy {
     @Override
     public ContextDefinition shiftRight(ContextDefinition ctxt, Stmt stmt, boolean exact) {
         if (ctxt instanceof IntervalContext)
-            return exact ? ((IntervalContext) ctxt).shiftRight(stmt) : ((IntervalContext) ctxt).addRight(stmt);
+            return exact ? ((IntervalContext) ctxt).shiftRight() : ((IntervalContext) ctxt).addRight();
 
         throw new RuntimeException("Expect interval context but got instead: " + ctxt);
     }
@@ -84,7 +84,7 @@ public class ConstantStrategy extends ConstantMapStrategy {
     @Override
     public ContextDefinition shiftLeft(ContextDefinition ctxt, Stmt stmt, boolean exact) {
         if (ctxt instanceof IntervalContext)
-            return exact ? ((IntervalContext) ctxt).shiftLeft(stmt) : ((IntervalContext) ctxt).subtractLeft(stmt);
+            return exact ? ((IntervalContext) ctxt).shiftLeft() : ((IntervalContext) ctxt).subtractLeft();
 
         throw new RuntimeException("Expect interval context but got instead: " + ctxt);
     }

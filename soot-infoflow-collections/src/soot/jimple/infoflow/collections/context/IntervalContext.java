@@ -39,19 +39,19 @@ public class IntervalContext implements PositionBasedContext {
 		return this.min <= other.min && other.max <= this.max;
 	}
 
-	public ContextDefinition shiftRight(Stmt stmt) {
+	public ContextDefinition shiftRight() {
 		if (max < Integer.MAX_VALUE)
 			return new IntervalContext(min + 1, max + 1);
 		return this;
 	}
 
-	public ContextDefinition addRight(Stmt stmt) {
+	public ContextDefinition addRight() {
 		if (max < Integer.MAX_VALUE)
 			return new IntervalContext(min, max + 1);
 		return this;
 	}
 
-	public ContextDefinition shiftLeft(Stmt stmt) {
+	public ContextDefinition shiftLeft() {
 		if (min == 0)
 			return null;
 
@@ -60,7 +60,7 @@ public class IntervalContext implements PositionBasedContext {
 		return this;
 	}
 
-	public ContextDefinition subtractLeft(Stmt stmt) {
+	public ContextDefinition subtractLeft() {
 		if (max < Integer.MAX_VALUE)
 			return new IntervalContext(min - 1, max);
 		return this;
