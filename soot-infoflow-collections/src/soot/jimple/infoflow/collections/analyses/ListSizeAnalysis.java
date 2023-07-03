@@ -103,23 +103,19 @@ public class ListSizeAnalysis extends ForwardFlowAnalysis<Unit, Map<Local, ListS
                     out.put((Local) leftOp, new ListSize(0));
                 }
             } else {
-                if (in.containsKey(leftOp))
-                    out.remove(leftOp);
+                out.remove(leftOp);
             }
 
             // Invalidate list size if an alias is created
-            if (in.containsKey(rightOp))
-                 out.remove(rightOp);
+            out.remove(rightOp);
         }
 
         if (!stmt.containsInvokeExpr())
             return;
 
         // Also invalidate list size if it flows into a callee
-        for (Value v : stmt.getInvokeExpr().getArgs()) {
-            if (in.containsKey(v))
-                out.remove(v);
-        }
+        for (Value v : stmt.getInvokeExpr().getArgs())
+            out.remove(v);
 
         SootMethod sm = stmt.getInvokeExpr().getMethod();
         if (listClass != sm.getDeclaringClass()
