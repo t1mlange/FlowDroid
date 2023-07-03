@@ -126,6 +126,11 @@ public class InfoflowConfiguration {
 		ContextFlowSensitive,
 
 		/**
+		 * Use a flow- and context-sensitive solver that propagates facts sparse
+		 */
+		SparseContextFlowSensitive,
+
+		/**
 		 * Use a context-sensitive, but flow-insensitive solver
 		 */
 		FlowInsensitive,
@@ -133,7 +138,30 @@ public class InfoflowConfiguration {
 		/**
 		 * Use the garbage-collecting solver
 		 */
-		GarbageCollecting
+		GarbageCollecting,
+
+		/**
+		 * Use the fine-grained GC solver
+		 * */
+		FineGrainedGC,
+	}
+
+	/**
+	 * Enumeration containing the options for the SparseContextFlowSensitive solver
+	 */
+	public static enum SparsePropagationStrategy {
+		/**
+		 * Propagate facts dense (use to test that the solver modifications don't break something)
+		 */
+		Dense,
+		/**
+		 * Propagate facts sparse only based on the local
+		 */
+		Simple,
+		/**
+		 * Propagate facts sparse, taking the first field of an access path into account
+		 */
+		Precise
 	}
 
 	public static enum DataFlowDirection {
@@ -966,11 +994,12 @@ public class InfoflowConfiguration {
 	 *
 	 */
 	public static class SolverConfiguration {
-
 		private DataFlowSolver dataFlowSolver = DataFlowSolver.ContextFlowSensitive;
+		private SparsePropagationStrategy sparsePropagationStrategy = SparsePropagationStrategy.Precise;
 		private int maxJoinPointAbstractions = 10;
 		private int maxCalleesPerCallSite = 75;
 		private int maxAbstractionPathLength = 100;
+		private int sleepTime = 1;
 
 		/**
 		 * Copies the settings of the given configuration into this configuration object
@@ -979,6 +1008,7 @@ public class InfoflowConfiguration {
 		 */
 		public void merge(SolverConfiguration solverConfig) {
 			this.dataFlowSolver = solverConfig.dataFlowSolver;
+			this.sparsePropagationStrategy = solverConfig.sparsePropagationStrategy;
 			this.maxJoinPointAbstractions = solverConfig.maxJoinPointAbstractions;
 			this.maxCalleesPerCallSite = solverConfig.maxCalleesPerCallSite;
 			this.maxAbstractionPathLength = solverConfig.maxAbstractionPathLength;
@@ -1000,6 +1030,24 @@ public class InfoflowConfiguration {
 		 */
 		public void setDataFlowSolver(DataFlowSolver solver) {
 			this.dataFlowSolver = solver;
+		}
+
+		/**
+		 * Gets the propagation strategy used in sparsePropagation
+		 *
+		 * @return The data flow solver to be used for the taint analysis
+		 */
+		public SparsePropagationStrategy getSparsePropagationStrategy() {
+			return this.sparsePropagationStrategy;
+		}
+
+		/**
+		 * Sets the data flow solver to be used for the taint analysis
+		 *
+		 * @param sparsePropagationStrategy The propagation strategy used for sparsification
+		 */
+		public void setSparsePropagationStrategy(SparsePropagationStrategy sparsePropagationStrategy) {
+			this.sparsePropagationStrategy = sparsePropagationStrategy;
 		}
 
 		/**
@@ -1084,11 +1132,31 @@ public class InfoflowConfiguration {
 			this.maxAbstractionPathLength = maxAbstractionPathLength;
 		}
 
+		/**
+		 * Sets the sleep time of garbage colletors
+		 * 
+		 * @param sleeptime The interval in second for the path edge collection
+		 */
+		public void setSleepTime(int sleeptime) {
+			this.sleepTime = sleeptime;
+		}
+
+		/**
+		 * Gets the sleep time of garbage colletors
+		 * 
+		 * @return The interval in second for the path edge collection
+		 */
+		public int getSleepTime() {
+			return this.sleepTime;
+		}
+
 		@Override
 		public int hashCode() {
 			final int prime = 31;
 			int result = 1;
 			result = prime * result + ((dataFlowSolver == null) ? 0 : dataFlowSolver.hashCode());
+			if (dataFlowSolver == DataFlowSolver.SparseContextFlowSensitive)
+				result = prime * result + sparsePropagationStrategy.hashCode();
 			result = prime * result + maxCalleesPerCallSite;
 			result = prime * result + maxJoinPointAbstractions;
 			result = prime * result + maxAbstractionPathLength;
@@ -1106,6 +1174,9 @@ public class InfoflowConfiguration {
 			SolverConfiguration other = (SolverConfiguration) obj;
 			if (dataFlowSolver != other.dataFlowSolver)
 				return false;
+			if (dataFlowSolver == DataFlowSolver.SparseContextFlowSensitive)
+				if (sparsePropagationStrategy != other.sparsePropagationStrategy)
+					return false;
 			if (maxCalleesPerCallSite != other.maxCalleesPerCallSite)
 				return false;
 			if (maxJoinPointAbstractions != other.maxJoinPointAbstractions)

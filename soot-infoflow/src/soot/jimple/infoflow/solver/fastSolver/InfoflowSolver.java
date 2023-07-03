@@ -42,7 +42,7 @@ public class InfoflowSolver extends IFDSSolver<Unit, Abstraction, IInfoflowCFG>
 		implements IInfoflowSolver {
 
 	protected IFollowReturnsPastSeedsHandler followReturnsPastSeedsHandler = null;
-	private final AbstractInfoflowProblem problem;
+	protected final AbstractInfoflowProblem problem;
 
 	public InfoflowSolver(AbstractInfoflowProblem problem, InterruptableExecutor executor) {
 		super(problem);
