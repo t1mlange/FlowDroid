@@ -49,7 +49,6 @@ public class AlwaysShortenTests extends soot.jimple.infoflow.test.junit.AlwaysSh
             }
         };
         result.getConfig().getPathConfiguration().setPathReconstructionMode(InfoflowConfiguration.PathReconstructionMode.Fast);
-        result.setExecutorFactory(new PriorityExecutorFactory());
         CollectionXMLParser parser = new CollectionXMLParser();
         File dir = new File("collectionModels");
         try {
