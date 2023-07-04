@@ -40,7 +40,6 @@ public class MultiTest extends soot.jimple.infoflow.test.junit.MultiTest {
 				return FlowDroidTests.getSolver(executor, problem, solverConfig);
 			}
 		};
-		result.setExecutorFactory(new PriorityExecutorFactory());
 		CollectionXMLParser parser = new CollectionXMLParser();
 		File dir = new File("collectionModels");
 		try {

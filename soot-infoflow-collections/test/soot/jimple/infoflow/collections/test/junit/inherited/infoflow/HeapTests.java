@@ -40,7 +40,6 @@ public class HeapTests extends soot.jimple.infoflow.test.junit.HeapTests {
 				return FlowDroidTests.getSolver(executor, problem, solverConfig);
 			}
 		};
-		result.setExecutorFactory(new PriorityExecutorFactory());
 		CollectionXMLParser parser = new CollectionXMLParser();
 		File dir = new File("collectionModels");
 		try {

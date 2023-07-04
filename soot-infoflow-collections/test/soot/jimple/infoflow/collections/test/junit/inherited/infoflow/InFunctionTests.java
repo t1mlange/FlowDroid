@@ -40,7 +40,6 @@ public class InFunctionTests extends soot.jimple.infoflow.test.junit.InFunctionT
 				return FlowDroidTests.getSolver(executor, problem, solverConfig);
 			}
 		};
-		result.setExecutorFactory(new PriorityExecutorFactory());
 		CollectionXMLParser parser = new CollectionXMLParser();
 		File dir = new File("collectionModels");
 		try {

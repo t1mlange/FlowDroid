@@ -40,7 +40,6 @@ public class ConstantTests extends soot.jimple.infoflow.test.junit.ConstantTests
 				return FlowDroidTests.getSolver(executor, problem, solverConfig);
 			}
 		};
-		result.setExecutorFactory(new PriorityExecutorFactory());
 		CollectionXMLParser parser = new CollectionXMLParser();
 		File dir = new File("collectionModels");
 		try {
