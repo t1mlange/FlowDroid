@@ -102,7 +102,7 @@ import soot.jimple.infoflow.solver.gcSolver.GCSolverPeerGroup;
 import soot.jimple.infoflow.solver.memory.DefaultMemoryManagerFactory;
 import soot.jimple.infoflow.solver.memory.IMemoryManager;
 import soot.jimple.infoflow.solver.memory.IMemoryManagerFactory;
-import soot.jimple.infoflow.solver.sparseSolver.SparseInfoflowSolver;
+import soot.jimple.infoflow.solver.sparseJumpFunctions.MemorySavingInfoflowSolver;
 import soot.jimple.infoflow.sourcesSinks.manager.DefaultSourceSinkManager;
 import soot.jimple.infoflow.sourcesSinks.manager.IOneSourceAtATimeManager;
 import soot.jimple.infoflow.sourcesSinks.manager.ISourceSinkManager;
@@ -1237,34 +1237,35 @@ public abstract class AbstractInfoflow implements IInfoflow {
 	 */
 	protected IInfoflowSolver createDataFlowSolver(InterruptableExecutor executor, AbstractInfoflowProblem problem,
 			SolverConfiguration solverConfig) {
-		switch (solverConfig.getDataFlowSolver()) {
-		case ContextFlowSensitive:
-			logger.info("Using context- and flow-sensitive solver");
-			return new soot.jimple.infoflow.solver.fastSolver.InfoflowSolver(problem, executor);
-		case SparseContextFlowSensitive:
-			InfoflowConfiguration.SparsePropagationStrategy opt = config.getSolverConfiguration().getSparsePropagationStrategy();
-			logger.info("Using sparse context-sensitive and flow-sensitive solver with sparsification " + opt.toString());
-			return new soot.jimple.infoflow.solver.sparseSolver.SparseInfoflowSolver(problem, executor, opt);
-		case FlowInsensitive:
-			logger.info("Using context-sensitive, but flow-insensitive solver");
-			return new soot.jimple.infoflow.solver.fastSolver.flowInsensitive.InfoflowSolver(problem, executor);
-		case GarbageCollecting:
-			logger.info("Using garbage-collecting solver");
-			IInfoflowSolver solver = new soot.jimple.infoflow.solver.gcSolver.InfoflowSolver(problem, executor,
-					solverConfig.getSleepTime());
-			solverPeerGroup.addSolver(solver);
-			solver.setPeerGroup(solverPeerGroup);
-			return solver;
-		case FineGrainedGC:
-			logger.info("Using fine-grained garbage-collecting solver");
-			IInfoflowSolver fgSolver = new soot.jimple.infoflow.solver.gcSolver.fpc.InfoflowSolver(problem, executor,
-					solverConfig.getSleepTime());
-			solverPeerGroup.addSolver(fgSolver);
-			fgSolver.setPeerGroup(solverPeerGroup);
-			return fgSolver;
-		default:
-			throw new RuntimeException("Unsupported data flow solver");
-		}
+		return new MemorySavingInfoflowSolver(problem, executor);
+//		switch (solverConfig.getDataFlowSolver()) {
+//		case ContextFlowSensitive:
+//			logger.info("Using context- and flow-sensitive solver");
+//			return new soot.jimple.infoflow.solver.fastSolver.InfoflowSolver(problem, executor);
+//		case SparseContextFlowSensitive:
+//			InfoflowConfiguration.SparsePropagationStrategy opt = config.getSolverConfiguration().getSparsePropagationStrategy();
+//			logger.info("Using sparse context-sensitive and flow-sensitive solver with sparsification " + opt.toString());
+//			return new soot.jimple.infoflow.solver.sparseSolver.SparseInfoflowSolver(problem, executor, opt);
+//		case FlowInsensitive:
+//			logger.info("Using context-sensitive, but flow-insensitive solver");
+//			return new soot.jimple.infoflow.solver.fastSolver.flowInsensitive.InfoflowSolver(problem, executor);
+//		case GarbageCollecting:
+//			logger.info("Using garbage-collecting solver");
+//			IInfoflowSolver solver = new soot.jimple.infoflow.solver.gcSolver.InfoflowSolver(problem, executor,
+//					solverConfig.getSleepTime());
+//			solverPeerGroup.addSolver(solver);
+//			solver.setPeerGroup(solverPeerGroup);
+//			return solver;
+//		case FineGrainedGC:
+//			logger.info("Using fine-grained garbage-collecting solver");
+//			IInfoflowSolver fgSolver = new soot.jimple.infoflow.solver.gcSolver.fpc.InfoflowSolver(problem, executor,
+//					solverConfig.getSleepTime());
+//			solverPeerGroup.addSolver(fgSolver);
+//			fgSolver.setPeerGroup(solverPeerGroup);
+//			return fgSolver;
+//		default:
+//			throw new RuntimeException("Unsupported data flow solver");
+//		}
 	}
 
 	protected enum SourceSinkState {

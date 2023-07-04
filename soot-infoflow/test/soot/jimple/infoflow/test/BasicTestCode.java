@@ -5,6 +5,8 @@ import soot.jimple.infoflow.test.android.Location;
 import soot.jimple.infoflow.test.android.LocationManager;
 import soot.jimple.infoflow.test.android.TelephonyManager;
 
+import java.util.Random;
+
 /**
  * Simple test targets for very basic functions
  * 
@@ -103,4 +105,13 @@ public class BasicTestCode {
 		cm.publish(loc.getLatitude());
 	}
 
+	public void simpleLoopTest() {
+		String tainted = TelephonyManager.getDeviceId();
+		int i = 0;
+		while (new Random().nextBoolean()) {
+			i++;
+		}
+		ConnectionManager cm = new ConnectionManager();
+		cm.publish(tainted);
+	}
 }

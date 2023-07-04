@@ -96,4 +96,13 @@ public abstract class BasicTests extends JUnitTests {
 		checkInfoflow(infoflow, 1);
 	}
 
+
+	@Test
+	public void simpleLoopTest() {
+		IInfoflow infoflow = initInfoflow();
+		List<String> epoints = new ArrayList<String>();
+		epoints.add("<soot.jimple.infoflow.test.BasicTestCode: void simpleLoopTest()>");
+		infoflow.computeInfoflow(appPath, libPath, epoints, sources, sinks);
+		checkInfoflow(infoflow, 1);
+	}
 }

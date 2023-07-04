@@ -126,7 +126,7 @@ public class IFDSSolver<N, D extends FastSolverLinkedNode<D, N>, I extends BiDiI
 	protected final boolean followReturnsPastSeeds;
 
 	@DontSynchronize("readOnly")
-	private int maxJoinPointAbstractions = -1;
+	protected int maxJoinPointAbstractions = -1;
 
 	@DontSynchronize("readOnly")
 	protected IMemoryManager<D, N> memoryManager = null;
@@ -137,7 +137,7 @@ public class IFDSSolver<N, D extends FastSolverLinkedNode<D, N>, I extends BiDiI
 	protected ISolverTerminationReason killFlag = null;
 
 	protected int maxCalleesPerCallSite = 75;
-	private int maxAbstractionPathLength = 100;
+	protected int maxAbstractionPathLength = 100;
 
 	protected ISchedulingStrategy<N, D> schedulingStrategy = new DefaultSchedulingStrategy<N, D, I>(
 			this).EACH_EDGE_INDIVIDUALLY;
