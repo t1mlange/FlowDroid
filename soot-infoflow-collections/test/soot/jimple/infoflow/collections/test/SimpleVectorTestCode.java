@@ -59,7 +59,7 @@ public class SimpleVectorTestCode {
         sink(v.firstElement());
     }
 
-    @FlowDroidTest(expected = 1)
+    @FlowDroidTest(expected = 0)
     public void testVectorRemoveElementAt1() {
         Vector<String> v = new Vector<>();
         v.addElement(source());
@@ -68,7 +68,7 @@ public class SimpleVectorTestCode {
         sink(v.firstElement());
     }
 
-    @FlowDroidTest(expected = 0)
+    @FlowDroidTest(expected = 1)
     public void testVectorRemoveElementAt2() {
         Vector<String> v = new Vector<>();
         v.addElement("Test");
