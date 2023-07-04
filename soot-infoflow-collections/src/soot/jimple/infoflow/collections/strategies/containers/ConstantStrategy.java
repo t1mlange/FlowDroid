@@ -18,7 +18,7 @@ import soot.jimple.infoflow.data.ContextDefinition;
 
 public class ConstantStrategy extends ConstantMapStrategy {
     private final ConcurrentHashMap<SootMethod, ListSizeAnalysis> implicitIndices;
-    private final InfoflowManager manager;
+    protected final InfoflowManager manager;
 
     public ConstantStrategy(InfoflowManager manager, CollectionTaintWrapper ctw) {
         super(ctw);
