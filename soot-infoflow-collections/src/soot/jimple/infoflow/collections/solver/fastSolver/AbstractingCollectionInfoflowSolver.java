@@ -4,15 +4,10 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
-
-import com.sun.jdi.connect.Connector;
 import heros.FlowFunction;
 import heros.SynchronizedBy;
 import heros.solver.Pair;
 import heros.solver.PathEdge;
-import org.checkerframework.checker.units.qual.A;
 import soot.Local;
 import soot.SootMethod;
 import soot.Unit;

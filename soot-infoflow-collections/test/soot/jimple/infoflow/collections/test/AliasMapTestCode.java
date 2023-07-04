@@ -17,6 +17,7 @@ public class AliasMapTestCode {
 
     @FlowDroidTest(expected = 1)
     public void testMapPutGet1() {
+        f = null;
         Map<String, String> m = new HashMap<>();
         f = m;
         m.put("Secret", source());
@@ -25,6 +26,7 @@ public class AliasMapTestCode {
 
     @FlowDroidTest(expected = 0)
     public void testMapPutGet2() {
+        f = null;
         Map<String, String> m = new HashMap<>();
         m.put("Secret", source());
         sink(f.get("Secret"));
