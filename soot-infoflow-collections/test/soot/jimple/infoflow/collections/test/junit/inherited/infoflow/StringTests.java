@@ -2,6 +2,7 @@ package soot.jimple.infoflow.collections.test.junit.inherited.infoflow;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 
 import org.junit.BeforeClass;
 
@@ -14,6 +15,7 @@ import soot.jimple.infoflow.collections.parser.CollectionXMLParser;
 import soot.jimple.infoflow.collections.solver.fastSolver.CoarserReuseCollectionInfoflowSolver;
 import soot.jimple.infoflow.collections.solver.fastSolver.executors.PriorityExecutorFactory;
 import soot.jimple.infoflow.collections.test.junit.FlowDroidTests;
+import soot.jimple.infoflow.methodSummary.taintWrappers.TaintWrapperFactory;
 import soot.jimple.infoflow.problems.AbstractInfoflowProblem;
 import soot.jimple.infoflow.solver.IInfoflowSolver;
 import soot.jimple.infoflow.solver.executors.InterruptableExecutor;
@@ -48,7 +50,12 @@ public class StringTests extends soot.jimple.infoflow.test.junit.StringTests {
 		} catch (IOException e) {
 			throw new RuntimeException("Parsing exception", e);
 		}
-		result.setTaintWrapper(new CollectionTaintWrapper(parser.getModels(), null));
+
+		try {
+			result.setTaintWrapper(new CollectionTaintWrapper(parser.getModels(), TaintWrapperFactory.createTaintWrapper()));
+		} catch (URISyntaxException | IOException e) {
+			throw new RuntimeException(e);
+		}
 		return result;
 	}
 }

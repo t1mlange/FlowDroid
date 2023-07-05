@@ -18,6 +18,7 @@ import org.junit.Test;
 import soot.jimple.infoflow.IInfoflow;
 import soot.jimple.infoflow.InfoflowConfiguration.ImplicitFlowMode;
 import soot.jimple.infoflow.InfoflowConfiguration.StaticFieldTrackingMode;
+import soot.jimple.infoflow.util.DebugFlowFunctionTaintPropagationHandler;
 
 /**
  * test taint propagation in sets
@@ -90,6 +91,8 @@ public abstract class SetTests extends JUnitTests {
 		IInfoflow infoflow = initInfoflow();
 		infoflow.getConfig().getAccessPathConfiguration().setAccessPathLength(1);
 		infoflow.getConfig().setFlowSensitiveAliasing(false);
+
+		infoflow.setTaintPropagationHandler(new DebugFlowFunctionTaintPropagationHandler());
 
 		List<String> epoints = new ArrayList<String>();
 		epoints.add("<soot.jimple.infoflow.test.SetTestCode: void concreteWriteReadLinkedPos0Test()>");

@@ -19,6 +19,7 @@ import org.junit.Test;
 
 import soot.jimple.infoflow.IInfoflow;
 import soot.jimple.infoflow.taintWrappers.EasyTaintWrapper;
+import soot.jimple.infoflow.taintWrappers.ITaintPropagationWrapper;
 
 /**
  * tests functionality of TaintWrapper. Additionally all tests can be executed
@@ -27,7 +28,7 @@ import soot.jimple.infoflow.taintWrappers.EasyTaintWrapper;
  */
 public abstract class EasyWrapperListTests extends JUnitTests {
 
-	protected EasyTaintWrapper easyWrapper;
+	protected ITaintPropagationWrapper easyWrapper;
 
 	public EasyWrapperListTests() throws IOException {
 		easyWrapper = EasyTaintWrapper.getDefault();
