@@ -106,6 +106,7 @@ public abstract class MapTests extends JUnitTests {
 	@Test(timeout = 300000)
 	public void mapEntryTest() {
 		IInfoflow infoflow = initInfoflow();
+		infoflow.setTaintPropagationHandler(new DebugFlowFunctionTaintPropagationHandler());
 		List<String> epoints = new ArrayList<String>();
 		epoints.add("<soot.jimple.infoflow.test.MapTestCode: void entryTest()>");
 		infoflow.getConfig().setFlowSensitiveAliasing(false);

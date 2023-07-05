@@ -124,7 +124,8 @@ public class AbstractingCollectionInfoflowSolver extends CollectionInfoflowSolve
                                 if (d3 == null)
                                     continue;
 
-                                if (subsuming.hasContext(d3) && !d3.getAccessPath().isStaticFieldRef()) {
+                                if (subsuming.hasContext(d3)
+                                        && !d3.getAccessPath().isStaticFieldRef()) {
                                     if (isReusable(sCalledProcN, d3)) {
                                         Abstraction prevSeenAbs = incomingWContext.putIfAbsent(new NoContextKey(sCalledProcN, d3), d3);
                                         if (prevSeenAbs == null) {
@@ -260,7 +261,7 @@ public class AbstractingCollectionInfoflowSolver extends CollectionInfoflowSolve
                                 Abstraction d2new = d2;
                                 Abstraction d1new = d1;
                                 Abstraction d4new = d4;
-                                if (d1 != narrowAbs) {
+                                if (!d1.equals(narrowAbs)) {
                                     d1new = narrowAbs; // Replace the calling context
                                     // Special case: if we have an identity flow, we can skip diffing access paths
                                     d2new = d1.equals(d2) ? narrowAbs : subsuming.applyDiffOf(d1, d2, narrowAbs);
@@ -414,7 +415,7 @@ public class AbstractingCollectionInfoflowSolver extends CollectionInfoflowSolve
         boolean reuseOfSummary = d3 != summaryQuery;
 
         // If the combination of (method, parameter) is not reusable, exit here
-        if (!isReusable(sCalledProcN, d3)) {
+        if (reuseOfSummary && !isReusable(sCalledProcN, d3)) {
             return;
         }
 

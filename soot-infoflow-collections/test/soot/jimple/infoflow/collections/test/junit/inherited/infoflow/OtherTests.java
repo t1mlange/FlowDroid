@@ -2,10 +2,14 @@ package soot.jimple.infoflow.collections.test.junit.inherited.infoflow;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.BeforeClass;
 
+import org.junit.Test;
 import soot.jimple.infoflow.AbstractInfoflow;
+import soot.jimple.infoflow.IInfoflow;
 import soot.jimple.infoflow.Infoflow;
 import soot.jimple.infoflow.InfoflowConfiguration;
 import soot.jimple.infoflow.cfg.DefaultBiDiICFGFactory;
@@ -50,5 +54,14 @@ public class OtherTests extends soot.jimple.infoflow.test.junit.OtherTests {
 		}
 		result.setTaintWrapper(new CollectionTaintWrapper(parser.getModels(), null));
 		return result;
+	}
+
+	@Test(timeout = 300000)
+	public void objectSensitiveTest1() {
+		IInfoflow infoflow = initInfoflow(false);
+		List<String> epoints = new ArrayList<String>();
+		epoints.add("<soot.jimple.infoflow.test.OtherTestCode: void objectSensitiveTest1()>");
+		infoflow.computeInfoflow(appPath, libPath, epoints, sources, sinks);
+		negativeCheckInfoflow(infoflow);
 	}
 }
