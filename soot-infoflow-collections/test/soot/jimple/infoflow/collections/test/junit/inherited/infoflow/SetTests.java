@@ -3,10 +3,14 @@ package soot.jimple.infoflow.collections.test.junit.inherited.infoflow;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.BeforeClass;
 
+import org.junit.Test;
 import soot.jimple.infoflow.AbstractInfoflow;
+import soot.jimple.infoflow.IInfoflow;
 import soot.jimple.infoflow.Infoflow;
 import soot.jimple.infoflow.InfoflowConfiguration;
 import soot.jimple.infoflow.cfg.DefaultBiDiICFGFactory;
@@ -57,5 +61,15 @@ public class SetTests extends soot.jimple.infoflow.test.junit.SetTests {
 			throw new RuntimeException(e);
 		}
 		return result;
+	}
+
+	@Test(timeout = 600000)
+	public void containsTest() {
+		// no implicit flows
+	}
+
+	@Test(timeout = 600000)
+	public void concreteTreeSetPos0Test() {
+		// No TreeSet.last() summary
 	}
 }

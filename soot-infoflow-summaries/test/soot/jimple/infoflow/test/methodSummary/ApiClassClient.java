@@ -177,7 +177,7 @@ public class ApiClassClient {
 		sink(t);
 	}
 
-	public void sink(Object out) {
+	public static void sink(Object out) {
 		System.out.println(out);
 	}
 

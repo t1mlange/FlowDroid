@@ -7,10 +7,9 @@ import heros.DontSynchronize;
 import heros.SynchronizedBy;
 import heros.solver.Pair;
 import heros.solver.PathEdge;
-import soot.SootClass;
-import soot.SootMethod;
-import soot.Unit;
-import soot.Value;
+import soot.*;
+import soot.jimple.InstanceInvokeExpr;
+import soot.jimple.InvokeExpr;
 import soot.jimple.ReturnStmt;
 import soot.jimple.Stmt;
 import soot.jimple.infoflow.InfoflowManager;
@@ -55,6 +54,11 @@ public class CollectionTaintWrapper implements ITaintPropagationWrapper {
 
 	private IContainerStrategy strategy;
 
+
+	private static Type collectionType;
+	private static SootClass listClass;
+	private static SootClass queueClass;
+
 	public CollectionTaintWrapper(Map<String, CollectionModel> models, ITaintPropagationWrapper fallbackWrapper) {
 		this.models = models;
 		this.fallbackWrapper = fallbackWrapper;
@@ -68,6 +72,10 @@ public class CollectionTaintWrapper implements ITaintPropagationWrapper {
 			fallbackWrapper.initialize(manager);
 
 		this.manager = manager;
+
+		collectionType = RefType.v("java.util.Collection");
+		listClass = Scene.v().getSootClassUnsafe("java.util.List");
+		queueClass = Scene.v().getSootClassUnsafe("java.util.Queue");
 
 		this.strategy = getStrategy();
 		manager.getMainSolver().setFollowReturnsPastSeedsHandler(new CollectionCallbackHandler());
@@ -160,7 +168,9 @@ public class CollectionTaintWrapper implements ITaintPropagationWrapper {
 		if (!stmt.containsInvokeExpr())
 			return fallbackTaintsForMethod(stmt, d1, taintedPath);
 
-		SootMethod sm = stmt.getInvokeExpr().getMethod();
+		SootMethod sm = maybeResolveSootMethod(stmt.getInvokeExpr());
+		if (sm == null)
+			return fallbackAliasForMethod(stmt, d1, taintedPath);
 		CollectionMethod method = getCollectionMethodForSootMethod(sm);
 		if (method == null)
 			return fallbackTaintsForMethod(stmt, d1, taintedPath);
@@ -202,7 +212,9 @@ public class CollectionTaintWrapper implements ITaintPropagationWrapper {
 		if (!stmt.containsInvokeExpr())
 			return fallbackAliasForMethod(stmt, d1, taintedPath);
 
-		SootMethod sm = stmt.getInvokeExpr().getMethod();
+		SootMethod sm = maybeResolveSootMethod(stmt.getInvokeExpr());
+		if (sm == null)
+			return fallbackAliasForMethod(stmt, d1, taintedPath);
 		CollectionMethod method = getCollectionMethodForSootMethod(sm);
 		if (method == null)
 			return fallbackAliasForMethod(stmt, d1, taintedPath);
@@ -219,6 +231,37 @@ public class CollectionTaintWrapper implements ITaintPropagationWrapper {
 			outSet.add(taintedPath);
 
 		return outSet;
+	}
+
+	/**
+	 * Special case: we might see the current call to the Collection class, yet we do not know, whether
+	 * the collection is a Set, List or Queue. To prevent resolving the size for sets, which we do smash
+	 * anyway, we use SPARK to approximate whether this is a set or not.
+	 *
+	 * @param ie invoke expression
+	 * @return the corresponding soot method or null, if not possible
+	 */
+	private SootMethod maybeResolveSootMethod(InvokeExpr ie) {
+		if (!(ie instanceof InstanceInvokeExpr))
+			return ie.getMethod();
+
+		Local base = (Local) ((InstanceInvokeExpr) ie).getBase();
+		if (!base.getType().equals(collectionType))
+			return ie.getMethod();
+
+		FastHierarchy fh = Scene.v().getFastHierarchy();
+		Set<Type> types = Scene.v().getPointsToAnalysis().reachingObjects(base).possibleTypes();
+		String subsig = ie.getMethod().getSubSignature();
+		SootMethod methodCand = types.stream()
+				.filter(t -> t instanceof RefType && ((RefType) t).hasSootClass())
+				.map(t -> ((RefType) t).getSootClass())
+				.filter(sc -> (listClass != null && fh.isSubclass(sc, listClass))
+							  || (queueClass != null && fh.isSubclass(sc, queueClass)))
+				.map(sc -> sc.getMethodUnsafe(subsig))
+				.filter(Objects::nonNull)
+				.findFirst()
+				.orElse(null);
+		return methodCand;
 	}
 
 	public CollectionMethod getCollectionMethodForSootMethod(SootMethod sm) {

@@ -13,13 +13,10 @@ package soot.jimple.infoflow.test.junit;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
 import soot.jimple.infoflow.IInfoflow;
-import soot.jimple.infoflow.InfoflowConfiguration;
-import soot.jimple.infoflow.util.DebugFlowFunctionTaintPropagationHandler;
 
 /**
  * contain test cases for taint propagation in Maps.
@@ -106,7 +103,6 @@ public abstract class MapTests extends JUnitTests {
 	@Test(timeout = 300000)
 	public void mapEntryTest() {
 		IInfoflow infoflow = initInfoflow();
-		infoflow.setTaintPropagationHandler(new DebugFlowFunctionTaintPropagationHandler());
 		List<String> epoints = new ArrayList<String>();
 		epoints.add("<soot.jimple.infoflow.test.MapTestCode: void entryTest()>");
 		infoflow.getConfig().setFlowSensitiveAliasing(false);
