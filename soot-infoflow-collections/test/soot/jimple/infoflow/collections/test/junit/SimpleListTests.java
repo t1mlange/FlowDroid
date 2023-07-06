@@ -1,12 +1,18 @@
 package soot.jimple.infoflow.collections.test.junit;
 
 import java.util.Collections;
+import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Test;
 
+import soot.Unit;
 import soot.jimple.infoflow.IInfoflow;
 import soot.jimple.infoflow.InfoflowConfiguration;
+import soot.jimple.infoflow.InfoflowManager;
+import soot.jimple.infoflow.data.Abstraction;
+import soot.jimple.infoflow.data.AccessPathFragment;
+import soot.jimple.infoflow.handlers.TaintPropagationHandler;
 import soot.jimple.infoflow.util.DebugFlowFunctionTaintPropagationHandler;
 
 public class SimpleListTests extends FlowDroidTests {
@@ -263,6 +269,36 @@ public class SimpleListTests extends FlowDroidTests {
     public void testListSort1() {
         IInfoflow infoflow = initInfoflow();
         infoflow.setTaintPropagationHandler(new DebugFlowFunctionTaintPropagationHandler());
+        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
+        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
+    }
+
+    private static class NoContextChecker implements TaintPropagationHandler {
+        @Override
+        public void notifyFlowIn(Unit stmt, Abstraction taint, InfoflowManager manager, FlowFunctionType type) {
+            AccessPathFragment f = taint.getAccessPath().getFirstFragment();
+            Assert.assertTrue(f == null || !f.hasContext());
+        }
+
+        @Override
+        public Set<Abstraction> notifyFlowOut(Unit stmt, Abstraction d1, Abstraction incoming, Set<Abstraction> outgoing, InfoflowManager manager, FlowFunctionType type) {
+            return null;
+        }
+    }
+
+    @Test(timeout = 30000)
+    public void testAddCollection1() {
+        IInfoflow infoflow = initInfoflow();
+        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
+        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
+    }
+
+    @Test(timeout = 30000)
+    public void testAddCollection2() {
+        IInfoflow infoflow = initInfoflow();
+        infoflow.setTaintPropagationHandler(new NoContextChecker());
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
         Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());

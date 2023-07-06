@@ -141,15 +141,6 @@
 				</flow>
 			</flows>
 		</method>
-		<method id="java.util.Iterator iterator()">
-			<flows>
-				<flow isAlias="false" typeChecking="false">
-					<from sourceSinkType="Field" />
-					<to sourceSinkType="Return" AccessPath="[java.util.Iterator: java.lang.Object innerCollection]"
-						AccessPathTypes="[java.lang.Object]" />
-				</flow>
-			</flows>
-		</method>
 		<method id="java.lang.Object lastElement()">
 			<flows>
 				<flow isAlias="false" typeChecking="false">

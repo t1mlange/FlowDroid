@@ -23,6 +23,7 @@ import soot.jimple.infoflow.methodSummary.taintWrappers.TaintWrapperFactory;
 import soot.jimple.infoflow.problems.AbstractInfoflowProblem;
 import soot.jimple.infoflow.solver.IInfoflowSolver;
 import soot.jimple.infoflow.solver.executors.InterruptableExecutor;
+import soot.jimple.infoflow.util.DebugFlowFunctionTaintPropagationHandler;
 
 public class VectorTests extends soot.jimple.infoflow.test.junit.VectorTests {
     @BeforeClass
@@ -66,6 +67,7 @@ public class VectorTests extends soot.jimple.infoflow.test.junit.VectorTests {
     @Test(timeout = 300000)
     public void vectorRWPos1Test() {
         IInfoflow infoflow = initInfoflow();
+        infoflow.setTaintPropagationHandler(new DebugFlowFunctionTaintPropagationHandler());
         List<String> epoints = new ArrayList<String>();
         epoints.add("<soot.jimple.infoflow.test.VectorTestCode: void concreteWriteReadPos1Test()>");
         infoflow.computeInfoflow(appPath, libPath, epoints, sources, sinks);

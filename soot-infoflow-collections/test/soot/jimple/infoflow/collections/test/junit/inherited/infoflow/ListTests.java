@@ -62,6 +62,7 @@ public class ListTests extends soot.jimple.infoflow.test.junit.ListTests {
 		}
 		return result;
 	}
+
 	@Test(timeout = 300000)
 	@Override
 	public void concreteArrayListPos0Test() {
@@ -71,28 +72,5 @@ public class ListTests extends soot.jimple.infoflow.test.junit.ListTests {
 		infoflow.computeInfoflow(appPath, libPath, epoints, sources, sinks);
 		// We are more precise
 		negativeCheckInfoflow(infoflow);
-	}
-
-	@Test(timeout = 300000)
-	@Override
-	public void staticLinkedListIteratorTest() {
-		// TODO: what about Collection.add()?
-//		IInfoflow infoflow = initInfoflow();
-//		infoflow.setTaintPropagationHandler(new DebugFlowFunctionTaintPropagationHandler());
-//		List<String> epoints = new ArrayList<String>();
-//		epoints.add("<soot.jimple.infoflow.test.ListTestCode: void staticLinkedList()>");
-//		infoflow.computeInfoflow(appPath, libPath, epoints, sources, sinks);
-//		checkInfoflow(infoflow, 1);
-	}
-
-	@Test(timeout = 250000)
-	@Override
-	public void linkedListIteratorTest() {
-		// TODO: what about Collection.add()?
-	}
-
-	@Test(timeout = 300000)
-	public void concreteLinkedListIteratorTest() {
-		// TODO: what about Collection.add()?
 	}
 }
