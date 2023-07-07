@@ -1,12 +1,11 @@
 package soot.jimple.infoflow.test.methodSummary.junit;
 
 
-import org.junit.Test;
 import soot.jimple.infoflow.IInfoflow;
 import soot.jimple.infoflow.methodSummary.taintWrappers.TaintWrapperFactory;
-import soot.jimple.infoflow.test.junit.ListTests;
+import soot.jimple.infoflow.test.junit.QueueTests;
 
-public abstract class WrapperListTests extends ListTests {
+public abstract class WrapperQueueTests extends QueueTests {
 	@Override
 	protected IInfoflow initInfoflow(boolean useTaintWrapper) {
 		IInfoflow result = super.initInfoflow(useTaintWrapper);
@@ -18,10 +17,5 @@ public abstract class WrapperListTests extends ListTests {
 			throw new RuntimeException("Could not initialize taint wrapper!");
 		}
 		return result;
-	}
-
-	@Test(timeout = 600000) // implicit flow, takes ~74s
-	public void containsTest() {
-		// implicit flow
 	}
 }

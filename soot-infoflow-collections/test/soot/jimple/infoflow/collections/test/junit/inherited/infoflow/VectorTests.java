@@ -26,18 +26,6 @@ import soot.jimple.infoflow.solver.executors.InterruptableExecutor;
 import soot.jimple.infoflow.util.DebugFlowFunctionTaintPropagationHandler;
 
 public class VectorTests extends soot.jimple.infoflow.test.junit.VectorTests {
-    @BeforeClass
-    public static void setUp() throws IOException {
-        soot.jimple.infoflow.test.junit.JUnitTests.setUp();
-        File f = new File("../soot-infoflow");
-        File testSrc = new File(f, "build" + File.separator + "testclasses");
-        StringBuilder sb = new StringBuilder();
-        if (appPath != null)
-            sb.append(appPath);
-        appendWithSeparator(sb, testSrc);
-        appPath = sb.toString();
-    }
-
     @Override
     protected AbstractInfoflow createInfoflowInstance() {
         AbstractInfoflow result = new Infoflow("", false, new DefaultBiDiICFGFactory()) {
@@ -67,7 +55,6 @@ public class VectorTests extends soot.jimple.infoflow.test.junit.VectorTests {
     @Test(timeout = 300000)
     public void vectorRWPos1Test() {
         IInfoflow infoflow = initInfoflow();
-        infoflow.setTaintPropagationHandler(new DebugFlowFunctionTaintPropagationHandler());
         List<String> epoints = new ArrayList<String>();
         epoints.add("<soot.jimple.infoflow.test.VectorTestCode: void concreteWriteReadPos1Test()>");
         infoflow.computeInfoflow(appPath, libPath, epoints, sources, sinks);

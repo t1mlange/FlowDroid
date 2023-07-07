@@ -92,8 +92,6 @@ public abstract class SetTests extends JUnitTests {
 		infoflow.getConfig().getAccessPathConfiguration().setAccessPathLength(1);
 		infoflow.getConfig().setFlowSensitiveAliasing(false);
 
-		infoflow.setTaintPropagationHandler(new DebugFlowFunctionTaintPropagationHandler());
-
 		List<String> epoints = new ArrayList<String>();
 		epoints.add("<soot.jimple.infoflow.test.SetTestCode: void concreteWriteReadLinkedPos0Test()>");
 		infoflow.computeInfoflow(appPath, libPath, epoints, sources, sinks);
