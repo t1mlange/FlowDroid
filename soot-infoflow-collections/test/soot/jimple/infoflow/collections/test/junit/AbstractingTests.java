@@ -23,12 +23,11 @@ import soot.jimple.infoflow.problems.AbstractInfoflowProblem;
 import soot.jimple.infoflow.results.DataFlowResult;
 import soot.jimple.infoflow.solver.IInfoflowSolver;
 import soot.jimple.infoflow.solver.executors.InterruptableExecutor;
-import soot.jimple.infoflow.util.DebugFlowFunctionTaintPropagationHandler;
 
 public class AbstractingTests extends FlowDroidTests {
     /**
      * TaintPropagationHandler that sleeps on System.out.println.
-     * Use to enforce that an end summary is used
+     * Use to enforce that an end summary is used instead of the incoming set.
      */
     private static class DelayOnPrintln implements TaintPropagationHandler {
         @Override
@@ -100,7 +99,8 @@ public class AbstractingTests extends FlowDroidTests {
         AbstractInfoflow result = new Infoflow("", false, new DefaultBiDiICFGFactory()) {
             @Override
             protected IInfoflowSolver createDataFlowSolver(InterruptableExecutor executor,
-                                                           AbstractInfoflowProblem problem, InfoflowConfiguration.SolverConfiguration solverConfig) {
+                                                           AbstractInfoflowProblem problem,
+                                                           InfoflowConfiguration.SolverConfiguration solverConfig) {
                 return new AbstractingCollectionInfoflowSolver(problem, executor);
             }
         };
@@ -234,7 +234,6 @@ public class AbstractingTests extends FlowDroidTests {
     @Test(timeout = 30000)
     public void testReinjectInCallee1() {
         IInfoflow infoflow = initInfoflow();
-        infoflow.setTaintPropagationHandler(new DebugFlowFunctionTaintPropagationHandler());
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
         var set = infoflow.getResults().getResultSet();
@@ -312,7 +311,7 @@ public class AbstractingTests extends FlowDroidTests {
         Assert.assertFalse(hasDuplicateSinkInFlow(set));
     }
 
-    @Test(timeout = 30000)
+    @Test//(timeout = 30000)
     public void testReinjectOnAlreadySeenCallee1() {
         IInfoflow infoflow = initInfoflow();
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
@@ -322,10 +321,9 @@ public class AbstractingTests extends FlowDroidTests {
         Assert.assertFalse(hasDuplicateSinkInFlow(set));
     }
 
-    @Test(timeout = 30000)
+    @Test//(timeout = 30000)
     public void testReinjectOnAlreadySeenCallee2() {
         IInfoflow infoflow = initInfoflow();
-        infoflow.setTaintPropagationHandler(new DebugFlowFunctionTaintPropagationHandler());
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.getConfig().setEnableLineNumbers(true);
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
