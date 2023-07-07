@@ -25,18 +25,6 @@ import soot.jimple.infoflow.solver.IInfoflowSolver;
 import soot.jimple.infoflow.solver.executors.InterruptableExecutor;
 
 public class SetTests extends soot.jimple.infoflow.test.junit.SetTests {
-	@BeforeClass
-	public static void setUp() throws IOException {
-		soot.jimple.infoflow.test.junit.JUnitTests.setUp();
-		File f = new File("../soot-infoflow");
-		File testSrc = new File(f, "build" + File.separator + "testclasses");
-		StringBuilder sb = new StringBuilder();
-		if (appPath != null)
-			sb.append(appPath);
-		appendWithSeparator(sb, testSrc);
-		appPath = sb.toString();
-	}
-
 	@Override
 	protected AbstractInfoflow createInfoflowInstance() {
 		AbstractInfoflow result = new Infoflow("", false, new DefaultBiDiICFGFactory()) {

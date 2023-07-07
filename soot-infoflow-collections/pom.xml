@@ -72,21 +72,19 @@
             </plugin>
             <plugin>
                 <artifactId>maven-resources-plugin</artifactId>
+                <version>3.2.0</version>
                 <executions>
                     <execution>
                         <id>copy-resources</id>
-                        <phase>verify</phase>
+                        <phase>validate</phase>
                         <goals>
                             <goal>copy-resources</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${project.basedir}/build/testclasses</outputDirectory>
+                            <outputDirectory>build/testclasses</outputDirectory>
                             <resources>
                                 <resource>
-                                    <directory>${parent.basedir}/soot-infoflow/build/testclasses</directory>
-                                    <includes>
-                                        <include>*</include>
-                                    </includes>
+                                    <directory>../soot-infoflow/build/testclasses</directory>
                                 </resource>
                             </resources>
                         </configuration>

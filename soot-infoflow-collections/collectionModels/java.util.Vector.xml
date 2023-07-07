@@ -36,6 +36,11 @@
             <index idx="0" />
         </shiftRight>
     </method>
+    <method subsig="java.lang.Object lastElement()">
+        <access field="[java.util.Collection: java.lang.Object[] innerArray">
+            <index idx="last" />
+        </access>
+    </method>
     <method subsig="void removeAllElements()">
         <remove field="[java.util.Collection: java.lang.Object[] innerArray]">
             <index idx="all" />
