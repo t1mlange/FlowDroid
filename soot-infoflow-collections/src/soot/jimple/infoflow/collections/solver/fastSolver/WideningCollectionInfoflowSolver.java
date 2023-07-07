@@ -12,6 +12,11 @@ import java.util.Collection;
 import java.util.Set;
 import java.util.function.Consumer;
 
+/**
+ * Infoflow Solver that supports widening.
+ *
+ * @author Tim Lange
+ */
 public class WideningCollectionInfoflowSolver extends CollectionInfoflowSolver {
 
     public WideningCollectionInfoflowSolver(AbstractInfoflowProblem problem, InterruptableExecutor executor) {

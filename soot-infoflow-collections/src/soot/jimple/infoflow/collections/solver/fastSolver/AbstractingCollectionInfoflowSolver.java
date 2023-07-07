@@ -12,7 +12,6 @@ import soot.Local;
 import soot.SootMethod;
 import soot.Unit;
 import soot.jimple.infoflow.collect.ConcurrentHashSet;
-import soot.jimple.infoflow.collect.MyConcurrentHashMap;
 import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.problems.AbstractInfoflowProblem;
 import soot.jimple.infoflow.solver.EndSummary;
@@ -37,8 +36,8 @@ public class AbstractingCollectionInfoflowSolver extends CollectionInfoflowSolve
     // We need to overwrite the default incoming, because we might have multiple elements per context
     // e.g. when we add a concrete collection taint to use the summary of the abstracted collection taint
     @SynchronizedBy("Thread-safe data structure")
-    protected final MyConcurrentHashMap<Pair<SootMethod, Abstraction>,
-            MyConcurrentHashMap<Unit, MultiMap<Abstraction, Pair<Abstraction, Abstraction>>>> myIncoming = new MyConcurrentHashMap<>();
+    protected final ConcurrentHashMultiMap<Pair<SootMethod, Abstraction>, IncomingRecord<Unit, Abstraction>> myIncoming = new ConcurrentHashMultiMap<>();
+
 
     // Holds the first abstraction that reached the callee, removing the context for the key. Similar abstractions can
     // append to this abstraction to reuse facts from this (unless the IFDS solver noticed the context is relevant).
@@ -58,32 +57,16 @@ public class AbstractingCollectionInfoflowSolver extends CollectionInfoflowSolve
     }
 
     protected boolean addIncoming(SootMethod m, Abstraction d3a, Unit n, Abstraction d1, Abstraction d2, Abstraction d3) {
-        MyConcurrentHashMap<Unit, MultiMap<Abstraction, Pair<Abstraction, Abstraction>>> summaries
-                = myIncoming.putIfAbsentElseGet(new Pair<>(m, d3a), MyConcurrentHashMap::new);
-        MultiMap<Abstraction, Pair<Abstraction, Abstraction>> set = summaries.putIfAbsentElseGet(n, ConcurrentHashMultiMap::new);
-        return set.put(d1, new Pair<>(d2, d3));
+        return myIncoming.putIfAbsent(new Pair<>(m, d3a), new IncomingRecord<>(n, d1, d2, d3)) == null;
+    }
+
+    protected Set<IncomingRecord<Unit, Abstraction>> myIncoming(Abstraction d1, SootMethod m) {
+        return myIncoming.get(new Pair<>(m, d1));
     }
 
     protected boolean removeAndAddIncoming(SootMethod m, Abstraction d3a, Unit n, Abstraction d1, Abstraction d2, Abstraction d3) {
-        MyConcurrentHashMap<Unit, MultiMap<Abstraction, Pair<Abstraction, Abstraction>>> reuseSummaries
-                = myIncoming.putIfAbsentElseGet(new Pair<>(m, d3a), MyConcurrentHashMap::new);
-        MultiMap<Abstraction, Pair<Abstraction, Abstraction>> reuseSet = reuseSummaries.get(n);
-        Pair<Abstraction, Abstraction> p = new Pair<>(d2, d3);
-
-        return reuseSet.remove(d1, p) && addIncoming(m, d3, n, d1, d2, d3);
-    }
-
-    protected boolean incomingContains(SootMethod m, Abstraction d3a, Unit n, Abstraction d1, Abstraction d2, Abstraction d3) {
-        MyConcurrentHashMap<Unit, MultiMap<Abstraction, Pair<Abstraction, Abstraction>>> reuseSummaries
-                = myIncoming.putIfAbsentElseGet(new Pair<>(m, d3a), MyConcurrentHashMap::new);
-        MultiMap<Abstraction, Pair<Abstraction, Abstraction>> reuseSet = reuseSummaries.get(n);
-        Pair<Abstraction, Abstraction> p = new Pair<>(d2, d3);
-
-        return reuseSet.contains(d1, p);
-    }
-
-    protected Map<Unit, MultiMap<Abstraction, Pair<Abstraction, Abstraction>>> myIncoming(Abstraction d1, SootMethod m) {
-        return myIncoming.get(new Pair<>(m, d1));
+        return myIncoming.remove(new Pair<>(m, d3a), new IncomingRecord<>(n, d1, d2, d3))
+                && addIncoming(m, d3, n, d1, d2, d3);
     }
 
     public AbstractingCollectionInfoflowSolver(AbstractInfoflowProblem problem, InterruptableExecutor executor) {
@@ -124,13 +107,13 @@ public class AbstractingCollectionInfoflowSolver extends CollectionInfoflowSolve
                                 if (d3 == null)
                                     continue;
 
+                                // We can only reuse summaries that have a non-zero context
                                 if (subsuming.hasContext(d3)
                                         && !d3.getAccessPath().isStaticFieldRef()) {
                                     if (isReusable(sCalledProcN, d3)) {
                                         Abstraction prevSeenAbs = incomingWContext.putIfAbsent(new NoContextKey(sCalledProcN, d3), d3);
                                         if (prevSeenAbs == null) {
-                                            if (d1 != zeroValue)
-                                                prevContext.put(d3, new Pair<>(icfg.getMethodOf(n), d1));
+                                            prevContext.put(d3, new Pair<>(icfg.getMethodOf(n), d1));
 
                                             if (!addIncoming(sCalledProcN, d3, n, d1, d2, d3))
                                                 continue;
@@ -235,66 +218,63 @@ public class AbstractingCollectionInfoflowSolver extends CollectionInfoflowSolve
         if (!addEndSummary(methodThatNeedsSummary, d1, n, d2))
             return;
 
-        Map<Unit, MultiMap<Abstraction, Pair<Abstraction, Abstraction>>> inc = myIncoming(d1, methodThatNeedsSummary);
-
+        Set<IncomingRecord<Unit, Abstraction>> inc = myIncoming(d1, methodThatNeedsSummary);
         // for each incoming call edge already processed
         // (see processCall(..))
-        if (inc != null && !inc.isEmpty())
-            for (Map.Entry<Unit, MultiMap<Abstraction, Pair<Abstraction, Abstraction>>> entry : inc.entrySet()) {
-                // Early termination check
-                if (killFlag != null)
-                    return;
+        for (IncomingRecord<Unit, Abstraction> record : inc) {
+            // Early termination check
+            if (killFlag != null)
+                return;
 
-                // line 22
-                Unit c = entry.getKey();
-                Set<Abstraction> callerSideDs = entry.getValue().keySet();
-                // for each return site
-                for (Unit retSiteC : icfg.getReturnSitesOfCallAt(c)) {
-                    // compute return-flow function
-                    FlowFunction<Abstraction> retFunction = flowFunctions.getReturnFlowFunction(c, methodThatNeedsSummary, n,
-                            retSiteC);
-                        for (final Abstraction d4 : entry.getValue().keySet()) {
-                            for (final Pair<Abstraction, Abstraction> pair : entry.getValue().get(d4)) {
-                                Abstraction predVal = pair.getO1(); // d2 in the call flow
-                                Abstraction narrowAbs = pair.getO2(); // d3 in the call flow i.e. d1 here
+            // line 22
+            Unit c = record.n;
+            Set<Abstraction> callerSideDs = Collections.singleton(record.d1);
 
-                                Abstraction d2new = d2;
-                                Abstraction d1new = d1;
-                                Abstraction d4new = d4;
-                                if (!d1.equals(narrowAbs)) {
-                                    d1new = narrowAbs; // Replace the calling context
-                                    // Special case: if we have an identity flow, we can skip diffing access paths
-                                    d2new = d1.equals(d2) ? narrowAbs : subsuming.applyDiffOf(d1, d2, narrowAbs);
-                                    d4new = predVal;
-                                }
+            final Abstraction d4 = record.d1;
+            final Abstraction predVal = record.d2;
+            final Abstraction narrowAbs = record.d3;
 
-                                // for each incoming-call value
-                                Set<Abstraction> targets = computeReturnFlowFunction(retFunction, d1new, d2new, c, callerSideDs);
-                                if (targets != null && !targets.isEmpty()) {
-                                for (Abstraction d5 : targets) {
-                                    if (memoryManager != null)
-                                        d5 = memoryManager.handleGeneratedMemoryObject(d2new, d5);
-                                    if (d5 == null)
-                                        continue;
+            Abstraction d2new = d2;
+            Abstraction d1new = d1;
+            Abstraction d4new = d4;
+            if (!d1.equals(narrowAbs)) {
+                d1new = narrowAbs; // Replace the calling context
+                // Special case: if we have an identity flow, we can skip diffing access paths
+                d2new = d1.equals(d2) ? narrowAbs : subsuming.applyDiffOf(d1, d2, narrowAbs);
+                d4new = predVal;
+            }
 
-                                    // If we have not changed anything in the callee, we do not need the facts from
-                                    // there. Even if we change something: If we don't need the concrete path, we
-                                    // can skip the callee in the predecessor chain
-                                    Abstraction d5p = shortenPredecessors(d5, predVal, d1new, n, c);
-                                    schedulingStrategy.propagateReturnFlow(d4new, retSiteC, d5p, c, false);
-                                }
-                            }
-                        }
+            // for each return site
+            for (Unit retSiteC : icfg.getReturnSitesOfCallAt(c)) {
+                // compute return-flow function
+                FlowFunction<Abstraction> retFunction = flowFunctions.getReturnFlowFunction(c, methodThatNeedsSummary, n,
+                        retSiteC);
+
+                // for each incoming-call value
+                Set<Abstraction> targets = computeReturnFlowFunction(retFunction, d1new, d2new, c, callerSideDs);
+                if (targets != null && !targets.isEmpty()) {
+                    for (Abstraction d5 : targets) {
+                        if (memoryManager != null)
+                            d5 = memoryManager.handleGeneratedMemoryObject(d2new, d5);
+                        if (d5 == null)
+                            continue;
+
+                        // If we have not changed anything in the callee, we do not need the facts from
+                        // there. Even if we change something: If we don't need the concrete path, we
+                        // can skip the callee in the predecessor chain
+                        Abstraction d5p = shortenPredecessors(d5, predVal, d1new, n, c);
+                        schedulingStrategy.propagateReturnFlow(d4new, retSiteC, d5p, c, false);
                     }
                 }
             }
+        }
 
         // handling for unbalanced problems where we return out of a method with
         // a fact for which we have no incoming flow
         // note: we propagate that way only values that originate from ZERO, as
         // conditionally generated values should only be propagated into callers that
         // have an incoming edge for this condition
-        if (followReturnsPastSeeds && d1 == zeroValue && (inc == null || inc.isEmpty())) {
+        if (followReturnsPastSeeds && d1 == zeroValue && inc.isEmpty()) {
             Collection<Unit> callers = icfg.getCallersOf(methodThatNeedsSummary);
             for (Unit c : callers) {
                 for (Unit retSiteC : icfg.getReturnSitesOfCallAt(c)) {
@@ -334,9 +314,7 @@ public class AbstractingCollectionInfoflowSolver extends CollectionInfoflowSolve
             final Abstraction d2 = edge.factAtTarget();
 
             final SootMethod methodThatNeedsSummary = icfg.getMethodOf(u);
-            final Map<Unit, MultiMap<Abstraction, Pair<Abstraction, Abstraction>>> inc = myIncoming(d1, methodThatNeedsSummary);
-
-            if (inc == null || inc.isEmpty())
+            if (myIncoming(d1, methodThatNeedsSummary).isEmpty())
                 followReturnsPastSeedsHandler.handleFollowReturnsPastSeeds(d1, u, d2);
         }
     }
@@ -373,36 +351,25 @@ public class AbstractingCollectionInfoflowSolver extends CollectionInfoflowSolve
 
             secondVisit.addAll(prevContext.get(curr));
 
-            Map<Unit, MultiMap<Abstraction, Pair<Abstraction, Abstraction>>> inc = myIncoming(curr, currMethod);
-            if (inc != null && !inc.isEmpty()) {
-                for (Unit u : inc.keySet()) {
-                    MultiMap<Abstraction, Pair<Abstraction, Abstraction>> map = inc.get(u);
-                    if (map == null)
+            final Set<IncomingRecord<Unit, Abstraction>> inc = myIncoming(curr, currMethod);
+            for (IncomingRecord<Unit, Abstraction> record : inc) {
+                final Abstraction d1 = record.d1;
+                final Abstraction d2 = record.d2;
+                final Abstraction d3 = record.d3;
+                final Unit u = record.n;
+                // The exemplary context propagated in the callee is still valid, only
+                // all similar abstractions are not
+                if (!d3.equals(curr)) {
+                    // Reinject the similar abstractions at the method start
+                    if (!removeAndAddIncoming(currMethod, curr, u, d1, d2, d3))
                         continue;
 
-                    for (Abstraction d1 : map.keySet()) {
-                        Set<Pair<Abstraction, Abstraction>> pairs = map.get(d1);
-                        if (pairs == null)
-                            break;
-                        for (Pair<Abstraction, Abstraction> pair : pairs) {
-                            Abstraction d2 = pair.getO1();
-                            Abstraction d3 = pair.getO2();
-                            // The exemplary context propagated in the callee is still valid, only
-                            // all similar abstractions are not
-                            if (d3 != curr) {
-                                // Reinject the similar abstractions at the method start
-                                if (!removeAndAddIncoming(currMethod, curr, u, d1, d2, d3))
-                                    continue;
-
-                                for (Unit sP : icfg.getStartPointsOf(currMethod)) {
-                                    // create initial self-loop
-                                    schedulingStrategy.propagateCallFlow(d3, sP, d3, u, false); // line 15
-                                }
-
-                                applyEndSummaryOnCallWith(d1, u, d2, icfg.getReturnSitesOfCallAt(u), currMethod, d3, d3);
-                            }
-                        }
+                    for (Unit sP : icfg.getStartPointsOf(currMethod)) {
+                        // create initial self-loop
+                        schedulingStrategy.propagateCallFlow(d3, sP, d3, u, false); // line 15
                     }
+
+                    applyEndSummaryOnCallWith(d1, u, d2, icfg.getReturnSitesOfCallAt(u), currMethod, d3, d3);
                 }
             }
         }
@@ -412,8 +379,14 @@ public class AbstractingCollectionInfoflowSolver extends CollectionInfoflowSolve
                                      SootMethod sCalledProcN, Abstraction d3, Abstraction summaryQuery) {
         // line 15.2
         Set<EndSummary<Unit, Abstraction>> endSumm = endSummary(sCalledProcN, summaryQuery);
+
+        // This method is always called with d3 == summaryQuery unless we reuse summaries from similar
+        // abstractions. Thus, referential equality is enough to deduce summary reuse
         boolean reuseOfSummary = d3 != summaryQuery;
 
+        // TODO: I assume we can skip this check
+        // Two cases:
+        //
         // If the combination of (method, parameter) is not reusable, exit here
         if (reuseOfSummary && !isReusable(sCalledProcN, d3)) {
             return;

@@ -268,12 +268,13 @@ public class AbstractingTestCode {
 
         Map<String, String> map2 = new HashMap<>();
         map2.put("XXX", tainted);
-        map2.put("YYY", tainted);
+        Map<String, String> map3 = new HashMap<>();
+        map3.put("YYY", tainted);
         // Here we start two calls with different keys such that the keys are
         // merged. Later on in the call tree, the solver should encounter that
         // getXXX is not reusable and reinject the abstraction correctly.
         String r1 = badCallee1(map2);
-        String r2 = badCallee1(map2);
+        String r2 = badCallee1(map3);
         sink(r1);
         sink(r2);
     }
@@ -284,6 +285,8 @@ public class AbstractingTestCode {
         String tainted = source();
         map.put("XXX", tainted);
         sink(getXXX(map));
+
+        map.remove("XXX");
 
         map.put("YYY", tainted);
         String r1 = badCallee1(map);

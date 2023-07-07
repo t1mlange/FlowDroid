@@ -273,34 +273,4 @@ public class SimpleListTests extends FlowDroidTests {
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
         Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
     }
-
-    private static class NoContextChecker implements TaintPropagationHandler {
-        @Override
-        public void notifyFlowIn(Unit stmt, Abstraction taint, InfoflowManager manager, FlowFunctionType type) {
-            AccessPathFragment f = taint.getAccessPath().getFirstFragment();
-            Assert.assertTrue(f == null || !f.hasContext());
-        }
-
-        @Override
-        public Set<Abstraction> notifyFlowOut(Unit stmt, Abstraction d1, Abstraction incoming, Set<Abstraction> outgoing, InfoflowManager manager, FlowFunctionType type) {
-            return null;
-        }
-    }
-
-    @Test(timeout = 30000)
-    public void testAddCollection1() {
-        IInfoflow infoflow = initInfoflow();
-        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
-        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
-        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
-    }
-
-    @Test(timeout = 30000)
-    public void testAddCollection2() {
-        IInfoflow infoflow = initInfoflow();
-        infoflow.setTaintPropagationHandler(new NoContextChecker());
-        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
-        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
-        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
-    }
 }

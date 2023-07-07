@@ -26,8 +26,6 @@ import soot.util.MultiMap;
  * - Supports widening on CallToReturn edges
  * - Applies coarser summaries when possible
  *
- * TODO: data races on processCall?
- *
  * @author Tim Lange
  */
 @Deprecated // Bad idea, the race is inevitable
