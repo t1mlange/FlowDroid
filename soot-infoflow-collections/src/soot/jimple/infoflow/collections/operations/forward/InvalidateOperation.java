@@ -15,12 +15,12 @@ import soot.jimple.infoflow.data.AccessPathFragment;
 import soot.jimple.infoflow.sourcesSinks.definitions.AccessPathTuple;
 
 public class InvalidateOperation extends AbstractOperation {
-    private final int data;
+    private final int targetIdx;
     private final String field;
     private final AccessPathTuple returnTuple;
 
     public InvalidateOperation(int data, String field, AccessPathTuple returnTuple) {
-        this.data = data;
+        this.targetIdx = data;
         this.field = field;
         this.returnTuple = returnTuple;
     }
@@ -45,7 +45,7 @@ public class InvalidateOperation extends AbstractOperation {
 
     @Override
     public boolean apply(Abstraction d1, Abstraction incoming, Stmt stmt, InfoflowManager manager, IContainerStrategy strategy, Collection<Abstraction> out) {
-        Value val = getValueFromIndex(data, stmt);
+        Value val = getValueFromIndex(targetIdx, stmt);
         if (!manager.getAliasing().mayAlias(incoming.getAccessPath().getPlainValue(), val))
             return false;
 

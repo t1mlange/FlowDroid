@@ -108,4 +108,55 @@ public class AliasMapTestCode {
         A b = aMap.get("Secret");
         sink(b.s);
     }
+
+    @FlowDroidTest(expected = 1)
+    public void testAccessAlias1() {
+        Map<String, A> m = new HashMap<>();
+        A a = new A();
+        m.put("Key", a);
+        A b = m.get("Key");
+        a.s = source();
+        sink(b.s);
+    }
+
+    @FlowDroidTest(expected = 1)
+    public void testAccessAlias2() {
+        Map<String, A> m = new HashMap<>();
+        A b = new A();
+        m.put("Secret", b);
+        A a = m.get("Secret");
+        a.s = source();
+        sink(b.s);
+    }
+
+    @FlowDroidTest(expected = 0)
+    public void testAccessAlias3() {
+        Map<String, A> m = new HashMap<>();
+        A b = new A();
+        m.put("Secret", b);
+        m.put("Secret", new A());
+        A a = m.get("Secret");
+        a.s = source();
+        sink(b.s);
+    }
+
+    @FlowDroidTest(expected = 1)
+    public void testAccessAlias4() {
+        Map<String, A> m = new HashMap<>();
+        A b = new A();
+        m.put("Secret", b);
+        A a = m.put("Secret", new A());
+        a.s = source();
+        sink(b.s);
+    }
+
+    @FlowDroidTest(expected = 0)
+    public void testNoAccessAsInactive1() {
+        f = null;
+        Map<String, String> m = new HashMap<>();
+        f = m;
+        Object untainted = f.get("XXX");
+        m.put("XXX", source());
+        sink(untainted);
+    }
 }

@@ -41,32 +41,16 @@ public class AliasInsertOperation extends InsertOperation {
                 return false;
 
             // Taint the parameter
-            {
-                Value value = getValueFromIndex(data, stmt);
-                if (!(value instanceof Constant)) {
-                    AccessPath ap = manager.getAccessPathFactory().copyWithNewValue(incoming.getAccessPath(), value, value.getType(), true);
-                    Abstraction abs = incoming.deriveNewAbstraction(ap, stmt);
-                    if (abs != null)
-                        out.add(abs);
-                }
-            }
-
-            // Return value
-            if (stmt instanceof AssignStmt) {
-                Value leftOp = ((AssignStmt) stmt).getLeftOp();
-
-                if (!TypeUtils.isPrimitiveOrString(leftOp, incoming)) {
-                    AccessPath ap = taintReturnValue(((AssignStmt) stmt).getLeftOp(), null, null,
-                            incoming, strategy, manager);
-                    if (ap == null)
-                        return false;
-                    Abstraction abs = incoming.deriveNewAbstraction(ap, stmt);
+            Value value = getValueFromIndex(data, stmt);
+            if (!(value instanceof Constant)) {
+                AccessPath ap = manager.getAccessPathFactory().copyWithNewValue(incoming.getAccessPath(), value, value.getType(), true);
+                Abstraction abs = incoming.deriveNewAbstraction(ap, stmt);
+                if (abs != null)
                     out.add(abs);
-                }
             }
 
-            // The collection is also tainted upwards
-            return false;
+            // The collection was tainted with the matching insert, thus, it won't be tainted above
+            return true;
         }
 
         // Left Op to collection in aliasing
@@ -87,6 +71,7 @@ public class AliasInsertOperation extends InsertOperation {
             }
         }
 
+        // Also check whether the alias creates a new list alias
         return super.apply(d1, incoming, stmt, manager, strategy, out);
     }
 }

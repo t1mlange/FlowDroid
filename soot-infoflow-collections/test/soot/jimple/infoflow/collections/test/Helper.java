@@ -5,7 +5,7 @@ public class Helper {
         return "secret";
     }
 
-    public static void sink(String str) {
+    public static void sink(Object str) {
         System.out.println(str);
     }
 }

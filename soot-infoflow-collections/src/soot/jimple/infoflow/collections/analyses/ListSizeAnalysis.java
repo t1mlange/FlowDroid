@@ -25,15 +25,19 @@ public class ListSizeAnalysis extends ForwardFlowAnalysis<Unit, Map<Local, ListS
      *  NON-CONSTANT SIZE -> BOTTOM
      */
     public static class ListSize {
+        // shared instance of bottom
+        private static ListSize BOTTOM = new ListSize();
+
         int size;
         boolean isBottom;
 
-        ListSize(int size) {
-            this.size = size;
-        }
 
         static ListSize bottom() {
-            return new ListSize();
+            return BOTTOM;
+        }
+
+        ListSize(int size) {
+            this.size = size;
         }
 
         private ListSize() {
@@ -76,11 +80,33 @@ public class ListSizeAnalysis extends ForwardFlowAnalysis<Unit, Map<Local, ListS
 
     private final SootClass listClass;
 
-    private static final Set<String> incrementors = new HashSet<>();
+    private static final Set<String> increments = new HashSet<>();
     static {
-        incrementors.add("boolean add(java.lang.Object)");
-        incrementors.add("java.lang.Object push(java.lang.Object)");
-        incrementors.add("void addElement(java.lang.Object)");
+        increments.add("boolean add(java.lang.Object)");
+        increments.add("java.lang.Object push(java.lang.Object)");
+        increments.add("void addElement(java.lang.Object)");
+    }
+
+    private static final Set<String> decrements = new HashSet<>();
+    static {
+        decrements.add("java.lang.Object remove(int)");
+        decrements.add("java.lang.Object pop()");
+    }
+
+    private static final Set<String> resets = new HashSet<>();
+    static {
+        resets.add("void clear()");
+    }
+
+    private static final Set<String> invalidates = new HashSet<>();
+    static {
+        invalidates.add("boolean remove(java.lang.Object)");
+        invalidates.add("java.util.Iterator iterator()");
+        invalidates.add("java.util.ListIterator listIterator()");
+        invalidates.add("boolean removeAll(java.util.Collection)");
+        invalidates.add("boolean retainAll(java.util.Collection)");
+        invalidates.add("java.util.Spliterator spliterator()");
+        invalidates.add("java.util.List subList(int,int)");
     }
 
     public ListSizeAnalysis(DirectedGraph<Unit> graph) {
@@ -100,9 +126,11 @@ public class ListSizeAnalysis extends ForwardFlowAnalysis<Unit, Map<Local, ListS
             if (leftOp instanceof Local && rightOp instanceof NewExpr) {
                 SootClass sc = ((NewExpr) rightOp).getBaseType().getSootClass();
                 if (Scene.v().getFastHierarchy().getAllImplementersOfInterface(listClass).contains(sc)) {
+                    // Init new list
                     out.put((Local) leftOp, new ListSize(0));
                 }
             } else {
+                // Overwritten
                 out.remove(leftOp);
             }
 
@@ -122,16 +150,27 @@ public class ListSizeAnalysis extends ForwardFlowAnalysis<Unit, Map<Local, ListS
                 && !Scene.v().getFastHierarchy().getAllImplementersOfInterface(listClass).contains(sm.getDeclaringClass()))
             return;
 
-        if (incrementors.contains(sm.getSubSignature())) {
+        String subsig = sm.getSubSignature();
+        if (increments.contains(subsig)) {
             Local base = (Local) ((InstanceInvokeExpr) stmt.getInvokeExpr()).getBase();
             ListSize size = out.get(base);
             if (size != null)
                 out.put(base, size.plusOne());
-        } else if (sm.getSubSignature().equals("java.lang.Object pop()")) {
+        } else if (decrements.contains(subsig)) {
             Local base = (Local) ((InstanceInvokeExpr) stmt.getInvokeExpr()).getBase();
             ListSize size = out.get(base);
             if (size != null)
                 out.put(base, size.minusOne());
+        } else if (invalidates.contains(subsig)) {
+            Local base = (Local) ((InstanceInvokeExpr) stmt.getInvokeExpr()).getBase();
+            ListSize size = out.get(base);
+            if (size != null)
+                out.put(base, ListSize.bottom());
+        } else if (resets.contains(subsig)) {
+            Local base = (Local) ((InstanceInvokeExpr) stmt.getInvokeExpr()).getBase();
+            ListSize size = out.get(base);
+            if (size != null)
+                out.put(base, new ListSize(0));
         }
     }
 
