@@ -219,7 +219,8 @@ public class AccessPathFactory {
 				// Check if we have a repeating field
 				int repeatPos = -1;
 				for (int i = bucketStart + 1; i < fragments.length; i++)
-					if (fragments[i].getField() == fragments[bucketStart].getField()) {
+					if (fragments[i].getField() == fragments[bucketStart].getField()
+							&& Arrays.equals(fragments[i].getContext(), fragments[bucketStart].getContext())) {
 						repeatPos = i;
 						break;
 					}

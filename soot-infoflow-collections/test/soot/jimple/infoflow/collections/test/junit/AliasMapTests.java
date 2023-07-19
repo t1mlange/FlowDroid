@@ -9,6 +9,7 @@ import soot.jimple.infoflow.IInfoflow;
 import soot.jimple.infoflow.InfoflowConfiguration;
 import soot.jimple.infoflow.entryPointCreators.IEntryPointCreator;
 import soot.jimple.infoflow.entryPointCreators.SequentialEntryPointCreator;
+import soot.jimple.infoflow.util.DebugFlowFunctionTaintPropagationHandler;
 
 public class AliasMapTests extends FlowDroidTests {
     @Override
@@ -77,6 +78,47 @@ public class AliasMapTests extends FlowDroidTests {
 
     @Test(timeout = 30000)
     public void testMapClear1() {
+        IInfoflow infoflow = initInfoflow();
+        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
+        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
+    }
+
+    @Test(timeout = 30000)
+    public void testAccessAlias1() {
+        IInfoflow infoflow = initInfoflow();
+        infoflow.setAliasPropagationHandler(new DebugFlowFunctionTaintPropagationHandler());
+        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
+        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
+    }
+
+    @Test(timeout = 30000)
+    public void testAccessAlias2() {
+        IInfoflow infoflow = initInfoflow();
+        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
+        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
+    }
+
+    @Test(timeout = 30000)
+    public void testAccessAlias3() {
+        IInfoflow infoflow = initInfoflow();
+        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
+        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
+    }
+
+    @Test(timeout = 30000)
+    public void testAccessAlias4() {
+        IInfoflow infoflow = initInfoflow();
+        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
+        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
+    }
+
+    @Test(timeout = 30000)
+    public void testNoAccessAsInactive1() {
         IInfoflow infoflow = initInfoflow();
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);

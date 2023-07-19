@@ -25,8 +25,8 @@ public class AliasAccessOperation extends AccessOperation {
         if (!(stmt instanceof AssignStmt))
             return false;
 
-        if (!TypeUtils.isPrimitiveOrString(((AssignStmt) stmt).getLeftOp(), incoming))
-            super.apply(d1, incoming, stmt, manager, strategy, out);
+//        if (!TypeUtils.isPrimitiveOrString(((AssignStmt) stmt).getLeftOp(), incoming))
+//            super.apply(d1, incoming, stmt, manager, strategy, out);
 
         InstanceInvokeExpr iie = ((InstanceInvokeExpr) stmt.getInvokeExpr());
         Value leftOp = ((AssignStmt) stmt).getLeftOp();

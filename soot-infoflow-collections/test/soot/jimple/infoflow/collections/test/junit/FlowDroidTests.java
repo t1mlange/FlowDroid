@@ -45,7 +45,7 @@ public abstract class FlowDroidTests {
 	protected static List<String> sources = Collections
 			.singletonList("<soot.jimple.infoflow.collections.test.Helper: java.lang.String source()>");
 	protected static List<String> sinks = Collections
-			.singletonList("<soot.jimple.infoflow.collections.test.Helper: void sink(java.lang.String)>");
+			.singletonList("<soot.jimple.infoflow.collections.test.Helper: void sink(java.lang.Object)>");
 
 	static void appendWithSeparator(StringBuilder sb, File f) throws IOException {
 		if (f.exists()) {

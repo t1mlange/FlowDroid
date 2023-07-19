@@ -31,6 +31,7 @@ public class AccessOperation extends LocationDependentOperation {
         // No need to model an access if the return value is ignored
         if (!(stmt instanceof AssignStmt))
             return false;
+        Value leftOp = ((AssignStmt) stmt).getLeftOp();
 
         InstanceInvokeExpr iie = ((InstanceInvokeExpr) stmt.getInvokeExpr());
         if (!manager.getAliasing().mayAlias(incoming.getAccessPath().getPlainValue(), iie.getBase()))
@@ -40,11 +41,22 @@ public class AccessOperation extends LocationDependentOperation {
         if (fragment == null)
             return false;
 
+        // For example, an alias.get("key") is only valid after the orig.put("key", tainted). Thus,
+        // in general, accesses are prohibited for inactive abstractions (see testNoAccessAsInactive1).
+        // Though, there might a map.put...map.get flow with a heap object that has a tainted field.
+        // In this case, we need to allow accesses to find the alias. This is the corresponding check
+        // to line 227-229 in InfoflowProblem. See also testAccessAlias1 in AliasMapTestCode, which needs
+        // access in the inactive flow and testNoAccessAsInactive1.
+        boolean invalidAccess = !incoming.isAbstractionActive()
+                && incoming.getAccessPath().getFragmentCount() == 1
+                && !incoming.dependsOnCutAP();
+        if (invalidAccess)
+            return false;
+
         ArrayList<ContextDefinition> copied = new ArrayList<>();
         Tristate state = matchContexts(fragment, iie, stmt, strategy, copied);
 
         if (!state.isFalse()) {
-            Value leftOp = ((AssignStmt) stmt).getLeftOp();
             ContextDefinition[] newCtxt = copied.toArray(new ContextDefinition[0]);
             AccessPath ap = taintReturnValue(leftOp, newCtxt, returnField, incoming, strategy, manager);
             if (ap != null)

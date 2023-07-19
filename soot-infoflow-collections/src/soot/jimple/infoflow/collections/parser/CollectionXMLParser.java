@@ -147,18 +147,19 @@ public class CollectionXMLParser {
 				resetAfterOperation();
 				break;
 			case SHIFT_LEFT_TAG:
+				// TODO: switch for widening on shifts
 				operations.add(new ShiftLeftOperation(trimKeys(keys), accessPathField));
-				aliasOperations.add(new AliasShiftLeftOperation(trimKeys(keys), accessPathField));
+				aliasOperations.add(new IdentityOperation());
 				resetAfterOperation();
 				break;
 			case SHIFT_RIGHT_TAG:
 				operations.add(new ShiftRightOperation(trimKeys(keys), accessPathField));
-				aliasOperations.add(new AliasShiftRightOperation(trimKeys(keys), accessPathField));
+				aliasOperations.add(new IdentityOperation());
 				resetAfterOperation();
 				break;
 			case REMOVE_TAG:
 				operations.add(new RemoveOperation(trimKeys(keys), accessPathField));
-				aliasOperations.add(new AliasRemoveOperation(trimKeys(keys), accessPathField));
+				aliasOperations.add(new IdentityOperation());
 				resetAfterOperation();
 				break;
 			case COPY_TAG:
@@ -171,8 +172,7 @@ public class CollectionXMLParser {
 				if (returnAccessPathField != null)
 					retTuple = AccessPathTuple.fromPathElements(returnAccessPathField, null, SourceSinkType.Neither);
 				operations.add(new InvalidateOperation(dataIdx, accessPathField, retTuple));
-				// TODO
-//                    aliasOperations.add(new InvalidateOperation(accessPathField, retTuple));
+				aliasOperations.add(new IdentityOperation());
 				resetAfterOperation();
 				break;
 			case COMPUTE_TAG:
