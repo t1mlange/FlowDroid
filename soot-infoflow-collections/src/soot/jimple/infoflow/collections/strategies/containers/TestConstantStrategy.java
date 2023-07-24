@@ -16,14 +16,33 @@ import soot.jimple.infoflow.collections.context.UnknownContext;
 import soot.jimple.infoflow.collections.util.Tristate;
 import soot.jimple.infoflow.data.ContextDefinition;
 
-public class ConstantStrategy extends ConstantMapStrategy {
+/**
+ * Strategy that reasons about maps with constant keys and lists with constant indices.
+ * Uses {@link ListSizeAnalysis} to retrieve the list size, thus, should only be used for testing
+ * the semantics of list operations.
+ *
+ * @author Tim Lange
+ */
+public class TestConstantStrategy extends ConstantMapStrategy {
+    // Benign race on the counters because they are on the critical path within the data flow analysis
+    private long resolvedIndices;
+    private long unresolvedIndices;
+
     private final ConcurrentHashMap<SootMethod, ListSizeAnalysis> implicitIndices;
     protected final InfoflowManager manager;
 
-    public ConstantStrategy(InfoflowManager manager, CollectionTaintWrapper ctw) {
+    public TestConstantStrategy(InfoflowManager manager, CollectionTaintWrapper ctw) {
         super(ctw);
         this.implicitIndices = new ConcurrentHashMap<>();
         this.manager = manager;
+    }
+
+    public long getResolvedIndices() {
+        return resolvedIndices;
+    }
+
+    public long getUnresolvedIndices() {
+        return unresolvedIndices;
     }
 
     @Override
@@ -41,9 +60,12 @@ public class ConstantStrategy extends ConstantMapStrategy {
 
     @Override
     public ContextDefinition getIndexContext(Value value, Stmt stmt) {
-        if (value instanceof IntConstant)
+        if (value instanceof IntConstant) {
+            resolvedIndices++;
             return new IntervalContext(((IntConstant) value).value);
+        }
 
+        unresolvedIndices++;
         return UnknownContext.v();
     }
 
@@ -54,6 +76,7 @@ public class ConstantStrategy extends ConstantMapStrategy {
 
     @Override
     public ContextDefinition getFirstPosition(Value value, Stmt stmt) {
+        resolvedIndices++;
         return new IntervalContext(0);
     }
 
@@ -96,10 +119,12 @@ public class ConstantStrategy extends ConstantMapStrategy {
                     sm -> new ListSizeAnalysis(manager.getICFG().getOrCreateUnitGraph(sm)));
             ListSizeAnalysis.ListSize size = lstSizeAnalysis.getFlowBefore(stmt).get(value);
             if (size != null && !size.isBottom()) {
+                resolvedIndices++;
                 return new IntervalContext(decr ? size.getSize() - 1 : size.getSize());
             }
         }
 
+        unresolvedIndices++;
         return UnknownContext.v();
     }
 }

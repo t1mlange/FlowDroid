@@ -1,7 +1,7 @@
 package soot.jimple.infoflow.collections.data;
 
 /**
- * Maps special indices to ints
+ * Mapping of ints to parameters or base objects
  */
 public final class ParamIndex {
     // Represents an index not used

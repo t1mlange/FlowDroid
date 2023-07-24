@@ -3,10 +3,8 @@ package soot.jimple.infoflow.collections.test;
 import static soot.jimple.infoflow.collections.test.Helper.sink;
 import static soot.jimple.infoflow.collections.test.Helper.source;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
-import org.junit.Test;
 import soot.jimple.infoflow.collections.test.junit.FlowDroidTest;
 
 public class AbstractingTestCode {
@@ -291,5 +289,52 @@ public class AbstractingTestCode {
         map.put("YYY", tainted);
         String r1 = badCallee1(map);
         sink(r1);
+    }
+
+    private void calleeWithDerefRef(Map<String, String> map) {
+        StringBuilder sb = new StringBuilder();
+        // Deref with a context-independent map operation
+        for (String val : map.values())
+            sb.append(val);
+        // Put a value retrieved from the deref'd map, again
+        // not dependent on the keys in the access path
+        map.put("XXX", sb.toString());
+
+        // There are two different equivalence classes: map.values@["XXX"] and map.values with any other key.
+        // For map.values@["XXX"] only the identity is correct. While for any other key, "XXX" and the identity are a
+        // correct summary for this method.
+        // Now let's assume we see the key "XXX" first and append another key "YYY" to the propagation. At the return,
+        // we just see the identity. So we would replace the context when mapping our appended abstraction back to the
+        // caller. However, this would leak to a missed path. We cannot distinguish the case deref->ref from the
+        // identity just based on the calling context and the current abstraction at a return site.
+        //
+        // There are two ways to resolve this:
+        //     a) prohibit context-independent derefs for appending
+        //     b) prohibit context-independent refs for appending
+        // But only b) makes sense. Let me explain this by a counterexample to the usefulness of a) by looking
+        // at two cases:
+        //    1. The calling context has no context yet. Then, there won't be any appending because the default IFDS
+        //       value approach will summarize as much as possible for the given access path.
+        //    2. The calling context already contains a context...
+        //       2.1. ...on the same collection type as the ref in the method. Then, the symbolic access path will cut
+        //            the access path down due to recursion (map.values...values -> map.values).
+        //       2.2. ...on a different collection type. This is the only way that appending actually provides an
+        //            advantage.
+        // On the other hand, a) can be applied all the time: for each context-independent operation, for each
+        // invalidating operation.
+    }
+
+    @FlowDroidTest(expected = 2)
+    public void testShowingWhyAddIsContextDependent() {
+        Map<String, String> map = new HashMap<>();
+        String source = source();
+        map.put("XXX", source);
+        calleeWithDerefRef(map);
+        sink(map.get("XXX"));
+
+        Map<String, String> map2 = new HashMap<>();
+        map2.put("YYY", source);
+        calleeWithDerefRef(map2);
+        sink(map2.get("XXX"));
     }
 }

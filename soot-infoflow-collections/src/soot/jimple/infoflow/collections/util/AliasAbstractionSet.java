@@ -7,6 +7,11 @@ import soot.Type;
 import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.typing.TypeUtils;
 
+/**
+ * Set that only adds abstractions that are valid in the alias flow
+ *
+ * @author Tim Lange
+ */
 public class AliasAbstractionSet extends HashSet<Abstraction> {
     private Abstraction checkAbstraction(Abstraction abs) {
         if (abs == null)

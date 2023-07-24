@@ -12,6 +12,7 @@ import soot.Local;
 import soot.SootMethod;
 import soot.Unit;
 import soot.jimple.infoflow.collect.ConcurrentHashSet;
+import soot.jimple.infoflow.collections.strategies.appending.AppendingStrategy;
 import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.problems.AbstractInfoflowProblem;
 import soot.jimple.infoflow.solver.EndSummary;
@@ -30,6 +31,13 @@ import soot.util.MultiMap;
  * @author Tim Lange
  */
 public class AbstractingCollectionInfoflowSolver extends CollectionInfoflowSolver {
+    private AppendingStrategy<Unit, Abstraction> appending;
+
+    public void setAppendingStrategy(AppendingStrategy<Unit, Abstraction> appending) {
+        this.appending = appending;
+    }
+
+
     // Map (Method, Param) to whether it may reach a context dependent operation
     private final ConcurrentHashSet<Pair<SootMethod, Local>> notReusable = new ConcurrentHashSet<>();
 
@@ -108,7 +116,7 @@ public class AbstractingCollectionInfoflowSolver extends CollectionInfoflowSolve
                                     continue;
 
                                 // We can only reuse summaries that have a non-zero context
-                                if (subsuming.hasContext(d3)
+                                if (appending.hasContext(d3)
                                         && !d3.getAccessPath().isStaticFieldRef()) {
                                     if (isReusable(sCalledProcN, d3)) {
                                         Abstraction prevSeenAbs = incomingWContext.putIfAbsent(new NoContextKey(sCalledProcN, d3), d3);
@@ -240,7 +248,7 @@ public class AbstractingCollectionInfoflowSolver extends CollectionInfoflowSolve
             if (!d1.equals(narrowAbs)) {
                 d1new = narrowAbs; // Replace the calling context
                 // Special case: if we have an identity flow, we can skip diffing access paths
-                d2new = d1.equals(d2) ? narrowAbs : subsuming.applyDiffOf(d1, d2, narrowAbs);
+                d2new = d1.equals(d2) ? narrowAbs : appending.applyDiffOf(d1, d2, narrowAbs);
                 d4new = predVal;
             }
 
@@ -406,7 +414,7 @@ public class AbstractingCollectionInfoflowSolver extends CollectionInfoflowSolve
                 // to represent our initial summary again
                 if (reuseOfSummary) {
                     // Special case: if we have an identity flow, we can skip diffing access paths
-                    d4 = d4.equals(summaryQuery) ? d3 : subsuming.applyDiffOf(summaryQuery, d4, d3);
+                    d4 = d4.equals(summaryQuery) ? d3 : appending.applyDiffOf(summaryQuery, d4, d3);
                 } else {
                     // We must acknowledge the incoming abstraction from the other path
                     entry.calleeD1.addNeighbor(d3);
@@ -444,7 +452,7 @@ public class AbstractingCollectionInfoflowSolver extends CollectionInfoflowSolve
             /* deliberately exposed to clients */ Unit relatedCallSite,
             /* deliberately exposed to clients */ boolean isUnbalancedReturn, ScheduleTarget scheduleTarget) {
         // Mark (method, param) as not reusable if needed
-        if (sourceVal != zeroValue && subsuming.affectsContext(target)) {
+        if (sourceVal != zeroValue && appending.affectsContext(target)) {
             SootMethod sm = icfg.getMethodOf(target);
             // We do not want to reinject everytime we see a context-dependent operation,
             // but only when we encounter a new not-reusable method summary.

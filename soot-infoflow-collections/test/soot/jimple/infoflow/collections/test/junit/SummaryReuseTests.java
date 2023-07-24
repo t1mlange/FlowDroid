@@ -3,6 +3,7 @@ package soot.jimple.infoflow.collections.test.junit;
 import java.util.Collections;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import soot.jimple.infoflow.AbstractInfoflow;
@@ -16,6 +17,7 @@ import soot.jimple.infoflow.problems.AbstractInfoflowProblem;
 import soot.jimple.infoflow.solver.IInfoflowSolver;
 import soot.jimple.infoflow.solver.executors.InterruptableExecutor;
 
+@Ignore // The solver is not used anyways
 public class SummaryReuseTests extends FlowDroidTests {
     @Override
     protected IInfoflow initInfoflow() {

@@ -5,6 +5,11 @@ import soot.jimple.Stmt;
 import soot.jimple.infoflow.collections.util.Tristate;
 import soot.jimple.infoflow.data.ContextDefinition;
 
+/**
+ * Strategy for resolving keys/indices and reasoning about their relation
+ *
+ * @author Tim Lange
+ */
 public interface IContainerStrategy {
     /**
      *
@@ -17,20 +22,20 @@ public interface IContainerStrategy {
     /**
      * Retrieves a context for a given key
      *
-     * @param value
-     * @param stmt
+     * @param key  key value
+     * @param stmt statement containing key
      * @return
      */
-    ContextDefinition getKeyContext(Value value, Stmt stmt);
+    ContextDefinition getKeyContext(Value key, Stmt stmt);
 
     /**
+     * Retrieves a context for a given index
      *
-     *
-     * @param value
-     * @param stmt
+     * @param index index value
+     * @param stmt  statement containing index
      * @return
      */
-    ContextDefinition getIndexContext(Value value, Stmt stmt);
+    ContextDefinition getIndexContext(Value index, Stmt stmt);
 
     /**
      * Retrieves a context given an implicit key after the given statement

@@ -13,18 +13,11 @@ public abstract class CollectionInfoflowSolver extends InfoflowSolver {
     @SynchronizedBy("Thread-safe class")
     protected WideningStrategy<Unit, Abstraction> widening;
 
-    @SynchronizedBy("Thread-safe class")
-    protected SubsumingStrategy<Unit, Abstraction> subsuming;
-
     public CollectionInfoflowSolver(AbstractInfoflowProblem problem, InterruptableExecutor executor) {
         super(problem, executor);
     }
 
     public void setWideningStrategy(WideningStrategy<Unit, Abstraction> widening) {
         this.widening = widening;
-    }
-
-    public void setSubsuming(SubsumingStrategy<Unit, Abstraction> subsuming) {
-        this.subsuming = subsuming;
     }
 }
