@@ -331,4 +331,14 @@ public class AbstractingTests extends FlowDroidTests {
         Assert.assertEquals(getExpectedResultsForMethod(epoint), set == null ? 0 : set.size());
         Assert.assertFalse(hasDuplicateSinkInFlow(set));
     }
+
+    @Test(timeout = 30000)
+    public void testShowingWhyAddIsContextDependent() {
+        IInfoflow infoflow = initInfoflow();
+        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
+        infoflow.getConfig().setEnableLineNumbers(true);
+        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
+        var set = infoflow.getResults().getResultSet();
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), set == null ? 0 : set.size());
+    }
 }

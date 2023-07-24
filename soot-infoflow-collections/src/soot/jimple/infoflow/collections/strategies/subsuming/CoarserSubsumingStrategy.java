@@ -5,9 +5,10 @@ import java.util.Set;
 import soot.jimple.infoflow.InfoflowManager;
 import soot.jimple.infoflow.data.Abstraction;
 
+@Deprecated
 public class CoarserSubsumingStrategy extends LargerContextSubsumingStrategy {
-    public CoarserSubsumingStrategy(InfoflowManager manager, Set<String> methods) {
-        super(manager, methods);
+    public CoarserSubsumingStrategy(InfoflowManager manager) {
+        super(manager);
     }
 
     @Override

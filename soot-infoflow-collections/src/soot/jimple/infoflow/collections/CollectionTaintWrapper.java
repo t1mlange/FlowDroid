@@ -18,17 +18,20 @@ import soot.jimple.infoflow.collections.data.CollectionModel;
 import soot.jimple.infoflow.collections.operations.ICollectionOperation;
 import soot.jimple.infoflow.collections.operations.LocationDependentOperation;
 import soot.jimple.infoflow.collections.operations.forward.AbstractShiftOperation;
+import soot.jimple.infoflow.collections.solver.fastSolver.AbstractingCollectionInfoflowSolver;
+import soot.jimple.infoflow.collections.solver.fastSolver.CoarserReuseCollectionInfoflowSolver;
 import soot.jimple.infoflow.collections.solver.fastSolver.CollectionInfoflowSolver;
-import soot.jimple.infoflow.collections.strategies.containers.ConstantStrategy;
+import soot.jimple.infoflow.collections.strategies.appending.DefaultAppendingStrategy;
+import soot.jimple.infoflow.collections.strategies.containers.TestConstantStrategy;
 import soot.jimple.infoflow.collections.strategies.containers.IContainerStrategy;
 import soot.jimple.infoflow.collections.strategies.subsuming.LargerContextSubsumingStrategy;
-import soot.jimple.infoflow.collections.strategies.subsuming.SubsumingStrategy;
 import soot.jimple.infoflow.collections.strategies.widening.WideningOnRevisitStrategy;
 import soot.jimple.infoflow.collections.strategies.widening.WideningStrategy;
 import soot.jimple.infoflow.collections.util.AliasAbstractionSet;
 import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.handlers.PreAnalysisHandler;
 import soot.jimple.infoflow.solver.IFollowReturnsPastSeedsHandler;
+import soot.jimple.infoflow.solver.IInfoflowSolver;
 import soot.jimple.infoflow.taintWrappers.ITaintPropagationWrapper;
 import soot.util.ConcurrentHashMultiMap;
 import soot.util.MultiMap;
@@ -93,15 +96,21 @@ public class CollectionTaintWrapper implements ITaintPropagationWrapper {
 				.filter(method -> Arrays.stream(method.operations()).anyMatch(op -> op instanceof LocationDependentOperation))
 				.map(CollectionMethod::getSubSignature) // get the subsig
 				.collect(Collectors.toUnmodifiableSet());
-		SubsumingStrategy<Unit, Abstraction> s = new LargerContextSubsumingStrategy(manager, allSubSigs);
-		if (manager.getMainSolver() instanceof CollectionInfoflowSolver) {
-			((CollectionInfoflowSolver) manager.getMainSolver()).setWideningStrategy(w);
-			((CollectionInfoflowSolver) manager.getMainSolver()).setSubsuming(s);
-		}
-		if (manager.getAliasSolver() instanceof CollectionInfoflowSolver) {
-			((CollectionInfoflowSolver) manager.getAliasSolver()).setWideningStrategy(w);
-			((CollectionInfoflowSolver) manager.getAliasSolver()).setSubsuming(s);
-		}
+
+		IInfoflowSolver solver = manager.getMainSolver();
+		if (solver instanceof CollectionInfoflowSolver)
+			((CollectionInfoflowSolver) solver).setWideningStrategy(w);
+		if (solver instanceof CoarserReuseCollectionInfoflowSolver)
+			((CoarserReuseCollectionInfoflowSolver) solver).setSubsuming(new LargerContextSubsumingStrategy(manager));
+		if (solver instanceof AbstractingCollectionInfoflowSolver)
+			((AbstractingCollectionInfoflowSolver) solver).setAppendingStrategy(new DefaultAppendingStrategy(manager, allSubSigs));
+
+		solver = manager.getAliasSolver();
+		// Because the alias solver does not shift, we do not need to widen
+		if (solver instanceof CoarserReuseCollectionInfoflowSolver)
+			((CoarserReuseCollectionInfoflowSolver) solver).setSubsuming(new LargerContextSubsumingStrategy(manager));
+		if (solver instanceof AbstractingCollectionInfoflowSolver)
+			((AbstractingCollectionInfoflowSolver) solver).setAppendingStrategy(new DefaultAppendingStrategy(manager, allSubSigs));
 	}
 
 	@Override
@@ -113,7 +122,7 @@ public class CollectionTaintWrapper implements ITaintPropagationWrapper {
 	}
 
 	protected IContainerStrategy getStrategy() {
-		return new ConstantStrategy(manager, this);
+		return new TestConstantStrategy(manager, this);
 	}
 
 	private Set<Abstraction> fallbackTaintsForMethod(Stmt stmt, Abstraction d1, Abstraction taintedPath) {

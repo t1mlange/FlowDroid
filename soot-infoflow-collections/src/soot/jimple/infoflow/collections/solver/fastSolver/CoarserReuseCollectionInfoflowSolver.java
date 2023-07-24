@@ -13,6 +13,7 @@ import heros.solver.PathEdge;
 import soot.SootMethod;
 import soot.Unit;
 import soot.jimple.infoflow.collect.MyConcurrentHashMap;
+import soot.jimple.infoflow.collections.strategies.subsuming.SubsumingStrategy;
 import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.problems.AbstractInfoflowProblem;
 import soot.jimple.infoflow.solver.EndSummary;
@@ -30,6 +31,13 @@ import soot.util.MultiMap;
  */
 @Deprecated // Bad idea, the race is inevitable
 public class CoarserReuseCollectionInfoflowSolver extends CollectionInfoflowSolver {
+	@SynchronizedBy("Thread-safe class")
+	protected SubsumingStrategy<Unit, Abstraction> subsuming;
+
+	public void setSubsuming(SubsumingStrategy<Unit, Abstraction> subsuming) {
+		this.subsuming = subsuming;
+	}
+
 	// We need to overwrite the default incoming, because we might have multiple elements per context
 	// e.g. when we add a more precise collection taint to use the summary of the coarser collection taint
 	@SynchronizedBy("Thread-safe data structure")

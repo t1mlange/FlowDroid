@@ -1,5 +1,8 @@
 package soot.jimple.infoflow.collections.util;
 
+/**
+ * Three-state boolean class
+ */
 public class Tristate {
     private enum State {
         TRUE,

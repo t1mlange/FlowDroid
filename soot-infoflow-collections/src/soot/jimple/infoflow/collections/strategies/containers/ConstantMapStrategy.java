@@ -14,11 +14,28 @@ import soot.jimple.infoflow.collections.operations.LocationDependentOperation;
 import soot.jimple.infoflow.collections.util.Tristate;
 import soot.jimple.infoflow.data.ContextDefinition;
 
+/**
+ * Strategy that only reasons about maps with constant keys
+ *
+ * @author Tim Lange
+ */
 public class ConstantMapStrategy implements IContainerStrategy {
+    // Benign race on the counters because they are on the critical path within the data flow analysis
+    private long resolvedKeys;
+    private long unresolvedKeys;
+
     private final CollectionTaintWrapper ctw;
 
     public ConstantMapStrategy(CollectionTaintWrapper ctw) {
         this.ctw = ctw;
+    }
+
+    public long getResolvedKeys() {
+        return resolvedKeys;
+    }
+
+    public long getUnresolvedKeys() {
+        return unresolvedKeys;
     }
 
     @Override
@@ -34,9 +51,12 @@ public class ConstantMapStrategy implements IContainerStrategy {
 
     @Override
     public ContextDefinition getKeyContext(Value value, Stmt stmt) {
-        if (value instanceof Constant)
+        if (value instanceof Constant) {
+            resolvedKeys++;
             return new KeySetContext((Constant) value);
+        }
 
+        unresolvedKeys++;
         return UnknownContext.v();
     }
 

@@ -11,7 +11,8 @@ import soot.toolkits.graph.DirectedGraph;
 import soot.toolkits.scalar.ForwardFlowAnalysis;
 
 /**
- * Simple intraprocedural list size analysis performing constant propagation on the list size
+ * Simple intraprocedural list size analysis performing constant propagation on the list size.
+ * ONLY USABLE FOR TESTING PURPOSES! Only handles methods used in the test cases.
  *
  * @author Tim Lange
  */

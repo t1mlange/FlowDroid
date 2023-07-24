@@ -4,6 +4,13 @@ import java.util.Set;
 
 import soot.jimple.infoflow.data.Abstraction;
 
+/**
+ * Strategy to reason about subsuming of data flow facts. Used in the coarser reuse solver.
+ *
+ * @param <N>
+ * @param <D>
+ */
+@Deprecated
 public interface SubsumingStrategy<N, D> {
 
     /**
@@ -25,14 +32,9 @@ public interface SubsumingStrategy<N, D> {
      */
     boolean subsumes(D a, D b);
 
-    boolean hasContext(D fact);
-
     D removeContext(D fact);
 
     D chooseContext(Set<D> availableContexts, D currentContext);
 
-    boolean affectsContext(D incoming, D outgoing);
-    boolean affectsContext(N stmt);
-
-    Abstraction applyDiffOf(Abstraction d1, Abstraction d2, Abstraction targetVal);
+    boolean hasContext(D fact);
 }
