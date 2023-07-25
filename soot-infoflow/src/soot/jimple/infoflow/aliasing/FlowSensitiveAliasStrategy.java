@@ -38,6 +38,10 @@ public class FlowSensitiveAliasStrategy extends AbstractBulkAliasStrategy {
 	public void injectCallingContext(Abstraction d3, IInfoflowSolver fSolver, SootMethod callee, Unit callSite,
 			Abstraction source, Abstraction d1) {
 		bSolver.injectContext(fSolver, callee, d3, callSite, source, d1);
+		if (manager.additionalManager != null) {
+			manager.additionalManager.getMainSolver().injectContext(fSolver, callee, d3, callSite, source, d1);
+			manager.additionalManager.getAliasSolver().injectContext(fSolver, callee, d3, callSite, source, d1);
+		}
 	}
 
 	@Override

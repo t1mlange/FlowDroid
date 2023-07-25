@@ -614,8 +614,13 @@ public class AliasProblem extends AbstractInfoflowProblem {
 
 						// Inject our calling context into the other solver
 						if (res != null && !res.isEmpty())
-							for (Abstraction d3 : res)
+							for (Abstraction d3 : res) {
 								manager.getMainSolver().injectContext(solver, dest, d3, src, source, d1);
+								if (manager.additionalManager != null) {
+									manager.additionalManager.getMainSolver().injectContext(solver, dest, d3, src, source, d1);
+									manager.additionalManager.getAliasSolver().injectContext(solver, dest, d3, src, source, d1);
+								}
+							}
 
 						return notifyOutFlowHandlers(src, d1, source, res, FlowFunctionType.CallFlowFunction);
 					}
