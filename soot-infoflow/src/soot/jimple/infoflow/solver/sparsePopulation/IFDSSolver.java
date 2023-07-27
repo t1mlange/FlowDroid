@@ -11,14 +11,10 @@
  *     Marc-Andre Laverdiere-Papineau - Fixed race condition
  *     Steven Arzt - Created FastSolver implementation
  ******************************************************************************/
-package soot.jimple.infoflow.solver.fastSolver;
+package soot.jimple.infoflow.solver.sparsePopulation;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
@@ -30,13 +26,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.cache.CacheBuilder;
 
-import heros.DontSynchronize;
-import heros.FlowFunction;
-import heros.FlowFunctionCache;
-import heros.FlowFunctions;
-import heros.IFDSTabulationProblem;
-import heros.SynchronizedBy;
-import heros.ZeroedFlowFunctions;
+import heros.*;
 import heros.solver.Pair;
 import heros.solver.PathEdge;
 import soot.SootMethod;
@@ -50,6 +40,9 @@ import soot.jimple.infoflow.solver.IStrategyBasedParallelSolver;
 import soot.jimple.infoflow.solver.IncomingRecord;
 import soot.jimple.infoflow.solver.executors.InterruptableExecutor;
 import soot.jimple.infoflow.solver.executors.SetPoolExecutor;
+import soot.jimple.infoflow.solver.fastSolver.FastSolverLinkedNode;
+import soot.jimple.infoflow.solver.fastSolver.ISchedulingStrategy;
+import soot.jimple.infoflow.solver.fastSolver.LocalWorklistTask;
 import soot.jimple.infoflow.solver.memory.IMemoryManager;
 import soot.jimple.toolkits.ide.icfg.BiDiInterproceduralCFG;
 import soot.util.ConcurrentHashMultiMap;
@@ -277,7 +270,7 @@ public class IFDSSolver<N, D extends FastSolverLinkedNode<D, N>, I extends BiDiI
 		if (killFlag != null || executor.isTerminating() || executor.isTerminated())
 			return;
 
-		IFDSSolver<N, D, I>.PathEdgeProcessingTask task = new PathEdgeProcessingTask(edge, solverId);
+		PathEdgeProcessingTask task = new PathEdgeProcessingTask(edge, solverId);
 		if (scheduleTarget == ScheduleTarget.EXECUTOR)
 			executor.execute(task);
 		else {
@@ -583,7 +576,7 @@ public class IFDSSolver<N, D extends FastSolverLinkedNode<D, N>, I extends BiDiI
 					if (memoryManager != null && d2 != d3)
 						d3 = memoryManager.handleGeneratedMemoryObject(d2, d3);
 					if (d3 != null)
-						schedulingStrategy.propagateNormalFlow(d1, m, d3, null, false, false);
+						schedulingStrategy.propagateNormalFlow(d1, m, d3, null, false, d2 == d3);
 				}
 			}
 		}
@@ -616,10 +609,12 @@ public class IFDSSolver<N, D extends FastSolverLinkedNode<D, N>, I extends BiDiI
 	 *                           unbalanced return (this value is not used within
 	 *                           this implementation but may be useful for
 	 *                           subclasses of {@link IFDSSolver})
+	 * @param saveEdge
 	 */
 	protected void propagate(D sourceVal, N target, D targetVal,
 			/* deliberately exposed to clients */ N relatedCallSite,
-			/* deliberately exposed to clients */ boolean isUnbalancedReturn, ScheduleTarget scheduleTarget) {
+			/* deliberately exposed to clients */ boolean isUnbalancedReturn, ScheduleTarget scheduleTarget,
+							 boolean saveEdge) {
 		// Let the memory manager run
 		if (memoryManager != null) {
 			sourceVal = memoryManager.handleMemoryObject(sourceVal);
@@ -633,7 +628,7 @@ public class IFDSSolver<N, D extends FastSolverLinkedNode<D, N>, I extends BiDiI
 			return;
 
 		final PathEdge<N, D> edge = new PathEdge<>(sourceVal, target, targetVal);
-		final D existingVal = addFunction(edge);
+		final D existingVal = saveEdge ? addFunction(edge) : null;
 		if (existingVal != null) {
 			if (existingVal != targetVal) {
 				// Check whether we need to retain this abstraction

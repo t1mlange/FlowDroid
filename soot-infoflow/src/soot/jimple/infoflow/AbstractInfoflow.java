@@ -1243,36 +1243,36 @@ public abstract class AbstractInfoflow implements IInfoflow {
 	 */
 	protected IInfoflowSolver createDataFlowSolver(InterruptableExecutor executor, AbstractInfoflowProblem problem,
 			SolverConfiguration solverConfig) {
-		switch (solverConfig.getDataFlowSolver()) {
-		case ContextFlowSensitive:
+//		switch (solverConfig.getDataFlowSolver()) {
+//		case ContextFlowSensitive:
 			logger.info("Using context- and flow-sensitive solver");
-			InfoflowSolver infoflowSolver = new InfoflowSolver(problem, executor);
+			IInfoflowSolver infoflowSolver = new soot.jimple.infoflow.solver.sparsePopulation.InfoflowSolver(problem, executor);
 			solverPeerGroup.addSolver(infoflowSolver);
 			return infoflowSolver;
-		case SparseContextFlowSensitive:
-			InfoflowConfiguration.SparsePropagationStrategy opt = config.getSolverConfiguration().getSparsePropagationStrategy();
-			logger.info("Using sparse context-sensitive and flow-sensitive solver with sparsification " + opt.toString());
-			IInfoflowSolver sparseSolver = new SparseInfoflowSolver(problem, executor, opt);
-			solverPeerGroup.addSolver(sparseSolver);
-			return sparseSolver;
-		case FlowInsensitive:
-			logger.info("Using context-sensitive, but flow-insensitive solver");
-			return new soot.jimple.infoflow.solver.fastSolver.flowInsensitive.InfoflowSolver(problem, executor);
-		case GarbageCollecting:
-			logger.info("Using garbage-collecting solver");
-			IInfoflowSolver solver = new soot.jimple.infoflow.solver.gcSolver.InfoflowSolver(problem, executor,
-					solverConfig.getSleepTime());
-			solverPeerGroup.addSolver(solver);
-			return solver;
-		case FineGrainedGC:
-			logger.info("Using fine-grained garbage-collecting solver");
-			IInfoflowSolver fgSolver = new soot.jimple.infoflow.solver.gcSolver.fpc.InfoflowSolver(problem, executor,
-					solverConfig.getSleepTime());
-			solverPeerGroup.addSolver(fgSolver);
-			return fgSolver;
-		default:
-			throw new RuntimeException("Unsupported data flow solver");
-		}
+//		case SparseContextFlowSensitive:
+//			InfoflowConfiguration.SparsePropagationStrategy opt = config.getSolverConfiguration().getSparsePropagationStrategy();
+//			logger.info("Using sparse context-sensitive and flow-sensitive solver with sparsification " + opt.toString());
+//			IInfoflowSolver sparseSolver = new SparseInfoflowSolver(problem, executor, opt);
+//			solverPeerGroup.addSolver(sparseSolver);
+//			return sparseSolver;
+//		case FlowInsensitive:
+//			logger.info("Using context-sensitive, but flow-insensitive solver");
+//			return new soot.jimple.infoflow.solver.fastSolver.flowInsensitive.InfoflowSolver(problem, executor);
+//		case GarbageCollecting:
+//			logger.info("Using garbage-collecting solver");
+//			IInfoflowSolver solver = new soot.jimple.infoflow.solver.gcSolver.InfoflowSolver(problem, executor,
+//					solverConfig.getSleepTime());
+//			solverPeerGroup.addSolver(solver);
+//			return solver;
+//		case FineGrainedGC:
+//			logger.info("Using fine-grained garbage-collecting solver");
+//			IInfoflowSolver fgSolver = new soot.jimple.infoflow.solver.gcSolver.fpc.InfoflowSolver(problem, executor,
+//					solverConfig.getSleepTime());
+//			solverPeerGroup.addSolver(fgSolver);
+//			return fgSolver;
+//		default:
+//			throw new RuntimeException("Unsupported data flow solver");
+//		}
 	}
 
 	protected enum SourceSinkState {

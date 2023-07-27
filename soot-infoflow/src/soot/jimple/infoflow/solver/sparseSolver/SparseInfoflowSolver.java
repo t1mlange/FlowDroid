@@ -72,7 +72,7 @@ public class SparseInfoflowSolver extends InfoflowSolver {
                     if (memoryManager != null && d2 != d3)
                         d3 = memoryManager.handleGeneratedMemoryObject(d2, d3);
                     if (d3 != null)
-                        schedulingStrategy.propagateNormalFlow(d1, m, d3, null, false);
+                        schedulingStrategy.propagateNormalFlow(d1, m, d3, null, false, false);
                 }
             }
         }

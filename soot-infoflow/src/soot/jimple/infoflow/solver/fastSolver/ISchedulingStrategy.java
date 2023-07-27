@@ -11,7 +11,7 @@ public interface ISchedulingStrategy<N, D extends FastSolverLinkedNode<D, N>> {
 	public void propagateInitialSeeds(D sourceVal, N target, D targetVal, N relatedCallSite,
 			boolean isUnbalancedReturn);
 
-	public void propagateNormalFlow(D sourceVal, N target, D targetVal, N relatedCallSite, boolean isUnbalancedReturn);
+	public void propagateNormalFlow(D sourceVal, N target, D targetVal, N relatedCallSite, boolean isUnbalancedReturn, boolean isIdentityFlow);
 
 	public void propagateCallFlow(D sourceVal, N target, D targetVal, N relatedCallSite, boolean isUnbalancedReturn);
 
