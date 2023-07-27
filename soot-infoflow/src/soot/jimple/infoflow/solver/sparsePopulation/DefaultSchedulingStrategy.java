@@ -1,8 +1,13 @@
 package soot.jimple.infoflow.solver.sparsePopulation;
 
+import soot.PrimType;
+import soot.RefType;
 import soot.SootMethod;
+import soot.Type;
+import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.solver.fastSolver.FastSolverLinkedNode;
 import soot.jimple.infoflow.solver.fastSolver.ISchedulingStrategy;
+import soot.jimple.infoflow.typing.TypeUtils;
 import soot.jimple.toolkits.ide.icfg.BiDiInterproceduralCFG;
 import soot.jimple.infoflow.solver.sparsePopulation.IFDSSolver.ScheduleTarget;
 
@@ -45,17 +50,18 @@ public class DefaultSchedulingStrategy<N, D extends FastSolverLinkedNode<D, N>, 
 		@Override
 		public void propagateCallToReturnFlow(D sourceVal, N target, D targetVal, N relatedCallSite,
 				boolean isUnbalancedReturn) {
+			Type t = ((Abstraction) targetVal).getAccessPath().getBaseType();
 			solver.propagate(sourceVal, target, targetVal, relatedCallSite, isUnbalancedReturn,
-					ScheduleTarget.EXECUTOR, true);
+					ScheduleTarget.EXECUTOR, t == null || (t instanceof RefType && !TypeUtils.isStringType(t)));
 		}
 
 		@Override
 		public void propagateReturnFlow(D sourceVal, N target, D targetVal, N relatedCallSite,
 				boolean isUnbalancedReturn) {
+			Type t = ((Abstraction) targetVal).getAccessPath().getBaseType();
 			solver.propagate(sourceVal, target, targetVal, relatedCallSite, isUnbalancedReturn,
-					ScheduleTarget.EXECUTOR, true);
+					ScheduleTarget.EXECUTOR, t == null || (t instanceof RefType && !TypeUtils.isStringType(t)));
 		};
-
 	};
 
 	/**
