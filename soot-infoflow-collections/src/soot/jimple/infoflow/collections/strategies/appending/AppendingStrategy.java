@@ -1,9 +1,10 @@
 package soot.jimple.infoflow.collections.strategies.appending;
 
+import soot.jimple.infoflow.collections.solver.fastSolver.AppendingCollectionInfoflowSolver;
 import soot.jimple.infoflow.data.Abstraction;
 
 /**
- * Strategy providing the {@link soot.jimple.infoflow.collections.solver.fastSolver.AbstractingCollectionInfoflowSolver}
+ * Strategy providing the {@link AppendingCollectionInfoflowSolver}
  * with the information needed to append similar collection abstractions to each other and only reinject them if the
  * callee is discovered to be concrete key-dependent.
  *

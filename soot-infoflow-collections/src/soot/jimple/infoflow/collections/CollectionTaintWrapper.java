@@ -18,7 +18,7 @@ import soot.jimple.infoflow.collections.data.CollectionModel;
 import soot.jimple.infoflow.collections.operations.ICollectionOperation;
 import soot.jimple.infoflow.collections.operations.LocationDependentOperation;
 import soot.jimple.infoflow.collections.operations.forward.AbstractShiftOperation;
-import soot.jimple.infoflow.collections.solver.fastSolver.AbstractingCollectionInfoflowSolver;
+import soot.jimple.infoflow.collections.solver.fastSolver.AppendingCollectionInfoflowSolver;
 import soot.jimple.infoflow.collections.solver.fastSolver.CoarserReuseCollectionInfoflowSolver;
 import soot.jimple.infoflow.collections.solver.fastSolver.CollectionInfoflowSolver;
 import soot.jimple.infoflow.collections.strategies.appending.DefaultAppendingStrategy;
@@ -102,15 +102,15 @@ public class CollectionTaintWrapper implements ITaintPropagationWrapper {
 			((CollectionInfoflowSolver) solver).setWideningStrategy(w);
 		if (solver instanceof CoarserReuseCollectionInfoflowSolver)
 			((CoarserReuseCollectionInfoflowSolver) solver).setSubsuming(new LargerContextSubsumingStrategy(manager));
-		if (solver instanceof AbstractingCollectionInfoflowSolver)
-			((AbstractingCollectionInfoflowSolver) solver).setAppendingStrategy(new DefaultAppendingStrategy(manager, allSubSigs));
+		if (solver instanceof AppendingCollectionInfoflowSolver)
+			((AppendingCollectionInfoflowSolver) solver).setAppendingStrategy(new DefaultAppendingStrategy(manager, allSubSigs));
 
 		solver = manager.getAliasSolver();
 		// Because the alias solver does not shift, we do not need to widen
 		if (solver instanceof CoarserReuseCollectionInfoflowSolver)
 			((CoarserReuseCollectionInfoflowSolver) solver).setSubsuming(new LargerContextSubsumingStrategy(manager));
-		if (solver instanceof AbstractingCollectionInfoflowSolver)
-			((AbstractingCollectionInfoflowSolver) solver).setAppendingStrategy(new DefaultAppendingStrategy(manager, allSubSigs));
+		if (solver instanceof AppendingCollectionInfoflowSolver)
+			((AppendingCollectionInfoflowSolver) solver).setAppendingStrategy(new DefaultAppendingStrategy(manager, allSubSigs));
 	}
 
 	@Override
