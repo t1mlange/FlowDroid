@@ -63,4 +63,9 @@ public class NoContextKey {
 
         return abs.localEquals(other.abs);
     }
+
+    @Override
+    public String toString() {
+        return abs + " @ " + sm;
+    }
 }

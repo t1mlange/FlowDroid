@@ -23,6 +23,7 @@ import soot.jimple.infoflow.problems.AbstractInfoflowProblem;
 import soot.jimple.infoflow.results.DataFlowResult;
 import soot.jimple.infoflow.solver.IInfoflowSolver;
 import soot.jimple.infoflow.solver.executors.InterruptableExecutor;
+import soot.jimple.infoflow.util.DebugFlowFunctionTaintPropagationHandler;
 
 public class AbstractingTests extends FlowDroidTests {
     /**
@@ -67,7 +68,7 @@ public class AbstractingTests extends FlowDroidTests {
                 return;
 
             SootMethod sm = manager.getICFG().getMethodOf(stmt);
-            if (!sm.getName().equals("unusedContext1"))
+            if (!sm.getName().startsWith("unusedContext"))
                 return;
 
             AccessPathFragment f = taint.getAccessPath().getFirstFragment();
@@ -77,7 +78,8 @@ public class AbstractingTests extends FlowDroidTests {
             synchronized (this) {
                 if (seenContext == null)
                     seenContext = f.getContext();
-                Assert.assertArrayEquals(seenContext, f.getContext());
+                else
+                    Assert.assertArrayEquals(seenContext, f.getContext());
             }
         }
 
@@ -334,6 +336,26 @@ public class AbstractingTests extends FlowDroidTests {
 
     @Test(timeout = 30000)
     public void testShowingWhyAddIsContextDependent() {
+        IInfoflow infoflow = initInfoflow();
+        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
+        infoflow.getConfig().setEnableLineNumbers(true);
+        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
+        var set = infoflow.getResults().getResultSet();
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), set == null ? 0 : set.size());
+    }
+
+    @Test//(timeout = 30000)
+    public void testDerefOfAllFields() {
+        IInfoflow infoflow = initInfoflow();
+        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
+        infoflow.getConfig().setEnableLineNumbers(true);
+        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
+        var set = infoflow.getResults().getResultSet();
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), set == null ? 0 : set.size());
+    }
+
+    @Test(timeout = 30000)
+    public void testRefInCallee() {
         IInfoflow infoflow = initInfoflow();
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.getConfig().setEnableLineNumbers(true);
