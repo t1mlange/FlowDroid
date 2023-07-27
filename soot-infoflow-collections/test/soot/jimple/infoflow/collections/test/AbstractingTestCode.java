@@ -292,6 +292,8 @@ public class AbstractingTestCode {
     }
 
     private void calleeWithDerefRef(Map<String, String> map) {
+        System.out.println("Delay to ensure appending");
+
         StringBuilder sb = new StringBuilder();
         // Deref with a context-independent map operation
         for (String val : map.values())
@@ -336,5 +338,62 @@ public class AbstractingTestCode {
         map2.put("YYY", source);
         calleeWithDerefRef(map2);
         sink(map2.get("XXX"));
+    }
+
+    private static class StringWrapper {
+        String s;
+
+        StringWrapper(String s) {
+            this.s = s;
+        }
+    }
+
+    private String unusedContextDerefAll(Map<String, StringWrapper> map) {
+        StringBuilder sb = new StringBuilder();
+        for (StringWrapper w : map.values())
+            sb.append(w.s);
+        return sb.toString();
+    }
+
+    @FlowDroidTest(expected = 2)
+    public void testDerefOfAllFields() {
+        Map<String, StringWrapper> map = new HashMap<>();
+        StringWrapper src = new StringWrapper(source());
+        map.put("Secret", src);
+        String x = unusedContextDerefAll(map);
+        sink(x);
+
+        Map<String, StringWrapper> map2 = new HashMap<>();
+        map2.put("Secret2", src);
+        String x2 = unusedContextDerefAll(map2);
+        sink(x2);
+    }
+
+    private static class MapContainer<T> {
+        Map<T, T> map;
+
+        MapContainer(Map<T, T> map) {
+            this.map = map;
+        }
+    }
+
+    private MapContainer<String> unusedContextAddRef(Map<String, String> map) {
+        return new MapContainer<>(map);
+    }
+
+    @FlowDroidTest(expected = 2)
+    public void testRefInCallee() {
+        Map<String, String> map = new HashMap<>();
+        String source = source();
+        map.put("Secret", source);
+        MapContainer<String> mc = unusedContextAddRef(map);
+        sink(mc.map.get("Secret"));
+        sink(mc.map.get("Secret2"));
+
+        Map<String, String> map2 = new HashMap<>();
+        map2.put("Secret2", source);
+        MapContainer<String> mc2 = unusedContextAddRef(map2);
+        sink(mc2.map.get("Secret"));
+        sink(mc2.map.get("Secret2"));
     }
 }

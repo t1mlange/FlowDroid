@@ -242,14 +242,16 @@ public class AbstractingCollectionInfoflowSolver extends CollectionInfoflowSolve
             final Abstraction predVal = record.d2;
             final Abstraction narrowAbs = record.d3;
 
-            Abstraction d2new = d2;
             Abstraction d1new = d1;
-            Abstraction d4new = d4;
-            if (!d1.equals(narrowAbs)) {
-                d1new = narrowAbs; // Replace the calling context
+            Abstraction d2new = d2;
+            // If the current calling context is not equal the calling context of the incoming
+            // record, we do have a similar abstraction appended to another propagation.
+            boolean isSimilarAbstraction = !d1.entails(narrowAbs);
+            if (isSimilarAbstraction) {
+                // Replace the calling context to return correctly
+                d1new = narrowAbs;
                 // Special case: if we have an identity flow, we can skip diffing access paths
                 d2new = d1.equals(d2) ? narrowAbs : appending.applyDiffOf(d1, d2, narrowAbs);
-                d4new = predVal;
             }
 
             // for each return site
@@ -271,7 +273,7 @@ public class AbstractingCollectionInfoflowSolver extends CollectionInfoflowSolve
                         // there. Even if we change something: If we don't need the concrete path, we
                         // can skip the callee in the predecessor chain
                         Abstraction d5p = shortenPredecessors(d5, predVal, d1new, n, c);
-                        schedulingStrategy.propagateReturnFlow(d4new, retSiteC, d5p, c, false);
+                        schedulingStrategy.propagateReturnFlow(d4, retSiteC, d5p, c, false);
                     }
                 }
             }
