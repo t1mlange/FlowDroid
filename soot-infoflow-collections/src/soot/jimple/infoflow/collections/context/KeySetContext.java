@@ -1,6 +1,7 @@
 package soot.jimple.infoflow.collections.context;
 
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 import soot.jimple.Constant;
@@ -54,5 +55,18 @@ public class KeySetContext implements ValueBasedContext {
 	@Override
 	public String toString() {
 		return keys.toString();
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		KeySetContext that = (KeySetContext) o;
+		return Objects.equals(keys, that.keys);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(keys);
 	}
 }

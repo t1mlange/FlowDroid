@@ -19,7 +19,6 @@ import soot.jimple.infoflow.solver.EndSummary;
 import soot.jimple.infoflow.solver.IInfoflowSolver;
 import soot.jimple.infoflow.solver.executors.InterruptableExecutor;
 import soot.util.ConcurrentHashMultiMap;
-import soot.util.MultiMap;
 
 /**
  * Infoflow Solver that supports various optimizations for precisely tracking collection keys/indices
@@ -30,13 +29,12 @@ import soot.util.MultiMap;
  *
  * @author Tim Lange
  */
-public class AbstractingCollectionInfoflowSolver extends CollectionInfoflowSolver {
+public class AppendingCollectionInfoflowSolver extends CollectionInfoflowSolver {
     private AppendingStrategy<Unit, Abstraction> appending;
 
     public void setAppendingStrategy(AppendingStrategy<Unit, Abstraction> appending) {
         this.appending = appending;
     }
-
 
     // Map (Method, Param) to whether it may reach a context dependent operation
     private final ConcurrentHashSet<Pair<SootMethod, Local>> notReusable = new ConcurrentHashSet<>();
@@ -46,24 +44,36 @@ public class AbstractingCollectionInfoflowSolver extends CollectionInfoflowSolve
     @SynchronizedBy("Thread-safe data structure")
     protected final ConcurrentHashMultiMap<Pair<SootMethod, Abstraction>, IncomingRecord<Unit, Abstraction>> myIncoming = new ConcurrentHashMultiMap<>();
 
-
     // Holds the first abstraction that reached the callee, removing the context for the key. Similar abstractions can
     // append to this abstraction to reuse facts from this (unless the IFDS solver noticed the context is relevant).
     @SynchronizedBy("Thread-safe data structure")
     protected final Map<NoContextKey, Abstraction> incomingWContext = new ConcurrentHashMap<>();
 
-    protected final MultiMap<Abstraction, Pair<SootMethod, Abstraction>> prevContext = new ConcurrentHashMultiMap<>();
-
     @Override
     protected boolean addIncoming(SootMethod m, Abstraction d3, Unit n, Abstraction d1, Abstraction d2) {
+        // Prohibit usage to prevent bugs
         throw new RuntimeException("Use addIncoming(SootMethod, Abstraction, Unit, Abstraction, Abstraction, Abstraction) instead!");
     }
 
     @Override
     protected Map<Unit, Map<Abstraction, Abstraction>> incoming(Abstraction d1, SootMethod m) {
+        // Prohibit usage to prevent bugs
         throw new RuntimeException("Use myIncoming(Abstraction, SootMethod) instead!");
     }
 
+    /**
+     * Add a incoming record to the incoming set. If d3a == d3, then this behaves as addIncoming of an unmodified
+     * IFDS solver. If d3a != d3, d3 is appended to d3a and reuses summaries of that abstraction unless d3a is later
+     * discovered to be context-dependent.
+     *
+     * @param m   method
+     * @param d3a the calling context the record should be added to
+     * @param n   call site
+     * @param d1  calling context in the caller
+     * @param d2  incoming abstraction at the call site
+     * @param d3  calling context in the caller
+     * @return    true if the record was freshly added
+     */
     protected boolean addIncoming(SootMethod m, Abstraction d3a, Unit n, Abstraction d1, Abstraction d2, Abstraction d3) {
         return myIncoming.putIfAbsent(new Pair<>(m, d3a), new IncomingRecord<>(n, d1, d2, d3)) == null;
     }
@@ -77,7 +87,7 @@ public class AbstractingCollectionInfoflowSolver extends CollectionInfoflowSolve
                 && addIncoming(m, d3, n, d1, d2, d3);
     }
 
-    public AbstractingCollectionInfoflowSolver(AbstractInfoflowProblem problem, InterruptableExecutor executor) {
+    public AppendingCollectionInfoflowSolver(AbstractInfoflowProblem problem, InterruptableExecutor executor) {
         super(problem, executor);
     }
 
@@ -118,60 +128,41 @@ public class AbstractingCollectionInfoflowSolver extends CollectionInfoflowSolve
                                 // We can only reuse summaries that have a non-zero context
                                 if (appending.hasContext(d3)
                                         && !d3.getAccessPath().isStaticFieldRef()) {
-                                    if (isReusable(sCalledProcN, d3)) {
-                                        Abstraction prevSeenAbs = incomingWContext.putIfAbsent(new NoContextKey(sCalledProcN, d3), d3);
-                                        if (prevSeenAbs == null) {
-                                            prevContext.put(d3, new Pair<>(icfg.getMethodOf(n), d1));
-
-                                            if (!addIncoming(sCalledProcN, d3, n, d1, d2, d3))
-                                                continue;
-
-                                            for (Unit sP : startPointsOf) {
-                                                // create initial self-loop
-                                                schedulingStrategy.propagateCallFlow(d3, sP, d3, n, false); // line 15
-                                            }
-
-                                            applyEndSummaryOnCallWith(d1, n, d2, returnSiteNs, sCalledProcN, d3, d3);
-                                        } else {
-                                            // Add the current abstraction into the incoming set of a similar abstraction
+                                    // We first cache incoming abstractions with contexts at call sites
+                                    Abstraction prevSeenAbs = incomingWContext.putIfAbsent(new NoContextKey(sCalledProcN, d3), d3);
+                                    if (prevSeenAbs != null) {
+                                        // If we have already seen a similar abstraction at this call site,
+                                        // we check if we can reuse the summary
+                                        if (isReusable(sCalledProcN, d3)) {
                                             addIncoming(sCalledProcN, prevSeenAbs, n, d1, d2, d3);
-
                                             // And do not propagate the abstraction in the caller but rather hope that
                                             // the similar abstraction can be reused in its summary
                                             applyEndSummaryOnCallWith(d1, n, d2, returnSiteNs, sCalledProcN, d3, prevSeenAbs);
+
+                                            // We are done here
+                                            continue;
                                         }
-                                    } else {
+
                                         // We might encountered a callee, we already know is not reusable, on another
                                         // path. That means this path hasn't seen the context-dependent operation yet.
                                         // See testReinjectOnAlreadySeenCallee1.
-                                        reinject(d1, icfg.getMethodOf(n));
-
-                                        // register the fact that <sp,d3> has an incoming edge from
-                                        // <n,d2>
-                                        // line 15.1 of Naeem/Lhotak/Rodriguez
-                                        if (!addIncoming(sCalledProcN, d3, n, d1, d2, d3))
-                                            continue;
-
-                                        for (Unit sP : startPointsOf) {
-                                            // create initial self-loop
-                                            schedulingStrategy.propagateCallFlow(d3, sP, d3, n, false); // line 15
-                                        }
-
-                                        applyEndSummaryOnCallWith(d1, n, d2, returnSiteNs, sCalledProcN, d3, d3);
+                                        if (d1 != zeroValue)
+                                            reinject(d1, icfg.getMethodOf(n));
                                     }
-                                } else {
-                                    // register the fact that <sp,d3> has an incoming edge from
-                                    // <n,d2>
-                                    // line 15.1 of Naeem/Lhotak/Rodriguez
-                                    if (!addIncoming(sCalledProcN, d3, n, d1, d2, d3))
-                                        continue;
+                                }
 
-                                    for (Unit sP : startPointsOf) {
-                                        // create initial self-loop
-                                        schedulingStrategy.propagateCallFlow(d3, sP, d3, n, false); // line 15
-                                    }
+                                // register the fact that <sp,d3> has an incoming edge from
+                                // <n,d2>
+                                // line 15.1 of Naeem/Lhotak/Rodriguez
+                                if (!addIncoming(sCalledProcN, d3, n, d1, d2, d3))
+                                    continue;
 
-                                    applyEndSummaryOnCallWith(d1, n, d2, returnSiteNs, sCalledProcN, d3, d3);
+                                if (applyEndSummaryOnCallWith(d1, n, d2, returnSiteNs, sCalledProcN, d3, d3))
+                                    continue;
+
+                                for (Unit sP : startPointsOf) {
+                                    // create initial self-loop
+                                    schedulingStrategy.propagateCallFlow(d3, sP, d3, n, false); // line 15
                                 }
                             }
                         }
@@ -246,8 +237,9 @@ public class AbstractingCollectionInfoflowSolver extends CollectionInfoflowSolve
             Abstraction d2new = d2;
             // If the current calling context is not equal the calling context of the incoming
             // record, we do have a similar abstraction appended to another propagation.
-            boolean isSimilarAbstraction = !d1.entails(narrowAbs);
+            boolean isSimilarAbstraction = !d1.equals(narrowAbs);
             if (isSimilarAbstraction) {
+//                System.out.println("Applied similar " + narrowAbs);
                 // Replace the calling context to return correctly
                 d1new = narrowAbs;
                 // Special case: if we have an identity flow, we can skip diffing access paths
@@ -277,6 +269,10 @@ public class AbstractingCollectionInfoflowSolver extends CollectionInfoflowSolve
                     }
                 }
             }
+
+            // Make sure all of the incoming edges are registered with the edge from the new
+            // summary
+//            d1new.addNeighbor(record.d3);
         }
 
         // handling for unbalanced problems where we return out of a method with
@@ -336,56 +332,45 @@ public class AbstractingCollectionInfoflowSolver extends CollectionInfoflowSolve
     }
 
     private void reinject(Abstraction sourceVal, SootMethod sm) {
-        // We need two passes here to prevent a race on notReusable and appending using incomingWContext
-
-        Deque<Pair<SootMethod, Abstraction>> firstVisit = new ArrayDeque<>();
-        firstVisit.add(new Pair<>(sm, sourceVal));
-        // First pass: mark as methods in the call tree as not reusable
-        while (!firstVisit.isEmpty()) {
-            Pair<SootMethod, Abstraction> p = firstVisit.poll();
-            Abstraction curr = p.getO2();
+        Deque<Pair<SootMethod, Abstraction>> toBeVisited = new ArrayDeque<>();
+        toBeVisited.add(new Pair<>(sm, sourceVal));
+        while (!toBeVisited.isEmpty()) {
+            Pair<SootMethod, Abstraction> p = toBeVisited.poll();
+            Abstraction currAbs = p.getO2();
             SootMethod currMethod = p.getO1();
 
-            markNotReusable(currMethod, curr);
+            // First step: mark method as not reusable
+            markNotReusable(currMethod, currAbs);
 
-            firstVisit.addAll(prevContext.get(curr));
-        }
+            // Second step: reinject all appended abstractions at their appending point
+            for (IncomingRecord<Unit, Abstraction> record : myIncoming.get(new Pair<>(currMethod, currAbs))) {
+                toBeVisited.add(new Pair<>(icfg.getMethodOf(record.n), record.d1));
 
-        Deque<Pair<SootMethod, Abstraction>> secondVisit = new ArrayDeque<>();
-        secondVisit.add(new Pair<>(sm, sourceVal));
-        // Second pass: reinject all taints that were appended to non-reusable taints
-        while (!secondVisit.isEmpty()) {
-            Pair<SootMethod, Abstraction> p = secondVisit.poll();
-            Abstraction curr = p.getO2();
-            SootMethod currMethod = p.getO1();
-
-            secondVisit.addAll(prevContext.get(curr));
-
-            final Set<IncomingRecord<Unit, Abstraction>> inc = myIncoming(curr, currMethod);
-            for (IncomingRecord<Unit, Abstraction> record : inc) {
                 final Abstraction d1 = record.d1;
                 final Abstraction d2 = record.d2;
                 final Abstraction d3 = record.d3;
                 final Unit u = record.n;
                 // The exemplary context propagated in the callee is still valid, only
                 // all similar abstractions are not
-                if (!d3.equals(curr)) {
+                if (!d3.equals(currAbs)) {
+//                    System.out.println("Reinject " + currAbs + " at " + currMethod);
                     // Reinject the similar abstractions at the method start
-                    if (!removeAndAddIncoming(currMethod, curr, u, d1, d2, d3))
+                    if (!removeAndAddIncoming(currMethod, currAbs, u, d1, d2, d3))
+                        continue;
+
+                    if (applyEndSummaryOnCallWith(d1, u, d2, icfg.getReturnSitesOfCallAt(u), currMethod, d3, d3))
                         continue;
 
                     for (Unit sP : icfg.getStartPointsOf(currMethod)) {
                         // create initial self-loop
                         schedulingStrategy.propagateCallFlow(d3, sP, d3, u, false); // line 15
                     }
-
-                    applyEndSummaryOnCallWith(d1, u, d2, icfg.getReturnSitesOfCallAt(u), currMethod, d3, d3);
                 }
             }
         }
     }
 
-    protected void applyEndSummaryOnCallWith(final Abstraction d1, final Unit n, final Abstraction d2, Collection<Unit> returnSiteNs,
+    protected boolean applyEndSummaryOnCallWith(final Abstraction d1, final Unit n, final Abstraction d2, Collection<Unit> returnSiteNs,
                                      SootMethod sCalledProcN, Abstraction d3, Abstraction summaryQuery) {
         // line 15.2
         Set<EndSummary<Unit, Abstraction>> endSumm = endSummary(sCalledProcN, summaryQuery);
@@ -394,12 +379,14 @@ public class AbstractingCollectionInfoflowSolver extends CollectionInfoflowSolve
         // abstractions. Thus, referential equality is enough to deduce summary reuse
         boolean reuseOfSummary = d3 != summaryQuery;
 
-        // TODO: I assume we can skip this check
-        // Two cases:
-        //
-        // If the combination of (method, parameter) is not reusable, exit here
+        // We append the abstraction to its similar abstraction in the caller and then call this method to apply
+        // a possibly existing summary. To prevent races, we first query the summary and then re-check whether the
+        // summary is still reusable afterward. We still might have a race, where one path is context-insensitive
+        // and reached the end while the context-sensitive path didn't reach the context-sensitive statement. But such
+        // a case won't change the outcome (and in the ideal case, we actually would use this summary always but our
+        // analysis is not path sensitive, thus, we cant).
         if (reuseOfSummary && !isReusable(sCalledProcN, d3)) {
-            return;
+            return false;
         }
 
         // still line 15.2 of Naeem/Lhotak/Rodriguez
@@ -446,7 +433,10 @@ public class AbstractingCollectionInfoflowSolver extends CollectionInfoflowSolve
                 }
             }
             onEndSummaryApplied(n, sCalledProcN, d3);
+            return true;
         }
+
+        return false;
     }
 
     @Override
@@ -454,10 +444,11 @@ public class AbstractingCollectionInfoflowSolver extends CollectionInfoflowSolve
             /* deliberately exposed to clients */ Unit relatedCallSite,
             /* deliberately exposed to clients */ boolean isUnbalancedReturn, ScheduleTarget scheduleTarget) {
         // Mark (method, param) as not reusable if needed
-        if (sourceVal != zeroValue && appending.affectsContext(target)) {
+        if (sourceVal != zeroValue && appending.hasContext(targetVal) && appending.affectsContext(target)) {
             SootMethod sm = icfg.getMethodOf(target);
-            // We do not want to reinject everytime we see a context-dependent operation,
-            // but only when we encounter a new not-reusable method summary.
+            // We do not want to reinject everytime we see a context-dependent operation, because
+            // reinjecting can be quite expensive in long call chains. We only reinject if the current
+            // method is still marked as reusable.
             if (isReusable(sm, sourceVal)) {
                 reinject(sourceVal, sm);
             }
@@ -480,6 +471,5 @@ public class AbstractingCollectionInfoflowSolver extends CollectionInfoflowSolve
         this.myIncoming.clear();
         this.notReusable.clear();
         this.incomingWContext.clear();
-        this.prevContext.clear();
     }
 }

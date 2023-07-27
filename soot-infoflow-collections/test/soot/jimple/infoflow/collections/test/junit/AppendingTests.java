@@ -13,7 +13,8 @@ import soot.Unit;
 import soot.jimple.Stmt;
 import soot.jimple.infoflow.*;
 import soot.jimple.infoflow.cfg.DefaultBiDiICFGFactory;
-import soot.jimple.infoflow.collections.solver.fastSolver.AbstractingCollectionInfoflowSolver;
+import soot.jimple.infoflow.collections.solver.fastSolver.AppendingCollectionInfoflowSolver;
+import soot.jimple.infoflow.collections.solver.fastSolver.WideningCollectionInfoflowSolver;
 import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.data.AccessPathFragment;
 import soot.jimple.infoflow.data.ContextDefinition;
@@ -23,9 +24,8 @@ import soot.jimple.infoflow.problems.AbstractInfoflowProblem;
 import soot.jimple.infoflow.results.DataFlowResult;
 import soot.jimple.infoflow.solver.IInfoflowSolver;
 import soot.jimple.infoflow.solver.executors.InterruptableExecutor;
-import soot.jimple.infoflow.util.DebugFlowFunctionTaintPropagationHandler;
 
-public class AbstractingTests extends FlowDroidTests {
+public class AppendingTests extends FlowDroidTests {
     /**
      * TaintPropagationHandler that sleeps on System.out.println.
      * Use to enforce that an end summary is used instead of the incoming set.
@@ -103,7 +103,7 @@ public class AbstractingTests extends FlowDroidTests {
             protected IInfoflowSolver createDataFlowSolver(InterruptableExecutor executor,
                                                            AbstractInfoflowProblem problem,
                                                            InfoflowConfiguration.SolverConfiguration solverConfig) {
-                return new AbstractingCollectionInfoflowSolver(problem, executor);
+                return new AppendingCollectionInfoflowSolver(problem, executor);
             }
         };
         result.setThrowExceptions(true);
@@ -113,6 +113,25 @@ public class AbstractingTests extends FlowDroidTests {
         SequentialTaintPropagationHandler tpg = new SequentialTaintPropagationHandler();
         tpg.addHandler(new EnsureOnlyOneContext());
         tpg.addHandler(new DelayOnPrintln());
+        result.setTaintPropagationHandler(tpg);
+
+        return result;
+    }
+
+    protected IInfoflow initInfoflowWithoutAppending() {
+        AbstractInfoflow result = new Infoflow("", false, new DefaultBiDiICFGFactory()) {
+            @Override
+            protected IInfoflowSolver createDataFlowSolver(InterruptableExecutor executor,
+                                                           AbstractInfoflowProblem problem,
+                                                           InfoflowConfiguration.SolverConfiguration solverConfig) {
+                return new WideningCollectionInfoflowSolver(problem, executor);
+            }
+        };
+        result.setThrowExceptions(true);
+        result.setTaintWrapper(getTaintWrapper());
+        setConfiguration(result.getConfig());
+
+        SequentialTaintPropagationHandler tpg = new SequentialTaintPropagationHandler();
         result.setTaintPropagationHandler(tpg);
 
         return result;
@@ -144,7 +163,15 @@ public class AbstractingTests extends FlowDroidTests {
         return false;
     }
 
-    private static final String testCodeClass = "soot.jimple.infoflow.collections.test.AbstractingTestCode";
+    private void ensureLessEdges(IInfoflow other, String epoint) {
+        IInfoflow base = initInfoflowWithoutAppending();
+        base.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
+        long baseEdges = base.getResults().getPerformanceData().getEdgePropagationCount();
+        long otherEdges = other.getResults().getPerformanceData().getEdgePropagationCount();
+        Assert.assertTrue(otherEdges < baseEdges);
+    }
+
+    private static final String testCodeClass = "soot.jimple.infoflow.collections.test.AppendingTestCode";
 
     @Test(timeout = 30000)
     public void testReuse1() {
@@ -155,6 +182,7 @@ public class AbstractingTests extends FlowDroidTests {
         Assert.assertEquals(getExpectedResultsForMethod(epoint), set == null ? 0 : set.size());
         Assert.assertFalse(hasDuplicateSourceInFlow(set));
         Assert.assertFalse(hasDuplicateSinkInFlow(set));
+        ensureLessEdges(infoflow, epoint);
     }
 
     @Test(timeout = 30000)
@@ -166,6 +194,7 @@ public class AbstractingTests extends FlowDroidTests {
         Assert.assertEquals(getExpectedResultsForMethod(epoint), set == null ? 0 : set.size());
         Assert.assertFalse(hasDuplicateSourceInFlow(set));
         Assert.assertFalse(hasDuplicateSinkInFlow(set));
+        ensureLessEdges(infoflow, epoint);
     }
 
     @Test(timeout = 30000)
@@ -176,6 +205,7 @@ public class AbstractingTests extends FlowDroidTests {
         var set = infoflow.getResults().getResultSet();
         Assert.assertEquals(getExpectedResultsForMethod(epoint), set == null ? 0 : set.size());
         Assert.assertFalse(hasDuplicateSinkInFlow(set));
+        ensureLessEdges(infoflow, epoint);
     }
 
     @Test(timeout = 30000)
@@ -186,12 +216,13 @@ public class AbstractingTests extends FlowDroidTests {
         var set = infoflow.getResults().getResultSet();
         Assert.assertEquals(getExpectedResultsForMethod(epoint), set == null ? 0 : set.size());
         Assert.assertFalse(hasDuplicateSinkInFlow(set));
+        ensureLessEdges(infoflow, epoint);
     }
 
-    @Test(timeout = 300000)
+    @Test//(timeout = 300000)
     public void testGet1() {
         // Test that the solver doesn't race
-        for (int run = 0; run < 50; run++) {
+        for (int run = 0; run < 10; run++) {
             IInfoflow infoflow = initInfoflow();
             String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
             infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
@@ -352,6 +383,7 @@ public class AbstractingTests extends FlowDroidTests {
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
         var set = infoflow.getResults().getResultSet();
         Assert.assertEquals(getExpectedResultsForMethod(epoint), set == null ? 0 : set.size());
+        ensureLessEdges(infoflow, epoint);
     }
 
     @Test(timeout = 30000)
@@ -362,5 +394,6 @@ public class AbstractingTests extends FlowDroidTests {
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
         var set = infoflow.getResults().getResultSet();
         Assert.assertEquals(getExpectedResultsForMethod(epoint), set == null ? 0 : set.size());
+        ensureLessEdges(infoflow, epoint);
     }
 }

@@ -7,7 +7,7 @@ import java.util.*;
 
 import soot.jimple.infoflow.collections.test.junit.FlowDroidTest;
 
-public class AbstractingTestCode {
+public class AppendingTestCode {
     // This method doesn't alter the context and thus, doesn't depend on it
     String unusedContext1(Map<String, String> c) {
         StringBuilder sb = new StringBuilder();

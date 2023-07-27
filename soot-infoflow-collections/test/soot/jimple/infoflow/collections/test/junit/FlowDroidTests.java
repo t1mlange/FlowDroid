@@ -20,8 +20,7 @@ import soot.jimple.infoflow.cfg.DefaultBiDiICFGFactory;
 import soot.jimple.infoflow.collections.CollectionTaintWrapper;
 import soot.jimple.infoflow.collections.StringResourcesResolver;
 import soot.jimple.infoflow.collections.parser.CollectionXMLParser;
-import soot.jimple.infoflow.collections.solver.fastSolver.AbstractingCollectionInfoflowSolver;
-import soot.jimple.infoflow.collections.solver.fastSolver.CoarserReuseCollectionInfoflowSolver;
+import soot.jimple.infoflow.collections.solver.fastSolver.AppendingCollectionInfoflowSolver;
 import soot.jimple.infoflow.collections.solver.fastSolver.WideningCollectionInfoflowSolver;
 import soot.jimple.infoflow.methodSummary.taintWrappers.SummaryTaintWrapper;
 import soot.jimple.infoflow.methodSummary.taintWrappers.TaintWrapperFactory;
@@ -110,7 +109,7 @@ public abstract class FlowDroidTests {
 	public static IInfoflowSolver getSolver(InterruptableExecutor executor,
 											AbstractInfoflowProblem problem,
 											InfoflowConfiguration.SolverConfiguration solverConfig) {
-		return new AbstractingCollectionInfoflowSolver(problem, executor);
+		return new AppendingCollectionInfoflowSolver(problem, executor);
 	}
 
 	protected ITaintPropagationWrapper getTaintWrapper() {
