@@ -445,7 +445,9 @@ public class BackwardsAliasProblem extends AbstractInfoflowProblem {
 
 						// TurnUnit is the sink. Below this stmt, the taint is not valid anymore
 						// Therefore we turn around here.
-						if (source.getTurnUnit() == callSite) {
+						Unit turnUnit = source.getTurnUnit();
+						if (turnUnit == callSite
+								|| (turnUnit != null && manager.getICFG().getMethodOf(source.getTurnUnit()) == callee)) {
 							return notifyOutFlowHandlers(callSite, calleeD1, source, null,
 									TaintPropagationHandler.FlowFunctionType.ReturnFlowFunction);
 						}
