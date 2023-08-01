@@ -759,7 +759,7 @@ public abstract class AbstractInfoflow implements IInfoflow {
 
 				// Additional flows get their taints injected dependent on the flow of the taint anlaysis.
 				// Thus, we don't have any taints before.
-				InfoflowManager additionalManager = new InfoflowManager(config, null, new BackwardsInfoflowCFG(iCfg),
+				InfoflowManager additionalManager = new InfoflowManager(config, null, backwardSolver.getTabulationProblem().interproceduralCFG(),
 						new ConditionalFlowSourceSinkManagerWrapper((IConditionalFlowManager) manager.getSourceSinkManager()),
 						taintWrapper, hierarchy, globalTaintManager);
 
@@ -965,10 +965,11 @@ public abstract class AbstractInfoflow implements IInfoflow {
 				// another one
 				removeEntailedAbstractions(res);
 
+				Set<AbstractionAtSink> additionalRes = null;
 				if (config.getAdditionalFlowsEnabled()) {
-					res = new HashSet<>(res);
-					Set<AbstractionAtSink> additionalRes = manager.additionalManager.getMainSolver().getTabulationProblem().getResults().getResults();
-					res.addAll(additionalRes);
+//					res = new HashSet<>(res);
+					additionalRes = manager.additionalManager.getMainSolver().getTabulationProblem().getResults().getResults();
+//					res.addAll(additionalRes);
 				}
 
 				// Shut down the native call handler
@@ -1034,11 +1035,9 @@ public abstract class AbstractInfoflow implements IInfoflow {
 					additionalAliasSolver.cleanup();
 					memoryWatcher.removeSolver((IMemoryBoundedSolver) additionalAliasSolver);
 					additionalAliasSolver = null;
-
-					manager.additionalManager.cleanup();
-					manager.additionalManager = null;
 				}
 
+				InfoflowManager addManager = manager.additionalManager;
 				// Clean up the manager. Make sure to free objects, even if
 				// the manager is still held by other objects
 				if (manager != null)
@@ -1105,6 +1104,54 @@ public abstract class AbstractInfoflow implements IInfoflow {
 
 					// Get the results once the path builder is done
 					this.results.addAll(builder.getResults());
+
+					if (config.getAdditionalFlowsEnabled()) {
+						InterruptableExecutor resultExecutor2 = executorFactory.createExecutor(numThreads, false, config);
+						resultExecutor2.setThreadFactory(new ThreadFactory() {
+
+							@Override
+							public Thread newThread(Runnable r) {
+								Thread thrPath = new Thread(r);
+								thrPath.setDaemon(true);
+								thrPath.setName("FlowDroid Path Reconstruction");
+								return thrPath;
+							}
+						});
+
+						final IAbstractionPathBuilder secondBuilder = pathBuilderFactory.createPathBuilder(addManager, resultExecutor2);
+						memoryWatcher.addSolver(secondBuilder);
+						secondBuilder.computeTaintPaths(additionalRes);
+
+						// Wait for the path builders to terminate
+						try {
+							// The path reconstruction should stop on time anyway. In case it doesn't, we
+							// make sure that we don't get stuck.
+							long pathTimeout = config.getPathConfiguration().getPathReconstructionTimeout();
+							if (pathTimeout > 0)
+								resultExecutor2.awaitCompletion(pathTimeout + 20, TimeUnit.SECONDS);
+							else
+								resultExecutor2.awaitCompletion();
+						} catch (InterruptedException e) {
+							logger.error("Could not wait for executor termination", e);
+						}
+
+						// Update the statistics
+						{
+							ISolverTerminationReason reason = secondBuilder.getTerminationReason();
+							if (reason != null) {
+								if (reason instanceof OutOfMemoryReason)
+									results.setTerminationState(results.getTerminationState()
+											| InfoflowResults.TERMINATION_PATH_RECONSTRUCTION_OOM);
+								else if (reason instanceof TimeoutReason)
+									results.setTerminationState(results.getTerminationState()
+											| InfoflowResults.TERMINATION_PATH_RECONSTRUCTION_TIMEOUT);
+							}
+						}
+
+						this.results.addAll(secondBuilder.getResults());
+						addManager.cleanup();
+						addManager = null;
+					}
 				}
 				resultExecutor.shutdown();
 

@@ -198,8 +198,8 @@
 						AccessPath="[java.net.URLConnection: java.net.URL url]"
 						AccessPathTypes="[java.net.URL]" />
 					<to sourceSinkType="Return" BaseType="java.io.OutputStream"
-						AccessPath="[java.io.OutputStream: java.net.URL url]"
-						AccessPathTypes="[java.net.URL]" />
+						AccessPath="[java.io.OutputStream: java.io.OutputStream innerStream]"
+						AccessPathTypes="[java.io.OutputStream]" />
 				</flow>
 			</flows>
 		</method>

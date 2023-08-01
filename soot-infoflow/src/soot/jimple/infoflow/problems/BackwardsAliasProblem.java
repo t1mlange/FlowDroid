@@ -394,6 +394,8 @@ public class BackwardsAliasProblem extends AbstractInfoflowProblem {
 									}
 									// taint just the tainted parameter
 								} else {
+									if (i >= paramLocals.length)
+										continue;
 									AccessPath ap = manager.getAccessPathFactory()
 											.copyWithNewValue(source.getAccessPath(), paramLocals[i]);
 									Abstraction abs = checkAbstraction(source.deriveNewAbstraction(ap, callStmt));
