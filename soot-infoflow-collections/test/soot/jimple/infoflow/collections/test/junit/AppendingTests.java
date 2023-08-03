@@ -2,7 +2,9 @@ package soot.jimple.infoflow.collections.test.junit;
 
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
+import java.util.function.BiFunction;
 
 import org.junit.Assert;
 import org.junit.Assume;
@@ -64,10 +66,12 @@ public class AppendingTests extends FlowDroidTests {
         type) {
             // We do rewrite the abstractions after call flow and before return flow functions, thus,
             // both are allowed to see more than one context
-            if (type == TaintPropagationHandler.FlowFunctionType.CallFlowFunction || type == TaintPropagationHandler.FlowFunctionType.ReturnFlowFunction)
+            if (type == TaintPropagationHandler.FlowFunctionType.CallFlowFunction
+                || type == TaintPropagationHandler.FlowFunctionType.ReturnFlowFunction)
                 return;
 
             SootMethod sm = manager.getICFG().getMethodOf(stmt);
+            // Each method that starts with unusedContext should be checked
             if (!sm.getName().startsWith("unusedContext"))
                 return;
 
@@ -76,6 +80,7 @@ public class AppendingTests extends FlowDroidTests {
                 return;
 
             synchronized (this) {
+                // Assert that we only see a single context in the method
                 if (seenContext == null)
                     seenContext = f.getContext();
                 else
@@ -163,12 +168,13 @@ public class AppendingTests extends FlowDroidTests {
         return false;
     }
 
-    private void ensureLessEdges(IInfoflow other, String epoint) {
+    private void compareEdgesToBase(IInfoflow other, String epoint, BiFunction<Long, Long, Boolean> cmp) {
         IInfoflow base = initInfoflowWithoutAppending();
+        base.setConfig(other.getConfig());
         base.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
         long baseEdges = base.getResults().getPerformanceData().getEdgePropagationCount();
         long otherEdges = other.getResults().getPerformanceData().getEdgePropagationCount();
-        Assert.assertTrue(otherEdges < baseEdges);
+        Assert.assertTrue(cmp.apply(otherEdges, baseEdges));
     }
 
     private static final String testCodeClass = "soot.jimple.infoflow.collections.test.AppendingTestCode";
@@ -182,7 +188,7 @@ public class AppendingTests extends FlowDroidTests {
         Assert.assertEquals(getExpectedResultsForMethod(epoint), set == null ? 0 : set.size());
         Assert.assertFalse(hasDuplicateSourceInFlow(set));
         Assert.assertFalse(hasDuplicateSinkInFlow(set));
-        ensureLessEdges(infoflow, epoint);
+        compareEdgesToBase(infoflow, epoint, (a, b) -> a < b);
     }
 
     @Test(timeout = 30000)
@@ -194,7 +200,7 @@ public class AppendingTests extends FlowDroidTests {
         Assert.assertEquals(getExpectedResultsForMethod(epoint), set == null ? 0 : set.size());
         Assert.assertFalse(hasDuplicateSourceInFlow(set));
         Assert.assertFalse(hasDuplicateSinkInFlow(set));
-        ensureLessEdges(infoflow, epoint);
+        compareEdgesToBase(infoflow, epoint, (a, b) -> a < b);
     }
 
     @Test(timeout = 30000)
@@ -205,7 +211,7 @@ public class AppendingTests extends FlowDroidTests {
         var set = infoflow.getResults().getResultSet();
         Assert.assertEquals(getExpectedResultsForMethod(epoint), set == null ? 0 : set.size());
         Assert.assertFalse(hasDuplicateSinkInFlow(set));
-        ensureLessEdges(infoflow, epoint);
+        compareEdgesToBase(infoflow, epoint, (a, b) -> a < b);
     }
 
     @Test(timeout = 30000)
@@ -216,13 +222,13 @@ public class AppendingTests extends FlowDroidTests {
         var set = infoflow.getResults().getResultSet();
         Assert.assertEquals(getExpectedResultsForMethod(epoint), set == null ? 0 : set.size());
         Assert.assertFalse(hasDuplicateSinkInFlow(set));
-        ensureLessEdges(infoflow, epoint);
+        compareEdgesToBase(infoflow, epoint, (a, b) -> a < b);
     }
 
     @Test//(timeout = 300000)
     public void testGet1() {
         // Test that the solver doesn't race
-        for (int run = 0; run < 10; run++) {
+        for (int run = 0; run < 500; run++) {
             IInfoflow infoflow = initInfoflow();
             String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
             infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
@@ -344,7 +350,7 @@ public class AppendingTests extends FlowDroidTests {
         Assert.assertFalse(hasDuplicateSinkInFlow(set));
     }
 
-    @Test//(timeout = 30000)
+    @Test(timeout = 30000)
     public void testReinjectOnAlreadySeenCallee1() {
         IInfoflow infoflow = initInfoflow();
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
@@ -354,7 +360,7 @@ public class AppendingTests extends FlowDroidTests {
         Assert.assertFalse(hasDuplicateSinkInFlow(set));
     }
 
-    @Test//(timeout = 30000)
+    @Test(timeout = 30000)
     public void testReinjectOnAlreadySeenCallee2() {
         IInfoflow infoflow = initInfoflow();
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
@@ -375,7 +381,7 @@ public class AppendingTests extends FlowDroidTests {
         Assert.assertEquals(getExpectedResultsForMethod(epoint), set == null ? 0 : set.size());
     }
 
-    @Test//(timeout = 30000)
+    @Test(timeout = 30000)
     public void testDerefOfAllFields() {
         IInfoflow infoflow = initInfoflow();
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
@@ -383,7 +389,7 @@ public class AppendingTests extends FlowDroidTests {
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
         var set = infoflow.getResults().getResultSet();
         Assert.assertEquals(getExpectedResultsForMethod(epoint), set == null ? 0 : set.size());
-        ensureLessEdges(infoflow, epoint);
+        compareEdgesToBase(infoflow, epoint, (a, b) -> a < b);
     }
 
     @Test(timeout = 30000)
@@ -394,6 +400,18 @@ public class AppendingTests extends FlowDroidTests {
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
         var set = infoflow.getResults().getResultSet();
         Assert.assertEquals(getExpectedResultsForMethod(epoint), set == null ? 0 : set.size());
-        ensureLessEdges(infoflow, epoint);
+        compareEdgesToBase(infoflow, epoint, (a, b) -> a < b);
+    }
+
+    @Test(timeout = 30000)
+    public void testBenignRace1() {
+        IInfoflow infoflow = initInfoflow();
+        infoflow.getConfig().setAliasingAlgorithm(InfoflowConfiguration.AliasingAlgorithm.None);
+        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
+        infoflow.getConfig().setEnableLineNumbers(true);
+        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
+        var set = infoflow.getResults().getResultSet();
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), set == null ? 0 : set.size());
+        compareEdgesToBase(infoflow, epoint, Objects::equals);
     }
 }
