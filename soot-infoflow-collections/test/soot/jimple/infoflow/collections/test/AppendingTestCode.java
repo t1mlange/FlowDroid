@@ -396,4 +396,32 @@ public class AppendingTestCode {
         sink(mc2.map.get("Secret"));
         sink(mc2.map.get("Secret2"));
     }
+
+    private String benignRace(Map<String, String> map) {
+        if (new Random().nextBoolean()) {
+            // This will delay this path by some seconds while the else path is not delayed. This should result in
+            // appending the similar abstraction and applying the identity flow as a summary before this path reached
+            // the getXXX and subsequently marks the whole method as non-reusable. This is a race but won't change the
+            // outcome because the else path is context-independent.
+            System.out.println("Delay");
+            return getXXX(map);
+        } else {
+            return null;
+        }
+    }
+
+    @FlowDroidTest(expected = 2)
+    public void testBenignRace1() {
+        Map<String, String> map1 = new HashMap<>();
+        Map<String, String> map2 = new HashMap<>();
+        String source = source();
+        map1.put("XXX", source);
+        map2.put("YYY", source);
+        String result1 = benignRace(map1);
+        String result2 = benignRace(map2);
+        sink(result1);
+        sink(result2);
+        sink(map1.get("XXX"));
+        sink(map2.get("XXX"));
+    }
 }

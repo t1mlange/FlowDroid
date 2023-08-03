@@ -3,6 +3,11 @@ package soot.jimple.infoflow.collections.solver.fastSolver;
 import soot.SootMethod;
 import soot.jimple.infoflow.data.Abstraction;
 
+/**
+ * Pair of (Method, Abstraction) that ignores all possible contexts the abstraction may have
+ *
+ * @author Tim Lange
+ */
 public class NoContextKey {
     private final SootMethod sm;
     private final Abstraction abs;
