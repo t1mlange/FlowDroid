@@ -16,7 +16,6 @@ import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.data.AccessPath;
 import soot.jimple.infoflow.data.AccessPathFragment;
 import soot.jimple.infoflow.data.ContextDefinition;
-import soot.jimple.infoflow.typing.TypeUtils;
 
 public class AliasInsertOperation extends InsertOperation {
 

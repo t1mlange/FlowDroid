@@ -1,10 +1,9 @@
 package soot.jimple.infoflow.collections.context;
 
-import soot.jimple.Stmt;
 import soot.jimple.infoflow.collections.util.Tristate;
 import soot.jimple.infoflow.data.ContextDefinition;
 
-public class IntervalContext implements PositionBasedContext {
+public class IntervalContext implements PositionBasedContext<IntervalContext> {
 	private final int min;
 	private final int max;
 
@@ -23,6 +22,7 @@ public class IntervalContext implements PositionBasedContext {
 		this.max = max;
 	}
 
+	@Override
 	public Tristate intersect(IntervalContext other) {
 		if (this.equals(other))
 			return Tristate.TRUE();
@@ -39,19 +39,22 @@ public class IntervalContext implements PositionBasedContext {
 		return this.min <= other.min && other.max <= this.max;
 	}
 
-	public ContextDefinition shiftRight() {
+	@Override
+	public IntervalContext shiftRight() {
 		if (max < Integer.MAX_VALUE)
 			return new IntervalContext(min + 1, max + 1);
 		return this;
 	}
 
-	public ContextDefinition addRight() {
+	@Override
+	public IntervalContext addRight() {
 		if (max < Integer.MAX_VALUE)
 			return new IntervalContext(min, max + 1);
 		return this;
 	}
 
-	public ContextDefinition shiftLeft() {
+	@Override
+	public IntervalContext shiftLeft() {
 		if (min == 0)
 			return null;
 
@@ -60,12 +63,14 @@ public class IntervalContext implements PositionBasedContext {
 		return this;
 	}
 
-	public ContextDefinition subtractLeft() {
+	@Override
+	public IntervalContext subtractLeft() {
 		if (max < Integer.MAX_VALUE)
 			return new IntervalContext(min - 1, max);
 		return this;
 	}
 
+	@Override
 	public Tristate lessThanEqual(IntervalContext other) {
 		if (max <= other.min)
 			return Tristate.TRUE();

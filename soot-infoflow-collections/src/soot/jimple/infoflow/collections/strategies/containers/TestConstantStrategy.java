@@ -53,7 +53,7 @@ public class TestConstantStrategy extends ConstantMapStrategy {
         if (apKey instanceof IntervalContext)
             return ((IntervalContext) apKey).intersect((IntervalContext) stmtKey);
         if (apKey instanceof KeySetContext)
-            return ((KeySetContext) apKey).intersect((KeySetContext) stmtKey);
+            return ((KeySetContext<?>) apKey).intersect((KeySetContext<?>) stmtKey);
 
         throw new RuntimeException("Got unknown context: " + apKey.getClass());
     }

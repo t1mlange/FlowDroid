@@ -22,8 +22,8 @@ import soot.jimple.infoflow.collections.solver.fastSolver.AppendingCollectionInf
 import soot.jimple.infoflow.collections.solver.fastSolver.CoarserReuseCollectionInfoflowSolver;
 import soot.jimple.infoflow.collections.solver.fastSolver.CollectionInfoflowSolver;
 import soot.jimple.infoflow.collections.strategies.appending.DefaultAppendingStrategy;
-import soot.jimple.infoflow.collections.strategies.containers.TestConstantStrategy;
 import soot.jimple.infoflow.collections.strategies.containers.IContainerStrategy;
+import soot.jimple.infoflow.collections.strategies.containers.TestConstantStrategy;
 import soot.jimple.infoflow.collections.strategies.subsuming.LargerContextSubsumingStrategy;
 import soot.jimple.infoflow.collections.strategies.widening.WideningOnRevisitStrategy;
 import soot.jimple.infoflow.collections.strategies.widening.WideningStrategy;

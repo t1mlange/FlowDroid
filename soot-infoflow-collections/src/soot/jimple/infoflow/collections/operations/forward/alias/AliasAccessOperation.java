@@ -13,7 +13,6 @@ import soot.jimple.infoflow.collections.strategies.containers.IContainerStrategy
 import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.data.AccessPath;
 import soot.jimple.infoflow.data.ContextDefinition;
-import soot.jimple.infoflow.typing.TypeUtils;
 
 public class AliasAccessOperation extends AccessOperation {
     public AliasAccessOperation(Location[] keys, String field, String returnField) {

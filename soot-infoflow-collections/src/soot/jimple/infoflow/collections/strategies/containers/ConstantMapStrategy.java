@@ -1,16 +1,11 @@
 package soot.jimple.infoflow.collections.strategies.containers;
 
-import java.util.Arrays;
-
 import soot.Value;
 import soot.jimple.Constant;
-import soot.jimple.InstanceInvokeExpr;
 import soot.jimple.Stmt;
 import soot.jimple.infoflow.collections.CollectionTaintWrapper;
 import soot.jimple.infoflow.collections.context.KeySetContext;
 import soot.jimple.infoflow.collections.context.UnknownContext;
-import soot.jimple.infoflow.collections.data.CollectionMethod;
-import soot.jimple.infoflow.collections.operations.LocationDependentOperation;
 import soot.jimple.infoflow.collections.util.Tristate;
 import soot.jimple.infoflow.data.ContextDefinition;
 
@@ -44,7 +39,7 @@ public class ConstantMapStrategy implements IContainerStrategy {
             return Tristate.MAYBE();
 
         if (apKey instanceof KeySetContext)
-            return ((KeySetContext) apKey).intersect((KeySetContext) stmtKey);
+            return ((KeySetContext<?>) apKey).intersect((KeySetContext<?>) stmtKey);
 
         throw new RuntimeException("Got unknown context: " + apKey.getClass());
     }
@@ -53,7 +48,7 @@ public class ConstantMapStrategy implements IContainerStrategy {
     public ContextDefinition getKeyContext(Value value, Stmt stmt) {
         if (value instanceof Constant) {
             resolvedKeys++;
-            return new KeySetContext((Constant) value);
+            return new KeySetContext<>((Constant) value);
         }
 
         unresolvedKeys++;
@@ -103,20 +98,5 @@ public class ConstantMapStrategy implements IContainerStrategy {
         }
 
         return true;
-    }
-
-    @Override
-    public boolean stmtDependsOnContext(Stmt stmt) {
-        if (!stmt.containsInvokeExpr())
-            return false;
-        CollectionMethod cm = ctw.getCollectionMethodForSootMethod(stmt.getInvokeExpr().getMethod());
-        if (cm == null)
-            return false;
-
-        return Arrays.stream(cm.operations())
-                .filter(op -> op instanceof LocationDependentOperation)
-                .map(op -> ((LocationDependentOperation) op).buildContext(this,
-                        (InstanceInvokeExpr) stmt.getInvokeExpr(), stmt))
-                .anyMatch(ctxt -> ctxt != null && !shouldSmash(ctxt));
     }
 }

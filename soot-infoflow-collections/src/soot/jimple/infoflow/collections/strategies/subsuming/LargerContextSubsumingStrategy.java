@@ -4,7 +4,6 @@ import java.util.Arrays;
 import java.util.Set;
 
 import soot.Unit;
-import soot.jimple.Stmt;
 import soot.jimple.infoflow.InfoflowManager;
 import soot.jimple.infoflow.collections.context.IntervalContext;
 import soot.jimple.infoflow.data.Abstraction;

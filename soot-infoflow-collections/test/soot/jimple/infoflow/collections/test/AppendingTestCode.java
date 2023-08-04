@@ -3,7 +3,9 @@ package soot.jimple.infoflow.collections.test;
 import static soot.jimple.infoflow.collections.test.Helper.sink;
 import static soot.jimple.infoflow.collections.test.Helper.source;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
 
 import soot.jimple.infoflow.collections.test.junit.FlowDroidTest;
 

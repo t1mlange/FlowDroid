@@ -1,5 +1,9 @@
 package soot.jimple.infoflow.collections.solver.fastSolver;
 
+import java.util.Collection;
+import java.util.Set;
+import java.util.function.Consumer;
+
 import heros.FlowFunction;
 import heros.solver.PathEdge;
 import soot.SootMethod;
@@ -7,10 +11,6 @@ import soot.Unit;
 import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.problems.AbstractInfoflowProblem;
 import soot.jimple.infoflow.solver.executors.InterruptableExecutor;
-
-import java.util.Collection;
-import java.util.Set;
-import java.util.function.Consumer;
 
 /**
  * Infoflow Solver that supports widening.

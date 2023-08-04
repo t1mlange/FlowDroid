@@ -1,29 +1,33 @@
 package soot.jimple.infoflow.collections.context;
 
-import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
-import soot.jimple.Constant;
+import soot.jimple.infoflow.collections.util.ImmutableArraySet;
 import soot.jimple.infoflow.collections.util.Tristate;
 import soot.jimple.infoflow.data.ContextDefinition;
 
-public class KeySetContext implements ValueBasedContext {
-	Set<Constant> keys;
+/**
+ * Representation of map keys using a set possible keys
+ *
+ * @param <C> key type
+ */
+public class KeySetContext<C> implements ValueBasedContext<KeySetContext<?>> {
+	private final Set<C> keys;
 
-	public KeySetContext(Constant key) {
-		this.keys = new HashSet<>();
-		this.keys.add(key);
+	public KeySetContext(C key) {
+		this.keys = new ImmutableArraySet<>(key);
 	}
 
-	public KeySetContext(Set<Constant> keys) {
-		this.keys = keys;
+	public KeySetContext(Set<C> keys) {
+		this.keys = new ImmutableArraySet<>(keys);
 	}
 
-	public Tristate intersect(KeySetContext other) {
+	@Override
+	public Tristate intersect(KeySetContext<?> other) {
 		boolean all = true;
 		boolean any = false;
-		for (Constant c : this.keys) {
+		for (C c : this.keys) {
 			if (other.keys.contains(c))
 				any = true;
 			else
@@ -40,8 +44,8 @@ public class KeySetContext implements ValueBasedContext {
 		if (!(other instanceof KeySetContext))
 			return false;
 
-		for (Constant key : keys)
-			if (!((KeySetContext) other).keys.contains(key))
+		for (C key : keys)
+			if (!((KeySetContext<?>) other).keys.contains(key))
 				return false;
 
 		return true;
@@ -61,7 +65,7 @@ public class KeySetContext implements ValueBasedContext {
 	public boolean equals(Object o) {
 		if (this == o) return true;
 		if (o == null || getClass() != o.getClass()) return false;
-		KeySetContext that = (KeySetContext) o;
+		KeySetContext<?> that = (KeySetContext<?>) o;
 		return Objects.equals(keys, that.keys);
 	}
 

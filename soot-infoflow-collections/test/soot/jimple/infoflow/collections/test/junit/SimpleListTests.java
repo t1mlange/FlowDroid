@@ -1,19 +1,12 @@
 package soot.jimple.infoflow.collections.test.junit;
 
 import java.util.Collections;
-import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Test;
 
-import soot.Unit;
 import soot.jimple.infoflow.IInfoflow;
 import soot.jimple.infoflow.InfoflowConfiguration;
-import soot.jimple.infoflow.InfoflowManager;
-import soot.jimple.infoflow.data.Abstraction;
-import soot.jimple.infoflow.data.AccessPathFragment;
-import soot.jimple.infoflow.handlers.TaintPropagationHandler;
-import soot.jimple.infoflow.util.DebugFlowFunctionTaintPropagationHandler;
 
 public class SimpleListTests extends FlowDroidTests {
     @Override
