@@ -1,0 +1,92 @@
+<?xml version="1.0" ?>
+
+<collectionModel class="android.util.SparseArray" type="value">
+    <method subsig="void append(int,java.lang.Object)">
+        <remove field="[android.util.SparseArray: byte[] data]">
+            <key idx="0" />
+        </remove>
+        <insert field="[android.util.SparseArray: byte[] data]">
+            <key idx="0" />
+            <data idx="1" />
+        </insert>
+    </method>
+    <method subsig="void clear()">
+        <remove field="[android.util.SparseArray: byte[] data]">
+            <key idx="all" />
+        </remove>
+    </method>
+    <method subsig="android.util.SparseArray clone()">
+        <copy mode="update">
+            <from idx="1" />
+            <to idx="return" />
+        </copy>
+    </method>
+    <!-- contains() handled with fallback -->
+    <!-- contentEquals() handled with fallback -->
+    <!-- contentHashCode() handled with fallback -->
+    <method subsig="void delete(int)">
+        <remove field="[android.util.SparseArray: byte[] data]">
+            <key idx="0" />
+        </remove>
+    </method>
+    <method subsig="java.lang.Object get(int)">
+        <access field="[android.util.SparseArray: byte[] data]">
+            <key idx="0" />
+        </access>
+    </method>
+    <method subsig="java.lang.Object get(int,java.lang.Object)">
+        <access field="[android.util.SparseArray: byte[] data]">
+            <key idx="0" />
+        </access>
+        <copy mode="update">
+            <from idx="1" />
+            <to idx="return" />
+        </copy>
+    </method>
+    <!-- indexOfKey() fallbacks -->
+    <!-- indexOfValue() fallbacks -->
+    <!-- keyAt() fallbacks -->
+    <method subsig="void put(int,java.lang.Object)">
+        <remove field="[android.util.SparseArray: byte[] data]">
+            <key idx="0" />
+        </remove>
+        <insert field="[android.util.SparseArray: byte[] data]">
+            <key idx="0" />
+            <data idx="1" />
+        </insert>
+    </method>
+    <method subsig="void remove(int)">
+        <remove field="[android.util.SparseArray: byte[] data]">
+            <key idx="0" />
+        </remove>
+    </method>
+    <method subsig="void removeAt(int)">
+        <!-- intentionally identity because we can't reason about the key-index relation -->
+    </method>
+    <method subsig="void removeAtRange(int,int)">
+        <!-- intentionally identity because we can't reason about the key-index relation -->
+    </method>
+    <method subsig="void set(int,java.lang.Object)">
+        <remove field="[android.util.SparseArray: byte[] data]">
+            <key idx="0" />
+        </remove>
+        <insert field="[android.util.SparseArray: byte[] data]">
+            <key idx="0" />
+            <data idx="1" />
+        </insert>
+    </method>
+    <method subsig="void setValueAt(int,java.lang.Object)">
+        <insert field="[android.util.SparseArray: byte[] data]">
+            <key idx="all" />
+            <data idx="1" />
+        </insert>
+    </method>
+    <!-- size() handled with fallback -->
+    <!-- toString() handled with fallback -->
+    <method subsig="java.lang.Object valueAt(int)">
+        <access field="[android.util.SparseArray: byte[] data]">
+            <!-- we can't reason about key-index relationship -->
+            <key idx="all" />
+        </access>
+    </method>
+</collectionModel>
