@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 
-<collectionModel class="java.util.Queue" type="position">
+<collectionModel class="java.util.Queue" type="position" excludedSubclasses="[java.util.PriorityQueue,java.util.concurrent.PriorityBlockingQueue]">
     <method subsig="boolean add(java.lang.Object)">
         <insert field="[java.util.Collection: java.lang.Object[] innerArray]">
             <key idx="last" />
