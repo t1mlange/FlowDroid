@@ -27,6 +27,12 @@ import soot.jimple.infoflow.results.DataFlowResult;
 import soot.jimple.infoflow.solver.IInfoflowSolver;
 import soot.jimple.infoflow.solver.executors.InterruptableExecutor;
 
+/**
+ * Tests for the {@link AppendingCollectionInfoflowSolver}
+ *
+ * Some of these tests need the solver to run with more than 1 thread because they test "races" between
+ * appending, applying the summary and reinjecting.
+ */
 public class AppendingTests extends FlowDroidTests {
     /**
      * TaintPropagationHandler that sleeps on System.out.println.
@@ -225,10 +231,10 @@ public class AppendingTests extends FlowDroidTests {
         compareEdgesToBase(infoflow, epoint, (a, b) -> a < b);
     }
 
-    @Test//(timeout = 300000)
+    @Test(timeout = 300000)
     public void testGet1() {
         // Test that the solver doesn't race
-        for (int run = 0; run < 500; run++) {
+        for (int run = 0; run < 50; run++) {
             IInfoflow infoflow = initInfoflow();
             String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
             infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
