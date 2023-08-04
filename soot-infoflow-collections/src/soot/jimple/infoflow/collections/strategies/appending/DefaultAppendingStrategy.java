@@ -1,14 +1,14 @@
 package soot.jimple.infoflow.collections.strategies.appending;
 
+import java.util.Arrays;
+import java.util.Set;
+
 import soot.Unit;
 import soot.jimple.Stmt;
 import soot.jimple.infoflow.InfoflowManager;
 import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.data.AccessPath;
 import soot.jimple.infoflow.data.AccessPathFragment;
-
-import java.util.Arrays;
-import java.util.Set;
 
 public class DefaultAppendingStrategy implements AppendingStrategy<Unit, Abstraction> {
     private final InfoflowManager manager;

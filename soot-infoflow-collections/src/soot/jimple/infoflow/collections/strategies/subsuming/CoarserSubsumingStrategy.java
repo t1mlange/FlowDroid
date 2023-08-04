@@ -1,7 +1,5 @@
 package soot.jimple.infoflow.collections.strategies.subsuming;
 
-import java.util.Set;
-
 import soot.jimple.infoflow.InfoflowManager;
 import soot.jimple.infoflow.data.Abstraction;
 

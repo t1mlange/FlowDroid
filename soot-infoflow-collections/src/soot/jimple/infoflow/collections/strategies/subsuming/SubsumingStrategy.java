@@ -2,8 +2,6 @@ package soot.jimple.infoflow.collections.strategies.subsuming;
 
 import java.util.Set;
 
-import soot.jimple.infoflow.data.Abstraction;
-
 /**
  * Strategy to reason about subsuming of data flow facts. Used in the coarser reuse solver.
  *

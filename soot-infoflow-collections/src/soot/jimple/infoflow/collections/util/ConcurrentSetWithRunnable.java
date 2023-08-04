@@ -24,13 +24,13 @@ public class ConcurrentSetWithRunnable<E> extends AbstractSet<E> implements Set<
     /**
      * Runs the runnable if the element is absent
      *
-     * @param key
-     * @param func
+     * @param e element
+     * @param r runnable
      * @return true if the element was absent
      */
-    public boolean runIfAbsent(E key, Runnable func) {
-        return this.m.computeIfAbsent(key, (k) -> {
-            func.run();
+    public boolean runIfAbsent(E e, Runnable r) {
+        return this.m.computeIfAbsent(e, (k) -> {
+            r.run();
             return null;
         }) == null;
     }
