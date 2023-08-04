@@ -5,12 +5,9 @@ import java.util.stream.Collectors;
 
 import heros.DontSynchronize;
 import heros.SynchronizedBy;
-import heros.solver.Pair;
-import heros.solver.PathEdge;
 import soot.*;
 import soot.jimple.InstanceInvokeExpr;
 import soot.jimple.InvokeExpr;
-import soot.jimple.ReturnStmt;
 import soot.jimple.Stmt;
 import soot.jimple.infoflow.InfoflowManager;
 import soot.jimple.infoflow.collections.data.CollectionMethod;
@@ -18,6 +15,7 @@ import soot.jimple.infoflow.collections.data.CollectionModel;
 import soot.jimple.infoflow.collections.operations.ICollectionOperation;
 import soot.jimple.infoflow.collections.operations.LocationDependentOperation;
 import soot.jimple.infoflow.collections.operations.forward.AbstractShiftOperation;
+import soot.jimple.infoflow.collections.operations.forward.ComputeFRPSHandler;
 import soot.jimple.infoflow.collections.solver.fastSolver.AppendingCollectionInfoflowSolver;
 import soot.jimple.infoflow.collections.solver.fastSolver.CoarserReuseCollectionInfoflowSolver;
 import soot.jimple.infoflow.collections.solver.fastSolver.CollectionInfoflowSolver;
@@ -30,11 +28,8 @@ import soot.jimple.infoflow.collections.strategies.widening.WideningStrategy;
 import soot.jimple.infoflow.collections.util.AliasAbstractionSet;
 import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.handlers.PreAnalysisHandler;
-import soot.jimple.infoflow.solver.IFollowReturnsPastSeedsHandler;
 import soot.jimple.infoflow.solver.IInfoflowSolver;
 import soot.jimple.infoflow.taintWrappers.ITaintPropagationWrapper;
-import soot.util.ConcurrentHashMultiMap;
-import soot.util.MultiMap;
 
 /**
  * Taint Wrapper that models the behavior of collections w.r.t. keys or indices
@@ -43,7 +38,7 @@ import soot.util.MultiMap;
  */
 public class CollectionTaintWrapper implements ITaintPropagationWrapper {
 	@SynchronizedBy("Read-only during analysis")
-	private final Map<String, CollectionModel> models;
+	private Map<String, CollectionModel> models;
 
 	@SynchronizedBy("Read-only during analysis")
 	private final ITaintPropagationWrapper fallbackWrapper;
@@ -56,6 +51,8 @@ public class CollectionTaintWrapper implements ITaintPropagationWrapper {
 	protected InfoflowManager manager;
 
 	private IContainerStrategy strategy;
+
+	private ComputeFRPSHandler frpsHandler;
 
 
 	private static Type collectionType;
@@ -80,8 +77,12 @@ public class CollectionTaintWrapper implements ITaintPropagationWrapper {
 		listClass = Scene.v().getSootClassUnsafe("java.util.List");
 		queueClass = Scene.v().getSootClassUnsafe("java.util.Queue");
 
+		for (CollectionModel cm : this.models.values())
+			cm.initialize();
+
 		this.strategy = getStrategy();
-		manager.getMainSolver().setFollowReturnsPastSeedsHandler(new CollectionCallbackHandler());
+		this.frpsHandler = new ComputeFRPSHandler(manager);
+		manager.getMainSolver().setFollowReturnsPastSeedsHandler(this.frpsHandler);
 
 		// Get all method subsignatures that may result in an infinite domain
 		Set<String> subSigs = this.models.values().stream()
@@ -133,43 +134,8 @@ public class CollectionTaintWrapper implements ITaintPropagationWrapper {
 		return null;
 	}
 
-	private static class Callback {
-		Abstraction d1;
-		Abstraction d2;
-		Unit u;
-
-		public Callback(Abstraction d1, Unit u, Abstraction d2) {
-			this.d1 = d1;
-			this.u = u;
-			this.d2 = d2;
-		}
-	}
-
-	private class CollectionCallbackHandler implements IFollowReturnsPastSeedsHandler {
-		@Override
-		public void handleFollowReturnsPastSeeds(Abstraction d1, Unit u, Abstraction d2) {
-			if (u instanceof ReturnStmt) {
-				Value retOp = ((ReturnStmt) u).getOp();
-				if (manager.getAliasing().mayAlias(d2.getAccessPath().getPlainValue(), retOp)) {
-					SootMethod sm = manager.getICFG().getMethodOf(u);
-					Set<Callback> pairs = callbacks.get(new Pair<>(d1, sm));
-					if (pairs != null) {
-						for (Callback p : pairs) {
-							for (Unit s : manager.getICFG().getSuccsOf(p.u)) {
-								PathEdge<Unit, Abstraction> e = new PathEdge<>(p.d1, s, p.d2);
-								manager.getMainSolver().processEdge(e);
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-
-	MultiMap<Pair<Abstraction, SootMethod>, Callback> callbacks = new ConcurrentHashMultiMap<>();
-
 	public void registerCallback(Abstraction d1, Stmt stmt, Abstraction curr, Abstraction queued, SootMethod sm) {
-		callbacks.put(new Pair<>(queued, sm), new Callback(d1, stmt, curr));
+		frpsHandler.registerCallback(d1, stmt, curr, queued, sm);
 	}
 
 	@Override
@@ -243,7 +209,7 @@ public class CollectionTaintWrapper implements ITaintPropagationWrapper {
 	}
 
 	/**
-	 * Special case: we might see the current call to the Collection class, yet we do not know, whether
+	 * Special case: we might see the current call to the Collection class, yet we do not know whether
 	 * the collection is a Set, List or Queue. To prevent resolving the size for sets, which we do smash
 	 * anyway, we use SPARK to approximate whether this is a set or not.
 	 *
@@ -274,9 +240,12 @@ public class CollectionTaintWrapper implements ITaintPropagationWrapper {
 	}
 
 	public CollectionMethod getCollectionMethodForSootMethod(SootMethod sm) {
+		FastHierarchy fh = Scene.v().getFastHierarchy();
+		String subsig = null;
 		CollectionModel model = models.get(sm.getDeclaringClass().getName());
-		if (model != null) {
-			CollectionMethod cm = model.getMethod(sm.getSubSignature());
+		if (model != null && model.isNotExcluded(sm.getDeclaringClass(), fh)) {
+			subsig = sm.getSubSignature();
+			CollectionMethod cm = model.getMethod(subsig);
 			if (cm != null)
 				return cm;
 		}
@@ -285,8 +254,10 @@ public class CollectionTaintWrapper implements ITaintPropagationWrapper {
 		SootClass currentClass = sm.getDeclaringClass().getSuperclassUnsafe();
 		while (currentClass != null) {
 			model = models.get(currentClass.getName());
-			if (model != null) {
-				CollectionMethod cm = model.getMethod(sm.getSubSignature());
+			if (model != null && model.isNotExcluded(currentClass, fh)) {
+				if (subsig == null)
+					subsig = sm.getSubSignature();
+				CollectionMethod cm = model.getMethod(subsig);
 				if (cm != null)
 					return cm;
 			}
@@ -296,8 +267,10 @@ public class CollectionTaintWrapper implements ITaintPropagationWrapper {
 
 		for (SootClass ifc : ifcs) {
 			model = models.get(ifc.getName());
-			if (model != null) {
-				CollectionMethod cm = model.getMethod(sm.getSubSignature());
+			if (model != null && model.isNotExcluded(ifc, fh)) {
+				if (subsig == null)
+					subsig = sm.getSubSignature();
+				CollectionMethod cm = model.getMethod(subsig);
 				if (cm != null)
 					return cm;
 			}

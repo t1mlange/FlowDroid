@@ -60,6 +60,7 @@ public class CollectionXMLParser {
 		// Used inside a CollectionClass
 		private String collectionType;
 		private String className;
+		private String[] excludedSubclasses;
 		private Map<String, CollectionMethod> methods;
 
 		protected SAXHandler() {
@@ -70,12 +71,12 @@ public class CollectionXMLParser {
 		}
 
 		@Override
-		public void startElement(String uri, String localName, String qName, Attributes attributes)
-				throws SAXException {
+		public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
 			switch (qName) {
 			case COLLECTION_MODEL_TAG:
 				collectionType = attributes.getValue(TYPE_ATTR);
 				className = attributes.getValue(CLASS_ATTR);
+				excludedSubclasses = parseList(attributes.getValue(EXCLUDED_SUBCLASSES_ATTR));
 				break;
 			case METHOD_TAG:
 				subSig = attributes.getValue(SUBSIG_ATTR);
@@ -131,7 +132,7 @@ public class CollectionXMLParser {
 		public void endElement(String uri, String localName, String qName) {
 			switch (qName) {
 			case COLLECTION_MODEL_TAG:
-				addModel(new CollectionModel(className, collectionType, methods));
+				addModel(new CollectionModel(className, collectionType, methods, excludedSubclasses));
 				resetAfterCollection();
 				break;
 			case METHOD_TAG:
@@ -150,13 +151,14 @@ public class CollectionXMLParser {
 				resetAfterOperation();
 				break;
 			case SHIFT_LEFT_TAG:
-				// TODO: switch for widening on shifts
-				operations.add(new ShiftLeftOperation(trimKeys(keys), accessPathField));
+				operations.add(replaceShifts ? new ShiftInvalidateOperation(trimKeys(keys), accessPathField)
+						 						: new ShiftLeftOperation(trimKeys(keys), accessPathField));
 				aliasOperations.add(new IdentityOperation());
 				resetAfterOperation();
 				break;
 			case SHIFT_RIGHT_TAG:
-				operations.add(new ShiftRightOperation(trimKeys(keys), accessPathField));
+				operations.add(replaceShifts ? new ShiftInvalidateOperation(trimKeys(keys), accessPathField)
+												: new ShiftRightOperation(trimKeys(keys), accessPathField));
 				aliasOperations.add(new IdentityOperation());
 				resetAfterOperation();
 				break;
@@ -246,6 +248,19 @@ public class CollectionXMLParser {
 			return newKeys;
 		}
 
+		protected String[] parseList(String str) throws SAXException {
+			if (str == null)
+				return null;
+
+			if (!str.startsWith("[") || !str.endsWith("]"))
+				throw new SAXException(str + " is no list!");
+
+			String[] splitted = str.substring(1, str.length() - 1).split(",");
+			for (int i = 0; i < splitted.length; i++)
+				splitted[i] = splitted[i].trim();
+			return splitted;
+		}
+
 		protected void resetAfterOperation() {
 			keys = new Location[MAX_KEYS];
 			dataIdx = ParamIndex.UNUSED;
@@ -268,16 +283,23 @@ public class CollectionXMLParser {
 		protected void resetAfterCollection() {
 			collectionType = "";
 			className = "";
+			excludedSubclasses = null;
 			methods = new HashMap<>();
 		}
 	}
 
 	private final Map<String, CollectionModel> models;
-	private final SAXHandler handler;
+
+	// Option to replace shifts with invalidating shifts operations
+	private final boolean replaceShifts;
 
 	public CollectionXMLParser() {
+		this(false);
+	}
+
+	public CollectionXMLParser(boolean replaceShifts) {
 		this.models = new HashMap<>();
-		this.handler = new SAXHandler();
+		this.replaceShifts = replaceShifts;
 	}
 
 	public void parse(String fileName) throws FileNotFoundException {
@@ -289,7 +311,7 @@ public class CollectionXMLParser {
 			pf.setFeature("http://xml.org/sax/features/external-general-entities", false);
 			pf.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
 			SAXParser parser = pf.newSAXParser();
-			parser.parse(new FileInputStream(fileName), handler);
+			parser.parse(new FileInputStream(fileName), new SAXHandler());
 		} catch (ParserConfigurationException | IOException | SAXException e) {
 			logger.error("Could not parse sources/sinks from stream", e);
 		}

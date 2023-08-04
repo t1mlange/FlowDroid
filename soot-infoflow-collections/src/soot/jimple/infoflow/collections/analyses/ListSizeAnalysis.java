@@ -79,13 +79,14 @@ public class ListSizeAnalysis extends ForwardFlowAnalysis<Unit, Map<Local, ListS
         }
     }
 
-    private final SootClass listClass;
+    private final Set<SootClass> classes;
 
     private static final Set<String> increments = new HashSet<>();
     static {
         increments.add("boolean add(java.lang.Object)");
         increments.add("java.lang.Object push(java.lang.Object)");
         increments.add("void addElement(java.lang.Object)");
+        increments.add("boolean offer(java.lang.Object)");
     }
 
     private static final Set<String> decrements = new HashSet<>();
@@ -112,7 +113,12 @@ public class ListSizeAnalysis extends ForwardFlowAnalysis<Unit, Map<Local, ListS
 
     public ListSizeAnalysis(DirectedGraph<Unit> graph) {
         super(graph);
-        listClass = Scene.v().getSootClassUnsafe("java.util.List");
+        SootClass listClass = Scene.v().getSootClassUnsafe("java.util.List");
+        SootClass queueClass = Scene.v().getSootClassUnsafe("java.util.Queue");
+        classes = new HashSet<>(Scene.v().getFastHierarchy().getAllImplementersOfInterface(listClass));
+        classes.addAll(Scene.v().getFastHierarchy().getAllImplementersOfInterface(queueClass));
+        classes.add(listClass);
+        classes.add(queueClass);
         doAnalysis();
     }
 
@@ -126,7 +132,7 @@ public class ListSizeAnalysis extends ForwardFlowAnalysis<Unit, Map<Local, ListS
 
             if (leftOp instanceof Local && rightOp instanceof NewExpr) {
                 SootClass sc = ((NewExpr) rightOp).getBaseType().getSootClass();
-                if (Scene.v().getFastHierarchy().getAllImplementersOfInterface(listClass).contains(sc)) {
+                if (classes.contains(sc)) {
                     // Init new list
                     out.put((Local) leftOp, new ListSize(0));
                 }
@@ -147,8 +153,7 @@ public class ListSizeAnalysis extends ForwardFlowAnalysis<Unit, Map<Local, ListS
             out.remove(v);
 
         SootMethod sm = stmt.getInvokeExpr().getMethod();
-        if (listClass != sm.getDeclaringClass()
-                && !Scene.v().getFastHierarchy().getAllImplementersOfInterface(listClass).contains(sm.getDeclaringClass()))
+        if (!classes.contains(sm.getDeclaringClass()))
             return;
 
         String subsig = sm.getSubSignature();

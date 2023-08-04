@@ -33,6 +33,7 @@ public class CollectionXMLConstants {
     public static final String CLASS_ATTR = "class";
     public static final String TYPE_ATTR = "type";
     public static final String FIELD_ATTR = "field";
+    public static final String EXCLUDED_SUBCLASSES_ATTR = "excludedSubclasses";
 
     public static final String VALUE = "value";
     public static final String POSITION = "position";

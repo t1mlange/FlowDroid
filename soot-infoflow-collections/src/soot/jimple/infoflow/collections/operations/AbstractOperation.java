@@ -9,7 +9,7 @@ import soot.jimple.infoflow.typing.TypeUtils;
 
 public abstract class AbstractOperation implements ICollectionOperation {
     protected SootField safeGetField(String fieldSig) {
-        if (fieldSig == null || fieldSig.equals(""))
+        if (fieldSig == null || fieldSig.isEmpty())
             return null;
 
         SootField sf = Scene.v().grabField(fieldSig);
