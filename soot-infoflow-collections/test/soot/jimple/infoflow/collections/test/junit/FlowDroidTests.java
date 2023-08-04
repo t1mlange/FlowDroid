@@ -142,7 +142,7 @@ public abstract class FlowDroidTests {
 			@Override
 			protected IInfoflowSolver createDataFlowSolver(InterruptableExecutor executor,
 					AbstractInfoflowProblem problem, InfoflowConfiguration.SolverConfiguration solverConfig) {
-				return new WideningCollectionInfoflowSolver(problem, executor);
+				return new AppendingCollectionInfoflowSolver(problem, executor);
 			}
 		};
 		result.setThrowExceptions(true);
