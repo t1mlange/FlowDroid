@@ -40,9 +40,9 @@ public abstract class LocationDependentOperation extends AbstractOperation {
                     if (idx < 0)
                         throw new RuntimeException("Unknown location index supplied: " + idx);
                     if (locations[i].isValueBased())
-                        ctxt[i] = strategy.getIndexContext(iie.getArg(idx), stmt);
-                    else
                         ctxt[i] = strategy.getKeyContext(iie.getArg(idx), stmt);
+                    else
+                        ctxt[i] = strategy.getIndexContext(iie.getArg(idx), stmt);
                     break;
             }
         }
@@ -96,9 +96,9 @@ public abstract class LocationDependentOperation extends AbstractOperation {
                         if (idx < 0)
                             throw new RuntimeException("Unknown location index supplied: " + idx);
                         if (locations[i].isValueBased())
-                            locFromStmt = strategy.getIndexContext(iie.getArg(locations[i].getParamIdx()), stmt);
-                        else
                             locFromStmt = strategy.getKeyContext(iie.getArg(locations[i].getParamIdx()), stmt);
+                        else
+                            locFromStmt = strategy.getIndexContext(iie.getArg(locations[i].getParamIdx()), stmt);
                         break;
                 }
 

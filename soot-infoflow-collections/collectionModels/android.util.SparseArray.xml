@@ -16,7 +16,7 @@
         </remove>
     </method>
     <method subsig="android.util.SparseArray clone()">
-        <copy mode="update">
+        <copy>
             <from idx="1" />
             <to idx="return" />
         </copy>
@@ -38,7 +38,7 @@
         <access field="[android.util.SparseArray: byte[] data]">
             <key idx="0" />
         </access>
-        <copy mode="update">
+        <copy>
             <from idx="1" />
             <to idx="return" />
         </copy>

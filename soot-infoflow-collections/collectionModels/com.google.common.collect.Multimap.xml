@@ -2,7 +2,7 @@
 
 <collectionModel class="com.google.common.collect.Multimap" type="value">
     <method subsig="java.util.Set asMap()">
-        <copy mode="update">
+        <copy>
             <from idx="base" />
             <to idx="return" />
         </copy>
@@ -53,7 +53,7 @@
         </insert>
     </method>
     <method subsig="boolean putAll(com.google.common.collect.Multimap)">
-        <copy mode="update">
+        <copy>
             <from idx="0" />
             <to idx="base" />
         </copy>

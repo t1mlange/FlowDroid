@@ -115,9 +115,11 @@ public class ListSizeAnalysis extends ForwardFlowAnalysis<Unit, Map<Local, ListS
         super(graph);
         SootClass listClass = Scene.v().getSootClassUnsafe("java.util.List");
         SootClass queueClass = Scene.v().getSootClassUnsafe("java.util.Queue");
-        classes = new HashSet<>(Scene.v().getFastHierarchy().getAllImplementersOfInterface(listClass));
-        classes.addAll(Scene.v().getFastHierarchy().getAllImplementersOfInterface(queueClass));
+        classes = new HashSet<>(Scene.v().getFastHierarchy().getAllSubinterfaces(listClass));
+        classes.addAll(Scene.v().getFastHierarchy().getAllImplementersOfInterface(listClass));
         classes.add(listClass);
+        classes.addAll(Scene.v().getFastHierarchy().getAllSubinterfaces(queueClass));
+        classes.addAll(Scene.v().getFastHierarchy().getAllImplementersOfInterface(queueClass));
         classes.add(queueClass);
         doAnalysis();
     }

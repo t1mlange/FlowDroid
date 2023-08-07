@@ -313,4 +313,27 @@ public class SimpleListTestCode {
         lst.sort(String::compareTo);
         sink(lst.get(0));
     }
+
+    @FlowDroidTest(expected = 1)
+    public void testListAddAllItself1() {
+        List<String> lst = new ArrayList<>();
+        lst.add(source());
+        while (new Random().nextBoolean()) {
+            lst.addAll(lst);
+        }
+        sink(lst.get(0));
+    }
+
+
+    @FlowDroidTest(expected = 1)
+    public void testListAddItself1() {
+        List lst = new ArrayList<>();
+        lst.add(source());
+        while (new Random().nextBoolean()) {
+            lst.add(lst);
+        }
+        sink(lst.get(0));
+        sink(lst.get(1));
+        sink(lst.get(2));
+    }
 }

@@ -131,7 +131,9 @@ public class AccessPathFragment {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(Arrays.hashCode(context), field, fieldType);
+		int result = Objects.hash(field, fieldType);
+		result = 31 * result + Arrays.hashCode(context);
+		return result;
 	}
 
 	public int hashCodeWithoutContext() {
@@ -147,7 +149,7 @@ public class AccessPathFragment {
 		if (getClass() != obj.getClass())
 			return false;
 		AccessPathFragment other = (AccessPathFragment) obj;
-		return Objects.equals(context, other.context) && Objects.equals(field, other.field)
+		return Arrays.equals(context, other.context) && Objects.equals(field, other.field)
 				&& Objects.equals(fieldType, other.fieldType);
 	}
 
