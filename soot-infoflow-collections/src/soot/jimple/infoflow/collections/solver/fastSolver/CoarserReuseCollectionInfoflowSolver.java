@@ -17,6 +17,7 @@ import soot.jimple.infoflow.collections.strategies.subsuming.SubsumingStrategy;
 import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.problems.AbstractInfoflowProblem;
 import soot.jimple.infoflow.solver.EndSummary;
+import soot.jimple.infoflow.solver.IncomingRecord;
 import soot.jimple.infoflow.solver.executors.InterruptableExecutor;
 import soot.jimple.infoflow.solver.fastSolver.LocalWorklistTask;
 import soot.util.ConcurrentHashMultiMap;
@@ -70,7 +71,7 @@ public class CoarserReuseCollectionInfoflowSolver extends CollectionInfoflowSolv
 	}
 
 	@Override
-	protected boolean addIncoming(SootMethod m, Abstraction d3, Unit n, Abstraction d1, Abstraction d2) {
+	public boolean addIncoming(SootMethod m, Abstraction d3, Unit n, Abstraction d1, Abstraction d2) {
 		MyConcurrentHashMap<Unit, MultiMap<Abstraction, Abstraction>> summaries
 				= myIncoming.putIfAbsentElseGet(new Pair<>(m, d3), MyConcurrentHashMap::new);
 		MultiMap<Abstraction, Abstraction> set = summaries.putIfAbsentElseGet(n, ConcurrentHashMultiMap::new);
@@ -82,7 +83,7 @@ public class CoarserReuseCollectionInfoflowSolver extends CollectionInfoflowSolv
 	}
 
 	@Override
-	protected Map<Unit, Map<Abstraction, Abstraction>> incoming(Abstraction d1, SootMethod m) {
+	public Set<IncomingRecord<Unit, Abstraction>> incoming(Abstraction d1, SootMethod m) {
 		throw new RuntimeException("Use myIncoming(Abstraction, SootMethod) instead!");
 	}
 

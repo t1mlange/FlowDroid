@@ -114,7 +114,9 @@ public class AppendingTests extends FlowDroidTests {
             protected IInfoflowSolver createDataFlowSolver(InterruptableExecutor executor,
                                                            AbstractInfoflowProblem problem,
                                                            InfoflowConfiguration.SolverConfiguration solverConfig) {
-                return new AppendingCollectionInfoflowSolver(problem, executor);
+                IInfoflowSolver solver = new AppendingCollectionInfoflowSolver(problem, executor);
+                solverPeerGroup.addSolver(solver);
+                return solver;
             }
         };
         result.setThrowExceptions(true);
@@ -135,7 +137,9 @@ public class AppendingTests extends FlowDroidTests {
             protected IInfoflowSolver createDataFlowSolver(InterruptableExecutor executor,
                                                            AbstractInfoflowProblem problem,
                                                            InfoflowConfiguration.SolverConfiguration solverConfig) {
-                return new WideningCollectionInfoflowSolver(problem, executor);
+                IInfoflowSolver solver = new WideningCollectionInfoflowSolver(problem, executor);
+                solverPeerGroup.addSolver(solver);
+                return solver;
             }
         };
         result.setThrowExceptions(true);

@@ -18,8 +18,8 @@ import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.problems.AbstractInfoflowProblem;
 import soot.jimple.infoflow.solver.EndSummary;
 import soot.jimple.infoflow.solver.IInfoflowSolver;
+import soot.jimple.infoflow.solver.IncomingRecord;
 import soot.jimple.infoflow.solver.executors.InterruptableExecutor;
-import soot.util.ConcurrentHashMultiMap;
 
 /**
  * Infoflow Solver that supports various optimizations for precisely tracking collection keys/indices
@@ -41,26 +41,15 @@ public class AppendingCollectionInfoflowSolver extends CollectionInfoflowSolver 
     @SynchronizedBy("Thread-safe data structure")
     private final ConcurrentSetWithRunnable<Pair<SootMethod, Local>> notReusable = new ConcurrentSetWithRunnable<>();
 
-    // We need to overwrite the default incoming, because we might have multiple elements per context
-    // e.g. when we add a concrete collection taint to use the summary of the abstracted collection taint
-    @SynchronizedBy("Thread-safe data structure")
-    protected final ConcurrentHashMultiMap<Pair<SootMethod, Abstraction>, IncomingRecord<Unit, Abstraction>> myIncoming = new ConcurrentHashMultiMap<>();
-
     // Holds the first abstraction that reached the callee, removing the context for the key. Similar abstractions can
     // append to this abstraction to reuse facts from this (unless the IFDS solver noticed the context is relevant).
     @SynchronizedBy("Thread-safe data structure")
     protected final ConcurrentMap<NoContextKey, Abstraction> similarAbstractions = new ConcurrentHashMap<>();
 
     @Override
-    protected boolean addIncoming(SootMethod m, Abstraction d3, Unit n, Abstraction d1, Abstraction d2) {
+    public boolean addIncoming(SootMethod m, Abstraction d3, Unit n, Abstraction d1, Abstraction d2) {
         // Prohibit usage to prevent bugs
         throw new RuntimeException("Use addIncoming(SootMethod, Abstraction, Unit, Abstraction, Abstraction, Abstraction) instead!");
-    }
-
-    @Override
-    protected Map<Unit, Map<Abstraction, Abstraction>> incoming(Abstraction d1, SootMethod m) {
-        // Prohibit usage to prevent bugs
-        throw new RuntimeException("Use myIncoming(Abstraction, SootMethod) instead!");
     }
 
     /**
@@ -77,15 +66,11 @@ public class AppendingCollectionInfoflowSolver extends CollectionInfoflowSolver 
      * @return    true if the record was freshly added
      */
     protected boolean addIncoming(SootMethod m, Abstraction d3a, Unit n, Abstraction d1, Abstraction d2, Abstraction d3) {
-        return myIncoming.putIfAbsent(new Pair<>(m, d3a), new IncomingRecord<>(n, d1, d2, d3)) == null;
-    }
-
-    protected Set<IncomingRecord<Unit, Abstraction>> myIncoming(Abstraction d1, SootMethod m) {
-        return myIncoming.get(new Pair<>(m, d1));
+        return incoming.putIfAbsent(new Pair<>(m, d3a), new IncomingRecord<>(n, d1, d2, d3)) == null;
     }
 
     protected boolean removeAndAddIncoming(SootMethod m, Abstraction d3a, Unit n, Abstraction d1, Abstraction d2, Abstraction d3) {
-        return myIncoming.remove(new Pair<>(m, d3a), new IncomingRecord<>(n, d1, d2, d3))
+        return incoming.remove(new Pair<>(m, d3a), new IncomingRecord<>(n, d1, d2, d3))
                 && addIncoming(m, d3, n, d1, d2, d3);
     }
 
@@ -217,7 +202,7 @@ public class AppendingCollectionInfoflowSolver extends CollectionInfoflowSolver 
         if (!addEndSummary(methodThatNeedsSummary, d1, n, d2))
             return;
 
-        Set<IncomingRecord<Unit, Abstraction>> inc = myIncoming(d1, methodThatNeedsSummary);
+        Set<IncomingRecord<Unit, Abstraction>> inc = incoming(d1, methodThatNeedsSummary);
         // for each incoming call edge already processed
         // (see processCall(..))
         for (IncomingRecord<Unit, Abstraction> record : inc) {
@@ -316,7 +301,7 @@ public class AppendingCollectionInfoflowSolver extends CollectionInfoflowSolver 
 
             final SootMethod methodThatNeedsSummary = icfg.getMethodOf(u);
             // Only change here to use our own incoming data structure
-            if (myIncoming(d1, methodThatNeedsSummary).isEmpty())
+            if (incoming(d1, methodThatNeedsSummary).isEmpty())
                 followReturnsPastSeedsHandler.handleFollowReturnsPastSeeds(d1, u, d2);
         }
     }
@@ -493,7 +478,7 @@ public class AppendingCollectionInfoflowSolver extends CollectionInfoflowSolver 
             markNotReusable(currMethod, currAbs);
 
             // Second step: reinject all appended abstractions at their appending point
-            for (IncomingRecord<Unit, Abstraction> record : myIncoming.get(new Pair<>(currMethod, currAbs))) {
+            for (IncomingRecord<Unit, Abstraction> record : incoming.get(new Pair<>(currMethod, currAbs))) {
                 final Abstraction d1 = record.d1;
                 final Abstraction d2 = record.d2;
                 final Abstraction d3 = record.d3;
@@ -528,7 +513,6 @@ public class AppendingCollectionInfoflowSolver extends CollectionInfoflowSolver 
     @Override
     public void cleanup() {
         super.cleanup();
-        this.myIncoming.clear();
         this.notReusable.clear();
         this.similarAbstractions.clear();
     }
