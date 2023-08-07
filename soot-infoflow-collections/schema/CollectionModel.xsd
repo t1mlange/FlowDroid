@@ -51,6 +51,7 @@
             <xs:element name="data" type="paramIdx" />
         </xs:sequence>
         <xs:attribute name="field" type="xs:string" use="required" />
+        <xs:attribute name="mode" type="insertMode" use="optional" />
     </xs:complexType>
 
     <xs:complexType name="remove">
@@ -70,7 +71,6 @@
             <xs:element name="from" type="paramIdxOrBaseOrReturn" />
             <xs:element name="to" type="paramIdxOrBaseOrReturn" />
         </xs:sequence>
-        <xs:attribute name="mode" type="copyMode" use="required" />
     </xs:complexType>
 
     <xs:complexType name="shift">
@@ -174,9 +174,8 @@
         <xs:attribute name="type" type="xs:string" use="required" />
     </xs:complexType>
 
-    <xs:simpleType name="copyMode">
+    <xs:simpleType name="insertMode">
         <xs:restriction base="xs:string">
-            <xs:enumeration value="update" />
             <xs:enumeration value="append" />
         </xs:restriction>
     </xs:simpleType>

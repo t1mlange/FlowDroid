@@ -51,7 +51,7 @@ public class TestConstantStrategy extends ConstantMapStrategy {
             return Tristate.MAYBE();
 
         if (apKey instanceof IntervalContext)
-            return ((IntervalContext) apKey).intersect((IntervalContext) stmtKey);
+            return ((IntervalContext) apKey).intersects((IntervalContext) stmtKey);
         if (apKey instanceof KeySetContext)
             return ((KeySetContext<?>) apKey).intersect((KeySetContext<?>) stmtKey);
 
@@ -97,18 +97,20 @@ public class TestConstantStrategy extends ConstantMapStrategy {
     }
 
     @Override
-    public ContextDefinition shiftRight(ContextDefinition ctxt, Stmt stmt, boolean exact) {
+    public ContextDefinition shift(ContextDefinition ctxt, Stmt stmt, int n, boolean exact) {
         if (ctxt instanceof IntervalContext)
-            return exact ? ((IntervalContext) ctxt).shiftRight() : ((IntervalContext) ctxt).addRight();
+            return exact ? ((IntervalContext) ctxt).exactShift(n) : ((IntervalContext) ctxt).mayShift(n);
 
         throw new RuntimeException("Expect interval context but got instead: " + ctxt);
     }
 
     @Override
-    public ContextDefinition shiftLeft(ContextDefinition ctxt, Stmt stmt, boolean exact) {
-        if (ctxt instanceof IntervalContext)
-            return exact ? ((IntervalContext) ctxt).shiftLeft() : ((IntervalContext) ctxt).subtractLeft();
-
+    public ContextDefinition rotate(ContextDefinition ctxt, Stmt stmt, ContextDefinition n, ContextDefinition bound, boolean exact) {
+        if (ctxt instanceof IntervalContext && n instanceof IntervalContext && bound instanceof IntervalContext) {
+            IntervalContext dist = (IntervalContext) n;
+            IntervalContext mod = (IntervalContext) bound;
+            return exact ? ((IntervalContext) ctxt).exactRotate(dist, mod) : ((IntervalContext) ctxt).mayRotate(dist, mod);
+        }
         throw new RuntimeException("Expect interval context but got instead: " + ctxt);
     }
 

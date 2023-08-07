@@ -16,7 +16,12 @@
             <index idx="0" />
         </shiftRight>
     </method>
-    <!-- TODO: addAll() handled with fallback -->
+    <method subsig="boolean addAll(java.util.Collection)">
+        <insert field="[java.util.Collection: java.lang.Object[] innerArray]" mode="append">
+            <index idx="last" />
+            <data idx="0" />
+        </insert>
+    </method>
     <method subsig="void clear()">
         <remove field="[java.util.Collection: java.lang.Object[] innerArray]">
             <index idx="all" />
@@ -110,7 +115,8 @@
     <method subsig="java.util.Spliterator spliterator()">
         <invalidate field="[java.util.Collection: java.lang.Object[] innerArray]">
             <target idx="base" />
-            <return />
+            <return field="[java.util.Collection: java.lang.Object[] innerArray]"
+                    type="[java.lang.Object[]]" />
         </invalidate>
     </method>
     <method subsig="java.util.List subList(int,int)">

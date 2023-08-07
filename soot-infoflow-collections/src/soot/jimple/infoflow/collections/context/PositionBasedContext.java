@@ -16,7 +16,7 @@ public interface PositionBasedContext<T extends PositionBasedContext<?>> extends
      * @param other value-based context
      * @return true on perfect match, maybe on part match and otherwise false
      */
-    Tristate intersect(T other);
+    Tristate intersects(T other);
 
     /**
      * Check whether this is less or equal to other
@@ -27,30 +27,36 @@ public interface PositionBasedContext<T extends PositionBasedContext<?>> extends
     Tristate lessThanEqual(T other);
 
     /**
-     * Subtracts from the lower bound
+     * Shifts only one bound by n, determined by the sign of n
      *
+     * @param n number of shifts
      * @return new position-based context
      */
-    T subtractLeft();
+    T mayShift(int n);
 
     /**
-     * Shifts the position(s) one to the left (i.e. decreases)
+     * Shifts the position(s) by n
      *
+     * @param n number of shifts
      * @return new position-based context
      */
-    T shiftLeft();
+    T exactShift(int n);
 
     /**
-     * Adds one to upper bound
+     * Union this with the rotation to receive an over-approximation
      *
+     * @param n     distance to be rotated
+     * @param bound modulo
      * @return new position-based context
      */
-    T addRight();
+    T mayRotate(T n, T bound);
 
     /**
-     * Shifts the position(s) one to the right (i.e. increases)
+     * Rotate the positions by n
      *
+     * @param n     distance to be rotated
+     * @param bound modulo
      * @return new position-based context
      */
-    T shiftRight();
+    T exactRotate(T n, T bound);
 }

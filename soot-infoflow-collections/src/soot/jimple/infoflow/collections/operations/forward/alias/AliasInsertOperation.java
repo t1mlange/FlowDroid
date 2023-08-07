@@ -20,7 +20,7 @@ import soot.jimple.infoflow.data.ContextDefinition;
 public class AliasInsertOperation extends InsertOperation {
 
     public AliasInsertOperation(Location[] locations, int data, String field) {
-        super(locations, data, field);
+        super(locations, data, field, false);
     }
 
     @Override

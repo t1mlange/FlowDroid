@@ -11,6 +11,7 @@ import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.data.AccessPath;
 
 public class CopyOperation extends AbstractOperation {
+
     protected final int from;
     protected final int to;
 

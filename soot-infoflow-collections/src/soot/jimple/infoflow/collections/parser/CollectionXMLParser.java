@@ -51,6 +51,7 @@ public class CollectionXMLParser {
 		private int callbackDataIdx;
 		private int fromIdx;
 		private int toIdx;
+		private String insertMode;
 
 		// Used inside a CollectionMethod
 		private String subSig;
@@ -81,8 +82,9 @@ public class CollectionXMLParser {
 			case METHOD_TAG:
 				subSig = attributes.getValue(SUBSIG_ATTR);
 				break;
-			case ACCESS_TAG:
 			case INSERT_TAG:
+				insertMode = attributes.getValue(PARAM_IDX_ATTR);
+			case ACCESS_TAG:
 			case SHIFT_LEFT_TAG:
 			case SHIFT_RIGHT_TAG:
 			case REMOVE_TAG:
@@ -146,7 +148,7 @@ public class CollectionXMLParser {
 				resetAfterOperation();
 				break;
 			case INSERT_TAG:
-				operations.add(new InsertOperation(trimKeys(keys), dataIdx, accessPathField));
+				operations.add(new InsertOperation(trimKeys(keys), dataIdx, accessPathField, insertMode != null));
 				aliasOperations.add(new AliasInsertOperation(trimKeys(keys), dataIdx, accessPathField));
 				resetAfterOperation();
 				break;
@@ -272,6 +274,7 @@ public class CollectionXMLParser {
 			doReturn = false;
 			accessPathField = null;
 			returnAccessPathField = null;
+			insertMode = null;
 		}
 
 		protected void resetAfterMethod() {

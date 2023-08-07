@@ -3,6 +3,8 @@ package soot.jimple.infoflow.collections.context;
 import soot.jimple.infoflow.collections.util.Tristate;
 import soot.jimple.infoflow.data.ContextDefinition;
 
+import java.util.Objects;
+
 public class IntervalContext implements PositionBasedContext<IntervalContext> {
 	private final int min;
 	private final int max;
@@ -23,7 +25,7 @@ public class IntervalContext implements PositionBasedContext<IntervalContext> {
 	}
 
 	@Override
-	public Tristate intersect(IntervalContext other) {
+	public Tristate intersects(IntervalContext other) {
 		if (this.equals(other))
 			return Tristate.TRUE();
 		if (Integer.max(min, other.min) <= Integer.min(max, other.max))
@@ -40,34 +42,50 @@ public class IntervalContext implements PositionBasedContext<IntervalContext> {
 	}
 
 	@Override
-	public IntervalContext shiftRight() {
-		if (max < Integer.MAX_VALUE)
-			return new IntervalContext(min + 1, max + 1);
-		return this;
+	public IntervalContext exactShift(int n) {
+		// Never increase the upper bound above the max value
+		int newMax = (n > 0 && Integer.MAX_VALUE - max < n) ? Integer.MAX_VALUE : max + n;
+		int newMin = min + n;
+		if (newMin < 0) {
+			// We cannot have indices less than zero
+			if (newMax < 0)
+				return null;
+			// If the max is above zero, keep the minimum at zero
+			newMin = 0;
+		}
+		return new IntervalContext(newMin, newMin);
 	}
 
 	@Override
-	public IntervalContext addRight() {
-		if (max < Integer.MAX_VALUE)
-			return new IntervalContext(min, max + 1);
-		return this;
+	public IntervalContext mayShift(int n) {
+		switch (Integer.compare(n, 0)) {
+			case -1: // n < 0
+				return new IntervalContext(Math.max(min + n, 0), max);
+			case 0: // n == 0
+				return this;
+			case 1: // n > 0
+				return new IntervalContext(min, Math.min(max + n, Integer.MAX_VALUE));
+			default:
+				throw new RuntimeException("Unreachable");
+		}
 	}
 
 	@Override
-	public IntervalContext shiftLeft() {
-		if (min == 0)
-			return null;
-
-		if (max < Integer.MAX_VALUE)
-			return new IntervalContext(min - 1, max - 1);
-		return this;
+	public IntervalContext exactRotate(IntervalContext n, IntervalContext bound) {
+		int min1 = (min + n.min) % bound.min;
+		int min2 = (min + n.min) % bound.max;
+		int max1 = (max + n.max) % bound.min;
+		int max2 = (max + n.max) % bound.max;
+		return new IntervalContext(Math.min(min1, min2), Math.max(max1, max2));
 	}
 
 	@Override
-	public IntervalContext subtractLeft() {
-		if (max < Integer.MAX_VALUE)
-			return new IntervalContext(min - 1, max);
-		return this;
+	public IntervalContext mayRotate(IntervalContext n, IntervalContext bound) {
+		return this.union(exactRotate(n, bound));
+	}
+
+	private IntervalContext union(IntervalContext other) {
+		return new IntervalContext(Math.min(this.min, other.min), Math.max(this.max, other.max));
 	}
 
 	@Override
@@ -85,6 +103,11 @@ public class IntervalContext implements PositionBasedContext<IntervalContext> {
 
 	public int size() {
 		return max - min;
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(min, max);
 	}
 
 	@Override

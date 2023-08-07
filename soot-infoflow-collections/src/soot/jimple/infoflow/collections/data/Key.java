@@ -10,6 +10,6 @@ public class Key extends Location {
 
     @Override
     public boolean isValueBased() {
-        return false;
+        return true;
     }
 }

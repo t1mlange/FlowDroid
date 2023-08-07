@@ -10,6 +10,6 @@ public class Index extends Location {
 
     @Override
     public boolean isValueBased() {
-        return true;
+        return false;
     }
 }
