@@ -95,8 +95,16 @@ public class CollectionTaintWrapper implements ITaintPropagationWrapper {
 		Set<String> allSubSigs = this.models.values().stream()
 				.flatMap(model -> model.getAllMethods().stream())
 				.filter(method -> Arrays.stream(method.operations()).anyMatch(op -> op instanceof LocationDependentOperation))
-				.map(CollectionMethod::getSubSignature) // get the subsig
+				.map(CollectionMethod::getSignature) // get the subsig
 				.collect(Collectors.toUnmodifiableSet());
+
+		Set<SootField> fields = this.models.values().stream()
+				.flatMap(model -> model.getAllMethods().stream())
+				.flatMap(method -> Arrays.stream(method.operations()))
+				.filter(op -> op instanceof LocationDependentOperation)
+				.map(op -> (LocationDependentOperation) op)
+				.map(LocationDependentOperation::getField)
+				.collect(Collectors.toSet());
 
 		IInfoflowSolver solver = manager.getMainSolver();
 		if (solver instanceof CollectionInfoflowSolver)
@@ -104,14 +112,14 @@ public class CollectionTaintWrapper implements ITaintPropagationWrapper {
 		if (solver instanceof CoarserReuseCollectionInfoflowSolver)
 			((CoarserReuseCollectionInfoflowSolver) solver).setSubsuming(new LargerContextSubsumingStrategy(manager));
 		if (solver instanceof AppendingCollectionInfoflowSolver)
-			((AppendingCollectionInfoflowSolver) solver).setAppendingStrategy(new DefaultAppendingStrategy(manager, allSubSigs));
+			((AppendingCollectionInfoflowSolver) solver).setAppendingStrategy(new DefaultAppendingStrategy(manager, fields, allSubSigs));
 
 		solver = manager.getAliasSolver();
 		// Because the alias solver does not shift, we do not need to widen
 		if (solver instanceof CoarserReuseCollectionInfoflowSolver)
 			((CoarserReuseCollectionInfoflowSolver) solver).setSubsuming(new LargerContextSubsumingStrategy(manager));
 		if (solver instanceof AppendingCollectionInfoflowSolver)
-			((AppendingCollectionInfoflowSolver) solver).setAppendingStrategy(new DefaultAppendingStrategy(manager, allSubSigs));
+			((AppendingCollectionInfoflowSolver) solver).setAppendingStrategy(new DefaultAppendingStrategy(manager, fields, allSubSigs));
 	}
 
 	@Override
@@ -292,6 +300,22 @@ public class CollectionTaintWrapper implements ITaintPropagationWrapper {
 		if (callSite.containsInvokeExpr())
 			return supportsCallee(callSite.getInvokeExpr().getMethod());
 		return fallbackWrapper != null && fallbackWrapper.supportsCallee(callSite);
+	}
+
+	public boolean isLocationDependent(Stmt callSite) {
+		return callSite.containsInvokeExpr() && isLocationDependent(callSite.getInvokeExpr().getMethod());
+	}
+
+	public boolean isLocationDependent(SootMethod sm) {
+		CollectionMethod cm =  getCollectionMethodForSootMethod(sm);
+		if (cm == null)
+			return false;
+
+		for (ICollectionOperation op : cm.operations())
+			if (op instanceof LocationDependentOperation)
+				return true;
+
+		return false;
 	}
 
 	@Override

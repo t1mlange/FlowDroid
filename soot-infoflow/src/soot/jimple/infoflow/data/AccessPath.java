@@ -72,7 +72,7 @@ public class AccessPath implements Cloneable {
 		this.value = val;
 		this.baseType = valType;
 		this.baseContext = null;
-		this.fragments = AccessPathFragment.createFragmentArray(appendingFields, appendingFieldTypes);
+		this.fragments = AccessPathFragment.createFragmentArray(appendingFields, appendingFieldTypes, null);
 		this.taintSubFields = taintSubFields;
 		this.cutOffApproximation = isCutOffApproximation;
 		this.arrayTaintType = arrayTaintType;

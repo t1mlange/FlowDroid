@@ -84,13 +84,13 @@ public class InfoflowSolver extends IFDSSolver<Unit, Abstraction, IInfoflowCFG>
 	@Override
 	public boolean addIncoming(SootMethod m, Abstraction d3, Unit n, Abstraction d1, Abstraction d2) {
 		// Redirect to peer group
-		return solverPeerGroup.addIncoming(m, d3, n, d1, d2);
+		return solverPeerGroup.addIncoming(m, n, d3, d1, d2, d3);
 	}
 
     @Override
-    public void applySummary(SootMethod callee, Abstraction d3, Unit callSite, Abstraction d2, Abstraction d1) {
+    public void applySummary(SootMethod callee, Abstraction d3a, Unit callSite, Abstraction d2, Abstraction d1, Abstraction d3) {
 		Collection<Unit> returnSiteNs = icfg.getReturnSitesOfCallAt(callSite);
-		applyEndSummaryOnCall(d1, callSite, d2, returnSiteNs, callee, d3);
+		applyEndSummaryOnCall(d1, callSite, d2, returnSiteNs, callee, d3a);
     }
 
 	@Override

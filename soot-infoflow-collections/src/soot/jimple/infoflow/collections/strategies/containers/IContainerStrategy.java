@@ -21,6 +21,15 @@ public interface IContainerStrategy {
     Tristate intersect(ContextDefinition apKey, ContextDefinition stmtKey);
 
     /**
+     * Return the union of the given contexts
+     *
+     * @param ctxt1 key from the access path
+     * @param ctxt2 key from the statement
+     * @return new context definition
+     */
+    ContextDefinition[] append(ContextDefinition[] ctxt1, ContextDefinition[] ctxt2);
+
+    /**
      * Retrieves a context for a given key
      *
      * @param key  requested value
@@ -84,7 +93,7 @@ public interface IContainerStrategy {
      * @param n
      * @return new context definition
      */
-    ContextDefinition shift(ContextDefinition ctxt, Stmt stmt, int n, boolean exact);
+    ContextDefinition shift(ContextDefinition ctxt, ContextDefinition n, boolean exact);
 
     /**
      * Shifts the ctxt to the right

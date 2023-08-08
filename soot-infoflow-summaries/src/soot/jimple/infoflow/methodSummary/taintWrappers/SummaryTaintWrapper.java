@@ -20,6 +20,7 @@ import soot.jimple.infoflow.InfoflowManager;
 import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.data.AccessPath;
 import soot.jimple.infoflow.data.AccessPath.ArrayTaintType;
+import soot.jimple.infoflow.data.ContextDefinition;
 import soot.jimple.infoflow.data.SootMethodAndClass;
 import soot.jimple.infoflow.handlers.PreAnalysisHandler;
 import soot.jimple.infoflow.methodSummary.data.provider.IMethodSummaryProvider;
@@ -393,7 +394,8 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 			// Convert the taints to Soot objects
 			SootField[] fields = safeGetFields(t.getAccessPath());
 			Type[] types = safeGetTypes(t.getAccessPath(), fields);
-			fragments = soot.jimple.infoflow.data.AccessPathFragment.createFragmentArray(fields, types);
+			ContextDefinition[][] contexts = safeGetContexts(t.getAccessPath());
+			fragments = soot.jimple.infoflow.data.AccessPathFragment.createFragmentArray(fields, types, contexts);
 		}
 
 		Type baseType = TypeUtils.getTypeFromString(t.getBaseType());
@@ -470,8 +472,9 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 		SootField[] fields = safeGetFields(t.getAccessPath());
 		Type[] types = safeGetTypes(t.getAccessPath(), fields);
 		Type baseType = TypeUtils.getTypeFromString(t.getBaseType());
+		ContextDefinition[][] contexts = safeGetContexts(t.getAccessPath());
 		soot.jimple.infoflow.data.AccessPathFragment fragments[] = soot.jimple.infoflow.data.AccessPathFragment
-				.createFragmentArray(fields, types);
+				.createFragmentArray(fields, types, contexts);
 
 		// A return value cannot be propagated into a method
 		if (t.isReturn()) {
@@ -1333,6 +1336,12 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 		return types;
 	}
 
+	private ContextDefinition[][] safeGetContexts(AccessPathFragment accessPath) {
+		if (accessPath == null || accessPath.isEmpty())
+			return null;
+		return accessPath.getContexts();
+	}
+
 	/**
 	 * Given the taint at the source and the flow, computes the taint at the sink.
 	 * This method allows custom extensions to the taint wrapper. The default
@@ -1533,7 +1542,9 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 		System.arraycopy(oldFields, flowSource.getAccessPathLength(), fields, 0, fieldCnt);
 		System.arraycopy(oldFieldTypes, flowSource.getAccessPathLength(), fieldTypes, 0, fieldCnt);
 
-		return new AccessPathFragment(fields, fieldTypes);
+		ContextDefinition[][] contexts = new ContextDefinition[fieldCnt][];
+		System.arraycopy(taintedAP.getContexts(), flowSource.getAccessPathLength(), contexts, 0, fieldCnt);
+		return new AccessPathFragment(fields, fieldTypes, contexts);
 	}
 
 	/**

@@ -324,8 +324,7 @@ public class SimpleListTestCode {
         sink(lst.get(0));
     }
 
-
-    @FlowDroidTest(expected = 1)
+    @FlowDroidTest(expected = 3)
     public void testListAddItself1() {
         List lst = new ArrayList<>();
         lst.add(source());

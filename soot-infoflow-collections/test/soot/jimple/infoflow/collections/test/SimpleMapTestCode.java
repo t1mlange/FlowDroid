@@ -383,4 +383,19 @@ public class SimpleMapTestCode {
 		String returned = map.compute("XXX", null);
 		sink(returned);
 	}
+
+	@FlowDroidTest(expected = 1)
+	public void testNestedMap1() {
+		Map<String, Map<String, String>> map = new HashMap<>();
+		Map<String, String> innerMap = new HashMap<>();
+		innerMap.put("Inner", source());
+		map.put("Outer", innerMap);
+
+		// The correct leak
+		sink(map.get("Outer").get("Inner"));
+		// The false negatives
+		sink(map.get("Outer").get("Outer"));
+		sink(map.get("Inner").get("Outer"));
+		sink(map.get("Inner").get("Inner"));
+	}
 }

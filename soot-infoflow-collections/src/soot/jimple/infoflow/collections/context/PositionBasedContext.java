@@ -32,7 +32,7 @@ public interface PositionBasedContext<T extends PositionBasedContext<?>> extends
      * @param n number of shifts
      * @return new position-based context
      */
-    T mayShift(int n);
+    T mayShift(T n);
 
     /**
      * Shifts the position(s) by n
@@ -40,7 +40,7 @@ public interface PositionBasedContext<T extends PositionBasedContext<?>> extends
      * @param n number of shifts
      * @return new position-based context
      */
-    T exactShift(int n);
+    T exactShift(T n);
 
     /**
      * Union this with the rotation to receive an over-approximation

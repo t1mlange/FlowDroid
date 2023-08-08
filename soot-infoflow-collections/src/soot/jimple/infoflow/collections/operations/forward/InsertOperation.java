@@ -34,16 +34,11 @@ public class InsertOperation extends LocationDependentOperation {
 
         ContextDefinition[] ctxt;
         if (append) {
-            // We do not check here for :)
-//            AccessPathFragment fragment = incoming.getAccessPath().getFirstFragment();
-//            if (fragment == null || !fragment.hasContext()) {
-//                // If our incoming list has no context, we can remove the context from
-//                // the current list and
-//                ctxt = null;
-//            } else {
-//                ctxt = strategy.union(buildContext(strategy, iie, stmt), fragment.getContext());
-//            }
-            ctxt = null;
+            // We do not check here for the field because any collection is accepted
+            AccessPathFragment fragment = incoming.getAccessPath().getFirstFragment();
+            // If our incoming list has no context, we have to assume everything is tainted
+            ctxt = fragment == null || !fragment.hasContext() ? null
+                    : strategy.append(buildContext(strategy, iie, stmt), fragment.getContext());
         } else {
             ctxt = buildContext(strategy, iie, stmt);
         }

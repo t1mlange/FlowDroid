@@ -46,13 +46,14 @@ public interface IInfoflowSolver {
 	 * Calls applyEndSummaryOnCall in the current solver
 	 *
 	 * @param callee   method
-	 * @param d3 	   calling context
+	 * @param d3a
 	 * @param callSite call site
-	 * @param d2 	   incoming abstraction at the call site
-	 * @param d1	   calling context at the call site
+	 * @param d2       incoming abstraction at the call site
+	 * @param d1       calling context at the call site
+	 * @param d3
 	 */
-	public void applySummary(SootMethod callee, Abstraction d3, Unit callSite,
-							 Abstraction d2, Abstraction d1);
+	public void applySummary(SootMethod callee, Abstraction d3a, Unit callSite,
+							 Abstraction d2, Abstraction d1, Abstraction d3);
 
 	/**
 	 * Cleans up some unused memory. Results will still be available afterwards, but

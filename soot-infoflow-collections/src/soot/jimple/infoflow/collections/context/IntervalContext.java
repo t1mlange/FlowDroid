@@ -42,10 +42,10 @@ public class IntervalContext implements PositionBasedContext<IntervalContext> {
 	}
 
 	@Override
-	public IntervalContext exactShift(int n) {
+	public IntervalContext exactShift(IntervalContext n) {
 		// Never increase the upper bound above the max value
-		int newMax = (n > 0 && Integer.MAX_VALUE - max < n) ? Integer.MAX_VALUE : max + n;
-		int newMin = min + n;
+		int newMax = (n.max > 0 && Integer.MAX_VALUE - max < n.max) ? Integer.MAX_VALUE : max + n.max;
+		int newMin = min + n.min;
 		if (newMin < 0) {
 			// We cannot have indices less than zero
 			if (newMax < 0)
@@ -57,17 +57,13 @@ public class IntervalContext implements PositionBasedContext<IntervalContext> {
 	}
 
 	@Override
-	public IntervalContext mayShift(int n) {
-		switch (Integer.compare(n, 0)) {
-			case -1: // n < 0
-				return new IntervalContext(Math.max(min + n, 0), max);
-			case 0: // n == 0
-				return this;
-			case 1: // n > 0
-				return new IntervalContext(min, Math.min(max + n, Integer.MAX_VALUE));
-			default:
-				throw new RuntimeException("Unreachable");
-		}
+	public IntervalContext mayShift(IntervalContext n) {
+		// If the shift shifts the lower bound, update it
+		int newMin = n.min < 0 ? Math.max(min + n.min, 0) : min;
+		// If the shift shifts the upper bound, update it
+		int newMax = n.max > 0 ? Math.min(max + n.max, Integer.MAX_VALUE) : max;
+
+		return new IntervalContext(newMin, newMax);
 	}
 
 	@Override

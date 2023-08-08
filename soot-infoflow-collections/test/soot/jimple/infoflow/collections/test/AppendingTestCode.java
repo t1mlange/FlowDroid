@@ -3,9 +3,7 @@ package soot.jimple.infoflow.collections.test;
 import static soot.jimple.infoflow.collections.test.Helper.sink;
 import static soot.jimple.infoflow.collections.test.Helper.source;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 import soot.jimple.infoflow.collections.test.junit.FlowDroidTest;
 
@@ -320,10 +318,10 @@ public class AppendingTestCode {
         //    1. The calling context has no context yet. Then, there won't be any appending because the default IFDS
         //       value approach will summarize as much as possible for the given access path.
         //    2. The calling context already contains a context...
-        //       2.1. ...on the same collection type as the ref in the method. Then, the symbolic access path will cut
-        //            the access path down due to recursion (map.values...values -> map.values).
-        //       2.2. ...on a different collection type. This is the only way that appending actually provides an
-        //            advantage.
+        //       2.1. ...on the same collection type as the ref in the method. Then, the symbolic access path might cut
+        //            the access path down if the key is equal.
+        //       2.2. ...on a different collection type, where it would provide an advantage. But bear in mind that
+        //            we are probably not able to deduce the list size correctly if the flow is too complex.
         // On the other hand, a) can be applied all the time: for each context-independent operation, for each
         // invalidating operation.
     }
@@ -425,5 +423,106 @@ public class AppendingTestCode {
         sink(result2);
         sink(map1.get("XXX"));
         sink(map2.get("XXX"));
+    }
+
+    private Set<String> flatten(Map<String, Map<String, String>> map) {
+        Set<String> set = new HashSet<>();
+        for (Map<String, String> inner : map.values())
+            for (String str : inner.values())
+                set.add(str);
+        return set;
+    }
+
+    @FlowDroidTest(expected = 4)
+    public void testTwoContexts1() {
+        Map<String, Map<String, String>> map = new HashMap<>();
+        Map<String, String> innerMap = new HashMap<>();
+        innerMap.put("Inner", source());
+        map.put("Outer", innerMap);
+        Set<String> res1 = flatten(map);
+
+        Map<String, Map<String, String>> map2 = new HashMap<>();
+        Map<String, String> innerMap2 = new HashMap<>();
+        innerMap2.put("Outer", source());
+        map2.put("Inner", innerMap2);
+        Set<String> res2 = flatten(map2);
+
+        // The correct leak
+        sink(map.get("Outer").get("Inner"));
+        sink(map2.get("Inner").get("Outer"));
+        sink(res1);
+        sink(res2);
+        // The false negatives
+        sink(map.get("Outer").get("Outer"));
+        sink(map.get("Inner").get("Outer"));
+        sink(map.get("Inner").get("Inner"));
+        sink(map2.get("Outer").get("Inner"));
+        sink(map2.get("Outer").get("Outer"));
+        sink(map2.get("Inner").get("Inner"));
+    }
+
+    @FlowDroidTest(expected = 4)
+    public void testTwoContexts2() {
+        Map<String, Map<String, String>> map = new HashMap<>();
+        String source = source();
+        Map<String, String> innerMap = new HashMap<>();
+        innerMap.put("Inner", source);
+        map.put("Outer", innerMap);
+        Set<String> res1 = flatten(map);
+
+        System.out.println("delay");
+
+        Map<String, Map<String, String>> map2 = new HashMap<>();
+        Map<String, String> innerMap2 = new HashMap<>();
+        innerMap2.put("Inner", source);
+        map2.put("Outer", innerMap2);
+        Set<String> res2 = flatten(map2);
+
+        // The correct leak
+        sink(map.get("Outer").get("Inner"));
+        sink(map2.get("Inner").get("Outer"));
+        sink(res1);
+        sink(res2);
+        // The false negatives
+        sink(map.get("Outer").get("Outer"));
+        sink(map.get("Inner").get("Outer"));
+        sink(map.get("Inner").get("Inner"));
+        sink(map2.get("Outer").get("Inner"));
+        sink(map2.get("Outer").get("Outer"));
+        sink(map2.get("Inner").get("Inner"));
+    }
+
+    private String nestedCallee(Map<String, String> map) {
+        // Neither can we reinject here because the taints depend on the return value of usesContext.
+        // Another path might not have yet needed the context and if we remove it, it would miss a flow.
+        // If we keep it, the return of usesContext would get wrong at the point it sees the similar abstraction
+        // at a return edge.
+        if (new Random().nextBoolean())
+            return usesContext(map);
+        else
+            return "XXX";
+    }
+
+    private String usesContext(Map<String, String> map) {
+        // Now assume we reinject the similar abstraction at map.get(), we'd remove the
+        // abstractions from the similar abstractions and proceed to analyze the callee.
+        // But there might be multiple paths, here the else case. Because we needed to remove
+        // the abstractions from our data structure, the return in the else case doesn't know
+        // the appended abstraction anymore and misses a flow. Keeping the similar abstraction
+        // doesn't work either because obviously that would be wrong in the if case. Again,
+        // path sensitivity is missing for this.
+        if (new Random().nextBoolean())
+            return map.get("Key");
+        else
+            for (String s : map.values())
+                return s;
+        return null;
+    }
+
+    @FlowDroidTest(expected = 1)
+    public void testWhyReinjectAtUsageIsntPossible() {
+        Map<String, String> map = new HashMap<>();
+        map.put("XXX", source());
+        sink(nestedCallee(map));
     }
 }

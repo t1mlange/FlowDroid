@@ -77,6 +77,11 @@ public class ListSizeAnalysis extends ForwardFlowAnalysis<Unit, Map<Local, ListS
         public int hashCode() {
             return Objects.hash(size, isBottom);
         }
+
+        @Override
+        public String toString() {
+            return isBottom ? "Size: BOTTOM" : "Size: " + size;
+        }
     }
 
     private final Set<SootClass> classes;
@@ -152,7 +157,8 @@ public class ListSizeAnalysis extends ForwardFlowAnalysis<Unit, Map<Local, ListS
 
         // Also invalidate list size if it flows into a callee
         for (Value v : stmt.getInvokeExpr().getArgs())
-            out.remove(v);
+            if (out.containsKey(v))
+                out.put((Local) v, ListSize.bottom());
 
         SootMethod sm = stmt.getInvokeExpr().getMethod();
         if (!classes.contains(sm.getDeclaringClass()))
@@ -192,7 +198,7 @@ public class ListSizeAnalysis extends ForwardFlowAnalysis<Unit, Map<Local, ListS
         // Must
         for (Local local : in1.keySet()) {
             ListSize in1Const = in1.get(local);
-            ListSize in2Const = in1.get(local);
+            ListSize in2Const = in2.get(local);
             if (in1Const == null)
                 out.put(local, in2Const);
             else if (in2Const == null || in1Const.equals(in2Const))
