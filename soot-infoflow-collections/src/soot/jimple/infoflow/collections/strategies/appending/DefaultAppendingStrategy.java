@@ -3,32 +3,37 @@ package soot.jimple.infoflow.collections.strategies.appending;
 import java.util.Arrays;
 import java.util.Set;
 
+import soot.SootField;
 import soot.Unit;
 import soot.jimple.Stmt;
 import soot.jimple.infoflow.InfoflowManager;
+import soot.jimple.infoflow.collections.CollectionTaintWrapper;
 import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.data.AccessPath;
 import soot.jimple.infoflow.data.AccessPathFragment;
 
 public class DefaultAppendingStrategy implements AppendingStrategy<Unit, Abstraction> {
     private final InfoflowManager manager;
-    private final Set<String> methods;
+    private final Set<SootField> contextFields;
 
-    public DefaultAppendingStrategy(InfoflowManager manager, Set<String> methods) {
+    public DefaultAppendingStrategy(InfoflowManager manager, Set<SootField> contextFields, Set<String> methods) {
         this.manager = manager;
-        this.methods = methods;
+        this.contextFields = contextFields;
     }
 
     @Override
     public boolean hasContext(Abstraction abs) {
         return abs.getAccessPath().getFragmentCount() != 0
-                && Arrays.stream(abs.getAccessPath().getFragments()).anyMatch(AccessPathFragment::hasContext);
+                && Arrays.stream(abs.getAccessPath().getFragments()).anyMatch(this::hasContext);
+    }
+
+    public boolean hasContext(AccessPathFragment f) {
+        return contextFields.contains(f.getField());
     }
 
     @Override
     public boolean affectsContext(Unit unit) {
-        Stmt stmt = (Stmt) unit;
-        return stmt.containsInvokeExpr() && methods.contains(stmt.getInvokeExpr().getMethod().getSubSignature());
+        return ((CollectionTaintWrapper) manager.getTaintWrapper()).isLocationDependent((Stmt) unit);
     }
 
     @Override
@@ -51,22 +56,30 @@ public class DefaultAppendingStrategy implements AppendingStrategy<Unit, Abstrac
         // Replace the contexts left from the calling context with the contexts from the appended abstraction
         for (int i = 0; i < endFragments.length; i++) {
             AccessPathFragment fragment = endFragments[i];
-            if (!fragment.hasContext()) {
+            if (!hasContext(fragment)) {
                 newFragments[i] = fragment;
                 continue;
             }
 
             for (int j = 0; j < origFragments.length; j++) {
-                if (fragment == origFragments[j]) {
+                // We can't have two equal fragments because of symbolic access paths
+                if (fragment.equals(origFragments[j])) {
                     newFragments[i] = targetFragments[j];
                     break;
                 }
             }
+
+            if (newFragments[i] == null)
+                newFragments[i] = fragment;
         }
 
         AccessPath diffAp = manager.getAccessPathFactory().createAccessPath(d2Ap.getPlainValue(),
+                                                                            d2Ap.getBaseType(),
                                                                             newFragments,
-                                                                            d2Ap.getTaintSubFields());
+                                                                            d2Ap.getTaintSubFields(),
+                                                                            false,
+                                                                            true,
+                                                                            d2Ap.getArrayTaintType());
         assert diffAp != null;
         return targetVal.deriveNewAbstraction(diffAp, null);
     }

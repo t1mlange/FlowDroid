@@ -138,7 +138,7 @@ public class CollectionXMLParser {
 				resetAfterCollection();
 				break;
 			case METHOD_TAG:
-				if (methods.put(subSig, new CollectionMethod(subSig, operations, aliasOperations)) != null)
+				if (methods.put(subSig, new CollectionMethod(className, subSig, operations, aliasOperations)) != null)
 					logger.error("Duplicate collection method found for <" + className + ": " + subSig + ">");
 				resetAfterMethod();
 				break;

@@ -120,7 +120,7 @@ public class AccessPathFactory {
 	}
 
 	public AccessPath createAccessPath(Value val, SootField[] appendingFields, boolean taintSubFields) {
-		return createAccessPath(val, null, AccessPathFragment.createFragmentArray(appendingFields, null),
+		return createAccessPath(val, null, AccessPathFragment.createFragmentArray(appendingFields, null, null),
 				taintSubFields, false, true, ArrayTaintType.ContentsAndLength);
 	}
 
@@ -336,9 +336,12 @@ public class AccessPathFactory {
 			int ei = val instanceof StaticFieldRef ? 1 : 0;
 			while (ei < fragments.length) {
 				final Type eiType = ei == 0 ? baseType : fragments[ei - 1].getFieldType();
+				final ContextDefinition[] eiContext = ei == 0 ? null : fragments[ei - 1].getContext();
 				int ej = ei;
 				while (ej < fragments.length) {
-					if (fragments[ej].getFieldType() == eiType || fragments[ej].getField().getType() == eiType) {
+					AccessPathFragment fj = fragments[ej];
+					if ((fj.getFieldType() == eiType || fj.getField().getType() == eiType)
+						&& Arrays.equals(eiContext, fj.getContext())) {
 						// The types match, f0...fi...fj maps back to an object of the same type as
 						// f0...fi. We must thus convert the access path to f0...fi-1[...fj]fj+1
 						AccessPathFragment[] newFragments = new AccessPathFragment[fragments.length - (ej - ei) - 1];

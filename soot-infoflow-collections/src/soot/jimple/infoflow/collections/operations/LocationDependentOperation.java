@@ -25,6 +25,10 @@ public abstract class LocationDependentOperation extends AbstractOperation {
         this.field = field;
     }
 
+    public SootField getField() {
+        return safeGetField(this.field);
+    }
+
     public ContextDefinition[] buildContext(IContainerStrategy strategy, InstanceInvokeExpr iie, Stmt stmt) {
         ContextDefinition[] ctxt = new ContextDefinition[locations.length];
         for (int i = 0; i < ctxt.length; i++) {

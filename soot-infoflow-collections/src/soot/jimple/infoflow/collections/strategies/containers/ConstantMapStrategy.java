@@ -45,6 +45,13 @@ public class ConstantMapStrategy implements IContainerStrategy {
     }
 
     @Override
+    public ContextDefinition[] append(ContextDefinition[] ctxt1, ContextDefinition[] ctxt2) {
+        // putAll in maps can be easily modelled as a copy operation
+        // append is only needed for lists and derivatives
+        return null;
+    }
+
+    @Override
     public ContextDefinition getKeyContext(Value value, Stmt stmt) {
         if (value instanceof Constant) {
             resolvedKeys++;
@@ -81,7 +88,7 @@ public class ConstantMapStrategy implements IContainerStrategy {
     }
 
     @Override
-    public ContextDefinition shift(ContextDefinition ctxt, Stmt stmt, int n, boolean exact) {
+    public ContextDefinition shift(ContextDefinition ctxt, ContextDefinition n, boolean exact) {
         return UnknownContext.v();
     }
 

@@ -2,6 +2,7 @@ package soot.jimple.infoflow.collections.strategies.containers;
 
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.checkerframework.checker.units.qual.C;
 import soot.Local;
 import soot.SootMethod;
 import soot.Value;
@@ -97,11 +98,13 @@ public class TestConstantStrategy extends ConstantMapStrategy {
     }
 
     @Override
-    public ContextDefinition shift(ContextDefinition ctxt, Stmt stmt, int n, boolean exact) {
-        if (ctxt instanceof IntervalContext)
-            return exact ? ((IntervalContext) ctxt).exactShift(n) : ((IntervalContext) ctxt).mayShift(n);
+    public ContextDefinition shift(ContextDefinition ctxt, ContextDefinition n, boolean exact) {
+        if (ctxt instanceof IntervalContext && n instanceof IntervalContext)
+            return exact
+                    ? ((IntervalContext) ctxt).exactShift((IntervalContext) n)
+                    : ((IntervalContext) ctxt).mayShift((IntervalContext) n);
 
-        throw new RuntimeException("Expect interval context but got instead: " + ctxt);
+        throw new RuntimeException("Expect two interval contexts but got: " + ctxt.getClass().getName() + " and " + n.getClass().getName());
     }
 
     @Override
@@ -112,6 +115,18 @@ public class TestConstantStrategy extends ConstantMapStrategy {
             return exact ? ((IntervalContext) ctxt).exactRotate(dist, mod) : ((IntervalContext) ctxt).mayRotate(dist, mod);
         }
         throw new RuntimeException("Expect interval context but got instead: " + ctxt);
+    }
+
+
+    @Override
+    public ContextDefinition[] append(ContextDefinition[] ctxt1, ContextDefinition[] ctxt2) {
+        // Shifting only occurs on lists
+        if (ctxt1.length != ctxt2.length || ctxt1.length != 1 || !(ctxt1[0] instanceof IntervalContext))
+            return null;
+
+        ContextDefinition[] newCtxt = new ContextDefinition[1];
+        newCtxt[0] = shift(ctxt2[0], ctxt1[0], true);
+        return newCtxt;
     }
 
     private ContextDefinition getContextFromImplicitKey(Value value, Stmt stmt, boolean decr) {

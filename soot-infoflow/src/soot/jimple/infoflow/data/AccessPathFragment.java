@@ -120,12 +120,12 @@ public class AccessPathFragment {
 	 * @param fieldTypes The types of the fields in the sequence of dereferences
 	 * @return The sequence of access path fragments
 	 */
-	public static AccessPathFragment[] createFragmentArray(SootField[] fields, Type[] fieldTypes) {
+	public static AccessPathFragment[] createFragmentArray(SootField[] fields, Type[] fieldTypes, ContextDefinition[][] contexts) {
 		if (fields == null || fields.length == 0)
 			return null;
 		AccessPathFragment fragments[] = new AccessPathFragment[fields.length];
 		for (int i = 0; i < fields.length; i++)
-			fragments[i] = new AccessPathFragment(fields[i], fieldTypes == null ? null : fieldTypes[i]);
+			fragments[i] = new AccessPathFragment(fields[i], fieldTypes == null ? null : fieldTypes[i], contexts[i]);
 		return fragments;
 	}
 

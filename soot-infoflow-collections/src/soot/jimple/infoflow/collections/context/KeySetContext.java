@@ -2,6 +2,7 @@ package soot.jimple.infoflow.collections.context;
 
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import soot.jimple.infoflow.collections.util.ImmutableArraySet;
 import soot.jimple.infoflow.collections.util.Tristate;
@@ -58,7 +59,7 @@ public class KeySetContext<C> implements ValueBasedContext<KeySetContext<?>> {
 
 	@Override
 	public String toString() {
-		return keys.toString();
+		return keys.stream().map(Object::toString).collect(Collectors.joining(", "));
 	}
 
 	@Override

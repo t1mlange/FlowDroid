@@ -1,6 +1,7 @@
 package soot.jimple.infoflow.collections.util;
 
 import java.util.AbstractSet;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -40,5 +41,19 @@ public class ImmutableArraySet<E> extends AbstractSet<E> implements Set<E> {
     @Override
     public int size() {
         return this.innerArray.length;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        ImmutableArraySet<?> that = (ImmutableArraySet<?>) o;
+        return Arrays.equals(innerArray, that.innerArray);
+    }
+
+    @Override
+    public int hashCode() {
+        return Arrays.hashCode(innerArray);
     }
 }
