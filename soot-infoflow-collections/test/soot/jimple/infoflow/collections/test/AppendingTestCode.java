@@ -474,8 +474,8 @@ public class AppendingTestCode {
 
         Map<String, Map<String, String>> map2 = new HashMap<>();
         Map<String, String> innerMap2 = new HashMap<>();
-        innerMap2.put("Inner", source);
-        map2.put("Outer", innerMap2);
+        innerMap2.put("Outer", source);
+        map2.put("Inner", innerMap2);
         Set<String> res2 = flatten(map2);
 
         // The correct leak
@@ -524,5 +524,19 @@ public class AppendingTestCode {
         Map<String, String> map = new HashMap<>();
         map.put("XXX", source());
         sink(nestedCallee(map));
+    }
+
+    @FlowDroidTest(expected = 4)
+    public void testAppendingOnNoContextFragment1() {
+        Map<String, String> map = new HashMap<>();
+        map.put(String.valueOf(new Random().nextInt()), source());
+        sink(unusedContext1(map)); // Correct
+        sink(map.get("Any key")); // Correct
+
+        Map<String, String> map2 = new HashMap<>();
+        map2.put("Hello", source());
+        sink(unusedContext1(map2));  // Correct
+        sink(map2.get("Hello")); // Correct
+        sink(map2.get("Any Key"));  // Incorrect
     }
 }

@@ -147,11 +147,29 @@ public abstract class LocationDependentOperation extends AbstractOperation {
      */
     protected AccessPath taintCollectionWithContext(Value base, ContextDefinition[] ctxt, AccessPath oldAp,
                                                     InfoflowManager manager) {
+        return taintCollectionWithContext(base, ctxt, oldAp, false, manager);
+    }
+
+    /**
+     * Create a new access path for a collection with a context
+     *
+     * @param base      base value, i.e. the collection local
+     * @param ctxt      new context, possibly already smashed
+     * @param oldAp     incoming access path
+     * @param manager   infoflow manager
+     * @return access path for the collection
+     */
+    protected AccessPath taintCollectionWithContext(Value base, ContextDefinition[] ctxt, AccessPath oldAp,
+                                                    boolean cutFirstField, InfoflowManager manager) {
         AccessPathFragment[] oldFragments = oldAp.getFragments();
-        int len = oldFragments == null ? 0 : oldFragments.length;
+        int len;
+        if (oldFragments == null)
+            len = 0;
+        else
+            len = cutFirstField ? oldFragments.length - 1 : oldFragments.length;
         AccessPathFragment[] fragments = new AccessPathFragment[len + 1];
         if (oldFragments != null)
-            System.arraycopy(oldFragments, 0, fragments, 1, len);
+            System.arraycopy(oldFragments, cutFirstField ? 1 : 0, fragments, 1, len);
         SootField f = safeGetField(field);
         fragments[0] = new AccessPathFragment(f, f.getType(), ctxt);
         return manager.getAccessPathFactory().createAccessPath(base, fragments, oldAp.getTaintSubFields());

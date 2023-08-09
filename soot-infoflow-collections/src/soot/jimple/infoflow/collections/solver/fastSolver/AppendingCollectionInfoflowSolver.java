@@ -429,7 +429,6 @@ public class AppendingCollectionInfoflowSolver extends CollectionInfoflowSolver 
         return !notReusable.contains(new Pair<>(sm, abs.getAccessPath().getPlainValue()));
     }
 
-    private Abstraction runnableReturn; // used to escape the lambda
     /**
      * Checks whether (method, param) is reusable and if so, adds the record to the given abstraction
      * while keeping the lock on the (method, param) pair.
@@ -442,31 +441,33 @@ public class AppendingCollectionInfoflowSolver extends CollectionInfoflowSolver 
      * @return similar abstraction that was already propagated, or null if it is the first seen abstraction
      */
     protected Abstraction isReusable(SootMethod m, Unit n, Abstraction d1, Abstraction d2, Abstraction d3) {
-        runnableReturn = null;
+        Abstraction[] runnableReturn = new Abstraction[1];
         // It is important to synchronize here such that isReusable cannot be flipped
         // before the abstraction is added to the incoming set. Otherwise, this might
         // race with the reinject method where the method is first marked reusable and
         // then walks up the incoming set to reinject possibly appended abstractions.
         boolean isReusable = notReusable.runIfAbsent(new Pair<>(m, d3.getAccessPath().getPlainValue()),
                                 () -> {
-                                    // We first cache incoming abstractions with contexts at call sites
+                                    // We first cache incoming abstractions with contexts at call sites and maybe
+                                    // get a already seen abstraction back
                                     IncomingRecord<Unit, Abstraction> rec = similarAbstractions.putAndGetFirst(new NoContextKey(m, d3),
                                             new IncomingRecord<>(n, d1, d2, d3));
 
-                                    // If we have a cache hit, we want to get the similar abstraction that was
-                                    // already propagated
-                                    if (rec != null)
-                                        runnableReturn = rec.d3;
+                                    // If we have a cache hit, we want to use this abstraction to append. Though,
+                                    // equal abstractions are already handled (better) by IFDS itself, so we skip
+                                    // records where the callee abstraction is equal
+                                    if (rec != null && !rec.d3.equals(d3))
+                                        runnableReturn[0] = rec.d3;
                                 });
         if (isReusable) {
             // This might be null if its the first seen abstraction
-            return runnableReturn;
+            return runnableReturn[0];
         }
 
         // We might encounter a callee, we already know is not reusable, on another
         // path. That means this path hasn't seen the context-dependent operation yet.
         // See testReinjectOnAlreadySeenCallee1.
-        assert runnableReturn == null;
+        assert runnableReturn[0] == null;
         if (d1 != zeroValue)
             reinject(icfg.getMethodOf(n), d1);
         return null;

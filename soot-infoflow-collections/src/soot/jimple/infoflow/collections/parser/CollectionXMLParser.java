@@ -83,7 +83,8 @@ public class CollectionXMLParser {
 				subSig = attributes.getValue(SUBSIG_ATTR);
 				break;
 			case INSERT_TAG:
-				insertMode = attributes.getValue(PARAM_IDX_ATTR);
+				insertMode = attributes.getValue(MODE_ATTR);
+				// fallthrough
 			case ACCESS_TAG:
 			case SHIFT_LEFT_TAG:
 			case SHIFT_RIGHT_TAG:
