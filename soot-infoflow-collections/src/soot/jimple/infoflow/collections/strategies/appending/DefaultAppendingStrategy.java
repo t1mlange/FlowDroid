@@ -69,6 +69,8 @@ public class DefaultAppendingStrategy implements AppendingStrategy<Unit, Abstrac
                 }
             }
 
+            // If another summary (i.e. java.util.Set) uses the same field, we might
+            // not have a matching field. So we do just keep this one.
             if (newFragments[i] == null)
                 newFragments[i] = fragment;
         }
