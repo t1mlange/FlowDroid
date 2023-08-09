@@ -341,13 +341,33 @@ public class SimpleListTestCode {
         sink(otherLst.get(3)); // Correct one
     }
 
-//    @FlowDroidTest(expected = 1)
-//    public void testListAddAllItself1() {
-//        List<String> lst = new ArrayList<>();
-//        lst.add(source());
-//        while (new Random().nextBoolean()) {
-//            lst.addAll(lst);
-//        }
-//        sink(lst.get(0));
-//    }
+    @FlowDroidTest(expected = 1)
+    public void testListAddAll2() {
+        List<String> lst = new ArrayList<>();
+        lst.add("First el");
+        lst.add(source());
+        List<String> otherLst = new ArrayList<>();
+        otherLst.add("First el");
+        otherLst.addAll(lst);
+        otherLst.add("Third el");
+        sink(otherLst.get(0));
+        sink(otherLst.get(1));
+        sink(otherLst.get(2)); // Correct one
+        sink(otherLst.get(3));
+    }
+
+    @FlowDroidTest(expected = 1)
+    public void testListAddAll3() {
+        List<String> lst = new ArrayList<>();
+        lst.add("First el");
+        lst.add(source());
+        List<String> otherLst = new ArrayList<>();
+        otherLst.add("First el");
+        otherLst.add("Third el");
+        lst.addAll(otherLst);
+        sink(lst.get(0));
+        sink(lst.get(1)); // Correct one
+        sink(lst.get(2));
+        sink(lst.get(3));
+    }
 }

@@ -270,7 +270,24 @@ public class SimpleListTests extends FlowDroidTests {
     public void testListAddAll1() {
         IInfoflow infoflow = initInfoflow();
         infoflow.getConfig().getPathConfiguration().setPathReconstructionMode(InfoflowConfiguration.PathReconstructionMode.Fast);
-        infoflow.setTaintPropagationHandler(new DebugFlowFunctionTaintPropagationHandler());
+        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
+        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
+    }
+
+    @Test(timeout = 30000)
+    public void testListAddAll2() {
+        IInfoflow infoflow = initInfoflow();
+        infoflow.getConfig().getPathConfiguration().setPathReconstructionMode(InfoflowConfiguration.PathReconstructionMode.Fast);
+        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
+        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
+    }
+
+    @Test(timeout = 30000)
+    public void testListAddAll3() {
+        IInfoflow infoflow = initInfoflow();
+        infoflow.getConfig().getPathConfiguration().setPathReconstructionMode(InfoflowConfiguration.PathReconstructionMode.Fast);
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
         Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
