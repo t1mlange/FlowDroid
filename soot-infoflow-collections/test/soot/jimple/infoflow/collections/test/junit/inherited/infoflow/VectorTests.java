@@ -28,7 +28,9 @@ public class VectorTests extends soot.jimple.infoflow.test.junit.VectorTests {
             @Override
             protected IInfoflowSolver createDataFlowSolver(InterruptableExecutor executor,
                                                            AbstractInfoflowProblem problem, InfoflowConfiguration.SolverConfiguration solverConfig) {
-                return FlowDroidTests.getSolver(executor, problem, solverConfig);
+                IInfoflowSolver solver = FlowDroidTests.getSolver(executor, problem, solverConfig);
+                solverPeerGroup.addSolver(solver);
+                return solver;
             }
         };
         CollectionXMLParser parser = new CollectionXMLParser();
