@@ -19,6 +19,14 @@ public class IntervalContext implements PositionBasedContext<IntervalContext> {
 		this.max = max;
 	}
 
+	public int getMax() {
+		return max;
+	}
+
+	public int getMin() {
+		return min;
+	}
+
 	@Override
 	public Tristate intersects(IntervalContext other) {
 		if (this.equals(other))

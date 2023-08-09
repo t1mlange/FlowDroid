@@ -154,14 +154,12 @@ public class CollectionXMLParser {
 				resetAfterOperation();
 				break;
 			case SHIFT_LEFT_TAG:
-				operations.add(replaceShifts ? new ShiftInvalidateOperation(trimKeys(keys), accessPathField)
-						 						: new ShiftLeftOperation(trimKeys(keys), accessPathField));
+				operations.add(getLShiftOperation(trimKeys(keys), accessPathField));
 				aliasOperations.add(new IdentityOperation());
 				resetAfterOperation();
 				break;
 			case SHIFT_RIGHT_TAG:
-				operations.add(replaceShifts ? new ShiftInvalidateOperation(trimKeys(keys), accessPathField)
-												: new ShiftRightOperation(trimKeys(keys), accessPathField));
+				operations.add(getRShiftOperation(trimKeys(keys), accessPathField));
 				aliasOperations.add(new IdentityOperation());
 				resetAfterOperation();
 				break;
@@ -290,18 +288,53 @@ public class CollectionXMLParser {
 			excludedSubclasses = null;
 			methods = new HashMap<>();
 		}
+
+		protected AbstractShiftOperation getLShiftOperation(Location[] keys, String accessPathField) {
+			switch (replaceShifts) {
+				case Precise:
+					return new ShiftLeftOperation(trimKeys(keys), accessPathField);
+				case MinMax:
+					return new ShiftToMinimumOperation(trimKeys(keys), accessPathField);
+				case Invalidate:
+					return new ShiftInvalidateOperation(trimKeys(keys), accessPathField);
+				default:
+					throw new RuntimeException("Unknown shift mode: " + replaceShifts);
+			}
+		}
+
+		protected AbstractShiftOperation getRShiftOperation(Location[] keys, String accessPathField) {
+			switch (replaceShifts) {
+				case Precise:
+					return new ShiftRightOperation(trimKeys(keys), accessPathField);
+				case MinMax:
+					return new ShiftToMaximumOperation(trimKeys(keys), accessPathField);
+				case Invalidate:
+					return new ShiftInvalidateOperation(trimKeys(keys), accessPathField);
+				default:
+					throw new RuntimeException("Unknown shift mode: " + replaceShifts);
+			}
+		}
 	}
 
 	private final Map<String, CollectionModel> models;
 
-	// Option to replace shifts with invalidating shifts operations
-	private final boolean replaceShifts;
-
-	public CollectionXMLParser() {
-		this(false);
+	public enum ShiftMode {
+		/* Tries to be as precise as possible but needs widening in the solver */
+		Precise,
+		/* Widens to the minimum for left shifts and to the maximum for right shifts */
+		MinMax,
+		/* Does remove the index completely on shifts */
+		Invalidate
 	}
 
-	public CollectionXMLParser(boolean replaceShifts) {
+	// Option to replace shifts with invalidating shifts operations
+	private final ShiftMode replaceShifts;
+
+	public CollectionXMLParser() {
+		this(ShiftMode.Precise);
+	}
+
+	public CollectionXMLParser(ShiftMode replaceShifts) {
 		this.models = new HashMap<>();
 		this.replaceShifts = replaceShifts;
 	}
