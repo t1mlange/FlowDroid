@@ -80,8 +80,10 @@ public abstract class AbstractShiftOperation extends LocationDependentOperation 
 		Tristate t;
 		if (idx == ParamIndex.ALL) {
 			t = Tristate.MAYBE();
+		} else if (idx == ParamIndex.FIRST_INDEX) {
+			t = strategy.lessThanEqual(strategy.getFirstPosition(iie.getBase(), stmt), ctxt);
 		} else if (idx >= 0) {
-			ContextDefinition stmtCtxt = strategy.getIndexContext(iie.getArg(locations[0].getParamIdx()), stmt);
+			ContextDefinition stmtCtxt = strategy.getIndexContext(iie.getArg(idx), stmt);
 			t = strategy.lessThanEqual(stmtCtxt, ctxt);
 		} else {
 			throw new RuntimeException("Unexpected shift index: " + idx);

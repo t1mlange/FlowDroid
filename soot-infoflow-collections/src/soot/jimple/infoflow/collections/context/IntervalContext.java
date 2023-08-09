@@ -10,16 +10,11 @@ public class IntervalContext implements PositionBasedContext<IntervalContext> {
 	private final int max;
 
 	public IntervalContext(int i) {
-		assert i >= 0;
-
 		min = i;
 		max = i;
 	}
 
 	public IntervalContext(int min, int max) {
-		assert min >= 0;
-		assert max >= 0;
-
 		this.min = min;
 		this.max = max;
 	}
