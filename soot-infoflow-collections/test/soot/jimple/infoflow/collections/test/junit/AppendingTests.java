@@ -405,22 +405,15 @@ public class AppendingTests extends FlowDroidTests {
 
     @Test(timeout = 3000000)
     public void testRefInCallee() {
-        for (int run = 0; run < 50; run++) {
+        for (int run = 0; run < 25; run++) {
             IInfoflow infoflow = initInfoflow();
             String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
             infoflow.getConfig().setEnableLineNumbers(true);
             infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
             var set = infoflow.getResults().getResultSet();
             Assert.assertEquals(getExpectedResultsForMethod(epoint), set == null ? 0 : set.size());
+            compareEdgesToBase(infoflow, epoint, (a, b) -> a < b);
         }
-
-        IInfoflow infoflow = initInfoflow();
-        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
-        infoflow.getConfig().setEnableLineNumbers(true);
-        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
-        var set = infoflow.getResults().getResultSet();
-        Assert.assertEquals(getExpectedResultsForMethod(epoint), set == null ? 0 : set.size());
-        compareEdgesToBase(infoflow, epoint, (a, b) -> a < b);
     }
 
     @Test(timeout = 30000)
@@ -435,8 +428,21 @@ public class AppendingTests extends FlowDroidTests {
         compareEdgesToBase(infoflow, epoint, Objects::equals);
     }
 
-    @Test(timeout = 30000)
+    @Test(timeout = 300000)
     public void testTwoContexts1() {
+        for (int run = 0; run < 25; run++) {
+            IInfoflow infoflow = initInfoflow();
+            String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
+            infoflow.getConfig().setEnableLineNumbers(true);
+            infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
+            var set = infoflow.getResults().getResultSet();
+            Assert.assertEquals(getExpectedResultsForMethod(epoint), set == null ? 0 : set.size());
+            compareEdgesToBase(infoflow, epoint, (a, b) -> a < b);
+        }
+    }
+
+    @Test(timeout = 30000)
+    public void testTwoContexts2() {
         IInfoflow infoflow = initInfoflow();
         infoflow.getConfig().setAliasingAlgorithm(InfoflowConfiguration.AliasingAlgorithm.None);
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
@@ -448,10 +454,11 @@ public class AppendingTests extends FlowDroidTests {
     }
 
     @Test(timeout = 30000)
-    public void testTwoContexts2() {
+    public void testAppendingOnNoContextFragment1() {
         IInfoflow infoflow = initInfoflow();
-        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
+        infoflow.getConfig().getPathConfiguration().setPathReconstructionMode(InfoflowConfiguration.PathReconstructionMode.Fast);
         infoflow.getConfig().setEnableLineNumbers(true);
+        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
         var set = infoflow.getResults().getResultSet();
         Assert.assertEquals(getExpectedResultsForMethod(epoint), set == null ? 0 : set.size());

@@ -33,16 +33,18 @@ public class InsertOperation extends LocationDependentOperation {
             return false;
 
         ContextDefinition[] ctxt;
+        boolean cutFirstField = false;
         if (append) {
             // We do not check here for the field because any collection is accepted
             AccessPathFragment fragment = incoming.getAccessPath().getFirstFragment();
             // If our incoming list has no context, we have to assume everything is tainted
             ctxt = fragment == null || !fragment.hasContext() ? null
                     : strategy.append(buildContext(strategy, iie, stmt), fragment.getContext());
+            cutFirstField = fragment != null;
         } else {
             ctxt = buildContext(strategy, iie, stmt);
         }
-        AccessPath ap = taintCollectionWithContext(iie.getBase(), ctxt, incoming.getAccessPath(), manager);
+        AccessPath ap = taintCollectionWithContext(iie.getBase(), ctxt, incoming.getAccessPath(), cutFirstField, manager);
         if (ap != null)
             out.add(incoming.deriveNewAbstraction(ap, stmt));
 

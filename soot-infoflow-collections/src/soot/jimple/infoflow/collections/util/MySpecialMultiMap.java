@@ -60,7 +60,6 @@ public class MySpecialMultiMap<K, V> {
         this.m = new ConcurrentHashMap<>();
     }
 
-    private V returnValue; // used to escape the lambda
 
     /**
      * Puts the value into the map and gets the first added value for this key
@@ -70,18 +69,19 @@ public class MySpecialMultiMap<K, V> {
      * @return the first added value or null if the key had no mapping before
      */
     public V putAndGetFirst(K key, V value) {
-        returnValue = null;
+        @SuppressWarnings("unchecked")
+        V[] returnValue = (V[]) new Object[1];
 
         m.compute(key, (k, set) -> {
             if (set == null)
                 return new MySet<>(value);
 
-            returnValue = set.firstValue;
+            returnValue[0] = set.firstValue;
             set.add(value);
             return set;
         });
 
-        return returnValue;
+        return returnValue[0];
     }
 
     /**

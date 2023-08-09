@@ -17,7 +17,7 @@
     </method>
     <method subsig="android.util.SparseArray clone()">
         <copy>
-            <from idx="1" />
+            <from idx="base" />
             <to idx="return" />
         </copy>
     </method>
