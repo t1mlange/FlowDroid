@@ -33,7 +33,8 @@ public class MySpecialMultiMap<K, V> {
         }
 
         void add(V value) {
-            otherValues.add(value);
+            if (!firstValue.equals(value))
+                otherValues.add(value);
         }
     }
 
