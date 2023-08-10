@@ -24,9 +24,7 @@ public class AccessPathFragment {
 	 * @param field     The field that is dereferenced
 	 */
 	public AccessPathFragment(SootField field) {
-		this.field = field;
-		this.fieldType = field.getType();
-		this.context = null;
+		this(field, null, null);
 	}
 
 	/**
@@ -36,9 +34,7 @@ public class AccessPathFragment {
 	 * @param fieldType The propagated type of the field that is dereferenced
 	 */
 	public AccessPathFragment(SootField field, Type fieldType) {
-		this.field = field;
-		this.fieldType = fieldType == null ? field.getType() : fieldType;
-		this.context = null;
+		this(field, fieldType, null);
 	}
 
 	/**
@@ -50,7 +46,7 @@ public class AccessPathFragment {
 	 */
 	public AccessPathFragment(SootField field, Type fieldType, ContextDefinition[] context) {
 		this.field = field;
-		this.fieldType = fieldType;
+		this.fieldType = fieldType == null ? field.getType() : fieldType;
 		this.context = context;
 	}
 
