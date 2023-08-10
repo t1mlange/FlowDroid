@@ -2,7 +2,6 @@ package soot.jimple.infoflow.collections.strategies.containers;
 
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.checkerframework.checker.units.qual.C;
 import soot.Local;
 import soot.SootMethod;
 import soot.Value;
