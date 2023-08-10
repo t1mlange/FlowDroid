@@ -181,7 +181,7 @@
 			<artifactId>soot-infoflow</artifactId>
 			<version>${revision}</version>
 			<type>test-jar</type>
-			<scope>test</scope>
+			<scope>compile</scope>
 			
 			<exclusions>
 				<exclusion>
