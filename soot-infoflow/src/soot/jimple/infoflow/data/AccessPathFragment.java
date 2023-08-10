@@ -123,9 +123,9 @@ public class AccessPathFragment {
 	public static AccessPathFragment[] createFragmentArray(SootField[] fields, Type[] fieldTypes, ContextDefinition[][] contexts) {
 		if (fields == null || fields.length == 0)
 			return null;
-		AccessPathFragment fragments[] = new AccessPathFragment[fields.length];
+		AccessPathFragment[] fragments = new AccessPathFragment[fields.length];
 		for (int i = 0; i < fields.length; i++)
-			fragments[i] = new AccessPathFragment(fields[i], fieldTypes == null ? null : fieldTypes[i], contexts[i]);
+			fragments[i] = new AccessPathFragment(fields[i], fieldTypes == null ? null : fieldTypes[i], contexts == null ? null : contexts[i]);
 		return fragments;
 	}
 
