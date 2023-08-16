@@ -13,17 +13,17 @@ import soot.jimple.infoflow.methodSummary.data.summary.SourceSinkType;
 public class Taint extends FlowSink implements Cloneable {
 
 	public Taint(SourceSinkType type, int paramterIdx, String baseType, boolean taintSubFields) {
-		super(type, paramterIdx, baseType, taintSubFields);
+		super(type, paramterIdx, baseType, taintSubFields, false);
 	}
 
 	public Taint(SourceSinkType type, int paramterIdx, String baseType, AccessPathFragment accessPath,
 			boolean taintSubFields) {
-		super(type, paramterIdx, baseType, accessPath, taintSubFields);
+		super(type, paramterIdx, baseType, accessPath, taintSubFields, false);
 	}
 
 	public Taint(SourceSinkType type, int paramterIdx, String baseType, AccessPathFragment accessPath,
 			boolean taintSubFields, GapDefinition gap) {
-		super(type, paramterIdx, baseType, accessPath, taintSubFields, gap);
+		super(type, paramterIdx, baseType, accessPath, taintSubFields, gap, false);
 	}
 
 	@Override

@@ -196,17 +196,17 @@ public class SummaryGenerationTaintWrapper implements ITaintPropagationWrapper {
 		// This can be a base object
 		if (stmt.getInvokeExpr() instanceof InstanceInvokeExpr)
 			if (((InstanceInvokeExpr) stmt.getInvokeExpr()).getBase() == accessPath.getPlainValue())
-				res.add(new FlowSource(SourceSinkType.Field, accessPath.getBaseType().toString(), gap));
+				res.add(new FlowSource(SourceSinkType.Field, accessPath.getBaseType().toString(), gap, false));
 
 		// This can be a parameter
 		for (int i = 0; i < stmt.getInvokeExpr().getArgCount(); i++)
 			if (stmt.getInvokeExpr().getArg(i) == accessPath.getPlainValue())
-				res.add(new FlowSource(SourceSinkType.Parameter, i, accessPath.getBaseType().toString(), gap));
+				res.add(new FlowSource(SourceSinkType.Parameter, i, accessPath.getBaseType().toString(), gap, false));
 
 		// This can be a return value
 		if (stmt instanceof DefinitionStmt)
 			if (((DefinitionStmt) stmt).getLeftOp() == accessPath.getPlainValue())
-				res.add(new FlowSource(SourceSinkType.Return, accessPath.getBaseType().toString(), gap));
+				res.add(new FlowSource(SourceSinkType.Return, accessPath.getBaseType().toString(), gap, false));
 
 		return res;
 	}

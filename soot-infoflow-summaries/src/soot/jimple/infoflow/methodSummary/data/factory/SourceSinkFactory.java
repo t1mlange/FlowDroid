@@ -35,11 +35,11 @@ public class SourceSinkFactory {
 	}
 
 	public FlowSource createParameterSource(int parameterIdx, String baseType) {
-		return new FlowSource(SourceSinkType.Parameter, parameterIdx, baseType);
+		return new FlowSource(SourceSinkType.Parameter, parameterIdx, baseType, false);
 	}
 
 	public FlowSource createThisSource(String baseType) {
-		return new FlowSource(SourceSinkType.Field, baseType);
+		return new FlowSource(SourceSinkType.Field, baseType, false);
 	}
 
 	/**
@@ -55,7 +55,7 @@ public class SourceSinkFactory {
 	 */
 	public FlowSource createSource(SourceSinkType type, int parameterIdx, AccessPath accessPath, GapDefinition gap) {
 		return new FlowSource(type, parameterIdx, accessPath.getBaseType().toString(),
-				cutAPLength(new AccessPathFragment(accessPath)), gap);
+				cutAPLength(new AccessPathFragment(accessPath)), gap, false);
 	}
 
 	/**
@@ -84,13 +84,13 @@ public class SourceSinkFactory {
 	public FlowSink createParameterSink(int paraIdx, AccessPath accessPath, GapDefinition gap) {
 		if (accessPath.isLocal())
 			return new FlowSink(SourceSinkType.Parameter, paraIdx, accessPath.getBaseType().toString(),
-					accessPath.getTaintSubFields(), gap);
+					accessPath.getTaintSubFields(), gap, false);
 		else if (accessPath.getFragmentCount() < summaryAPLength)
 			return new FlowSink(SourceSinkType.Parameter, paraIdx, accessPath.getBaseType().toString(),
-					new AccessPathFragment(accessPath), accessPath.getTaintSubFields(), gap, false);
+					new AccessPathFragment(accessPath), accessPath.getTaintSubFields(), gap, false, false);
 		else
 			return new FlowSink(SourceSinkType.Parameter, paraIdx, accessPath.getBaseType().toString(),
-					cutAPLength(new AccessPathFragment(accessPath)), true, gap, false);
+					cutAPLength(new AccessPathFragment(accessPath)), true, gap, false, false);
 	}
 
 	/**
@@ -102,7 +102,7 @@ public class SourceSinkFactory {
 	 * @return The sink object
 	 */
 	public FlowSink createGapBaseObjectSink(GapDefinition gap, Type baseType) {
-		return new FlowSink(SourceSinkType.GapBaseObject, -1, baseType.toString(), false, gap);
+		return new FlowSink(SourceSinkType.GapBaseObject, -1, baseType.toString(), false, gap, false);
 	}
 
 	/**
@@ -127,13 +127,13 @@ public class SourceSinkFactory {
 	public FlowSink createReturnSink(AccessPath accessPath, GapDefinition gap) {
 		if (accessPath.isLocal())
 			return new FlowSink(SourceSinkType.Return, -1, accessPath.getBaseType().toString(),
-					accessPath.getTaintSubFields(), gap);
+					accessPath.getTaintSubFields(), gap, false);
 		else if (accessPath.getFragmentCount() < summaryAPLength)
 			return new FlowSink(SourceSinkType.Return, -1, accessPath.getBaseType().toString(),
-					new AccessPathFragment(accessPath), accessPath.getTaintSubFields(), gap, false);
+					new AccessPathFragment(accessPath), accessPath.getTaintSubFields(), gap, false, false);
 		else
 			return new FlowSink(SourceSinkType.Return, -1, accessPath.getBaseType().toString(),
-					cutAPLength(new AccessPathFragment(accessPath)), true, gap, false);
+					cutAPLength(new AccessPathFragment(accessPath)), true, gap, false, false);
 	}
 
 	/**
@@ -156,13 +156,13 @@ public class SourceSinkFactory {
 	public FlowSink createFieldSink(AccessPath accessPath, GapDefinition gap) {
 		if (accessPath.isLocal())
 			return new FlowSink(SourceSinkType.Field, -1, accessPath.getBaseType().toString(),
-					accessPath.getTaintSubFields(), gap);
+					accessPath.getTaintSubFields(), gap, false);
 		else if (accessPath.getFragmentCount() < summaryAPLength)
 			return new FlowSink(SourceSinkType.Field, -1, accessPath.getBaseType().toString(),
-					new AccessPathFragment(accessPath), accessPath.getTaintSubFields(), gap, false);
+					new AccessPathFragment(accessPath), accessPath.getTaintSubFields(), gap, false, false);
 		else
 			return new FlowSink(SourceSinkType.Field, -1, accessPath.getBaseType().toString(),
-					cutAPLength(new AccessPathFragment(accessPath)), true, gap, false);
+					cutAPLength(new AccessPathFragment(accessPath)), true, gap, false, false);
 	}
 
 	/**
@@ -180,13 +180,13 @@ public class SourceSinkFactory {
 				throw new RuntimeException("Parameter locals cannot directly be sinks");
 			else
 				return new FlowSink(SourceSinkType.Parameter, paraIdx, accessPath.getBaseType().toString(),
-						accessPath.getTaintSubFields());
+						accessPath.getTaintSubFields(), false);
 		} else if (accessPath.getFragmentCount() < summaryAPLength)
 			return new FlowSink(SourceSinkType.Parameter, paraIdx, accessPath.getBaseType().toString(),
-					new AccessPathFragment(accessPath), accessPath.getTaintSubFields());
+					new AccessPathFragment(accessPath), accessPath.getTaintSubFields(), false);
 		else
 			return new FlowSink(SourceSinkType.Parameter, paraIdx, accessPath.getBaseType().toString(),
-					cutAPLength(new AccessPathFragment(accessPath)), true);
+					cutAPLength(new AccessPathFragment(accessPath)), true, false);
 	}
 
 	/**
@@ -206,13 +206,13 @@ public class SourceSinkFactory {
 				throw new RuntimeException("Parameter locals cannot directly be sinks");
 			else
 				return new FlowSink(SourceSinkType.Custom, paraIdx, accessPath.getBaseType().toString(),
-						accessPath.getTaintSubFields(), gap, userData);
+						accessPath.getTaintSubFields(), gap, userData, false);
 		} else if (accessPath.getFragmentCount() < summaryAPLength)
 			return new FlowSink(SourceSinkType.Custom, paraIdx, accessPath.getBaseType().toString(),
-					new AccessPathFragment(accessPath), accessPath.getTaintSubFields(), gap, userData, false);
+					new AccessPathFragment(accessPath), accessPath.getTaintSubFields(), gap, userData, false, false);
 		else
 			return new FlowSink(SourceSinkType.Custom, paraIdx, accessPath.getBaseType().toString(),
-					cutAPLength(new AccessPathFragment(accessPath)), true, gap, userData, false);
+					cutAPLength(new AccessPathFragment(accessPath)), true, gap, userData, false, false);
 	}
 
 }
