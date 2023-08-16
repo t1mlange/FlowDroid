@@ -44,7 +44,7 @@
 		<xs:element name="constraints" minOccurs="0" maxOccurs="1">
 			<xs:complexType>
 				<xs:sequence>
-					<xs:element name="key" type="clearType" minOccurs="1" maxOccurs="unbounded" />
+					<xs:element name="key" type="constraintType" minOccurs="1" maxOccurs="unbounded" />
 				</xs:sequence>
 			</xs:complexType>
 		</xs:element>
@@ -99,6 +99,12 @@
 <xs:complexType name="contextDefinition">
 	<xs:attribute name="name" type="xs:string" use="required" />	
 	<xs:attribute name="parameterIndex" type="xs:int" use="required" />	
+</xs:complexType>
+
+<xs:complexType name="constraintType">
+	<xs:attribute name="sourceSinkType" type="sourceSinkType" use="required" />
+	<xs:attribute name="ParameterIndex" type="xs:int" />
+	<xs:attribute name="AccessPath" type="xs:string" />
 </xs:complexType>
 
 <xs:complexType name="clearType">

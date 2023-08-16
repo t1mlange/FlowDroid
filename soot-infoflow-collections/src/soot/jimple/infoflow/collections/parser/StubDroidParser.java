@@ -1,6 +1,7 @@
 package soot.jimple.infoflow.collections.parser;
 
 import soot.jimple.infoflow.methodSummary.data.sourceSink.FlowClear;
+import soot.jimple.infoflow.methodSummary.data.sourceSink.FlowConstraint;
 import soot.jimple.infoflow.methodSummary.data.sourceSink.FlowSink;
 import soot.jimple.infoflow.methodSummary.data.sourceSink.FlowSource;
 import soot.jimple.infoflow.methodSummary.data.summary.*;
@@ -16,7 +17,9 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static soot.jimple.infoflow.methodSummary.xml.XMLConstants.*;
@@ -30,7 +33,7 @@ public class StubDroidParser extends SummaryReader {
     private boolean validateSummariesOnRead = false;
 
     private enum State {
-        summary, hierarchy, intf, methods, method, flow, clear, gaps, gap, constraints
+        summary, hierarchy, intf, methods, method, flow, clear, gaps, gap, constraints, key
     }
 
     /**
@@ -55,6 +58,8 @@ public class StubDroidParser extends SummaryReader {
             Map<String, String> sourceAttributes = new HashMap<String, String>();
             Map<String, String> sinkAttributes = new HashMap<String, String>();
             Map<String, String> clearAttributes = new HashMap<String, String>();
+            Map<String, String> constraintAttributes = new HashMap<>();
+            List<FlowConstraint> constraints = new ArrayList<>();
 
             String currentMethod = "";
             int currentID = -1;
@@ -103,9 +108,10 @@ public class StubDroidParser extends SummaryReader {
                     } else
                         throw new SummaryXMLException();
                 } else if (localName.equals(TREE_METHOD) && xmlreader.isEndElement()) {
-                    if (state == State.method)
+                    if (state == State.method) {
                         state = State.methods;
-                    else
+                        constraints.clear();
+                    } else
                         throw new SummaryXMLException();
                 } else if (localName.equals(TREE_FLOW) && xmlreader.isStartElement()) {
                     if (state == State.method) {
@@ -153,7 +159,7 @@ public class StubDroidParser extends SummaryReader {
                     if (state == State.flow) {
                         state = State.method;
                         MethodFlow flow = new MethodFlow(currentMethod, createSource(summary, sourceAttributes),
-                                createSink(summary, sinkAttributes), isAlias, typeChecking, ignoreTypes, cutSubfields);
+                                createSink(summary, sinkAttributes), isAlias, typeChecking, ignoreTypes, cutSubfields, constraints);
                         summary.addFlow(flow);
 
                         isAlias = false;
@@ -162,7 +168,7 @@ public class StubDroidParser extends SummaryReader {
                 } else if (localName.equals(TREE_CLEAR) && xmlreader.isEndElement()) {
                     if (state == State.clear) {
                         state = State.method;
-                        MethodClear clear = new MethodClear(currentMethod, createClear(summary, clearAttributes));
+                        MethodClear clear = new MethodClear(currentMethod, createClear(summary, clearAttributes), constraints);
                         summary.addClear(clear);
                     } else
                         throw new SummaryXMLException();
@@ -224,6 +230,18 @@ public class StubDroidParser extends SummaryReader {
                     if (state != State.constraints)
                         throw new SummaryXMLException();
                     state = State.method;
+                } else if (localName.equals(StubDroidXMLConstants.TREE_KEY) && xmlreader.isStartElement()) {
+                    if (state != State.constraints)
+                        throw new SummaryXMLException();
+                    state = State.key;
+                    for (int i = 0; i < xmlreader.getAttributeCount(); i++)
+                        constraintAttributes.put(xmlreader.getAttributeLocalName(i), xmlreader.getAttributeValue(i));
+                } else if (localName.equals(StubDroidXMLConstants.TREE_KEY) && xmlreader.isEndElement()) {
+                    if (state != State.key)
+                        throw new SummaryXMLException();
+                    state = State.constraints;
+                    constraints.add(createConstraint(constraintAttributes));
+                    constraintAttributes.clear();
                 }
             }
 
@@ -272,14 +290,14 @@ public class StubDroidParser extends SummaryReader {
         if (isField(attributes)) {
             return new FlowSource(SourceSinkType.Field, getBaseType(attributes),
                     new AccessPathFragment(getAccessPath(attributes), getAccessPathTypes(attributes)),
-                    getGapDefinition(attributes, summary), isMatchStrict(attributes));
+                    getGapDefinition(attributes, summary), isMatchStrict(attributes), isConstrained(attributes));
         } else if (isParameter(attributes)) {
             return new FlowSource(SourceSinkType.Parameter, parameterIdx(attributes), getBaseType(attributes),
                     new AccessPathFragment(getAccessPath(attributes), getAccessPathTypes(attributes)),
-                    getGapDefinition(attributes, summary), isMatchStrict(attributes));
+                    getGapDefinition(attributes, summary), isMatchStrict(attributes), isConstrained(attributes));
         } else if (isGapBaseObject(attributes)) {
             return new FlowSource(SourceSinkType.GapBaseObject, getBaseType(attributes),
-                    getGapDefinition(attributes, summary), isMatchStrict(attributes));
+                    getGapDefinition(attributes, summary), isMatchStrict(attributes), isConstrained(attributes));
         } else if (isReturn(attributes)) {
             GapDefinition gap = getGapDefinition(attributes, summary);
             if (gap == null)
@@ -288,7 +306,7 @@ public class StubDroidParser extends SummaryReader {
 
             return new FlowSource(SourceSinkType.Return, getBaseType(attributes),
                     new AccessPathFragment(getAccessPath(attributes), getAccessPathTypes(attributes)),
-                    getGapDefinition(attributes, summary), isMatchStrict(attributes));
+                    getGapDefinition(attributes, summary), isMatchStrict(attributes), isConstrained(attributes));
         }
         throw new SummaryXMLException("Invalid flow source definition");
     }
@@ -305,18 +323,18 @@ public class StubDroidParser extends SummaryReader {
         if (isField(attributes)) {
             return new FlowSink(SourceSinkType.Field, getBaseType(attributes),
                     new AccessPathFragment(getAccessPath(attributes), getAccessPathTypes(attributes)),
-                    taintSubFields(attributes), getGapDefinition(attributes, summary), isMatchStrict(attributes));
+                    taintSubFields(attributes), getGapDefinition(attributes, summary), isMatchStrict(attributes), isConstrained(attributes));
         } else if (isParameter(attributes)) {
             return new FlowSink(SourceSinkType.Parameter, parameterIdx(attributes), getBaseType(attributes),
                     new AccessPathFragment(getAccessPath(attributes), getAccessPathTypes(attributes)),
-                    taintSubFields(attributes), getGapDefinition(attributes, summary), isMatchStrict(attributes));
+                    taintSubFields(attributes), getGapDefinition(attributes, summary), isMatchStrict(attributes), isConstrained(attributes));
         } else if (isReturn(attributes)) {
             return new FlowSink(SourceSinkType.Return, getBaseType(attributes),
                     new AccessPathFragment(getAccessPath(attributes), getAccessPathTypes(attributes)),
-                    taintSubFields(attributes), getGapDefinition(attributes, summary), isMatchStrict(attributes));
+                    taintSubFields(attributes), getGapDefinition(attributes, summary), isMatchStrict(attributes), isConstrained(attributes));
         } else if (isGapBaseObject(attributes)) {
             return new FlowSink(SourceSinkType.GapBaseObject, -1, getBaseType(attributes), false,
-                    getGapDefinition(attributes, summary), isMatchStrict(attributes));
+                    getGapDefinition(attributes, summary), isMatchStrict(attributes), isConstrained(attributes));
         }
         throw new SummaryXMLException();
     }
@@ -333,16 +351,23 @@ public class StubDroidParser extends SummaryReader {
         if (isField(attributes)) {
             return new FlowClear(SourceSinkType.Field, getBaseType(attributes),
                     new AccessPathFragment(getAccessPath(attributes), getAccessPathTypes(attributes)),
-                    getGapDefinition(attributes, summary));
+                    getGapDefinition(attributes, summary), isConstrained(attributes));
         } else if (isParameter(attributes)) {
             return new FlowClear(SourceSinkType.Parameter, parameterIdx(attributes), getBaseType(attributes),
                     new AccessPathFragment(getAccessPath(attributes), getAccessPathTypes(attributes)),
-                    getGapDefinition(attributes, summary));
+                    getGapDefinition(attributes, summary), isConstrained(attributes));
         } else if (isGapBaseObject(attributes)) {
             return new FlowClear(SourceSinkType.GapBaseObject, getBaseType(attributes),
-                    getGapDefinition(attributes, summary));
+                    getGapDefinition(attributes, summary), isConstrained(attributes));
         }
         throw new SummaryXMLException("Invalid flow clear definition");
+    }
+
+    private FlowConstraint createConstraint(Map<String, String> attributes) throws SummaryXMLException {
+        if (isParameter(attributes))
+            return new FlowConstraint(SourceSinkType.Parameter, parameterIdx(attributes), getBaseType(attributes),
+                new AccessPathFragment(getAccessPath(attributes), getAccessPathTypes(attributes)));
+        throw new SummaryXMLException();
     }
 
     private boolean isReturn(Map<String, String> attributes) {

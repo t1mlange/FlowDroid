@@ -1,8 +1,10 @@
 package soot.jimple.infoflow.methodSummary.data.summary;
 
+import java.util.List;
 import java.util.Map;
 
 import soot.jimple.infoflow.methodSummary.data.sourceSink.FlowClear;
+import soot.jimple.infoflow.methodSummary.data.sourceSink.FlowConstraint;
 
 /**
  * A taint clearing definition. This class models the fact that a library method
@@ -14,10 +16,12 @@ import soot.jimple.infoflow.methodSummary.data.sourceSink.FlowClear;
 public class MethodClear extends AbstractMethodSummary {
 
 	private final FlowClear clearDefinition;
+	private final List<FlowConstraint> constraints;
 
-	public MethodClear(String methodSig, FlowClear clearDefinition) {
+	public MethodClear(String methodSig, FlowClear clearDefinition, List<FlowConstraint> constraints) {
 		super(methodSig);
 		this.clearDefinition = clearDefinition;
+		this.constraints = constraints == null || constraints.isEmpty() ? null : constraints;
 	}
 
 	/**
@@ -33,7 +37,7 @@ public class MethodClear extends AbstractMethodSummary {
 	public MethodClear replaceGaps(Map<Integer, GapDefinition> replacementMap) {
 		if (replacementMap == null)
 			return this;
-		return new MethodClear(methodSig, clearDefinition.replaceGaps(replacementMap));
+		return new MethodClear(methodSig, clearDefinition.replaceGaps(replacementMap), constraints);
 	}
 
 	@Override

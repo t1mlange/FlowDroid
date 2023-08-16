@@ -1,10 +1,12 @@
 package soot.jimple.infoflow.methodSummary.data.summary;
 
+import java.util.List;
 import java.util.Map;
 
 import soot.RefType;
 import soot.Scene;
 import soot.Type;
+import soot.jimple.infoflow.methodSummary.data.sourceSink.FlowConstraint;
 import soot.jimple.infoflow.methodSummary.data.sourceSink.FlowSink;
 import soot.jimple.infoflow.methodSummary.data.sourceSink.FlowSource;
 import soot.jimple.infoflow.util.SootMethodRepresentationParser;
@@ -23,6 +25,7 @@ public class MethodFlow extends AbstractMethodSummary {
 	private final Boolean typeChecking;
 	private final Boolean ignoreTypes;
 	private final Boolean cutSubFields;
+	private final List<FlowConstraint> constraints;
 
 	/**
 	 * Creates a new instance of the MethodFlow class
@@ -42,7 +45,7 @@ public class MethodFlow extends AbstractMethodSummary {
 	 *                     enabled.
 	 */
 	public MethodFlow(String methodSig, FlowSource from, FlowSink to, boolean isAlias, Boolean typeChecking,
-			Boolean ignoreTypes, Boolean cutSubFields) {
+			Boolean ignoreTypes, Boolean cutSubFields, List<FlowConstraint> constraints) {
 		super(methodSig);
 		this.from = from;
 		this.to = to;
@@ -50,6 +53,7 @@ public class MethodFlow extends AbstractMethodSummary {
 		this.typeChecking = typeChecking;
 		this.ignoreTypes = ignoreTypes;
 		this.cutSubFields = cutSubFields;
+		this.constraints = constraints == null || constraints.isEmpty() ? null : constraints;
 	}
 
 	/**
@@ -106,10 +110,10 @@ public class MethodFlow extends AbstractMethodSummary {
 		}
 
 		FlowSource reverseSource = new FlowSource(fromType, to.getParameterIndex(), to.getBaseType(),
-				to.getAccessPath(), to.getGap(), to.isMatchStrict());
+				to.getAccessPath(), to.getGap(), to.isMatchStrict(), to.isConstrained());
 		FlowSink reverseSink = new FlowSink(toType, from.getParameterIndex(), from.getBaseType(), from.getAccessPath(),
-				taintSubFields, from.getGap(), from.isMatchStrict());
-		return new MethodFlow(methodSig, reverseSource, reverseSink, isAlias, typeChecking, ignoreTypes, cutSubFields);
+				taintSubFields, from.getGap(), from.isMatchStrict(), from.isConstrained());
+		return new MethodFlow(methodSig, reverseSource, reverseSink, isAlias, typeChecking, ignoreTypes, cutSubFields, constraints);
 	}
 
 	/**
@@ -158,7 +162,7 @@ public class MethodFlow extends AbstractMethodSummary {
 		if (replacementMap == null)
 			return this;
 		return new MethodFlow(methodSig, from.replaceGaps(replacementMap), to.replaceGaps(replacementMap), isAlias,
-				typeChecking, ignoreTypes, cutSubFields);
+				typeChecking, ignoreTypes, cutSubFields, constraints);
 	}
 
 	/**
