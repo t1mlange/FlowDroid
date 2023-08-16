@@ -26,6 +26,7 @@ import soot.jimple.infoflow.problems.AbstractInfoflowProblem;
 import soot.jimple.infoflow.results.DataFlowResult;
 import soot.jimple.infoflow.solver.IInfoflowSolver;
 import soot.jimple.infoflow.solver.executors.InterruptableExecutor;
+import soot.jimple.infoflow.util.DebugFlowFunctionTaintPropagationHandler;
 
 /**
  * Tests for the {@link AppendingCollectionInfoflowSolver}
@@ -454,6 +455,18 @@ public class AppendingTests extends FlowDroidTests {
 
     @Test(timeout = 30000)
     public void testAppendingOnNoContextFragment1() {
+        IInfoflow infoflow = initInfoflow();
+        infoflow.getConfig().getPathConfiguration().setPathReconstructionMode(InfoflowConfiguration.PathReconstructionMode.Fast);
+        infoflow.getConfig().setEnableLineNumbers(true);
+        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
+        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
+        var set = infoflow.getResults().getResultSet();
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), set == null ? 0 : set.size());
+        compareEdgesToBase(infoflow, epoint, (a, b) -> a < b);
+    }
+
+    @Test(timeout = 30000)
+    public void testAppendingMixupWithField1() {
         IInfoflow infoflow = initInfoflow();
         infoflow.getConfig().getPathConfiguration().setPathReconstructionMode(InfoflowConfiguration.PathReconstructionMode.Fast);
         infoflow.getConfig().setEnableLineNumbers(true);
