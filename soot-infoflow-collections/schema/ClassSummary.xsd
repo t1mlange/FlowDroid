@@ -41,6 +41,13 @@
 
 <xs:complexType name="methodType">
 	<xs:sequence>
+		<xs:element name="constraints" minOccurs="0" maxOccurs="1">
+			<xs:complexType>
+				<xs:sequence>
+					<xs:element name="key" type="clearType" minOccurs="1" maxOccurs="unbounded" />
+				</xs:sequence>
+			</xs:complexType>
+		</xs:element>
 		<xs:element name="flows" minOccurs="0" maxOccurs="1">
 			<xs:complexType>
 				<xs:sequence>
@@ -98,6 +105,11 @@
 	<xs:attribute name="sourceSinkType" type="sourceSinkType" use="required" />
 	<xs:attribute name="ParameterIndex" type="xs:int" />
 	<xs:attribute name="AccessPath" type="xs:string" />
+
+	<!--
+	True if the given constraints shall be used for the definition.
+	-->
+	<xs:attribute name="constrained" type="xs:boolean" use="optional" default="false" />
 </xs:complexType>
 
 <xs:complexType name="fromToDefinition">
@@ -107,6 +119,11 @@
 	<xs:attribute name="AccessPath" type="xs:string" />
 	<xs:attribute name="AccessPathTypes" type="xs:string" />
 	<xs:attribute name="gap" type="xs:int" />
+
+	<!--
+	True if the given constraints shall be used for the definition.
+	-->
+	<xs:attribute name="constrained" type="xs:boolean" use="optional" default="false" />
 
 	<!-- 
 	True if the resulting access path shall be a.* instead of a.

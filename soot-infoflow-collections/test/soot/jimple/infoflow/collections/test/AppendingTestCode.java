@@ -539,4 +539,26 @@ public class AppendingTestCode {
         sink(map2.get("Hello")); // Correct
         sink(map2.get("Any Key"));  // Incorrect
     }
+
+    private <V> Set<V> mapToSet(Map<?, V> map) {
+        return new HashSet<>(map.values());
+    }
+
+    @FlowDroidTest(expected = 2)
+    public void testAppendingMixupWithField1() {
+        Map<String, String> map = new HashMap<>();
+        String source = source();
+        map.put(String.valueOf(new Random().nextInt()), source);
+        // We get the summary identity and return w/o any context
+        sink(mapToSet(map));
+
+        System.out.println("Delay");
+
+        Map<String, String> map2 = new HashMap<>();
+        map2.put("Key", source);
+        // This should also taint obj without any context
+        Object obj = (Object) mapToSet(map2);
+        // We can't really test this automatically
+        sink(obj);
+    }
 }

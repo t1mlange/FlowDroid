@@ -7,6 +7,7 @@ import soot.Value;
 import soot.jimple.AssignStmt;
 import soot.jimple.Stmt;
 import soot.jimple.infoflow.InfoflowManager;
+import soot.jimple.infoflow.collections.CollectionTaintWrapper;
 import soot.jimple.infoflow.collections.operations.AbstractOperation;
 import soot.jimple.infoflow.collections.strategies.containers.IContainerStrategy;
 import soot.jimple.infoflow.data.Abstraction;
@@ -53,12 +54,19 @@ public class InvalidateOperation extends AbstractOperation {
         if (fragment == null || !fragment.getField().getSignature().equals(this.field) || !fragment.hasContext())
             return false;
 
-        AccessPathFragment[] oldFragments = incoming.getAccessPath().getFragments();
-        AccessPathFragment[] fragments = new AccessPathFragment[oldFragments.length];
-        System.arraycopy(oldFragments, 1, fragments, 1, fragments.length - 1);
-        fragments[0] = oldFragments[0].copyWithNewContext(null);
-        AccessPath ap = manager.getAccessPathFactory().createAccessPath(val, fragments, incoming.getAccessPath().getTaintSubFields());
-        out.add(incoming.deriveNewAbstraction(ap, stmt));
+        // Special case for iterators of lists: Because remove, add and set can also be called on the iterator,
+        // we normally would have to discard the index all together. But if we can prove that the iterator is used
+        // in a read-only fashion, we can keep the index.
+        if (CollectionTaintWrapper.itAnalysis.isReadOnlyIterator(stmt)) {
+            out.add(incoming);
+        } else {
+            AccessPathFragment[] oldFragments = incoming.getAccessPath().getFragments();
+            AccessPathFragment[] fragments = new AccessPathFragment[oldFragments.length];
+            System.arraycopy(oldFragments, 1, fragments, 1, fragments.length - 1);
+            fragments[0] = oldFragments[0].copyWithNewContext(null);
+            AccessPath ap = manager.getAccessPathFactory().createAccessPath(val, fragments, incoming.getAccessPath().getTaintSubFields());
+            out.add(incoming.deriveNewAbstraction(ap, stmt));
+        }
 
         if (returnTuple != null) {
             Abstraction abs = deriveReturnValueTaint(stmt, incoming, manager);
