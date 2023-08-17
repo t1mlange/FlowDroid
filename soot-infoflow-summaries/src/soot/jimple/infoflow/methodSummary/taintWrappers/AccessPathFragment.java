@@ -244,7 +244,7 @@ public class AccessPathFragment {
 		System.arraycopy(toAppendFieldTypes, 0, appendedTypes, fieldTypes.length, toAppendFieldTypes.length);
 
 		ContextDefinition[][] appendedContexts = new ContextDefinition[contexts.length + toAppendContexts.length][];
-		System.arraycopy(contexts, 0, appendedContexts, 0, toAppendContexts.length);
+		System.arraycopy(contexts, 0, appendedContexts, 0, contexts.length);
 		System.arraycopy(toAppendContexts, 0, appendedContexts, contexts.length, toAppendContexts.length);
 
 		return new AccessPathFragment(appendedFields, appendedTypes, appendedContexts);
