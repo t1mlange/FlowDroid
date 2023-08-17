@@ -46,6 +46,8 @@ public class ROIteratorAnalysis {
         readOperations.add("int nextIndex()");
         readOperations.add("java.lang.Object previous()");
         readOperations.add("int previousIndex()");
+        readOperations.add("boolean equals(java.lang.Object)");
+        readOperations.add("int hashCode()");
 
         this.fh = Scene.v().getOrMakeFastHierarchy();
         this.iteratorClass = Scene.v().getSootClassUnsafe("java.util.Iterator");
@@ -107,6 +109,8 @@ public class ROIteratorAnalysis {
                 if (isWriteOrUnknownOperation(stmt.getInvokeExpr().getMethod()))
                     return false;
             } else if (stmt instanceof AssignStmt) {
+                // All e = it.next() will be caught by the previous case s.t.
+                // here we should only see assignments or casts
                 if (!isReadOnlyIteratorInternal(du, stmt))
                     return false;
             } else if (stmt instanceof ReturnStmt) {
