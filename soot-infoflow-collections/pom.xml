@@ -102,6 +102,10 @@
                 <directory>schema</directory>
                 <targetPath>schema</targetPath>
             </resource>
+            <resource>
+                <directory>stubdroidBased</directory>
+                <targetPath>stubdroidBased</targetPath>
+            </resource>
         </resources>
     </build>
 

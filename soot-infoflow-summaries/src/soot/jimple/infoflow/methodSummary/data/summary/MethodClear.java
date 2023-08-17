@@ -2,6 +2,7 @@ package soot.jimple.infoflow.methodSummary.data.summary;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import soot.jimple.infoflow.methodSummary.data.sourceSink.FlowClear;
 import soot.jimple.infoflow.methodSummary.data.sourceSink.FlowConstraint;
@@ -17,11 +18,17 @@ public class MethodClear extends AbstractMethodSummary {
 
 	private final FlowClear clearDefinition;
 	private final List<FlowConstraint> constraints;
+	private final boolean preventPropagation;
 
-	public MethodClear(String methodSig, FlowClear clearDefinition, List<FlowConstraint> constraints) {
+	public MethodClear(String methodSig, FlowClear clearDefinition, List<FlowConstraint> constraints, boolean preventPropagation) {
 		super(methodSig);
 		this.clearDefinition = clearDefinition;
 		this.constraints = constraints == null || constraints.isEmpty() ? null : constraints;
+		this.preventPropagation = preventPropagation;
+	}
+
+	public boolean preventPropagation() {
+		return preventPropagation;
 	}
 
 	/**
@@ -37,32 +44,20 @@ public class MethodClear extends AbstractMethodSummary {
 	public MethodClear replaceGaps(Map<Integer, GapDefinition> replacementMap) {
 		if (replacementMap == null)
 			return this;
-		return new MethodClear(methodSig, clearDefinition.replaceGaps(replacementMap), constraints);
+		return new MethodClear(methodSig, clearDefinition.replaceGaps(replacementMap), constraints, preventPropagation);
 	}
 
 	@Override
 	public int hashCode() {
-		final int prime = 31;
-		int result = super.hashCode();
-		result = prime * result + ((clearDefinition == null) ? 0 : clearDefinition.hashCode());
-		return result;
+		return Objects.hash(super.hashCode(), clearDefinition, constraints, preventPropagation);
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (!super.equals(obj))
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		MethodClear other = (MethodClear) obj;
-		if (clearDefinition == null) {
-			if (other.clearDefinition != null)
-				return false;
-		} else if (!clearDefinition.equals(other.clearDefinition))
-			return false;
-		return true;
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		if (!super.equals(o)) return false;
+		MethodClear that = (MethodClear) o;
+		return preventPropagation == that.preventPropagation && Objects.equals(clearDefinition, that.clearDefinition) && Objects.equals(constraints, that.constraints);
 	}
-
 }

@@ -138,13 +138,13 @@ public abstract class FlowDroidTests {
 				res.run(manager, excludedMethods, manager.getSourceSinkManager(), manager.getTaintWrapper());
 			}
 
-			@Override
-			protected IInfoflowSolver createDataFlowSolver(InterruptableExecutor executor,
-					AbstractInfoflowProblem problem, InfoflowConfiguration.SolverConfiguration solverConfig) {
-				IInfoflowSolver solver = new AppendingCollectionInfoflowSolver(problem, executor);
-				solverPeerGroup.addSolver(solver);
-				return solver;
-			}
+//			@Override
+//			protected IInfoflowSolver createDataFlowSolver(InterruptableExecutor executor,
+//					AbstractInfoflowProblem problem, InfoflowConfiguration.SolverConfiguration solverConfig) {
+////				IInfoflowSolver solver = new AppendingCollectionInfoflowSolver(problem, executor);
+//				solverPeerGroup.addSolver(solver);
+//				return solver;
+//			}
 		};
 		result.setThrowExceptions(true);
 		result.setTaintWrapper(getTaintWrapper());

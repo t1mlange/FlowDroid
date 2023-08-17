@@ -26,6 +26,7 @@ public class MethodSummaries implements Iterable<MethodFlow> {
 	public static final MethodSummaries EMPTY_SUMMARIES = new ImmutableMethodSummaries();
 
 	private volatile MultiMap<String, MethodFlow> flows;
+	private volatile Map<String, Boolean> noImplicitIdentity;
 	private volatile MultiMap<String, MethodClear> clears;
 	private volatile Map<Integer, GapDefinition> gaps;
 	private volatile Set<String> excludedMethods;

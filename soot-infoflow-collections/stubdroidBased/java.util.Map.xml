@@ -27,10 +27,10 @@
 					<to sourceSinkType="Return" />
 				</flow>
 			</flows>
-			<clears isAlias="false" typeChecking="false">
-				<clear sourceSinkType="Field"
-					   AccessPath="[java.util.Map: java.lang.Object[] values]" />
-			</clears>
+<!--			<clears isAlias="false" typeChecking="false">-->
+<!--				<clear sourceSinkType="Field"-->
+<!--					   AccessPath="[java.util.Map: java.lang.Object[] values]" />-->
+<!--			</clears>-->
 		</method>
 		<method id="void putAll(java.util.Map)">
 			<flows>
@@ -188,5 +188,102 @@
 				</flow>
 			</flows>
 		</method>
+		<method id="java.lang.Object compute(java.lang.Object,java.util.function.BiFunction)">
+			<flows>
+				<!-- Key Flow -->
+				<flow isAlias="false" typeChecking="false">
+					<from sourceSinkType="Parameter"
+						  ParameterIndex="0" />
+					<to sourceSinkType="Field"
+						AccessPath="[java.util.Map: java.lang.Object[] keys]"
+						AccessPathTypes="[java.lang.Object[]]" />
+				</flow>
+				<!-- Base Object is tainted -->
+				<flow isAlias="false" typeChecking="false"
+					  cutFirstField="true">
+					<from sourceSinkType="Field"
+						  AccessPath="[java.util.Map: java.lang.Object[] values]"
+						  AccessPathTypes="[java.lang.Object[]]" />
+					<to sourceSinkType="Parameter"
+						ParameterIndex="1"
+						gap="42" />
+				</flow>
+				<flow isAlias="false" typeChecking="false">
+					<from sourceSinkType="Return"
+						 gap="42" />
+					<to sourceSinkType="Field"
+						  AccessPath="[java.util.Map: java.lang.Object[] values]"
+						  AccessPathTypes="[java.lang.Object[]]" />
+				</flow>
+				<!-- Lambda is tainted -->
+				<flow isAlias="false" typeChecking="false">
+					<from sourceSinkType="Parameter"
+						  ParameterIndex="1" />
+					<to sourceSinkType="GapBaseObject"
+						gap="42" />
+				</flow>
+				<flow isAlias="false" typeChecking="false">
+					<from sourceSinkType="GapBaseObject"
+					 	  gap="42" />
+					<to sourceSinkType="Return" />
+				</flow>
+			</flows>
+			<clears>
+				<!-- Prevent implicit identity -->
+				<clear sourceSinkType="Field"
+					   AccessPath="[java.util.Map: java.lang.Object[] values]"
+					   preventPropagation="false" />
+			</clears>
+		</method>
+		<method id="java.lang.Object computeIfPresent(java.lang.Object,java.util.function.BiFunction)">
+			<flows>
+				<!-- Key Flow -->
+				<flow isAlias="false" typeChecking="false">
+					<from sourceSinkType="Parameter"
+						  ParameterIndex="0" />
+					<to sourceSinkType="Field"
+						AccessPath="[java.util.Map: java.lang.Object[] keys]"
+						AccessPathTypes="[java.lang.Object[]]" />
+				</flow>
+				<!-- Base Object is tainted -->
+				<flow isAlias="false" typeChecking="false"
+					  cutFirstField="true">
+					<from sourceSinkType="Field"
+						  AccessPath="[java.util.Map: java.lang.Object[] values]"
+						  AccessPathTypes="[java.lang.Object[]]" />
+					<to sourceSinkType="Parameter"
+						ParameterIndex="1"
+						gap="42" />
+				</flow>
+				<flow isAlias="false" typeChecking="false">
+					<from sourceSinkType="Return"
+						  gap="42" />
+					<to sourceSinkType="Field"
+						AccessPath="[java.util.Map: java.lang.Object[] values]"
+						AccessPathTypes="[java.lang.Object[]]" />
+				</flow>
+				<!-- Lambda is tainted -->
+				<flow isAlias="false" typeChecking="false">
+					<from sourceSinkType="Parameter"
+						  ParameterIndex="1" />
+					<to sourceSinkType="GapBaseObject"
+						gap="42" />
+				</flow>
+				<flow isAlias="false" typeChecking="false">
+					<from sourceSinkType="GapBaseObject"
+						  gap="42" />
+					<to sourceSinkType="Return" />
+				</flow>
+			</flows>
+			<clears>
+				<!-- Prevent implicit identity -->
+				<clear sourceSinkType="Field"
+					   AccessPath="[java.util.Map: java.lang.Object[] values]"
+					   preventPropagation="false" />
+			</clears>
+		</method>
 	</methods>
+	<gaps>
+		<gap num="42" id="&lt;java.util.function.BiFunction: java.lang.Object apply(java.lang.Object,java.lang.Object)&gt;" />
+	</gaps>
 </summary>

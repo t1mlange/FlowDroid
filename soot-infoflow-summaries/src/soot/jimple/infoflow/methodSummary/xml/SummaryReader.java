@@ -1,16 +1,6 @@
 package soot.jimple.infoflow.methodSummary.xml;
 
-import static soot.jimple.infoflow.methodSummary.xml.XMLConstants.ATTRIBUTE_BASETYPE;
-import static soot.jimple.infoflow.methodSummary.xml.XMLConstants.ATTRIBUTE_FLOWTYPE;
-import static soot.jimple.infoflow.methodSummary.xml.XMLConstants.ATTRIBUTE_MATCH_STRICT;
-import static soot.jimple.infoflow.methodSummary.xml.XMLConstants.ATTRIBUTE_PARAMETER_INDEX;
-import static soot.jimple.infoflow.methodSummary.xml.XMLConstants.ATTRIBUTE_TAINT_SUB_FIELDS;
-import static soot.jimple.infoflow.methodSummary.xml.XMLConstants.TREE_CLEAR;
-import static soot.jimple.infoflow.methodSummary.xml.XMLConstants.TREE_FLOW;
-import static soot.jimple.infoflow.methodSummary.xml.XMLConstants.TREE_METHOD;
-import static soot.jimple.infoflow.methodSummary.xml.XMLConstants.TREE_SINK;
-import static soot.jimple.infoflow.methodSummary.xml.XMLConstants.TREE_SOURCE;
-import static soot.jimple.infoflow.methodSummary.xml.XMLConstants.VALUE_TRUE;
+import static soot.jimple.infoflow.methodSummary.xml.XMLConstants.*;
 
 import java.io.File;
 import java.io.FileReader;
@@ -42,7 +32,7 @@ public class SummaryReader extends AbstractXMLReader {
 	private boolean validateSummariesOnRead = false;
 
 	private enum State {
-		summary, hierarchy, intf, methods, method, flow, clear, gaps, gap
+		summary, hierarchy, intf, methods, method, flows, flow, clear, gaps, gap
 	}
 
 	/**
@@ -174,7 +164,9 @@ public class SummaryReader extends AbstractXMLReader {
 				} else if (localName.equals(TREE_CLEAR) && xmlreader.isEndElement()) {
 					if (state == State.clear) {
 						state = State.method;
-						MethodClear clear = new MethodClear(currentMethod, createClear(summary, clearAttributes), null);
+						String ppString = clearAttributes.get(ATTRIBUTE_PREVENT_PROPAGATION);
+						boolean preventProp = ppString == null || ppString.isEmpty() || ppString.equals(VALUE_TRUE);
+						MethodClear clear = new MethodClear(currentMethod, createClear(summary, clearAttributes), null, preventProp);
 						summary.addClear(clear);
 					} else
 						throw new SummaryXMLException();

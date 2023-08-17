@@ -28,7 +28,7 @@ import static soot.jimple.infoflow.methodSummary.xml.XMLConstants.VALUE_TRUE;
 public class StubDroidParser extends SummaryReader {
 
     // XML stuff incl. Verification against XSD
-    private static final String XSD_FILE_PATH = "schema/ClassSummary.xsd";
+    private static final String XSD_FILE_PATH = "schema/ClassSummaryC.xsd";
 
     private boolean validateSummariesOnRead = false;
 
@@ -151,6 +151,8 @@ public class StubDroidParser extends SummaryReader {
                         throw new SummaryXMLException();
                 } else if (localName.equals(TREE_SINK) && xmlreader.isStartElement()) {
                     if (state == State.flow) {
+                        if (xmlreader.getAttributeCount() == 0)
+                            throw new RuntimeException();
                         for (int i = 0; i < xmlreader.getAttributeCount(); i++)
                             sinkAttributes.put(xmlreader.getAttributeLocalName(i), xmlreader.getAttributeValue(i));
                     } else
@@ -168,7 +170,9 @@ public class StubDroidParser extends SummaryReader {
                 } else if (localName.equals(TREE_CLEAR) && xmlreader.isEndElement()) {
                     if (state == State.clear) {
                         state = State.method;
-                        MethodClear clear = new MethodClear(currentMethod, createClear(summary, clearAttributes), constraints);
+                        String ppString = clearAttributes.get(ATTRIBUTE_PREVENT_PROPAGATION);
+                        boolean preventProp = ppString == null || ppString.isEmpty() || ppString.equals(VALUE_TRUE);
+                        MethodClear clear = new MethodClear(currentMethod, createClear(summary, clearAttributes), constraints, preventProp);
                         summary.addClear(clear);
                     } else
                         throw new SummaryXMLException();

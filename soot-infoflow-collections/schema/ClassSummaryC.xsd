@@ -116,6 +116,11 @@
 	True if the given constraints shall be used for the definition.
 	-->
 	<xs:attribute name="constrained" type="xs:boolean" use="optional" default="false" />
+
+	<!--
+	False if a matching taint should be killed but still added to the worklist.
+	-->
+	<xs:attribute name="preventPropagation" type="xs:boolean" use="optional" default="true" />
 </xs:complexType>
 
 <xs:complexType name="fromToDefinition">

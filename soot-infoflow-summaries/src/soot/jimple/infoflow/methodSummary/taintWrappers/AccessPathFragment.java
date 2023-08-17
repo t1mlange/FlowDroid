@@ -149,6 +149,18 @@ public class AccessPathFragment {
 	}
 
 	/**
+	 * Gets the name of the field at the given index
+	 *
+	 * @param idx The field index
+	 * @return The name of the field at the given index
+	 */
+	public ContextDefinition[] getContext(int idx) {
+		if (idx < 0 || idx >= contexts.length)
+			return null;
+		return contexts[idx];
+	}
+
+	/**
 	 * Gets the name of the last field in this access path fragment
 	 * 
 	 * @return The name of the last field in this access path fragment
