@@ -80,12 +80,12 @@ public class ROIteratorAnalysis {
             return false;
 
         UnitGraph ug = (UnitGraph) icfg.getOrCreateUnitGraph(icfg.getMethodOf(unit));
-        return isReadOnlyIteratorInternal(graphToUses.getUnchecked(ug), unit);
+        return isReadOnlyIteratorInternal(graphToUses.getUnchecked(ug), (AssignStmt) unit);
     }
 
-    private boolean isReadOnlyIteratorInternal(SimpleLocalUses du, Unit unit) {
+    private boolean isReadOnlyIteratorInternal(SimpleLocalUses du, AssignStmt assign) {
         // Check that we actually have created an iterator
-        Value lhs = ((AssignStmt) unit).getLeftOp();
+        Value lhs = assign.getLeftOp();
         // The DU analysis of Soot does not support field (for now)
         if (!(lhs instanceof Local))
             return false;
@@ -94,7 +94,7 @@ public class ROIteratorAnalysis {
                 || !fh.canStoreClass(((RefType) lhsType).getSootClass(), iteratorClass))
             return false;
 
-        List<UnitValueBoxPair> usesList = du.getUsesOf(unit);
+        List<UnitValueBoxPair> usesList = du.getUsesOf(assign);
         // For each use of a local
         for (UnitValueBoxPair uv : usesList) {
             Stmt stmt = (Stmt) uv.getUnit();
@@ -111,7 +111,7 @@ public class ROIteratorAnalysis {
             } else if (stmt instanceof AssignStmt) {
                 // All e = it.next() will be caught by the previous case s.t.
                 // here we should only see assignments or casts
-                if (!isReadOnlyIteratorInternal(du, stmt))
+                if (!isReadOnlyIteratorInternal(du, (AssignStmt) stmt))
                     return false;
             } else if (stmt instanceof ReturnStmt) {
                 return false;
