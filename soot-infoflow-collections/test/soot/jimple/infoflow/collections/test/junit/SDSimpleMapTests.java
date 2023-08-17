@@ -1,0 +1,378 @@
+package soot.jimple.infoflow.collections.test.junit;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+
+import org.junit.Assert;
+import org.junit.Test;
+
+import soot.jimple.infoflow.IInfoflow;
+import soot.jimple.infoflow.InfoflowConfiguration;
+import soot.jimple.infoflow.collections.CollectionTaintWrapper;
+import soot.jimple.infoflow.collections.StubDroidBasedTaintWrapper;
+import soot.jimple.infoflow.collections.parser.CollectionXMLParser;
+import soot.jimple.infoflow.collections.parser.StubDroidSummaryProvider;
+import soot.jimple.infoflow.methodSummary.data.provider.EagerSummaryProvider;
+import soot.jimple.infoflow.methodSummary.taintWrappers.SummaryTaintWrapper;
+import soot.jimple.infoflow.methodSummary.taintWrappers.TaintWrapperFactory;
+import soot.jimple.infoflow.taintWrappers.ITaintPropagationWrapper;
+import soot.jimple.infoflow.util.DebugFlowFunctionTaintPropagationHandler;
+
+import javax.xml.stream.XMLStreamException;
+
+public class SDSimpleMapTests extends FlowDroidTests {
+    @Override
+    protected void setConfiguration(InfoflowConfiguration config) {
+
+    }
+
+    @Override
+    protected ITaintPropagationWrapper getTaintWrapper() {
+        return new StubDroidBasedTaintWrapper(new StubDroidSummaryProvider(new File("stubdroidBased")));
+    }
+
+    private static final String testCodeClass = "soot.jimple.infoflow.collections.test.SimpleMapTestCode";
+
+    @Test(timeout = 30000)
+    public void testMapPutGet1() {
+        IInfoflow infoflow = initInfoflow();
+        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
+        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
+    }
+
+    @Test(timeout = 30000)
+    public void testMapPutGet2() {
+        IInfoflow infoflow = initInfoflow();
+        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
+        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
+    }
+
+    @Test(timeout = 30000)
+    public void testMapPutGetOrDefault1() {
+        IInfoflow infoflow = initInfoflow();
+        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
+        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
+    }
+
+    @Test(timeout = 30000)
+    public void testMapPutGetOrDefault2() {
+        IInfoflow infoflow = initInfoflow();
+        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
+        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
+    }
+
+    @Test(timeout = 30000)
+    public void testMapPutGetOrDefault3() {
+        IInfoflow infoflow = initInfoflow();
+        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
+        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
+    }
+
+    @Test(timeout = 30000)
+    public void testMapPutRemoveGet1() {
+        IInfoflow infoflow = initInfoflow();
+        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
+        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
+    }
+
+    @Test(timeout = 30000)
+    public void testMapClear1() {
+        IInfoflow infoflow = initInfoflow();
+        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
+        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
+    }
+
+    @Test(timeout = 30000)
+    public void testMapKeySet1() {
+        IInfoflow infoflow = initInfoflow();
+        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
+        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
+    }
+
+    @Test(timeout = 30000)
+    public void testMapKeySet2() {
+        IInfoflow infoflow = initInfoflow();
+        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
+        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
+    }
+
+    @Test(timeout = 30000)
+    public void testMapValueSet1() {
+        IInfoflow infoflow = initInfoflow();
+        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
+        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
+    }
+
+    @Test(timeout = 30000)
+    public void testMapPutAll1() {
+        IInfoflow infoflow = initInfoflow();
+        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
+        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
+    }
+
+    @Test(timeout = 30000)
+    public void testMapPutAll2() {
+        IInfoflow infoflow = initInfoflow();
+        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
+        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
+    }
+
+    @Test(timeout = 30000)
+    public void testMapPutIfAbsent1() {
+        IInfoflow infoflow = initInfoflow();
+        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
+        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
+    }
+
+    @Test(timeout = 30000)
+    public void testMapPutIfAbsent2() {
+        IInfoflow infoflow = initInfoflow();
+        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
+        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
+    }
+
+    @Test(timeout = 30000)
+    public void testMapPutIfAbsent3() {
+        IInfoflow infoflow = initInfoflow();
+        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
+        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
+    }
+
+    @Test(timeout = 30000)
+    public void testMapPutIfAbsent4() {
+        IInfoflow infoflow = initInfoflow();
+        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
+        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
+    }
+
+    @Test(timeout = 30000)
+    public void testMapPutIfAbsent5() {
+        IInfoflow infoflow = initInfoflow();
+        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
+        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
+        // An execution would yield no leak, but we have to over-approximate putIfAbsent
+        // because a precise flow function would not be distributive here.
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
+    }
+
+    @Test//(timeout = 30000)
+    public void testMapCompute1() {
+        IInfoflow infoflow = initInfoflow();
+        infoflow.setTaintPropagationHandler(new DebugFlowFunctionTaintPropagationHandler());
+        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
+        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
+    }
+
+    @Test(timeout = 30000)
+    public void testMapCompute2() {
+        IInfoflow infoflow = initInfoflow();
+        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
+        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
+    }
+
+    @Test(timeout = 30000)
+    public void testMapCompute3() {
+        IInfoflow infoflow = initInfoflow();
+        infoflow.setTaintPropagationHandler(new DebugFlowFunctionTaintPropagationHandler());
+        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
+        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
+    }
+
+    @Test(timeout = 30000)
+    public void testMapCompute4() {
+        IInfoflow infoflow = initInfoflow();
+        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
+        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
+    }
+
+    @Test(timeout = 30000)
+    public void testMapComputeIfAbsent1() {
+        IInfoflow infoflow = initInfoflow();
+        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
+        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
+    }
+
+    @Test(timeout = 30000)
+    public void testMapComputeIfAbsent2() {
+        IInfoflow infoflow = initInfoflow();
+        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
+        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
+    }
+
+    @Test(timeout = 30000)
+    public void testMapMerge1() {
+        IInfoflow infoflow = initInfoflow();
+        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
+        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
+    }
+
+    @Test(timeout = 30000)
+    public void testMapMerge2() {
+        IInfoflow infoflow = initInfoflow();
+        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
+        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
+    }
+
+    @Test(timeout = 30000)
+    public void testMapMerge3() {
+        IInfoflow infoflow = initInfoflow();
+        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
+        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
+    }
+
+    @Test(timeout = 30000)
+    public void testMapMerge4() {
+        IInfoflow infoflow = initInfoflow();
+        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
+        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
+    }
+
+    @Test(timeout = 30000)
+    public void testMapMerge5() {
+        IInfoflow infoflow = initInfoflow();
+        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
+        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
+    }
+
+    @Test(timeout = 30000)
+    public void testMapMerge6() {
+        IInfoflow infoflow = initInfoflow();
+        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
+        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
+    }
+
+    @Test(timeout = 30000)
+    public void testMapMerge7() {
+        IInfoflow infoflow = initInfoflow();
+        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
+        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
+    }
+
+    @Test(timeout = 30000)
+    public void testMapMerge8() {
+        IInfoflow infoflow = initInfoflow();
+        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
+        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
+    }
+
+    @Test(timeout = 30000)
+    public void testMapReplaceAll1() {
+        IInfoflow infoflow = initInfoflow();
+        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
+        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
+    }
+
+    @Test(timeout = 30000)
+    public void testMapReplaceAll2() {
+        IInfoflow infoflow = initInfoflow();
+        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
+        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
+    }
+
+    @Test(timeout = 30000)
+    public void testMapComputeReturn1() {
+        IInfoflow infoflow = initInfoflow();
+        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
+        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
+    }
+
+    @Test(timeout = 30000)
+    public void testMapComputeReturn2() {
+        IInfoflow infoflow = initInfoflow();
+        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
+        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
+    }
+
+    @Test(timeout = 30000)
+    public void testMapComputeReturn3() {
+        IInfoflow infoflow = initInfoflow();
+        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
+        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
+    }
+
+    @Test(timeout = 30000)
+    public void testMapComputeReturn4() {
+        IInfoflow infoflow = initInfoflow();
+        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
+        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
+    }
+
+    @Test(timeout = 30000)
+    public void testMapComputeReturn5() {
+        IInfoflow infoflow = initInfoflow();
+        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
+        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
+    }
+
+    @Test(timeout = 30000)
+    public void testMapComputeReturn6() {
+        IInfoflow infoflow = initInfoflow();
+        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
+        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
+    }
+
+    @Test(timeout = 30000)
+    public void testMapComputeFallback1() {
+        IInfoflow infoflow = initInfoflow();
+        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
+        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
+    }
+
+    @Test(timeout = 30000)
+    public void testMapComputeFallback2() {
+        IInfoflow infoflow = initInfoflow();
+        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
+        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
+    }
+
+    @Test(timeout = 30000)
+    public void testNestedMap1() {
+        IInfoflow infoflow = initInfoflow();
+        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
+        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
+    }
+}
