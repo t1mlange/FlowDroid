@@ -1,27 +1,17 @@
 package soot.jimple.infoflow.collections.test.junit;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
 
 import soot.jimple.infoflow.IInfoflow;
 import soot.jimple.infoflow.InfoflowConfiguration;
-import soot.jimple.infoflow.collections.CollectionTaintWrapper;
 import soot.jimple.infoflow.collections.StubDroidBasedTaintWrapper;
-import soot.jimple.infoflow.collections.parser.CollectionXMLParser;
 import soot.jimple.infoflow.collections.parser.StubDroidSummaryProvider;
-import soot.jimple.infoflow.methodSummary.data.provider.EagerSummaryProvider;
-import soot.jimple.infoflow.methodSummary.taintWrappers.SummaryTaintWrapper;
-import soot.jimple.infoflow.methodSummary.taintWrappers.TaintWrapperFactory;
 import soot.jimple.infoflow.taintWrappers.ITaintPropagationWrapper;
 import soot.jimple.infoflow.util.DebugFlowFunctionTaintPropagationHandler;
-
-import javax.xml.stream.XMLStreamException;
 
 public class SDSimpleMapTests extends FlowDroidTests {
     @Override
@@ -174,16 +164,15 @@ public class SDSimpleMapTests extends FlowDroidTests {
         Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
     }
 
-    @Test//(timeout = 30000)
+    @Test(timeout = 30000)
     public void testMapCompute1() {
         IInfoflow infoflow = initInfoflow();
-        infoflow.setTaintPropagationHandler(new DebugFlowFunctionTaintPropagationHandler());
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
         Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
     }
 
-    @Test(timeout = 30000)
+    @Test//(timeout = 30000)
     public void testMapCompute2() {
         IInfoflow infoflow = initInfoflow();
         infoflow.setTaintPropagationHandler(new DebugFlowFunctionTaintPropagationHandler());
@@ -195,7 +184,6 @@ public class SDSimpleMapTests extends FlowDroidTests {
     @Test(timeout = 30000)
     public void testMapCompute3() {
         IInfoflow infoflow = initInfoflow();
-        infoflow.setTaintPropagationHandler(new DebugFlowFunctionTaintPropagationHandler());
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
         Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
@@ -316,6 +304,7 @@ public class SDSimpleMapTests extends FlowDroidTests {
     @Test(timeout = 30000)
     public void testMapComputeReturn2() {
         IInfoflow infoflow = initInfoflow();
+        infoflow.setTaintPropagationHandler(new DebugFlowFunctionTaintPropagationHandler());
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
         Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());

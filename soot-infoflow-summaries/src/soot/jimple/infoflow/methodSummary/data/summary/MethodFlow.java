@@ -2,6 +2,7 @@ package soot.jimple.infoflow.methodSummary.data.summary;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import soot.RefType;
 import soot.Scene;
@@ -25,7 +26,6 @@ public class MethodFlow extends AbstractMethodSummary {
 	private final Boolean typeChecking;
 	private final Boolean ignoreTypes;
 	private final Boolean cutSubFields;
-	private final List<FlowConstraint> constraints;
 
 	/**
 	 * Creates a new instance of the MethodFlow class
@@ -45,15 +45,14 @@ public class MethodFlow extends AbstractMethodSummary {
 	 *                     enabled.
 	 */
 	public MethodFlow(String methodSig, FlowSource from, FlowSink to, boolean isAlias, Boolean typeChecking,
-			Boolean ignoreTypes, Boolean cutSubFields, List<FlowConstraint> constraints) {
-		super(methodSig);
+			Boolean ignoreTypes, Boolean cutSubFields, FlowConstraint[] constraints) {
+		super(methodSig, constraints);
 		this.from = from;
 		this.to = to;
 		this.isAlias = isAlias;
 		this.typeChecking = typeChecking;
 		this.ignoreTypes = ignoreTypes;
 		this.cutSubFields = cutSubFields;
-		this.constraints = constraints == null || constraints.isEmpty() ? null : constraints;
 	}
 
 	/**
@@ -195,49 +194,17 @@ public class MethodFlow extends AbstractMethodSummary {
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (!super.equals(obj))
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		MethodFlow other = (MethodFlow) obj;
-		if (cutSubFields == null) {
-			if (other.cutSubFields != null)
-				return false;
-		} else if (!cutSubFields.equals(other.cutSubFields))
-			return false;
-		if (from == null) {
-			if (other.from != null)
-				return false;
-		} else if (!from.equals(other.from))
-			return false;
-		if (isAlias != other.isAlias)
-			return false;
-		if (to == null) {
-			if (other.to != null)
-				return false;
-		} else if (!to.equals(other.to))
-			return false;
-		if (typeChecking == null) {
-			if (other.typeChecking != null)
-				return false;
-		} else if (!typeChecking.equals(other.typeChecking))
-			return false;
-		return true;
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		if (!super.equals(o)) return false;
+		MethodFlow that = (MethodFlow) o;
+		return isAlias == that.isAlias && Objects.equals(from, that.from) && Objects.equals(to, that.to) && Objects.equals(typeChecking, that.typeChecking) && Objects.equals(ignoreTypes, that.ignoreTypes) && Objects.equals(cutSubFields, that.cutSubFields) && Objects.equals(constraints, that.constraints);
 	}
 
 	@Override
 	public int hashCode() {
-		final int prime = 31;
-		int result = super.hashCode();
-		result = prime * result + ((cutSubFields == null) ? 0 : cutSubFields.hashCode());
-		result = prime * result + ((from == null) ? 0 : from.hashCode());
-		result = prime * result + (isAlias ? 1231 : 1237);
-		result = prime * result + ((to == null) ? 0 : to.hashCode());
-		result = prime * result + ((typeChecking == null) ? 0 : typeChecking.hashCode());
-		return result;
+		return Objects.hash(super.hashCode(), from, to, isAlias, typeChecking, ignoreTypes, cutSubFields, constraints);
 	}
 
 	@Override
