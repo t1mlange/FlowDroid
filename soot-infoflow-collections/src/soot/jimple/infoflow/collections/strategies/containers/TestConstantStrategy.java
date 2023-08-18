@@ -32,7 +32,7 @@ public class TestConstantStrategy extends ConstantMapStrategy {
     protected final InfoflowManager manager;
 
     public TestConstantStrategy(InfoflowManager manager, CollectionTaintWrapper ctw) {
-        super(ctw);
+        super();
         this.implicitIndices = new ConcurrentHashMap<>();
         this.manager = manager;
     }

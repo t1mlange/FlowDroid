@@ -161,7 +161,7 @@ public class StubDroidParser extends SummaryReader {
                     if (state == State.flow) {
                         state = State.method;
                         MethodFlow flow = new MethodFlow(currentMethod, createSource(summary, sourceAttributes),
-                                createSink(summary, sinkAttributes), isAlias, typeChecking, ignoreTypes, cutSubfields, constraints);
+                                createSink(summary, sinkAttributes), isAlias, typeChecking, ignoreTypes, cutSubfields, constraints.toArray(new FlowConstraint[0]));
                         summary.addFlow(flow);
 
                         isAlias = false;
@@ -172,7 +172,7 @@ public class StubDroidParser extends SummaryReader {
                         state = State.method;
                         String ppString = clearAttributes.get(ATTRIBUTE_PREVENT_PROPAGATION);
                         boolean preventProp = ppString == null || ppString.isEmpty() || ppString.equals(VALUE_TRUE);
-                        MethodClear clear = new MethodClear(currentMethod, createClear(summary, clearAttributes), constraints, preventProp);
+                        MethodClear clear = new MethodClear(currentMethod, createClear(summary, clearAttributes), constraints.toArray(new FlowConstraint[0]), preventProp);
                         summary.addClear(clear);
                     } else
                         throw new SummaryXMLException();
@@ -393,7 +393,7 @@ public class StubDroidParser extends SummaryReader {
     private boolean isConstrained(Map<String, String> attributes) {
         if (attributes != null) {
             String attr = attributes.get(StubDroidXMLConstants.ATTRIBUTE_CONSTRAINED);
-            return attr != null && attr.equals("true");
+            return attr != null && attr.equalsIgnoreCase("true");
         }
         return false;
     }

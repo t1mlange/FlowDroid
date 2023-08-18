@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import soot.Context;
 import soot.SootField;
 import soot.Type;
 import soot.jimple.infoflow.data.AccessPath;
@@ -204,6 +205,12 @@ public class AccessPathFragment {
 		return fieldTypes[0];
 	}
 
+	public ContextDefinition[] getFirstFieldContext() {
+		if (contexts == null || contexts.length == 0)
+			return null;
+		return contexts[0];
+	}
+
 	/**
 	 * Gets whether this access path fragment is empty
 	 * 
@@ -356,4 +363,10 @@ public class AccessPathFragment {
 		return accessPath.append(suffix);
 	}
 
+	public AccessPathFragment addContext(ContextDefinition[] ctxt) {
+		ContextDefinition[][] contexts = new ContextDefinition[fields.length][];;
+		System.arraycopy(this.contexts, 1, contexts, 1, this.contexts.length - 1);
+		contexts[0] = ctxt;
+		return new AccessPathFragment(fields, fieldTypes, contexts);
+	}
 }

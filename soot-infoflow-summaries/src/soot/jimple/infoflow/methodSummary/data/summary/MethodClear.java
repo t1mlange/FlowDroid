@@ -17,13 +17,11 @@ import soot.jimple.infoflow.methodSummary.data.sourceSink.FlowConstraint;
 public class MethodClear extends AbstractMethodSummary {
 
 	private final FlowClear clearDefinition;
-	private final List<FlowConstraint> constraints;
 	private final boolean preventPropagation;
 
-	public MethodClear(String methodSig, FlowClear clearDefinition, List<FlowConstraint> constraints, boolean preventPropagation) {
-		super(methodSig);
+	public MethodClear(String methodSig, FlowClear clearDefinition, FlowConstraint[] constraints, boolean preventPropagation) {
+		super(methodSig, constraints);
 		this.clearDefinition = clearDefinition;
-		this.constraints = constraints == null || constraints.isEmpty() ? null : constraints;
 		this.preventPropagation = preventPropagation;
 	}
 
@@ -44,12 +42,12 @@ public class MethodClear extends AbstractMethodSummary {
 	public MethodClear replaceGaps(Map<Integer, GapDefinition> replacementMap) {
 		if (replacementMap == null)
 			return this;
-		return new MethodClear(methodSig, clearDefinition.replaceGaps(replacementMap), constraints, preventPropagation);
+		return new MethodClear(methodSig, clearDefinition.replaceGaps(replacementMap), getConstraints(), preventPropagation);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(super.hashCode(), clearDefinition, constraints, preventPropagation);
+		return Objects.hash(super.hashCode(), clearDefinition, preventPropagation);
 	}
 
 	@Override
@@ -58,6 +56,6 @@ public class MethodClear extends AbstractMethodSummary {
 		if (o == null || getClass() != o.getClass()) return false;
 		if (!super.equals(o)) return false;
 		MethodClear that = (MethodClear) o;
-		return preventPropagation == that.preventPropagation && Objects.equals(clearDefinition, that.clearDefinition) && Objects.equals(constraints, that.constraints);
+		return preventPropagation == that.preventPropagation && Objects.equals(clearDefinition, that.clearDefinition);
 	}
 }

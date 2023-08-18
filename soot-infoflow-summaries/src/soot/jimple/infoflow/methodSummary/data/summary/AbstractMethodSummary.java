@@ -1,5 +1,9 @@
 package soot.jimple.infoflow.methodSummary.data.summary;
 
+import soot.jimple.infoflow.data.ContextDefinition;
+import soot.jimple.infoflow.methodSummary.data.sourceSink.FlowConstraint;
+
+import java.util.Arrays;
 import java.util.Map;
 
 /**
@@ -8,9 +12,10 @@ import java.util.Map;
  * @author Steven Arzt
  *
  */
-abstract class AbstractMethodSummary {
+public abstract class AbstractMethodSummary {
 
 	protected final String methodSig;
+	protected final FlowConstraint[] constraints;
 
 	/**
 	 * Creates a new instance of the {@link AbstractMethodSummary} class
@@ -18,12 +23,17 @@ abstract class AbstractMethodSummary {
 	 * @param methodSig
 	 *            The signature of the method containing the flow
 	 */
-	AbstractMethodSummary(String methodSig) {
+	AbstractMethodSummary(String methodSig, FlowConstraint[] constraints) {
 		this.methodSig = methodSig;
+		this.constraints = constraints;
 	}
 
 	public String methodSig() {
 		return methodSig;
+	}
+
+	public FlowConstraint[] getConstraints() {
+		return constraints;
 	}
 
 	/**
@@ -41,6 +51,7 @@ abstract class AbstractMethodSummary {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((methodSig == null) ? 0 : methodSig.hashCode());
+		result = prime * result + ((constraints == null) ? 0 : Arrays.hashCode(constraints));
 		return result;
 	}
 
@@ -57,6 +68,8 @@ abstract class AbstractMethodSummary {
 			if (other.methodSig != null)
 				return false;
 		} else if (!methodSig.equals(other.methodSig))
+			return false;
+		if (!Arrays.equals(constraints, other.constraints))
 			return false;
 		return true;
 	}

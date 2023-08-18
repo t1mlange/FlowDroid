@@ -164,11 +164,16 @@
 			</flows>
 		</method>
 		<method id="java.lang.Object get(java.lang.Object)">
+			<constraints>
+				<key sourceSinkType="Parameter"
+					 ParameterIndex="0" />
+			</constraints>
 			<flows>
 				<flow isAlias="false" typeChecking="false">
 					<from sourceSinkType="Field"
 						AccessPath="[java.util.Map: java.lang.Object[] values]"
-						AccessPathTypes="[java.lang.Object[]]" />
+						AccessPathTypes="[java.lang.Object[]]"
+						  constrained="True" />
 					<to sourceSinkType="Return" />
 				</flow>
 			</flows>
@@ -189,6 +194,10 @@
 			</flows>
 		</method>
 		<method id="java.lang.Object compute(java.lang.Object,java.util.function.BiFunction)">
+			<constraints>
+				<key sourceSinkType="Parameter"
+					 ParameterIndex="0" />
+			</constraints>
 			<flows>
 				<!-- Key Flow -->
 				<flow isAlias="false" typeChecking="false">
@@ -198,22 +207,23 @@
 						AccessPath="[java.util.Map: java.lang.Object[] keys]"
 						AccessPathTypes="[java.lang.Object[]]" />
 				</flow>
+				<flow isAlias="false" typeChecking="false">
+					<from sourceSinkType="Parameter"
+						  ParameterIndex="0" />
+					<to sourceSinkType="Parameter"
+						ParameterIndex="0"
+						gap="42" />
+				</flow>
 				<!-- Base Object is tainted -->
 				<flow isAlias="false" typeChecking="false"
 					  cutFirstField="true">
 					<from sourceSinkType="Field"
 						  AccessPath="[java.util.Map: java.lang.Object[] values]"
-						  AccessPathTypes="[java.lang.Object[]]" />
+						  AccessPathTypes="[java.lang.Object[]]"
+						  constrained="true" />
 					<to sourceSinkType="Parameter"
 						ParameterIndex="1"
 						gap="42" />
-				</flow>
-				<flow isAlias="false" typeChecking="false">
-					<from sourceSinkType="Return"
-						 gap="42" />
-					<to sourceSinkType="Field"
-						  AccessPath="[java.util.Map: java.lang.Object[] values]"
-						  AccessPathTypes="[java.lang.Object[]]" />
 				</flow>
 				<!-- Lambda is tainted -->
 				<flow isAlias="false" typeChecking="false">
@@ -221,6 +231,15 @@
 						  ParameterIndex="1" />
 					<to sourceSinkType="GapBaseObject"
 						gap="42" />
+				</flow>
+				<!-- gap to map -->
+				<flow isAlias="false" typeChecking="false">
+					<from sourceSinkType="Return"
+						  gap="42" />
+					<to sourceSinkType="Field"
+						AccessPath="[java.util.Map: java.lang.Object[] values]"
+						AccessPathTypes="[java.lang.Object[]]"
+						constrained="true" />
 				</flow>
 				<flow isAlias="false" typeChecking="false">
 					<from sourceSinkType="Return"
@@ -236,6 +255,10 @@
 			</clears>
 		</method>
 		<method id="java.lang.Object computeIfPresent(java.lang.Object,java.util.function.BiFunction)">
+			<constraints>
+				<key sourceSinkType="Parameter"
+					 ParameterIndex="0" />
+			</constraints>
 			<flows>
 				<!-- Key Flow -->
 				<flow isAlias="false" typeChecking="false">
@@ -245,22 +268,23 @@
 						AccessPath="[java.util.Map: java.lang.Object[] keys]"
 						AccessPathTypes="[java.lang.Object[]]" />
 				</flow>
+				<flow isAlias="false" typeChecking="false">
+					<from sourceSinkType="Parameter"
+						  ParameterIndex="0" />
+					<to sourceSinkType="Parameter"
+						ParameterIndex="0"
+						gap="42" />
+				</flow>
 				<!-- Base Object is tainted -->
 				<flow isAlias="false" typeChecking="false"
 					  cutFirstField="true">
 					<from sourceSinkType="Field"
 						  AccessPath="[java.util.Map: java.lang.Object[] values]"
-						  AccessPathTypes="[java.lang.Object[]]" />
+						  AccessPathTypes="[java.lang.Object[]]"
+						  constrained="true" />
 					<to sourceSinkType="Parameter"
 						ParameterIndex="1"
 						gap="42" />
-				</flow>
-				<flow isAlias="false" typeChecking="false">
-					<from sourceSinkType="Return"
-						  gap="42" />
-					<to sourceSinkType="Field"
-						AccessPath="[java.util.Map: java.lang.Object[] values]"
-						AccessPathTypes="[java.lang.Object[]]" />
 				</flow>
 				<!-- Lambda is tainted -->
 				<flow isAlias="false" typeChecking="false">
@@ -268,6 +292,15 @@
 						  ParameterIndex="1" />
 					<to sourceSinkType="GapBaseObject"
 						gap="42" />
+				</flow>
+				<!-- gap to map -->
+				<flow isAlias="false" typeChecking="false">
+					<from sourceSinkType="Return"
+						  gap="42" />
+					<to sourceSinkType="Field"
+						AccessPath="[java.util.Map: java.lang.Object[] values]"
+						AccessPathTypes="[java.lang.Object[]]"
+						constrained="true" />
 				</flow>
 				<flow isAlias="false" typeChecking="false">
 					<from sourceSinkType="Return"
@@ -282,8 +315,52 @@
 					   preventPropagation="false" />
 			</clears>
 		</method>
+		<method id="java.lang.Object computeIfAbsent(java.lang.Object,java.util.function.Function)">
+			<constraints>
+				<key sourceSinkType="Parameter"
+					 ParameterIndex="0" />
+			</constraints>
+			<flows>
+				<!-- Key Flow -->
+				<flow isAlias="false" typeChecking="false">
+					<from sourceSinkType="Parameter"
+						  ParameterIndex="0" />
+					<to sourceSinkType="Field"
+						AccessPath="[java.util.Map: java.lang.Object[] keys]"
+						AccessPathTypes="[java.lang.Object[]]" />
+				</flow>
+				<flow isAlias="false" typeChecking="false">
+					<from sourceSinkType="Parameter"
+						  ParameterIndex="0" />
+					<to sourceSinkType="Parameter"
+						ParameterIndex="0"
+						gap="43" />
+				</flow>
+				<!-- Lambda is tainted -->
+				<flow isAlias="false" typeChecking="false">
+					<from sourceSinkType="Parameter"
+						  ParameterIndex="1" />
+					<to sourceSinkType="GapBaseObject"
+						gap="43" />
+				</flow>
+				<!-- gap to map -->
+				<flow isAlias="false" typeChecking="false">
+					<from sourceSinkType="Return"
+						  gap="43" />
+					<to sourceSinkType="Field"
+						AccessPath="[java.util.Map: java.lang.Object[] values]"
+						AccessPathTypes="[java.lang.Object[]]" />
+				</flow>
+				<flow isAlias="false" typeChecking="false">
+					<from sourceSinkType="Return"
+						  gap="43" />
+					<to sourceSinkType="Return" />
+				</flow>
+			</flows>
+		</method>
 	</methods>
 	<gaps>
 		<gap num="42" id="&lt;java.util.function.BiFunction: java.lang.Object apply(java.lang.Object,java.lang.Object)&gt;" />
+		<gap num="43" id="&lt;java.util.function.Function: java.lang.Object apply(java.lang.Object)&gt;" />
 	</gaps>
 </summary>

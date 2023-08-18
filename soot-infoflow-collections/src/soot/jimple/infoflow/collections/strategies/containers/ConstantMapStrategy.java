@@ -19,12 +19,6 @@ public class ConstantMapStrategy implements IContainerStrategy {
     private long resolvedKeys;
     private long unresolvedKeys;
 
-    private final CollectionTaintWrapper ctw;
-
-    public ConstantMapStrategy(CollectionTaintWrapper ctw) {
-        this.ctw = ctw;
-    }
-
     public long getResolvedKeys() {
         return resolvedKeys;
     }
