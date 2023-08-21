@@ -377,19 +377,11 @@ public class StubDroidBasedTaintWrapper extends SummaryTaintWrapper {
      * @return The access path derived from the given taint
      */
     protected AccessPath createAccessPathFromTaint(Taint t, Stmt stmt, AccessPathPropagator curr, boolean reverseFlows) {
-        soot.jimple.infoflow.data.AccessPathFragment[] fragments;
-        // Try to keep the access path from the old abstraction such that contexts are preserved
-        if (t.getAccessPathLength() > 0 && t.getAccessPath().equals(curr.getD2().getAccessPath())) {
-            int l = t.getAccessPathLength();
-            fragments = new soot.jimple.infoflow.data.AccessPathFragment[l];
-            System.arraycopy(curr.getD2().getAccessPath().getFragments(), 0, fragments, 0, l);
-        } else {
-            // Convert the taints to Soot objects
-            SootField[] fields = safeGetFields(t.getAccessPath());
-            Type[] types = safeGetTypes(t.getAccessPath(), fields);
-            ContextDefinition[][] contexts = safeGetContexts(t.getAccessPath());
-            fragments = soot.jimple.infoflow.data.AccessPathFragment.createFragmentArray(fields, types, contexts);
-        }
+        // Convert the taints to Soot objects
+        SootField[] fields = safeGetFields(t.getAccessPath());
+        Type[] types = safeGetTypes(t.getAccessPath(), fields);
+        ContextDefinition[][] contexts = safeGetContexts(t.getAccessPath());
+        soot.jimple.infoflow.data.AccessPathFragment[] fragments = soot.jimple.infoflow.data.AccessPathFragment.createFragmentArray(fields, types, contexts);
 
         Type baseType = TypeUtils.getTypeFromString(t.getBaseType());
 
@@ -677,7 +669,10 @@ public class StubDroidBasedTaintWrapper extends SummaryTaintWrapper {
             if ((flowsInTarget == null || flowsInTarget.isEmpty()) && curGap != null) {
                 SootMethod callee = Scene.v().grabMethod(curGap.getSignature());
                 if (callee != null) {
-                    for (SootMethod implementor : getAllImplementors(callee)) {
+                    Collection<SootMethod> implementors = getAllImplementors(callee);
+
+
+                    for (SootMethod implementor : implementors) {
                         if (implementor.getDeclaringClass().isConcrete() && !implementor.getDeclaringClass().isPhantom()
                                 && implementor.isConcrete()) {
                             Set<AccessPathPropagator> implementorPropagators = spawnAnalysisIntoClientCode(implementor,
@@ -1416,8 +1411,15 @@ public class StubDroidBasedTaintWrapper extends SummaryTaintWrapper {
         final boolean taintSubFields = flow.sink().taintSubFields();
         final Boolean checkTypes = flow.getTypeChecking();
 
-        AccessPathFragment remainingFields = cutSubFields(flow, getRemainingFields(flowSource, taint));
-        AccessPathFragment appendedFields = AccessPathFragment.append(flowSink.getAccessPath(), remainingFields);
+        AccessPathFragment remainingFields;
+        AccessPathFragment appendedFields;
+        if (flowSource.getAccessPath().equals(flowSink.getAccessPath())) {
+            remainingFields = null;
+            appendedFields = cutSubFields(flow, taint.getAccessPath());
+        } else {
+            remainingFields = cutSubFields(flow, getRemainingFields(flowSource, taint));
+            appendedFields = AccessPathFragment.append(flowSink.getAccessPath(), remainingFields);
+        }
 
         int lastCommonAPIdx = Math.min(flowSource.getAccessPathLength(), taint.getAccessPathLength());
 

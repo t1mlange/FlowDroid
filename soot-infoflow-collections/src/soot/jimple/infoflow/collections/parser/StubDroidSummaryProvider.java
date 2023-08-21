@@ -56,6 +56,13 @@ public class StubDroidSummaryProvider extends XMLSummaryProvider {
         loadSummariesFromFiles(files, f -> loadClass(f));
     }
 
+    public void loadAdditionalSummaries(String folderInJar) throws URISyntaxException, IOException {
+        loadSummariesFromJAR(folderInJar, StubDroidSummaryProvider.class, p -> {
+            if (!loadedClasses.contains(fileToClass(p.getFileName().toString())))
+                loadClass(p);
+        });
+    }
+
     @Override
     public boolean mayHaveSummaryForMethod(String subsig) {
         return subsigMethodsWithSummaries.contains(subsig);

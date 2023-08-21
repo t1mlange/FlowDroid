@@ -10,7 +10,7 @@ import soot.jimple.InstanceInvokeExpr;
 import soot.jimple.InvokeExpr;
 import soot.jimple.Stmt;
 import soot.jimple.infoflow.InfoflowManager;
-import soot.jimple.infoflow.collections.analyses.ROIteratorAnalysis;
+import soot.jimple.infoflow.collections.analyses.ReadOnlyListViewAnalysis;
 import soot.jimple.infoflow.collections.data.CollectionMethod;
 import soot.jimple.infoflow.collections.data.CollectionModel;
 import soot.jimple.infoflow.collections.operations.ICollectionOperation;
@@ -38,7 +38,7 @@ import soot.jimple.infoflow.taintWrappers.ITaintPropagationWrapper;
  * @author Tim Lange
  */
 public class CollectionTaintWrapper implements ITaintPropagationWrapper {
-	public static ROIteratorAnalysis itAnalysis;
+	public static ReadOnlyListViewAnalysis itAnalysis;
 
 	@SynchronizedBy("Read-only during analysis")
 	private Map<String, CollectionModel> models;
@@ -124,7 +124,7 @@ public class CollectionTaintWrapper implements ITaintPropagationWrapper {
 		if (solver instanceof AppendingCollectionInfoflowSolver)
 			((AppendingCollectionInfoflowSolver) solver).setAppendingStrategy(new DefaultAppendingStrategy(manager, fields, allSubSigs));
 
-		itAnalysis = new ROIteratorAnalysis(manager.getICFG());
+		itAnalysis = new ReadOnlyListViewAnalysis(manager.getICFG());
 	}
 
 	@Override
