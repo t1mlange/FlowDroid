@@ -51,8 +51,14 @@ public class InvalidateOperation extends AbstractOperation {
             return false;
 
         AccessPathFragment fragment = incoming.getAccessPath().getFirstFragment();
-        if (fragment == null || !fragment.getField().getSignature().equals(this.field) || !fragment.hasContext())
+        if (fragment == null || !fragment.getField().getSignature().equals(this.field) || !fragment.hasContext()) {
+            if (returnTuple != null) {
+                Abstraction abs = deriveReturnValueTaint(stmt, incoming, manager);
+                if (abs != null)
+                    out.add(abs);
+            }
             return false;
+        }
 
         // Special case for iterators of lists: Because remove, add and set can also be called on the iterator,
         // we normally would have to discard the index all together. But if we can prove that the iterator is used
