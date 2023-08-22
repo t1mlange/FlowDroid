@@ -43,9 +43,12 @@
 	<xs:sequence>
 		<xs:element name="constraints" minOccurs="0" maxOccurs="1">
 			<xs:complexType>
-				<xs:sequence>
-					<xs:element name="key" type="constraintType" minOccurs="1" maxOccurs="unbounded" />
-				</xs:sequence>
+				<xs:choice>
+					<xs:sequence>
+						<xs:element name="key" type="constraintType" minOccurs="1" maxOccurs="unbounded" />
+					</xs:sequence>
+					<xs:element name="index" type="constraintType" minOccurs="1" maxOccurs="1" />
+				</xs:choice>
 			</xs:complexType>
 		</xs:element>
 		<xs:element name="flows" minOccurs="0" maxOccurs="1">
@@ -71,8 +74,6 @@
 	<xs:sequence>
 		<xs:element name="from" type="fromToDefinition" minOccurs="1" maxOccurs="1" />
 		<xs:element name="to" type="fromToDefinition" minOccurs="1" maxOccurs="1" />
-		<xs:element name="require-context" type="contextDefinition" minOccurs="0" maxOccurs="unbounded" />
-		<xs:element name="provide-context" type="contextDefinition" minOccurs="0" maxOccurs="unbounded" />
 	</xs:sequence>
 	
 	<!-- 
@@ -94,6 +95,8 @@
 	the resulting taint would be on d.c. With this option, it would only be on d.  
 	 -->
 	<xs:attribute name="cutSubfields" type="xs:boolean" use="optional" default="false" />
+
+	<xs:attribute name="final" type="xs:boolean" use="optional" default="false" />
 </xs:complexType>
 
 <xs:complexType name="contextDefinition">
@@ -102,9 +105,9 @@
 </xs:complexType>
 
 <xs:complexType name="constraintType">
-	<xs:attribute name="sourceSinkType" type="sourceSinkType" use="required" />
+	<xs:attribute name="sourceSinkType" type="sourceSinkTypeConstraint" use="required" />
 	<xs:attribute name="ParameterIndex" type="xs:int" />
-	<xs:attribute name="AccessPath" type="xs:string" />
+	<xs:attribute name="ImplicitLocation" type="implicitType" />
 </xs:complexType>
 
 <xs:complexType name="clearType">
@@ -155,6 +158,21 @@
 		<xs:enumeration value="Parameter" />
 		<xs:enumeration value="GapBaseObject" />
 		<xs:enumeration value="Return" />
+	</xs:restriction>
+</xs:simpleType>
+
+<xs:simpleType name="sourceSinkTypeConstraint">
+	<xs:restriction base="xs:string">
+		<xs:enumeration value="Parameter" />
+		<xs:enumeration value="Implicit" />
+	</xs:restriction>
+</xs:simpleType>
+
+<xs:simpleType name="implicitType">
+	<xs:restriction base="xs:string">
+		<xs:enumeration value="First" />
+		<xs:enumeration value="Last" />
+		<xs:enumeration value="Next" />
 	</xs:restriction>
 </xs:simpleType>
 

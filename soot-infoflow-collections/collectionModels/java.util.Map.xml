@@ -90,10 +90,6 @@
             <key idx="0" />
             <data idx="1" />
         </insert>
-        <copy>
-            <from idx="1" />
-            <to idx="return" />
-        </copy>
     </method>
     <method subsig="java.lang.Object remove(java.lang.Object)">
         <remove field="[java.util.Map: java.lang.Object[] values]">

@@ -139,7 +139,7 @@ public class SimpleMapTestCode {
 		sink(map.get("ConstantKey"));
 	}
 
-	@FlowDroidTest(expected = 1)
+	@FlowDroidTest(expected = 0)
 	public void testMapPutIfAbsent2() {
 		Map<String, String> map = new HashMap<>();
 		String tainted = source();
@@ -397,5 +397,12 @@ public class SimpleMapTestCode {
 		sink(map.get("Outer").get("Outer"));
 		sink(map.get("Inner").get("Outer"));
 		sink(map.get("Inner").get("Inner"));
+	}
+
+	@FlowDroidTest(expected = 0)
+	public void testNoIterativeApply1() {
+		Map<String, String> map = new HashMap<>();
+		String oldVal = map.put("XXX", source());
+		sink(oldVal);
 	}
 }
