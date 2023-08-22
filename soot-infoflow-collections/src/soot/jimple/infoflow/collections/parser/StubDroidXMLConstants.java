@@ -9,4 +9,6 @@ public class StubDroidXMLConstants extends XMLConstants {
     public static final String ATTRIBUTE_IMPL_LOC = "ImplicitLocation";
     public static final String ATTRIBUTE_CONSTRAINED = "constrained";
     public static final String ATTRIBUTE_FINAL = "final";
+    public static final String ATTRIBUTE_MODE = "mode";
+    public static final String MODE_UPDATE = "mode";
 }

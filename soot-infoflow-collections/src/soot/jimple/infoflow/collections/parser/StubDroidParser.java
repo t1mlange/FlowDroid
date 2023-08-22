@@ -399,11 +399,16 @@ public class StubDroidParser extends SummaryReader {
     private FlowConstraint createIndexConstraint(Map<String, String> attributes) throws SummaryXMLException {
         if (isParameter(attributes))
             return new IndexConstraint(SourceSinkType.Parameter, parameterIdx(attributes), getBaseType(attributes),
-                    new AccessPathFragment(getAccessPath(attributes), getAccessPathTypes(attributes)), null);
+                    new AccessPathFragment(getAccessPath(attributes), getAccessPathTypes(attributes)), null, isReplaceMode(attributes));
         if (isImplicit(attributes))
             return new IndexConstraint(SourceSinkType.Field, -1, getBaseType(attributes),
-                    new AccessPathFragment(getAccessPath(attributes), getAccessPathTypes(attributes)), getImplicitLocation(attributes));
+                    new AccessPathFragment(getAccessPath(attributes), getAccessPathTypes(attributes)), getImplicitLocation(attributes), isReplaceMode(attributes));
         throw new SummaryXMLException();
+    }
+
+    private boolean isReplaceMode(Map<String, String> attributes) {
+        String mode = attributes.get(StubDroidXMLConstants.ATTRIBUTE_MODE);
+        return mode != null && mode.equals(StubDroidXMLConstants.MODE_UPDATE);
     }
 
     private ImplicitLocation getImplicitLocation(Map<String, String> attributes) {

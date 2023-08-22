@@ -7,6 +7,8 @@ import soot.*;
 import soot.jimple.*;
 import soot.jimple.infoflow.InfoflowConfiguration;
 import soot.jimple.infoflow.InfoflowManager;
+import soot.jimple.infoflow.collections.context.IntervalContext;
+import soot.jimple.infoflow.collections.data.IndexConstraint;
 import soot.jimple.infoflow.collections.strategies.containers.ConstantMapStrategy;
 import soot.jimple.infoflow.collections.strategies.containers.IContainerStrategy;
 import soot.jimple.infoflow.collections.strategies.containers.TestConstantStrategy;
@@ -619,6 +621,18 @@ public class StubDroidBasedTaintWrapper extends SummaryTaintWrapper {
                             preventPropagation |= clear.preventPropagation();
                             break;
                         }
+
+                        if (!preventPropagation && taint.hasAccessPath() && clear.getClearDefinition().isConstrained()
+                            && Arrays.stream(clear.getConstraints()).anyMatch(c -> c.isIndexBased() && c.mightShift()
+                                && (c.getType() != SourceSinkType.Implicit || c.getImplicitLocation() == ImplicitLocation.First))) {
+                            ContextDefinition[] ctxt = taint.getAccessPath().getFirstFieldContext();
+                            ContextDefinition[] stmtCtxt = concretizeFlowConstraints(clear.getConstraints(), stmt);
+                            Tristate lte = containerStrategy.lessThanEqual(ctxt[0], stmtCtxt[0]);
+                            if (!lte.isFalse()) {
+                                ContextDefinition newCtxt = containerStrategy.shift(ctxt[0], new IntervalContext(-1), lte.isTrue());
+//                                newCtxt.
+                            }
+                        }
                     }
                 }
 
@@ -1164,62 +1178,42 @@ public class StubDroidBasedTaintWrapper extends SummaryTaintWrapper {
      */
     protected boolean flowMatchesTaint(final MethodFlow flow, final Taint taint, final Stmt stmt) {
         boolean match = flowMatchesTaintInternal(flow.source(), flow, taint, stmt, (t) -> !t.isFalse());
-        if (flow.sink().isConstrained() && taint.getAccessPath().getFirstFieldContext() != null) {
-
-        }
 
         return match;
     }
 
     protected boolean flowMatchesTaint(final MethodClear flow, final Taint taint, final Stmt stmt) {
         boolean match = flowMatchesTaintInternal(flow.getClearDefinition(), flow, taint, stmt, (t) -> t.isTrue());
-        if (flow.getClearDefinition().isConstrained() && taint.getAccessPath().getFirstFieldContext() != null) {
-
-        }
 
         return match;
     }
 
-    protected boolean flowMatchesTaintInternal(final AbstractFlowSinkSource flowSource, final AbstractMethodSummary flow, final Taint taint, final Stmt stmt,
-                                               Function<Tristate, Boolean> eval) {
-        if (flowSource.isParameter() && taint.isParameter()) {
-            // Get the parameter index from the call and compare it to the
-            // parameter index in the flow summary
-            if (taint.getParameterIndex() == flowSource.getParameterIndex()) {
-                if (compareFields(taint, flowSource) && eval.apply(matchesConstraints(flowSource, taint, flow, stmt)))
-                    return true;
-            }
-        } else if (flowSource.isField()) {
-            // Flows from a field can either be applied to the same field or
-            // the base object in total
-            boolean doTaint = (taint.isGapBaseObject() || taint.isField());
-            if (doTaint && compareFields(taint, flowSource) && eval.apply(matchesConstraints(flowSource, taint, flow, stmt)))
-                return true;
-        }
+    protected boolean flowMatchesTaintInternal(final AbstractFlowSinkSource flowSource, final AbstractMethodSummary flow,
+                                               final Taint taint, final Stmt stmt, Function<Tristate, Boolean> eval) {
+        // Matches parameter
+        boolean match = flowSource.isParameter() && taint.isParameter()
+                        && taint.getParameterIndex() == flowSource.getParameterIndex();
+        // Flows from a field can either be applied to the same field or the base object in total
+        match = match || flowSource.isField() && (taint.isGapBaseObject() || taint.isField());
         // We can have a flow from a local or a field
-        else if (flowSource.isThis() && taint.isField())
-            return true;
-            // A value can also flow from the return value of a gap to somewhere
-        else if (flowSource.isReturn() && taint.isReturn() && flowSource.getGap() != null && taint.getGap() != null
-                && compareFields(taint, flowSource) && eval.apply(matchesConstraints(flowSource, taint, flow, stmt)))
-            return true;
-            // For aliases, we over-approximate flows from the return edge to all
-            // possible exit nodes
-        else if (flowSource.isReturn() && flowSource.getGap() == null && taint.getGap() == null && taint.isReturn()
-                && compareFields(taint, flowSource) && eval.apply(matchesConstraints(flowSource, taint, flow, stmt)))
-            return true;
-        return false;
+        match = match || flowSource.isThis() && taint.isField();
+        // A value can also flow from the return value of a gap to somewhere
+        match = match || flowSource.isReturn() && taint.isReturn() && flowSource.getGap() != null && taint.getGap() != null;
+        // For aliases, we over-approximate flows from the return edge to all possible exit nodes
+        match = match || flowSource.isReturn() && flowSource.getGap() == null && taint.getGap() == null && taint.isReturn();
+
+        return match && compareFields(taint, flowSource) && eval.apply(matchesConstraints(flowSource, taint, flow, stmt));
     }
 
-        /**
-         * Checks whether the type tracked in the access path is compatible with the
-         * type of the base object expected by the flow summary
-         *
-         * @param baseType  The base type tracked in the access path
-         * @param checkType The type in the summary
-         * @return True if the tracked base type is compatible with the type expected by
-         *         the flow summary, otherwise false
-         */
+    /**
+     * Checks whether the type tracked in the access path is compatible with the
+     * type of the base object expected by the flow summary
+     *
+     * @param baseType  The base type tracked in the access path
+     * @param checkType The type in the summary
+     * @return True if the tracked base type is compatible with the type expected by
+     *         the flow summary, otherwise false
+     */
     protected boolean isCastCompatible(Type baseType, Type checkType) {
         if (baseType == null || checkType == null)
             return false;
@@ -1452,15 +1446,8 @@ public class StubDroidBasedTaintWrapper extends SummaryTaintWrapper {
         final boolean taintSubFields = flow.sink().taintSubFields();
         final Boolean checkTypes = flow.getTypeChecking();
 
-        AccessPathFragment remainingFields;
-        AccessPathFragment appendedFields;
-        if (flowSource.getAccessPath().equals(flowSink.getAccessPath())) {
-            remainingFields = null;
-            appendedFields = cutSubFields(flow, taint.getAccessPath());
-        } else {
-            remainingFields = cutSubFields(flow, getRemainingFields(flowSource, taint));
-            appendedFields = AccessPathFragment.append(flowSink.getAccessPath(), remainingFields);
-        }
+        AccessPathFragment remainingFields = cutSubFields(flow, getRemainingFields(flowSource, taint));
+        AccessPathFragment appendedFields = AccessPathFragment.append(flowSink.getAccessPath(), remainingFields);
 
         int lastCommonAPIdx = Math.min(flowSource.getAccessPathLength(), taint.getAccessPathLength());
 
@@ -1520,11 +1507,12 @@ public class StubDroidBasedTaintWrapper extends SummaryTaintWrapper {
         }
 
         if (flow.sink().isConstrained()) {
-            ContextDefinition[] ctxt = concretizeFlowConstraints(flow.getConstraints(), stmt);
+            FlowConstraint[] constraints = flow.getConstraints();
+            ContextDefinition[] ctxt = constraints.length == 0
+                    ? taint.getAccessPath().getFirstFieldContext()
+                    : concretizeFlowConstraints(flow.getConstraints(), stmt);
             if (appendedFields != null)
                 appendedFields = appendedFields.addContext(ctxt);
-
-
         }
 
         // Taint the correct fields
