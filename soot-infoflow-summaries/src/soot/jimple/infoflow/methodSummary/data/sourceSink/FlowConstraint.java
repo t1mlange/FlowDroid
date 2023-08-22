@@ -40,6 +40,8 @@ public abstract class FlowConstraint {
 
     public abstract boolean isIndexBased();
 
+    public abstract boolean mightShift();
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

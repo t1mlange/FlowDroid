@@ -108,7 +108,16 @@
 	<xs:attribute name="sourceSinkType" type="sourceSinkTypeConstraint" use="required" />
 	<xs:attribute name="ParameterIndex" type="xs:int" />
 	<xs:attribute name="ImplicitLocation" type="implicitType" />
+	<xs:attribute name="mode" type="indexMode" />
 </xs:complexType>
+
+<!-- Describes whether the data the index points to is replaced or by default; is assumed to be removed  -->
+<xs:simpleType name="indexMode">
+	<xs:restriction base="xs:string">
+		<xs:enumeration value="default" />
+		<xs:enumeration value="replace" />
+	</xs:restriction>
+</xs:simpleType>
 
 <xs:complexType name="clearType">
 	<xs:attribute name="sourceSinkType" type="sourceSinkType" use="required" />

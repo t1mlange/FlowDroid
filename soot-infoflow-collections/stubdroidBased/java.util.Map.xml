@@ -49,7 +49,8 @@
 						  AccessPathTypes="[java.lang.Object[]]" />
 					<to sourceSinkType="Field"
 						AccessPath="[java.util.Map: java.lang.Object[] values]"
-						AccessPathTypes="[java.lang.Object[]]" />
+						AccessPathTypes="[java.lang.Object[]]"
+						constrained="true" />
 				</flow>
 			</flows>
 		</method>

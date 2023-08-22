@@ -16,6 +16,11 @@ public class KeyConstraint extends FlowConstraint {
     }
 
     @Override
+    public boolean mightShift() {
+        return false;
+    }
+
+    @Override
     public ImplicitLocation getImplicitLocation() {
         throw new IllegalStateException("Check isIndex first!");
     }
