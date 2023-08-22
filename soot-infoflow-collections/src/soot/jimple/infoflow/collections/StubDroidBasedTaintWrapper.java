@@ -9,6 +9,7 @@ import soot.jimple.infoflow.InfoflowConfiguration;
 import soot.jimple.infoflow.InfoflowManager;
 import soot.jimple.infoflow.collections.strategies.containers.ConstantMapStrategy;
 import soot.jimple.infoflow.collections.strategies.containers.IContainerStrategy;
+import soot.jimple.infoflow.collections.strategies.containers.TestConstantStrategy;
 import soot.jimple.infoflow.collections.util.Tristate;
 import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.data.AccessPath;
@@ -196,7 +197,7 @@ public class StubDroidBasedTaintWrapper extends SummaryTaintWrapper {
         // Register the taint propagation handler
         manager.getMainSolver().setFollowReturnsPastSeedsHandler(new SummaryFRPSHandler());
 
-        this.containerStrategy = new ConstantMapStrategy();
+        this.containerStrategy = new TestConstantStrategy(manager);
 
         // If we have a fallback wrapper, we need to initialize that one as well
         if (fallbackWrapper != null)
@@ -715,12 +716,16 @@ public class StubDroidBasedTaintWrapper extends SummaryTaintWrapper {
                             res.add(ap);
                         }
                     }
-                    if (doneSet.add(newPropagator))
+
+                    // Final flows signal that the flow itself is complete and does not need
+                    // another iteration to be correct. This allows to model things like return
+                    // the previously held value etc.
+                    if (doneSet.add(newPropagator) && !flow.isFinal())
                         workList.add(newPropagator);
 
                     // If we have have tainted a heap field, we need to look for
                     // aliases as well
-                    if (newPropagator.getTaint().hasAccessPath()) {
+                    if (newPropagator.getTaint().hasAccessPath() && !flow.isFinal()) {
                         AccessPathPropagator backwardsPropagator = newPropagator.deriveInversePropagator();
                         if (doneSet.add(backwardsPropagator))
                             workList.add(backwardsPropagator);
@@ -1100,7 +1105,33 @@ public class StubDroidBasedTaintWrapper extends SummaryTaintWrapper {
         ContextDefinition[] ctxt = new ContextDefinition[constraints.length];
         for (int i = 0; i < constraints.length; i++) {
             FlowConstraint c = constraints[i];
-            ctxt[i] = containerStrategy.getKeyContext(ie.getArg(c.getParamIdx()), stmt);
+            switch (c.getType()) {
+                case Parameter:
+                    if (c.isIndexBased())
+                        ctxt[i] = containerStrategy.getIndexContext(ie.getArg(c.getParamIdx()), stmt);
+                    else
+                        ctxt[i] = containerStrategy.getKeyContext(ie.getArg(c.getParamIdx()), stmt);
+                    break;
+                case Field:
+                    assert c.isIndexBased();
+                    assert ie instanceof InstanceInvokeExpr;
+                    switch (c.getImplicitLocation()) {
+                        case First:
+                            ctxt[i] = containerStrategy.getFirstPosition(((InstanceInvokeExpr) ie).getBase(), stmt);
+                            break;
+                        case Last:
+                            ctxt[i] = containerStrategy.getLastPosition(((InstanceInvokeExpr) ie).getBase(), stmt);
+                            break;
+                        case Next:
+                            ctxt[i] = containerStrategy.getNextPosition(((InstanceInvokeExpr) ie).getBase(), stmt);
+                            break;
+                        default:
+                            throw new RuntimeException("Missing case!");
+                    }
+                    break;
+                default:
+                    throw new RuntimeException("Unknown context!");
+            }
         }
 
         return ctxt;
@@ -1132,11 +1163,21 @@ public class StubDroidBasedTaintWrapper extends SummaryTaintWrapper {
      * @return True if the given source matches the given taint, otherwise false
      */
     protected boolean flowMatchesTaint(final MethodFlow flow, final Taint taint, final Stmt stmt) {
-        return flowMatchesTaintInternal(flow.source(), flow, taint, stmt, (t) -> !t.isFalse());
+        boolean match = flowMatchesTaintInternal(flow.source(), flow, taint, stmt, (t) -> !t.isFalse());
+        if (flow.sink().isConstrained() && taint.getAccessPath().getFirstFieldContext() != null) {
+
+        }
+
+        return match;
     }
 
     protected boolean flowMatchesTaint(final MethodClear flow, final Taint taint, final Stmt stmt) {
-        return flowMatchesTaintInternal(flow.getClearDefinition(), flow, taint, stmt, (t) -> t.isTrue());
+        boolean match = flowMatchesTaintInternal(flow.getClearDefinition(), flow, taint, stmt, (t) -> t.isTrue());
+        if (flow.getClearDefinition().isConstrained() && taint.getAccessPath().getFirstFieldContext() != null) {
+
+        }
+
+        return match;
     }
 
     protected boolean flowMatchesTaintInternal(final AbstractFlowSinkSource flowSource, final AbstractMethodSummary flow, final Taint taint, final Stmt stmt,
@@ -1482,6 +1523,8 @@ public class StubDroidBasedTaintWrapper extends SummaryTaintWrapper {
             ContextDefinition[] ctxt = concretizeFlowConstraints(flow.getConstraints(), stmt);
             if (appendedFields != null)
                 appendedFields = appendedFields.addContext(ctxt);
+
+
         }
 
         // Taint the correct fields

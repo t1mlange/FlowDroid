@@ -31,7 +31,7 @@ public class TestConstantStrategy extends ConstantMapStrategy {
     private final ConcurrentHashMap<SootMethod, ListSizeAnalysis> implicitIndices;
     protected final InfoflowManager manager;
 
-    public TestConstantStrategy(InfoflowManager manager, CollectionTaintWrapper ctw) {
+    public TestConstantStrategy(InfoflowManager manager) {
         super();
         this.implicitIndices = new ConcurrentHashMap<>();
         this.manager = manager;

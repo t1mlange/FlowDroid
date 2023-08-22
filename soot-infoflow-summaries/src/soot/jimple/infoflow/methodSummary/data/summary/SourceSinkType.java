@@ -31,5 +31,6 @@ public enum SourceSinkType {
 	 * A custom type of source or sink. Such elements will be ignored by the
 	 * default implementation
 	 */
-	Custom
+	Custom,
+	Implicit
 }

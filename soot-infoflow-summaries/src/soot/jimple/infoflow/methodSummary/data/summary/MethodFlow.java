@@ -1,5 +1,6 @@
 package soot.jimple.infoflow.methodSummary.data.summary;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -26,6 +27,7 @@ public class MethodFlow extends AbstractMethodSummary {
 	private final Boolean typeChecking;
 	private final Boolean ignoreTypes;
 	private final Boolean cutSubFields;
+	private final boolean isFinal;
 
 	/**
 	 * Creates a new instance of the MethodFlow class
@@ -45,7 +47,7 @@ public class MethodFlow extends AbstractMethodSummary {
 	 *                     enabled.
 	 */
 	public MethodFlow(String methodSig, FlowSource from, FlowSink to, boolean isAlias, Boolean typeChecking,
-			Boolean ignoreTypes, Boolean cutSubFields, FlowConstraint[] constraints) {
+			Boolean ignoreTypes, Boolean cutSubFields, FlowConstraint[] constraints, boolean isFinal) {
 		super(methodSig, constraints);
 		this.from = from;
 		this.to = to;
@@ -53,6 +55,7 @@ public class MethodFlow extends AbstractMethodSummary {
 		this.typeChecking = typeChecking;
 		this.ignoreTypes = ignoreTypes;
 		this.cutSubFields = cutSubFields;
+		this.isFinal = isFinal;
 	}
 
 	/**
@@ -112,7 +115,7 @@ public class MethodFlow extends AbstractMethodSummary {
 				to.getAccessPath(), to.getGap(), to.isMatchStrict(), to.isConstrained());
 		FlowSink reverseSink = new FlowSink(toType, from.getParameterIndex(), from.getBaseType(), from.getAccessPath(),
 				taintSubFields, from.getGap(), from.isMatchStrict(), from.isConstrained());
-		return new MethodFlow(methodSig, reverseSource, reverseSink, isAlias, typeChecking, ignoreTypes, cutSubFields, constraints);
+		return new MethodFlow(methodSig, reverseSource, reverseSink, isAlias, typeChecking, ignoreTypes, cutSubFields, constraints, isFinal);
 	}
 
 	/**
@@ -156,12 +159,16 @@ public class MethodFlow extends AbstractMethodSummary {
 		return from.isCustom() || to.isCustom();
 	}
 
+	public boolean isFinal() {
+		return isFinal;
+	}
+
 	@Override
 	public MethodFlow replaceGaps(Map<Integer, GapDefinition> replacementMap) {
 		if (replacementMap == null)
 			return this;
 		return new MethodFlow(methodSig, from.replaceGaps(replacementMap), to.replaceGaps(replacementMap), isAlias,
-				typeChecking, ignoreTypes, cutSubFields, constraints);
+				typeChecking, ignoreTypes, cutSubFields, constraints, isFinal);
 	}
 
 	/**
@@ -199,12 +206,16 @@ public class MethodFlow extends AbstractMethodSummary {
 		if (o == null || getClass() != o.getClass()) return false;
 		if (!super.equals(o)) return false;
 		MethodFlow that = (MethodFlow) o;
-		return isAlias == that.isAlias && Objects.equals(from, that.from) && Objects.equals(to, that.to) && Objects.equals(typeChecking, that.typeChecking) && Objects.equals(ignoreTypes, that.ignoreTypes) && Objects.equals(cutSubFields, that.cutSubFields) && Objects.equals(constraints, that.constraints);
+		return isAlias == that.isAlias && Objects.equals(from, that.from) && Objects.equals(to, that.to)
+				&& Objects.equals(typeChecking, that.typeChecking) && Objects.equals(ignoreTypes, that.ignoreTypes)
+				&& Objects.equals(cutSubFields, that.cutSubFields) && Arrays.equals(constraints, that.constraints)
+				&& isFinal == that.isFinal;
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(super.hashCode(), from, to, isAlias, typeChecking, ignoreTypes, cutSubFields, constraints);
+		return Objects.hash(super.hashCode(), from, to, isAlias, typeChecking, ignoreTypes, cutSubFields,
+				Arrays.hashCode(constraints), isFinal);
 	}
 
 	@Override

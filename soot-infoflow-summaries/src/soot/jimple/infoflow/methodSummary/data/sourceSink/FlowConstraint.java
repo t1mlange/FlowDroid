@@ -1,11 +1,15 @@
 package soot.jimple.infoflow.methodSummary.data.sourceSink;
 
+import soot.jimple.infoflow.methodSummary.data.summary.ImplicitLocation;
 import soot.jimple.infoflow.methodSummary.data.summary.SourceSinkType;
 import soot.jimple.infoflow.methodSummary.taintWrappers.AccessPathFragment;
 
 import java.util.Objects;
 
-public class FlowConstraint {
+/**
+ * Describes another source that provides a constraint for a given flow
+ */
+public abstract class FlowConstraint {
     private final SourceSinkType type;
     private final int paramIdx;
     private final String baseType;
@@ -34,6 +38,8 @@ public class FlowConstraint {
         return accessPathFragment;
     }
 
+    public abstract boolean isIndexBased();
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -46,4 +52,6 @@ public class FlowConstraint {
     public int hashCode() {
         return Objects.hash(type, paramIdx, baseType, accessPathFragment);
     }
+
+    public abstract ImplicitLocation getImplicitLocation();
 }

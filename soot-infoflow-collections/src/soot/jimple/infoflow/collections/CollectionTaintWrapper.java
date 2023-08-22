@@ -136,7 +136,7 @@ public class CollectionTaintWrapper implements ITaintPropagationWrapper {
 	}
 
 	protected IContainerStrategy getStrategy() {
-		return new TestConstantStrategy(manager, this);
+		return new TestConstantStrategy(manager);
 	}
 
 	private Set<Abstraction> fallbackTaintsForMethod(Stmt stmt, Abstraction d1, Abstraction taintedPath) {

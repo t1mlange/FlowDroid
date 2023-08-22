@@ -1,5 +1,7 @@
 package soot.jimple.infoflow.collections.parser;
 
+import soot.jimple.infoflow.collections.data.IndexConstraint;
+import soot.jimple.infoflow.collections.data.KeyConstraint;
 import soot.jimple.infoflow.methodSummary.data.sourceSink.FlowClear;
 import soot.jimple.infoflow.methodSummary.data.sourceSink.FlowConstraint;
 import soot.jimple.infoflow.methodSummary.data.sourceSink.FlowSink;
@@ -33,7 +35,7 @@ public class StubDroidParser extends SummaryReader {
     private boolean validateSummariesOnRead = false;
 
     private enum State {
-        summary, hierarchy, intf, methods, method, flow, clear, gaps, gap, constraints, key
+        summary, hierarchy, intf, methods, method, flow, clear, gaps, gap, constraints, key, index
     }
 
     /**
@@ -67,6 +69,7 @@ public class StubDroidParser extends SummaryReader {
             Boolean typeChecking = null;
             Boolean ignoreTypes = null;
             Boolean cutSubfields = null;
+            boolean isFinal = false;
 
             State state = State.summary;
             while (xmlreader.hasNext()) {
@@ -133,6 +136,9 @@ public class StubDroidParser extends SummaryReader {
                         if (sIgnoreTypes != null && !sIgnoreTypes.isEmpty())
                             ignoreTypes = sIgnoreTypes.equals(XMLConstants.VALUE_TRUE);
 
+                        String sIsFinal = getAttributeByName(xmlreader, StubDroidXMLConstants.ATTRIBUTE_FINAL);
+                        if (sIsFinal != null && !sIsFinal.isEmpty())
+                            isFinal = sIsFinal.equals(VALUE_TRUE);
                     } else
                         throw new SummaryXMLException();
                 } else if (localName.equals(TREE_CLEAR) && xmlreader.isStartElement()) {
@@ -161,10 +167,11 @@ public class StubDroidParser extends SummaryReader {
                     if (state == State.flow) {
                         state = State.method;
                         MethodFlow flow = new MethodFlow(currentMethod, createSource(summary, sourceAttributes),
-                                createSink(summary, sinkAttributes), isAlias, typeChecking, ignoreTypes, cutSubfields, constraints.toArray(new FlowConstraint[0]));
+                                createSink(summary, sinkAttributes), isAlias, typeChecking, ignoreTypes, cutSubfields, constraints.toArray(new FlowConstraint[0]), isFinal);
                         summary.addFlow(flow);
 
                         isAlias = false;
+                        isFinal = false;
                     } else
                         throw new SummaryXMLException();
                 } else if (localName.equals(TREE_CLEAR) && xmlreader.isEndElement()) {
@@ -244,7 +251,19 @@ public class StubDroidParser extends SummaryReader {
                     if (state != State.key)
                         throw new SummaryXMLException();
                     state = State.constraints;
-                    constraints.add(createConstraint(constraintAttributes));
+                    constraints.add(createKeyConstraint(constraintAttributes));
+                    constraintAttributes.clear();
+                } else if (localName.equals(StubDroidXMLConstants.TREE_INDEX) && xmlreader.isStartElement()) {
+                    if (state != State.constraints)
+                        throw new SummaryXMLException();
+                    state = State.index;
+                    for (int i = 0; i < xmlreader.getAttributeCount(); i++)
+                        constraintAttributes.put(xmlreader.getAttributeLocalName(i), xmlreader.getAttributeValue(i));
+                } else if (localName.equals(StubDroidXMLConstants.TREE_INDEX) && xmlreader.isEndElement()) {
+                    if (state != State.index)
+                        throw new SummaryXMLException();
+                    state = State.constraints;
+                    constraints.add(createIndexConstraint(constraintAttributes));
                     constraintAttributes.clear();
                 }
             }
@@ -367,11 +386,37 @@ public class StubDroidParser extends SummaryReader {
         throw new SummaryXMLException("Invalid flow clear definition");
     }
 
-    private FlowConstraint createConstraint(Map<String, String> attributes) throws SummaryXMLException {
+    private FlowConstraint createKeyConstraint(Map<String, String> attributes) throws SummaryXMLException {
         if (isParameter(attributes))
-            return new FlowConstraint(SourceSinkType.Parameter, parameterIdx(attributes), getBaseType(attributes),
+            return new KeyConstraint(SourceSinkType.Parameter, parameterIdx(attributes), getBaseType(attributes),
+                new AccessPathFragment(getAccessPath(attributes), getAccessPathTypes(attributes)));
+        if (isField(attributes))
+            return new KeyConstraint(SourceSinkType.Field, -1, getBaseType(attributes),
                 new AccessPathFragment(getAccessPath(attributes), getAccessPathTypes(attributes)));
         throw new SummaryXMLException();
+    }
+
+    private FlowConstraint createIndexConstraint(Map<String, String> attributes) throws SummaryXMLException {
+        if (isParameter(attributes))
+            return new IndexConstraint(SourceSinkType.Parameter, parameterIdx(attributes), getBaseType(attributes),
+                    new AccessPathFragment(getAccessPath(attributes), getAccessPathTypes(attributes)), null);
+        if (isImplicit(attributes))
+            return new IndexConstraint(SourceSinkType.Field, -1, getBaseType(attributes),
+                    new AccessPathFragment(getAccessPath(attributes), getAccessPathTypes(attributes)), getImplicitLocation(attributes));
+        throw new SummaryXMLException();
+    }
+
+    private ImplicitLocation getImplicitLocation(Map<String, String> attributes) {
+        switch (attributes.get(StubDroidXMLConstants.ATTRIBUTE_IMPL_LOC)) {
+            case "First":
+                return ImplicitLocation.First;
+            case "Last":
+                return ImplicitLocation.Last;
+            case "Next":
+                return ImplicitLocation.Next;
+            default:
+                throw new RuntimeException("Missing case!");
+        }
     }
 
     private boolean isReturn(Map<String, String> attributes) {
@@ -386,6 +431,14 @@ public class StubDroidParser extends SummaryReader {
         if (attributes != null) {
             String attr = attributes.get(ATTRIBUTE_FLOWTYPE);
             return attr != null && attr.equals(SourceSinkType.Field.toString());
+        }
+        return false;
+    }
+
+    private boolean isImplicit(Map<String, String> attributes) {
+        if (attributes != null) {
+            String attr = attributes.get(ATTRIBUTE_FLOWTYPE);
+            return attr != null && attr.equals(SourceSinkType.Implicit.toString());
         }
         return false;
     }
