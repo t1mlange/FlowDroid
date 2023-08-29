@@ -41,6 +41,7 @@ public abstract class FlowConstraint {
     public abstract boolean isIndexBased();
 
     public abstract boolean mightShift();
+    public abstract boolean appendsTo();
 
     @Override
     public boolean equals(Object o) {

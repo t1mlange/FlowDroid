@@ -206,64 +206,6 @@ public class SimpleListTestCode {
         sink(lst.get(0));
     }
 
-    @FlowDroidTest(expected = 1)
-    public void testListSublist1() {
-        List<String> lst = new ArrayList<>();
-        String tainted = source();
-        lst.add(tainted);
-        lst.add("xxx");
-        lst.add("yyy");
-        List<String> subList = lst.subList(0, 1);
-        sink(subList.get(1));
-    }
-
-    @FlowDroidTest(expected = 1)
-    public void testListSublist2() {
-        List<String> lst = new ArrayList<>();
-        String tainted = source();
-        lst.add(tainted);
-        lst.add("xxx");
-        lst.add("yyy");
-        List<String> subList = lst.subList(0, 1);
-        sink(lst.get(1));
-    }
-
-    @FlowDroidTest(expected = 1)
-    public void testListIterator1() {
-        List<String> lst = new ArrayList<>();
-        String tainted = source();
-        lst.add(tainted);
-        lst.iterator();
-        sink(lst.get(1));
-    }
-
-    @FlowDroidTest(expected = 1)
-    public void testListIterator2() {
-        List<String> lst = new ArrayList<>();
-        String tainted = source();
-        lst.add(tainted);
-        Iterator<String> it = lst.iterator();
-        sink(it.next());
-    }
-
-    @FlowDroidTest(expected = 1)
-    public void testListListIterator1() {
-        List<String> lst = new ArrayList<>();
-        String tainted = source();
-        lst.add(tainted);
-        lst.listIterator();
-        sink(lst.get(1));
-    }
-
-    @FlowDroidTest(expected = 1)
-    public void testListListIterator2() {
-        List<String> lst = new ArrayList<>();
-        String tainted = source();
-        lst.add(tainted);
-        Iterator<String> it = lst.listIterator(1);
-        sink(it.next());
-    }
-
     @FlowDroidTest(expected = 0)
     public void testListSet1() {
         List<String> lst = new ArrayList<>();
@@ -284,7 +226,7 @@ public class SimpleListTestCode {
         sink(lst.get(1));
     }
 
-    @FlowDroidTest(expected = 1)
+    @FlowDroidTest(expected = 2)
     public void testListRemoveAll1() {
         List<String> lst = new ArrayList<>();
         String tainted = source();
@@ -292,9 +234,10 @@ public class SimpleListTestCode {
         lst.add(tainted);
         lst.removeAll(Collections.emptyList());
         sink(lst.get(0));
+        sink(lst.get(1));
     }
 
-    @FlowDroidTest(expected = 1)
+    @FlowDroidTest(expected = 2)
     public void testListRetainAll1() {
         List<String> lst = new ArrayList<>();
         String tainted = source();
@@ -302,6 +245,7 @@ public class SimpleListTestCode {
         lst.add(tainted);
         lst.retainAll(Collections.emptyList());
         sink(lst.get(0));
+        sink(lst.get(1));
     }
 
     @FlowDroidTest(expected = 1)

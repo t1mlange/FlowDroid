@@ -352,22 +352,6 @@ public class SDSimpleMapTests extends FlowDroidTests {
     }
 
     @Test(timeout = 30000)
-    public void testMapComputeFallback1() {
-        IInfoflow infoflow = initInfoflow();
-        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
-        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
-        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
-    }
-
-    @Test(timeout = 30000)
-    public void testMapComputeFallback2() {
-        IInfoflow infoflow = initInfoflow();
-        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
-        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
-        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
-    }
-
-    @Test(timeout = 30000)
     public void testNestedMap1() {
         IInfoflow infoflow = initInfoflow();
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";

@@ -15,17 +15,30 @@
                     <from sourceSinkType="Parameter" ParameterIndex="1" />
                     <to sourceSinkType="Field"
                         AccessPath="[java.util.Collection: java.lang.Object[] innerArray]"
-                        AccessPathTypes="[java.lang.Object[]]" />
+                        AccessPathTypes="[java.lang.Object[]]"
+                        constrained="True" />
                 </flow>
             </flows>
+            <clears>
+                <clear sourceSinkType="Field"
+                       AccessPath="[java.util.Collection: java.lang.Object[] innerArray]"
+                       AccessPathTypes="[java.lang.Object[]]"
+                       preventPropagation="false" />
+            </clears>
         </method>
         <method id="boolean addAll(java.util.Collection)">
+            <constraints>
+                <index sourceSinkType="Implicit"
+                       ImplicitLocation="Next"
+                       mode="append" />
+            </constraints>
             <flows>
                 <flow isAlias="false" typeChecking="false">
                     <from sourceSinkType="Parameter" ParameterIndex="0" />
                     <to sourceSinkType="Field"
                         AccessPath="[java.util.Collection: java.lang.Object[] innerArray]"
-                        AccessPathTypes="[java.lang.Object[]]" />
+                        AccessPathTypes="[java.lang.Object[]]"
+                        constrained="true" />
                 </flow>
             </flows>
         </method>
@@ -74,7 +87,7 @@
                        ParameterIndex="0" />
             </constraints>
             <flows>
-                <flow isAlias="false" typeChecking="false">
+                <flow isAlias="false" typeChecking="false" final="true">
                     <from sourceSinkType="Field"
                           AccessPath="[java.util.Collection: java.lang.Object[] innerArray]"
                           AccessPathTypes="[java.lang.Object[]]"
@@ -90,11 +103,29 @@
                       preventPropagation="false" />
             </clears>
         </method>
+        <method id="boolean removeAll(java.util.Collection)">
+            <flows>
+                <flow isAlias="false" typeChecking="false" final="true">
+                    <from sourceSinkType="Field"
+                          AccessPath="[java.util.Collection: java.lang.Object[] innerArray]"
+                          AccessPathTypes="[java.lang.Object[]]" />
+                    <to   sourceSinkType="Field"
+                          AccessPath="[java.util.Collection: java.lang.Object[] innerArray]"
+                          AccessPathTypes="[java.lang.Object[]]" />
+                </flow>
+            </flows>
+            <clears>
+                <clear sourceSinkType="Field"
+                       AccessPath="[java.util.Collection: java.lang.Object[] innerArray]"
+                       AccessPathTypes="[java.lang.Object[]]"
+                       preventPropagation="false" />
+            </clears>
+        </method>
         <method id="java.lang.Object set(int,java.lang.Object)">
             <constraints>
                 <index sourceSinkType="Parameter"
                        ParameterIndex="0"
-                       mode="replace" />
+                       mode="inplace" />
             </constraints>
             <flows>
                 <flow isAlias="false" typeChecking="false" final="true">
@@ -229,6 +260,7 @@
         </method>
     </methods>
     <gaps>
-        <gap num="42" id="&lt;java.util.function.UnaryOperator: java.lang.Object apply(java.lang.Object)&gt;" />
+        <!-- Gaps need the signature to match the exact class because there is no lookup for methods in superclasses -->
+        <gap num="42" id="&lt;java.util.function.Function: java.lang.Object apply(java.lang.Object)&gt;" />
     </gaps>
 </summary>
