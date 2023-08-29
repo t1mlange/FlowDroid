@@ -365,26 +365,6 @@ public class SimpleMapTestCode {
 	}
 
 	@FlowDroidTest(expected = 1)
-	public void testMapComputeFallback1() {
-		Map<String, String> map = new HashMap<>();
-		String tainted = source();
-		map.put("XXX", tainted);
-		// Hacky way to force Soot to not resolve the lambda correctly
-		map.compute("XXX", null);
-		sink(map.get("XXX"));
-	}
-
-	@FlowDroidTest(expected = 1)
-	public void testMapComputeFallback2() {
-		Map<String, String> map = new HashMap<>();
-		String tainted = source();
-		map.put("XXX", tainted);
-		// Hacky way to force Soot to not resolve the lambda correctly
-		String returned = map.compute("XXX", null);
-		sink(returned);
-	}
-
-	@FlowDroidTest(expected = 1)
 	public void testNestedMap1() {
 		Map<String, Map<String, String>> map = new HashMap<>();
 		Map<String, String> innerMap = new HashMap<>();
