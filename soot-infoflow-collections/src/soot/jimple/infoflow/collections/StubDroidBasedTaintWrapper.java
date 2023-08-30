@@ -40,7 +40,6 @@ import soot.util.MultiMap;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -623,7 +622,7 @@ public class StubDroidBasedTaintWrapper extends SummaryTaintWrapper {
                                 && (c.getType() != SourceSinkType.Implicit || c.getImplicitLocation() == ImplicitLocation.First))) {
                             ContextDefinition[] ctxt = taint.getAccessPath().getFirstFieldContext();
                             ContextDefinition[] stmtCtxt = concretizeFlowConstraints(clear.getConstraints(), stmt, taint.getAccessPath().getFirstFieldContext());
-                            Tristate lte = containerStrategy.lessThanEqual(ctxt[0], stmtCtxt[0]);
+                            Tristate lte = containerStrategy.lessThanEqual(stmtCtxt[0], ctxt[0]);
                             if (!lte.isFalse()) {
                                 ContextDefinition newCtxt = containerStrategy.shift(ctxt[0], new IntervalContext(-1), lte.isTrue());
                                 if (newCtxt == null)
@@ -644,6 +643,9 @@ public class StubDroidBasedTaintWrapper extends SummaryTaintWrapper {
                                         res = new HashSet<>();
                                     res.add(ap);
                                 }
+
+                                // This one superseeds the current incoming element
+                                killIncomingTaint.value = true;
                             }
                         }
                     }
@@ -718,6 +720,8 @@ public class StubDroidBasedTaintWrapper extends SummaryTaintWrapper {
                 for (MethodFlow flow : flowsInTarget) {
                     // Apply the flow summary
                     AccessPathPropagator newPropagator = applyFlow(flow, curPropagator);
+
+
                     if (newPropagator == null) {
                         // Can we reverse the flow and apply it in the other direction?
                         flow = getReverseFlowForAlias(flow);
@@ -1138,7 +1142,7 @@ public class StubDroidBasedTaintWrapper extends SummaryTaintWrapper {
                     else
                         ctxt[i] = containerStrategy.getKeyContext(ie.getArg(c.getParamIdx()), stmt);
                     break;
-                case Field:
+                case Implicit:
                     assert c.isIndexBased();
                     assert ie instanceof InstanceInvokeExpr;
                     switch (c.getImplicitLocation()) {
@@ -1166,7 +1170,8 @@ public class StubDroidBasedTaintWrapper extends SummaryTaintWrapper {
         return ctxt;
     }
 
-    protected Tristate matchesConstraints(final AbstractFlowSinkSource flowSource, final Taint taint, AbstractMethodSummary flow, Stmt stmt) {
+    protected Tristate matchesConstraints(final AbstractFlowSinkSource flowSource, final AbstractMethodSummary flow,
+                                          final Taint taint, final Stmt stmt) {
         // If no constrains apply to the flow source, we can unconditionally use it
         if (!flowSource.isConstrained())
             return Tristate.TRUE();
@@ -1184,6 +1189,39 @@ public class StubDroidBasedTaintWrapper extends SummaryTaintWrapper {
         return state;
     }
 
+    protected Tristate matchShiftLeft(final AbstractFlowSinkSource flowSource, final AbstractMethodSummary flow,
+                                          final Taint taint, final Stmt stmt) {
+        ContextDefinition[] taintContext = taint.getAccessPath().getFirstFieldContext();
+        if (taintContext == null)
+            return Tristate.FALSE();
+
+        ContextDefinition[] stmtCtxt = concretizeFlowConstraints(flow.getConstraints(), stmt, taintContext);
+        assert stmtCtxt.length == taintContext.length;
+        Tristate state = Tristate.TRUE();
+        for (int i = 0; i < stmtCtxt.length; i++) {
+            state = state.and(containerStrategy.lessThanEqual(taintContext[i], stmtCtxt[i]));
+        }
+
+        return state;
+    }
+
+    protected Tristate matchShiftRight(final AbstractFlowSinkSource flowSource, final AbstractMethodSummary flow,
+                                      final Taint taint, final Stmt stmt) {
+        // If no constrains apply to the flow source, we can unconditionally use it
+        ContextDefinition[] taintContext = taint.getAccessPath().getFirstFieldContext();
+        if (taintContext == null)
+            return Tristate.FALSE();
+
+        ContextDefinition[] stmtCtxt = concretizeFlowConstraints(flow.getConstraints(), stmt, taintContext);
+        assert stmtCtxt.length == taintContext.length;
+        Tristate state = Tristate.TRUE();
+        for (int i = 0; i < stmtCtxt.length; i++) {
+            state = state.and(containerStrategy.lessThanEqual(stmtCtxt[i], taintContext[i]));
+        }
+
+        return state;
+    }
+
     /**
      * Checks whether the given source matches the given taint
      *
@@ -1192,19 +1230,31 @@ public class StubDroidBasedTaintWrapper extends SummaryTaintWrapper {
      * @return True if the given source matches the given taint, otherwise false
      */
     protected boolean flowMatchesTaint(final MethodFlow flow, final Taint taint, final Stmt stmt) {
-        boolean match = flowMatchesTaintInternal(flow.source(), flow, taint, stmt, (t) -> !t.isFalse());
-
-        return match;
+        return !flowMatchesTaintInternal(flow.source(), flow, taint, stmt, this::matchesConstraints).isFalse();
     }
 
     protected boolean flowMatchesTaint(final MethodClear flow, final Taint taint, final Stmt stmt) {
-        boolean match = flowMatchesTaintInternal(flow.getClearDefinition(), flow, taint, stmt, (t) -> t.isTrue());
-
-        return match;
+        return flowMatchesTaintInternal(flow.getClearDefinition(), flow, taint, stmt, this::matchesConstraints).isTrue();
     }
 
-    protected boolean flowMatchesTaintInternal(final AbstractFlowSinkSource flowSource, final AbstractMethodSummary flow,
-                                               final Taint taint, final Stmt stmt, Function<Tristate, Boolean> eval) {
+    @FunctionalInterface
+    protected interface MatchFunction {
+        Tristate match(final AbstractFlowSinkSource flowSource, final AbstractMethodSummary flow,
+                       final Taint taint, final Stmt stmt);
+    }
+
+    protected Tristate flowShiftLeft(final AbstractFlowSinkSource flowSource, final AbstractMethodSummary flow,
+                                     final Taint taint, final Stmt stmt) {
+        return flowMatchesTaintInternal(flowSource, flow, taint, stmt, this::matchShiftLeft);
+    }
+
+    protected Tristate flowShiftRight(final AbstractFlowSinkSource flowSource, final AbstractMethodSummary flow,
+                                     final Taint taint, final Stmt stmt) {
+        return flowMatchesTaintInternal(flowSource, flow, taint, stmt, this::matchShiftRight);
+    }
+
+    protected Tristate flowMatchesTaintInternal(final AbstractFlowSinkSource flowSource, final AbstractMethodSummary flow,
+                                               final Taint taint, final Stmt stmt, MatchFunction f) {
         // Matches parameter
         boolean match = flowSource.isParameter() && taint.isParameter()
                         && taint.getParameterIndex() == flowSource.getParameterIndex();
@@ -1216,8 +1266,10 @@ public class StubDroidBasedTaintWrapper extends SummaryTaintWrapper {
         match = match || flowSource.isReturn() && taint.isReturn() && flowSource.getGap() != null && taint.getGap() != null;
         // For aliases, we over-approximate flows from the return edge to all possible exit nodes
         match = match || flowSource.isReturn() && flowSource.getGap() == null && taint.getGap() == null && taint.isReturn();
+        if (!match || !compareFields(taint, flowSource))
+            return Tristate.FALSE();
 
-        return match && compareFields(taint, flowSource) && eval.apply(matchesConstraints(flowSource, taint, flow, stmt));
+        return f.match(flowSource, flow, taint, stmt);
     }
 
     /**
@@ -1528,6 +1580,18 @@ public class StubDroidBasedTaintWrapper extends SummaryTaintWrapper {
                     : concretizeFlowConstraints(flow.getConstraints(), stmt, taint.getAccessPath().getFirstFieldContext());
             if (appendedFields != null)
                 appendedFields = appendedFields.addContext(ctxt);
+        } else if (flow.sink().keepConstraint()) {
+            ContextDefinition[] taintCtxt = taint.getAccessPath().getFirstFieldContext();
+            if (taintCtxt != null && Arrays.stream(flow.getConstraints()).anyMatch(c -> c.isIndexBased() && c.mightShift()
+                    && (c.getType() != SourceSinkType.Implicit || c.getImplicitLocation() == ImplicitLocation.First))) {
+                Tristate lte = flowShiftRight(flowSource, flow, taint, stmt);
+                if (!lte.isFalse()) {
+                    ContextDefinition newCtxt = containerStrategy.shift(taintCtxt[0], new IntervalContext(1), lte.isTrue());
+                    if (newCtxt != null && appendedFields != null) {
+                        appendedFields = appendedFields.addContext(newCtxt.containsInformation() ? new ContextDefinition[]{newCtxt} : null);
+                    }
+                }
+            }
         }
 
         // Taint the correct fields

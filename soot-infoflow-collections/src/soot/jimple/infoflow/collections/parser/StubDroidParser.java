@@ -1,5 +1,6 @@
 package soot.jimple.infoflow.collections.parser;
 
+import soot.jimple.infoflow.methodSummary.data.sourceSink.ConstraintType;
 import soot.jimple.infoflow.collections.data.IndexConstraint;
 import soot.jimple.infoflow.collections.data.IndexMode;
 import soot.jimple.infoflow.collections.data.KeyConstraint;
@@ -402,7 +403,7 @@ public class StubDroidParser extends SummaryReader {
             return new IndexConstraint(SourceSinkType.Parameter, parameterIdx(attributes), getBaseType(attributes),
                     new AccessPathFragment(getAccessPath(attributes), getAccessPathTypes(attributes)), null, getMode(attributes));
         if (isImplicit(attributes))
-            return new IndexConstraint(SourceSinkType.Field, -1, getBaseType(attributes),
+            return new IndexConstraint(SourceSinkType.Implicit, -1, getBaseType(attributes),
                     new AccessPathFragment(getAccessPath(attributes), getAccessPathTypes(attributes)), getImplicitLocation(attributes), getMode(attributes));
         throw new SummaryXMLException();
     }
@@ -459,12 +460,23 @@ public class StubDroidParser extends SummaryReader {
         return false;
     }
 
-    private boolean isConstrained(Map<String, String> attributes) {
+    private ConstraintType isConstrained(Map<String, String> attributes) {
         if (attributes != null) {
             String attr = attributes.get(StubDroidXMLConstants.ATTRIBUTE_CONSTRAINED);
-            return attr != null && attr.equalsIgnoreCase("true");
+            if (attr == null)
+                return ConstraintType.FALSE;
+            switch (attr.toLowerCase()) {
+                case VALUE_TRUE:
+                    return ConstraintType.TRUE;
+                case VALUE_FALSE:
+                    return ConstraintType.FALSE;
+                case "keep":
+                    return ConstraintType.KEEP;
+                default:
+                    throw new RuntimeException("Unknown constraint type");
+            }
         }
-        return false;
+        return ConstraintType.FALSE;
     }
 
     private String[] getAccessPath(Map<String, String> attributes) {

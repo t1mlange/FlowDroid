@@ -147,6 +147,7 @@ public final class ReadOnlyListViewAnalysis {
                         return false;
                 }
             } else if (stmt instanceof ReturnStmt) {
+                // If the return is a use, the iterator leaves the method
                 return false;
             } else if (stmt instanceof AssignStmt) {
                 Value lhs = ((AssignStmt) stmt).getLeftOp();

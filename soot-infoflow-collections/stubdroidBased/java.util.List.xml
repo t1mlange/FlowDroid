@@ -18,6 +18,15 @@
                         AccessPathTypes="[java.lang.Object[]]"
                         constrained="True" />
                 </flow>
+                <flow isAlias="false" typeChecking="false">
+                    <from sourceSinkType="Field"
+                              AccessPath="[java.util.Collection: java.lang.Object[] innerArray]"
+                              AccessPathTypes="[java.lang.Object[]]" />
+                    <to sourceSinkType="Field"
+                        AccessPath="[java.util.Collection: java.lang.Object[] innerArray]"
+                        AccessPathTypes="[java.lang.Object[]]"
+                        constrained="keep" />
+                </flow>
             </flows>
             <clears>
                 <clear sourceSinkType="Field"
@@ -101,6 +110,24 @@
                       AccessPathTypes="[java.lang.Object[]]"
                       constrained="true"
                       preventPropagation="false" />
+            </clears>
+        </method>
+        <method id="boolean remove(java.lang.Object)">
+            <flows>
+                <flow isAlias="false" typeChecking="false" final="true">
+                    <from sourceSinkType="Field"
+                          AccessPath="[java.util.Collection: java.lang.Object[] innerArray]"
+                          AccessPathTypes="[java.lang.Object[]]" />
+                    <to sourceSinkType="Field"
+                        AccessPath="[java.util.Collection: java.lang.Object[] innerArray]"
+                        AccessPathTypes="[java.lang.Object[]]" />
+                </flow>
+            </flows>
+            <clears>
+                <clear sourceSinkType="Field"
+                       AccessPath="[java.util.Collection: java.lang.Object[] innerArray]"
+                       AccessPathTypes="[java.lang.Object[]]"
+                       preventPropagation="false" />
             </clears>
         </method>
         <method id="boolean removeAll(java.util.Collection)">

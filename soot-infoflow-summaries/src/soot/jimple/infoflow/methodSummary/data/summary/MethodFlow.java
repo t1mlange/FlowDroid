@@ -112,9 +112,9 @@ public class MethodFlow extends AbstractMethodSummary {
 		}
 
 		FlowSource reverseSource = new FlowSource(fromType, to.getParameterIndex(), to.getBaseType(),
-				to.getAccessPath(), to.getGap(), to.isMatchStrict(), to.isConstrained());
+				to.getAccessPath(), to.getGap(), to.isMatchStrict(), to.getConstraintType());
 		FlowSink reverseSink = new FlowSink(toType, from.getParameterIndex(), from.getBaseType(), from.getAccessPath(),
-				taintSubFields, from.getGap(), from.isMatchStrict(), from.isConstrained());
+				taintSubFields, from.getGap(), from.isMatchStrict(), from.getConstraintType());
 		return new MethodFlow(methodSig, reverseSource, reverseSink, isAlias, typeChecking, ignoreTypes, cutSubFields, constraints, isFinal);
 	}
 

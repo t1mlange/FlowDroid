@@ -17,47 +17,47 @@ public class FlowSink extends AbstractFlowSinkSource implements Cloneable {
 	protected final boolean taintSubFields;
 
 	public FlowSink(SourceSinkType type, int paramterIdx, String baseType, AccessPathFragment accessPath,
-					boolean taintSubFields, boolean isConstrained) {
+					boolean taintSubFields, ConstraintType isConstrained) {
 		super(type, paramterIdx, baseType, accessPath, false, isConstrained);
 		this.taintSubFields = taintSubFields;
 	}
 
 	public FlowSink(SourceSinkType type, int paramterIdx, String baseType, AccessPathFragment accessPath,
-					boolean taintSubFields, GapDefinition gap, boolean isConstrained) {
+					boolean taintSubFields, GapDefinition gap, ConstraintType isConstrained) {
 		super(type, paramterIdx, baseType, accessPath, gap, false, isConstrained);
 		this.taintSubFields = taintSubFields;
 	}
 
 	public FlowSink(SourceSinkType type, int paramterIdx, String baseType, AccessPathFragment accessPath,
-					boolean taintSubFields, GapDefinition gap, boolean matchStrict, boolean isConstrained) {
+					boolean taintSubFields, GapDefinition gap, boolean matchStrict, ConstraintType isConstrained) {
 		super(type, paramterIdx, baseType, accessPath, gap, matchStrict, isConstrained);
 		this.taintSubFields = taintSubFields;
 	}
 
 	public FlowSink(SourceSinkType type, int paramterIdx, String baseType, AccessPathFragment accessPath,
-					boolean taintSubFields, GapDefinition gap, Object userData, boolean matchStrict, boolean isConstrained) {
+					boolean taintSubFields, GapDefinition gap, Object userData, boolean matchStrict, ConstraintType isConstrained) {
 		super(type, paramterIdx, baseType, accessPath, gap, userData, matchStrict, isConstrained);
 		this.taintSubFields = taintSubFields;
 	}
 
-	public FlowSink(SourceSinkType type, int paramterIdx, String baseType, boolean taintSubFields, boolean isConstrained) {
+	public FlowSink(SourceSinkType type, int paramterIdx, String baseType, boolean taintSubFields, ConstraintType isConstrained) {
 		super(type, paramterIdx, baseType, null, null, false, isConstrained);
 		this.taintSubFields = taintSubFields;
 	}
 
-	public FlowSink(SourceSinkType type, int paramterIdx, String baseType, boolean taintSubFields, GapDefinition gap, boolean isConstrained) {
+	public FlowSink(SourceSinkType type, int paramterIdx, String baseType, boolean taintSubFields, GapDefinition gap, ConstraintType isConstrained) {
 		super(type, paramterIdx, baseType, null, gap, null, false, isConstrained);
 		this.taintSubFields = taintSubFields;
 	}
 
 	public FlowSink(SourceSinkType type, int paramterIdx, String baseType, boolean taintSubFields, GapDefinition gap,
-					Object userData, boolean isConstrained) {
+					Object userData, ConstraintType isConstrained) {
 		super(type, paramterIdx, baseType, null, gap, userData, false, isConstrained);
 		this.taintSubFields = taintSubFields;
 	}
 
 	public FlowSink(SourceSinkType type, String baseType, AccessPathFragment accessPath, boolean taintSubFields2,
-					GapDefinition gap, boolean matchStrict, boolean isConstrained) {
+					GapDefinition gap, boolean matchStrict, ConstraintType isConstrained) {
 		super(type, -1, baseType, accessPath, gap, matchStrict, isConstrained);
 		this.taintSubFields = taintSubFields2 || (accessPath != null && accessPath.length() > this.accessPath.length());
 	}
