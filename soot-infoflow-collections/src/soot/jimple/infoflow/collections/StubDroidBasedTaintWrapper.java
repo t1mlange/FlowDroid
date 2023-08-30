@@ -1580,7 +1580,7 @@ public class StubDroidBasedTaintWrapper extends SummaryTaintWrapper {
                     : concretizeFlowConstraints(flow.getConstraints(), stmt, taint.getAccessPath().getFirstFieldContext());
             if (appendedFields != null)
                 appendedFields = appendedFields.addContext(ctxt);
-        } else if (flow.sink().keepConstraint()) {
+        } else if (flow.sink().shiftConstraint()) {
             ContextDefinition[] taintCtxt = taint.getAccessPath().getFirstFieldContext();
             if (taintCtxt != null && Arrays.stream(flow.getConstraints()).anyMatch(c -> c.isIndexBased() && c.mightShift()
                     && (c.getType() != SourceSinkType.Implicit || c.getImplicitLocation() == ImplicitLocation.First))) {
