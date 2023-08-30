@@ -34,7 +34,7 @@ public class IndexConstraint extends FlowConstraint {
 
     @Override
     public ImplicitLocation getImplicitLocation() {
-        assert getType() == SourceSinkType.Field;
+        assert getType() == SourceSinkType.Implicit;
         return loc;
     }
 }

@@ -15,42 +15,42 @@ public class FlowSource extends AbstractFlowSinkSource implements Cloneable {
 
 	public static final int ANY_PARAMETER = -2;
 
-	public FlowSource(SourceSinkType type, String baseType, boolean isConstrained) {
+	public FlowSource(SourceSinkType type, String baseType, ConstraintType isConstrained) {
 		super(type, -1, baseType, null, null, false, isConstrained);
 	}
 
-	public FlowSource(SourceSinkType type, String baseType, GapDefinition gap, boolean isConstrained) {
+	public FlowSource(SourceSinkType type, String baseType, GapDefinition gap, ConstraintType isConstrained) {
 		super(type, -1, baseType, null, gap, null, false, isConstrained);
 	}
 
-	public FlowSource(SourceSinkType type, String baseType, GapDefinition gap, boolean matchStrict, boolean isConstrained) {
+	public FlowSource(SourceSinkType type, String baseType, GapDefinition gap, boolean matchStrict, ConstraintType isConstrained) {
 		super(type, -1, baseType, null, gap, null, matchStrict, isConstrained);
 	}
 
-	public FlowSource(SourceSinkType type, String baseType, AccessPathFragment apf, GapDefinition gap, boolean matchStrict, boolean isConstrained) {
+	public FlowSource(SourceSinkType type, String baseType, AccessPathFragment apf, GapDefinition gap, boolean matchStrict, ConstraintType isConstrained) {
 		super(type, baseType, apf, gap, matchStrict, isConstrained);
 	}
 
-	public FlowSource(SourceSinkType type, int parameterIdx, String baseType, boolean isConstrained) {
+	public FlowSource(SourceSinkType type, int parameterIdx, String baseType, ConstraintType isConstrained) {
 		super(type, parameterIdx, baseType, null, null, false, isConstrained);
 	}
 
-	public FlowSource(SourceSinkType type, int parameterIdx, String baseType, GapDefinition gap, boolean isConstrained) {
+	public FlowSource(SourceSinkType type, int parameterIdx, String baseType, GapDefinition gap, ConstraintType isConstrained) {
 		super(type, parameterIdx, baseType, null, gap, null, false, isConstrained);
 	}
 
 	public FlowSource(SourceSinkType type, int parameterIdx, String baseType, AccessPathFragment accessPath,
-					  GapDefinition gap, boolean isConstrained) {
+					  GapDefinition gap, ConstraintType isConstrained) {
 		super(type, parameterIdx, baseType, accessPath, gap, false, isConstrained);
 	}
 
 	public FlowSource(SourceSinkType type, int parameterIdx, String baseType, AccessPathFragment accessPath,
-					  GapDefinition gap, boolean matchStrict, boolean isConstrained) {
+					  GapDefinition gap, boolean matchStrict, ConstraintType isConstrained) {
 		super(type, parameterIdx, baseType, accessPath, gap, matchStrict, isConstrained);
 	}
 
 	public FlowSource(SourceSinkType type, int parameterIdx, String baseType, AccessPathFragment accessPath,
-					  GapDefinition gap, Object userData, boolean matchStrict, boolean isConstrained) {
+					  GapDefinition gap, Object userData, boolean matchStrict, ConstraintType isConstrained) {
 		super(type, parameterIdx, baseType, accessPath, gap, userData, matchStrict, isConstrained);
 	}
 

@@ -1,5 +1,6 @@
 package soot.jimple.infoflow.methodSummary.taintWrappers;
 
+import soot.jimple.infoflow.methodSummary.data.sourceSink.ConstraintType;
 import soot.jimple.infoflow.methodSummary.data.sourceSink.FlowSink;
 import soot.jimple.infoflow.methodSummary.data.summary.GapDefinition;
 import soot.jimple.infoflow.methodSummary.data.summary.SourceSinkType;
@@ -13,17 +14,17 @@ import soot.jimple.infoflow.methodSummary.data.summary.SourceSinkType;
 public class Taint extends FlowSink implements Cloneable {
 
 	public Taint(SourceSinkType type, int paramterIdx, String baseType, boolean taintSubFields) {
-		super(type, paramterIdx, baseType, taintSubFields, false);
+		super(type, paramterIdx, baseType, taintSubFields, ConstraintType.FALSE);
 	}
 
 	public Taint(SourceSinkType type, int paramterIdx, String baseType, AccessPathFragment accessPath,
 			boolean taintSubFields) {
-		super(type, paramterIdx, baseType, accessPath, taintSubFields, false);
+		super(type, paramterIdx, baseType, accessPath, taintSubFields, ConstraintType.FALSE);
 	}
 
 	public Taint(SourceSinkType type, int paramterIdx, String baseType, AccessPathFragment accessPath,
 			boolean taintSubFields, GapDefinition gap) {
-		super(type, paramterIdx, baseType, accessPath, taintSubFields, gap, false);
+		super(type, paramterIdx, baseType, accessPath, taintSubFields, gap, ConstraintType.FALSE);
 	}
 
 	@Override
