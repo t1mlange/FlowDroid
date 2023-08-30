@@ -13,7 +13,7 @@ import soot.jimple.infoflow.collections.parser.StubDroidSummaryProvider;
 import soot.jimple.infoflow.taintWrappers.ITaintPropagationWrapper;
 import soot.jimple.infoflow.util.DebugFlowFunctionTaintPropagationHandler;
 
-public class SDSimpleMapTests extends SimpleMapTests {
+public class SDSimpleStackTests extends SimpleStackTests {
     @Override
     protected void setConfiguration(InfoflowConfiguration config) {
 

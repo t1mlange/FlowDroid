@@ -18,6 +18,7 @@ import soot.jimple.infoflow.data.SootMethodAndClass;
 import soot.jimple.infoflow.handlers.PreAnalysisHandler;
 import soot.jimple.infoflow.methodSummary.data.provider.IMethodSummaryProvider;
 import soot.jimple.infoflow.methodSummary.data.sourceSink.AbstractFlowSinkSource;
+import soot.jimple.infoflow.methodSummary.data.sourceSink.ConstraintType;
 import soot.jimple.infoflow.methodSummary.data.sourceSink.FlowConstraint;
 import soot.jimple.infoflow.methodSummary.data.summary.*;
 import soot.jimple.infoflow.methodSummary.taintWrappers.AccessPathFragment;
@@ -1584,7 +1585,8 @@ public class StubDroidBasedTaintWrapper extends SummaryTaintWrapper {
             ContextDefinition[] taintCtxt = taint.getAccessPath().getFirstFieldContext();
             if (taintCtxt != null && Arrays.stream(flow.getConstraints()).anyMatch(c -> c.isIndexBased() && c.mightShift()
                     && (c.getType() != SourceSinkType.Implicit || c.getImplicitLocation() == ImplicitLocation.First))) {
-                Tristate lte = flowShiftRight(flowSource, flow, taint, stmt);
+                Tristate lte = flow.sink().getConstraintType() == ConstraintType.SHIFT_RIGHT
+                        ? flowShiftRight(flowSource, flow, taint, stmt) : flowShiftLeft(flowSource, flow, taint, stmt);
                 if (!lte.isFalse()) {
                     ContextDefinition newCtxt = containerStrategy.shift(taintCtxt[0], new IntervalContext(1), lte.isTrue());
                     if (newCtxt != null && appendedFields != null) {

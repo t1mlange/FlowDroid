@@ -424,12 +424,12 @@ public class StubDroidParser extends SummaryReader {
 
     private ImplicitLocation getImplicitLocation(Map<String, String> attributes) {
         String implLoc = attributes.get(StubDroidXMLConstants.ATTRIBUTE_IMPL_LOC);
-        switch (implLoc) {
-            case "First":
+        switch (implLoc.toLowerCase()) {
+            case "first":
                 return ImplicitLocation.First;
-            case "Last":
+            case "last":
                 return ImplicitLocation.Last;
-            case "Next":
+            case "next":
                 return ImplicitLocation.Next;
             default:
                 throw new RuntimeException("Missing case!");
@@ -470,8 +470,10 @@ public class StubDroidParser extends SummaryReader {
                     return ConstraintType.TRUE;
                 case VALUE_FALSE:
                     return ConstraintType.FALSE;
-                case "shift":
-                    return ConstraintType.SHIFT;
+                case "shiftright":
+                    return ConstraintType.SHIFT_RIGHT;
+                case "shiftleft":
+                    return ConstraintType.SHIFT_LEFT;
                 default:
                     throw new RuntimeException("Unknown constraint type");
             }
