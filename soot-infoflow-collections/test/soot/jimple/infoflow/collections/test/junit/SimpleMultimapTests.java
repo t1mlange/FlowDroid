@@ -7,6 +7,7 @@ import org.junit.Test;
 
 import soot.jimple.infoflow.IInfoflow;
 import soot.jimple.infoflow.InfoflowConfiguration;
+import soot.jimple.infoflow.util.DebugFlowFunctionTaintPropagationHandler;
 
 public class SimpleMultimapTests extends FlowDroidTests {
     @Override
@@ -19,6 +20,7 @@ public class SimpleMultimapTests extends FlowDroidTests {
     @Test(timeout = 30000)
     public void testMultimapPutGet1() {
         IInfoflow infoflow = initInfoflow();
+        infoflow.setTaintPropagationHandler(new DebugFlowFunctionTaintPropagationHandler());
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.getConfig().getPathConfiguration().setPathReconstructionMode(InfoflowConfiguration.PathReconstructionMode.Fast);
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);

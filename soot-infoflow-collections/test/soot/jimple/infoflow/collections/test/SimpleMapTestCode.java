@@ -385,4 +385,12 @@ public class SimpleMapTestCode {
 		String oldVal = map.put("XXX", source());
 		sink(oldVal);
 	}
+
+	@FlowDroidTest(expected = 1)
+	public void testForeach1() {
+		Map<String, String> map = new HashMap<>();
+		map.put("XXX", source());
+		map.forEach((k, v) -> sink(v));
+		sink("XXX");
+	}
 }

@@ -32,5 +32,15 @@ public enum SourceSinkType {
 	 * default implementation
 	 */
 	Custom,
-	Implicit
+
+	/**
+	 * Describes an implicit location that is induced by the base object,
+	 * i.e. the last index inside a list.
+	 */
+	Implicit,
+
+	/**
+	 * A wildcard that matches anything
+	 */
+	Any
 }
