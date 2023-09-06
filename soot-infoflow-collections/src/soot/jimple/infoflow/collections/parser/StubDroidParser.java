@@ -392,9 +392,9 @@ public class StubDroidParser extends SummaryReader {
         if (isParameter(attributes))
             return new KeyConstraint(SourceSinkType.Parameter, parameterIdx(attributes), getBaseType(attributes),
                 new AccessPathFragment(getAccessPath(attributes), getAccessPathTypes(attributes)));
-        if (isField(attributes))
-            return new KeyConstraint(SourceSinkType.Field, -1, getBaseType(attributes),
-                new AccessPathFragment(getAccessPath(attributes), getAccessPathTypes(attributes)));
+        if (isAny(attributes))
+            return new KeyConstraint(SourceSinkType.Any, -1, getBaseType(attributes),
+                    new AccessPathFragment(getAccessPath(attributes), getAccessPathTypes(attributes)));
         throw new SummaryXMLException();
     }
 
@@ -470,6 +470,8 @@ public class StubDroidParser extends SummaryReader {
                     return ConstraintType.TRUE;
                 case VALUE_FALSE:
                     return ConstraintType.FALSE;
+                case "keep":
+                    return ConstraintType.KEEP;
                 case "shiftright":
                     return ConstraintType.SHIFT_RIGHT;
                 case "shiftleft":
@@ -526,6 +528,10 @@ public class StubDroidParser extends SummaryReader {
 
     private boolean isParameter(Map<String, String> attributes) {
         return attributes.get(ATTRIBUTE_FLOWTYPE).equals(SourceSinkType.Parameter.toString());
+    }
+
+    private boolean isAny(Map<String, String> attributes) {
+        return attributes.get(ATTRIBUTE_FLOWTYPE).equals(SourceSinkType.Any.toString());
     }
 
     private boolean isGapBaseObject(Map<String, String> attributes) {

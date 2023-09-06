@@ -484,9 +484,22 @@
 					   preventPropagation="false" />
 			</clears>
 		</method>
+		<method id="void forEach(java.util.function.BiConsumer)">
+			<flows>
+				<flow isAlias="false" typeChecking="false">
+					<from sourceSinkType="Field"
+						  AccessPath="[java.util.Map: java.lang.Object[] values]"
+						  AccessPathTypes="[java.lang.Object[]]" />
+					<to sourceSinkType="Parameter"
+						ParameterIndex="1"
+						gap="44" />
+				</flow>
+			</flows>
+		</method>
 	</methods>
 	<gaps>
 		<gap num="42" id="&lt;java.util.function.BiFunction: java.lang.Object apply(java.lang.Object,java.lang.Object)&gt;" />
 		<gap num="43" id="&lt;java.util.function.Function: java.lang.Object apply(java.lang.Object)&gt;" />
+		<gap num="44" id="&lt;java.util.function.BiConsumer: void accept(java.lang.Object,java.lang.Object)&gt;" />
 	</gaps>
 </summary>

@@ -839,7 +839,7 @@ public class StubDroidBasedTaintWrapper extends SummaryTaintWrapper {
         if (aps.isEmpty())
             return null;
         Set<Abstraction> absSet = new HashSet<>();
-        aps.forEach(ap -> absSet.add(new Abstraction(null, ap, null, null, false, false)));
+        aps.forEach(ap -> absSet.add(propagator.getParent().getD2().deriveNewAbstraction(ap, null)));
         absSet.remove(null);
 
         // We need to pop the last gap element off the stack
@@ -1594,6 +1594,10 @@ public class StubDroidBasedTaintWrapper extends SummaryTaintWrapper {
                     }
                 }
             }
+        } else if (flow.sink().keepConstraint()){
+            ContextDefinition[] ctxt = taint.getAccessPath().getFirstFieldContext();
+            if (ctxt != null && appendedFields != null)
+                appendedFields = appendedFields.addContext(ctxt);
         }
 
         // Taint the correct fields

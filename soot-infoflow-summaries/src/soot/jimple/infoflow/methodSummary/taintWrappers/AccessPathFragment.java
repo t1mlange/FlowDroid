@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import soot.Context;
+import soot.Scene;
 import soot.SootField;
 import soot.Type;
 import soot.jimple.infoflow.data.AccessPath;
@@ -41,7 +42,7 @@ public class AccessPathFragment {
 	 */
 	public AccessPathFragment(String[] fields, String[] fieldTypes, ContextDefinition[][] contexts) {
 		this.fields = fields;
-		this.fieldTypes = fieldTypes;
+		this.fieldTypes = fieldTypes == null ? fieldsToTypes(fields) : fieldTypes;
 		this.contexts = contexts;
 
 		// Sanity check
@@ -116,6 +117,18 @@ public class AccessPathFragment {
 		for (int i = 0; i < types.length; i++)
 			stringTypes[i] = types[i].toString();
 		return stringTypes;
+	}
+
+	private static String[] fieldsToTypes(String[] fields) {
+		if (fields == null)
+			return null;
+
+		String[] types = new String[fields.length];
+		for (int i = 0; i < fields.length; i++) {
+			String f = fields[i];
+			types[i] = f.substring(f.indexOf(":") + 2, f.lastIndexOf(" "));
+		}
+		return types;
 	}
 
 	/**

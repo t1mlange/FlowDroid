@@ -4,5 +4,6 @@ public enum ConstraintType {
     TRUE,
     FALSE,
     SHIFT_RIGHT,
-    SHIFT_LEFT
+    SHIFT_LEFT,
+    KEEP
 }

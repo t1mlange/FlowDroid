@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 
 <collectionModel class="com.google.common.collect.Multimap" type="value">
-    <method subsig="java.util.Set asMap()">
+    <method subsig="java.util.Map asMap()">
         <copy>
             <from idx="base" />
             <to idx="return" />
