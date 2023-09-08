@@ -1,7 +1,6 @@
 package soot.jimple.infoflow.methodSummary.data.summary;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -23,7 +22,6 @@ public class MethodFlow extends AbstractMethodSummary {
 
 	private final FlowSource from;
 	private final FlowSink to;
-	private final boolean isAlias;
 	private final Boolean typeChecking;
 	private final Boolean ignoreTypes;
 	private final Boolean cutSubFields;
@@ -48,10 +46,9 @@ public class MethodFlow extends AbstractMethodSummary {
 	 */
 	public MethodFlow(String methodSig, FlowSource from, FlowSink to, boolean isAlias, Boolean typeChecking,
 			Boolean ignoreTypes, Boolean cutSubFields, FlowConstraint[] constraints, boolean isFinal) {
-		super(methodSig, constraints);
+		super(methodSig, constraints, isAlias);
 		this.from = from;
 		this.to = to;
-		this.isAlias = isAlias;
 		this.typeChecking = typeChecking;
 		this.ignoreTypes = ignoreTypes;
 		this.cutSubFields = cutSubFields;
@@ -116,15 +113,6 @@ public class MethodFlow extends AbstractMethodSummary {
 		FlowSink reverseSink = new FlowSink(toType, from.getParameterIndex(), from.getBaseType(), from.getAccessPath(),
 				taintSubFields, from.getGap(), from.isMatchStrict(), from.getConstraintType());
 		return new MethodFlow(methodSig, reverseSource, reverseSink, isAlias, typeChecking, ignoreTypes, cutSubFields, constraints, isFinal);
-	}
-
-	/**
-	 * Gets whether the source and the sink of this data flow alias
-	 * 
-	 * @return True the source and the sink of this data flow alias, otherwise false
-	 */
-	public boolean isAlias() {
-		return this.isAlias;
 	}
 
 	/**

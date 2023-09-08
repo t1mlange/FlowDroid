@@ -44,7 +44,22 @@
 						AccessPath="[java.util.Iterator: java.lang.Object innerCollection]"
 						AccessPathTypes="[java.lang.Object]" />
 				</flow>
+				<flow isAlias="false" typeChecking="false">
+					<from sourceSinkType="Field"
+						  AccessPath="[java.util.Collection: java.lang.Object[] innerArray]"
+						  AccessPathTypes="[java.lang.Object[]]" />
+					<to sourceSinkType="Field"
+						AccessPath="[java.util.Collection: java.lang.Object[] innerArray]"
+						AccessPathTypes="[java.lang.Object[]]"
+						constrained="read-only" />
+				</flow>
 			</flows>
+			<clears>
+				<clear sourceSinkType="Field"
+					   AccessPath="[java.util.Collection: java.lang.Object[] innerArray]"
+					   AccessPathTypes="[java.lang.Object[]]"
+					   preventPropagation="false" />
+			</clears>
 		</method>
 		<method id="java.lang.Object[] toArray()">
 			<flows>

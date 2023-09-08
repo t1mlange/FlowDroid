@@ -1,9 +1,12 @@
 package soot.jimple.infoflow.collections.strategies.containers;
 
+import soot.Unit;
 import soot.Value;
 import soot.jimple.Constant;
 import soot.jimple.Stmt;
+import soot.jimple.infoflow.InfoflowManager;
 import soot.jimple.infoflow.collections.CollectionTaintWrapper;
+import soot.jimple.infoflow.collections.analyses.ReadOnlyListViewAnalysis;
 import soot.jimple.infoflow.collections.context.KeySetContext;
 import soot.jimple.infoflow.collections.context.UnknownContext;
 import soot.jimple.infoflow.collections.util.Tristate;
@@ -18,6 +21,15 @@ public class ConstantMapStrategy implements IContainerStrategy {
     // Benign race on the counters because they are on the critical path within the data flow analysis
     private long resolvedKeys;
     private long unresolvedKeys;
+
+    protected final InfoflowManager manager;
+
+    protected final ReadOnlyListViewAnalysis itAnalysis;
+
+    public ConstantMapStrategy(InfoflowManager manager) {
+        this.manager = manager;
+        itAnalysis = new ReadOnlyListViewAnalysis(manager.getICFG());
+    }
 
     public long getResolvedKeys() {
         return resolvedKeys;
@@ -99,5 +111,10 @@ public class ConstantMapStrategy implements IContainerStrategy {
         }
 
         return true;
+    }
+
+    @Override
+    public boolean isReadOnly(Unit unit) {
+        return itAnalysis.isReadOnlyIterator(unit);
     }
 }

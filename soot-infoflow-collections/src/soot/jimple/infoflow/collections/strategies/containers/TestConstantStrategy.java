@@ -29,12 +29,10 @@ public class TestConstantStrategy extends ConstantMapStrategy {
     private long unresolvedIndices;
 
     private final ConcurrentHashMap<SootMethod, ListSizeAnalysis> implicitIndices;
-    protected final InfoflowManager manager;
 
     public TestConstantStrategy(InfoflowManager manager) {
-        super();
+        super(manager);
         this.implicitIndices = new ConcurrentHashMap<>();
-        this.manager = manager;
     }
 
     public long getResolvedIndices() {

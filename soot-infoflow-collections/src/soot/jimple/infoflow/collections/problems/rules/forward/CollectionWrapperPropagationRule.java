@@ -74,6 +74,8 @@ public class CollectionWrapperPropagationRule extends WrapperPropagationRule {
 
             // If nothing is tainted, we don't have any taints to propagate
             if (!found) {
+                
+
                 // TODO: special function call to check for shifts
                 return null;
             }

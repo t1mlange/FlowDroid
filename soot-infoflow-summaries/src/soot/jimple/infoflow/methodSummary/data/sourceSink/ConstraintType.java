@@ -5,5 +5,9 @@ public enum ConstraintType {
     FALSE,
     SHIFT_RIGHT,
     SHIFT_LEFT,
-    KEEP
+    // Tells to keep the constraint from the source field
+    KEEP,
+    // Tells to keep the constraint from the source field only
+    // if the rhs is used in a read-only fashion
+    READONLY
 }

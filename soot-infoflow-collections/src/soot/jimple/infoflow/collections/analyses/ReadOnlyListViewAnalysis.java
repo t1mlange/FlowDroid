@@ -103,10 +103,10 @@ public final class ReadOnlyListViewAnalysis {
      * @return true if iterator is read-only
      */
     public boolean isReadOnlyIterator(Unit unit) {
-        // If this unit is no assign statement, we can't handle it
-        // and assume it might be mutating the collection
+        // If this unit is no assign statement, the return value is ignored
+        // and there won't be any mutation on an alias
         if (!(unit instanceof AssignStmt))
-            return false;
+            return true;
 
         UnitGraph ug = (UnitGraph) icfg.getOrCreateUnitGraph(icfg.getMethodOf(unit));
         return isReadOnlyIteratorInternal(graphToUses.getUnchecked(ug), (AssignStmt) unit);
@@ -136,20 +136,12 @@ public final class ReadOnlyListViewAnalysis {
                     return false;
                 if (stmt.getInvokeExpr().getArgs().contains(use))
                     return false;
-
-                if (stmt instanceof AssignStmt) {
-                    Value lhs = ((AssignStmt) stmt).getLeftOp();
-                    boolean isLocal = lhs instanceof Local;
-                    boolean isSupportedClass = isSupportedClass(lhs.getType());
-                    if (!isSupportedClass)
-                        continue;
-                    if (!isLocal || !isReadOnlyIteratorInternal(du, (AssignStmt) stmt))
-                        return false;
-                }
             } else if (stmt instanceof ReturnStmt) {
                 // If the return is a use, the iterator leaves the method
                 return false;
-            } else if (stmt instanceof AssignStmt) {
+            }
+
+            if (stmt instanceof AssignStmt) {
                 Value lhs = ((AssignStmt) stmt).getLeftOp();
                 boolean isLocal = lhs instanceof Local;
                 boolean isSupportedClass = isSupportedClass(lhs.getType());

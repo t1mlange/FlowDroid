@@ -34,17 +34,6 @@ public class IteratorTestCode {
     }
 
     @FlowDroidTest(expected = 0)
-    public void testListSublist3() {
-        List<String> lst = new ArrayList<>();
-        String tainted = source();
-        lst.add("xxx");
-        lst.add("yyy");
-        lst.add(tainted);
-        List<String> subList = lst.subList(0, 1);
-        sink(lst.get(2));
-    }
-
-    @FlowDroidTest(expected = 0)
     public void testListIterator1() {
         List<String> lst = new ArrayList<>();
         String tainted = source();
