@@ -1,7 +1,6 @@
 package soot.jimple.infoflow.collections.strategies.containers;
 
-import soot.Unit;
-import soot.Value;
+import soot.*;
 import soot.jimple.Constant;
 import soot.jimple.Stmt;
 import soot.jimple.infoflow.InfoflowManager;
@@ -11,6 +10,10 @@ import soot.jimple.infoflow.collections.context.KeySetContext;
 import soot.jimple.infoflow.collections.context.UnknownContext;
 import soot.jimple.infoflow.collections.util.Tristate;
 import soot.jimple.infoflow.data.ContextDefinition;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Strategy that only reasons about maps with constant keys
@@ -26,9 +29,15 @@ public class ConstantMapStrategy implements IContainerStrategy {
 
     protected final ReadOnlyListViewAnalysis itAnalysis;
 
+    protected final List<RefType> indexTypes;
+
     public ConstantMapStrategy(InfoflowManager manager) {
         this.manager = manager;
         itAnalysis = new ReadOnlyListViewAnalysis(manager.getICFG());
+
+        indexTypes = new ArrayList<>(2);
+        indexTypes.add(RefType.v("java.util.List"));
+        indexTypes.add(RefType.v("java.util.Queue"));
     }
 
     public long getResolvedKeys() {
@@ -66,6 +75,27 @@ public class ConstantMapStrategy implements IContainerStrategy {
 
         unresolvedKeys++;
         return UnknownContext.v();
+    }
+
+    protected boolean shouldResolveIndex(Value base) {
+        if (!(base instanceof Local))
+            return false;
+
+        // Assume only the collection class needs special checks
+        if (base.getType() instanceof RefType
+                && !((RefType) base.getType()).getClassName().equals("java.util.Collection"))
+            return true;
+
+        // Ask SPARK whether this could be a list or a queue
+        Set<Type> types = Scene.v().getPointsToAnalysis().reachingObjects((Local) base).possibleTypes();
+        FastHierarchy fh = Scene.v().getFastHierarchy();
+        for (Type t : types) {
+            for (RefType idxType : indexTypes)
+                if (fh.canStoreType(t, idxType))
+                    return true;
+        }
+
+        return false;
     }
 
     @Override

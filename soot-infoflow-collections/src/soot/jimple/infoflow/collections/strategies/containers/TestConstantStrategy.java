@@ -3,6 +3,7 @@ package soot.jimple.infoflow.collections.strategies.containers;
 import java.util.concurrent.ConcurrentHashMap;
 
 import soot.Local;
+import soot.RefType;
 import soot.SootMethod;
 import soot.Value;
 import soot.jimple.IntConstant;
@@ -69,6 +70,9 @@ public class TestConstantStrategy extends ConstantMapStrategy {
 
     @Override
     public ContextDefinition getNextPosition(Value value, Stmt stmt) {
+        if (!shouldResolveIndex(value))
+            return UnknownContext.v();
+
         return getContextFromImplicitKey(value, stmt, false);
     }
 
@@ -80,6 +84,9 @@ public class TestConstantStrategy extends ConstantMapStrategy {
 
     @Override
     public ContextDefinition getLastPosition(Value value, Stmt stmt) {
+        if (!shouldResolveIndex(value))
+            return UnknownContext.v();
+
         return getContextFromImplicitKey(value, stmt, true);
     }
 

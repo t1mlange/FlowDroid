@@ -10,7 +10,7 @@
 					   ImplicitLocation="Next" />
 			</constraints>
 			<flows>
-				<flow isAlias="false" typeChecking="false">
+				<flow isAlias="true" typeChecking="false">
 					<from sourceSinkType="Parameter" ParameterIndex="0" />
 					<to sourceSinkType="Field"
 						AccessPath="[java.util.Collection: java.lang.Object[] innerArray]"
