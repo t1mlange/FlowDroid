@@ -1,5 +1,6 @@
 package soot.jimple.infoflow.collections.strategies.containers;
 
+import soot.Unit;
 import soot.Value;
 import soot.jimple.Stmt;
 import soot.jimple.infoflow.collections.util.Tristate;
@@ -111,4 +112,12 @@ public interface IContainerStrategy {
      * @return true if context contains no useful information and thus, the collection should be smashed
      */
     boolean shouldSmash(ContextDefinition[] ctxts);
+
+    /**
+     * Returns whether the given value is used in a read-only fashion
+     *
+     * @param unit current statement
+     * @return true if is read-only
+     */
+    boolean isReadOnly(Unit unit);
 }

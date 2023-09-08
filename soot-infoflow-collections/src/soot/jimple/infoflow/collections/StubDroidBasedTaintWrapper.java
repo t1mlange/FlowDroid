@@ -1121,6 +1121,13 @@ public class StubDroidBasedTaintWrapper extends SummaryTaintWrapper {
         if (newTaint == null)
             return null;
 
+        if (d2 != null && !d2.isAbstractionActive() && !d2.dependsOnCutAP() && flowSink.isReturn()) {
+            // Special case: x = f(y), if y is inactive, we can only taint x if we have some fields left in x
+            // See ln. 224 of InfoflowProblem.
+            if (!newTaint.hasAccessPath() || newTaint.getAccessPathLength() == 0)
+                return null;
+        }
+
         AccessPathPropagator newPropagator = new AccessPathPropagator(newTaint, gap, parent, stmt, d1, d2,
                 propagator.isInversePropagator());
         return newPropagator;
@@ -1594,7 +1601,8 @@ public class StubDroidBasedTaintWrapper extends SummaryTaintWrapper {
                     }
                 }
             }
-        } else if (flow.sink().keepConstraint()){
+        } else if (flow.sink().keepConstraint()
+                    || (flow.sink().keepOnRO() && containerStrategy.isReadOnly(stmt))) {
             ContextDefinition[] ctxt = taint.getAccessPath().getFirstFieldContext();
             if (ctxt != null && appendedFields != null)
                 appendedFields = appendedFields.addContext(ctxt);
@@ -1861,14 +1869,11 @@ public class StubDroidBasedTaintWrapper extends SummaryTaintWrapper {
         if (taintsFromAP == null || taintsFromAP.isEmpty())
             return Collections.emptySet();
 
+        boolean killTaint = false;
         Set<AccessPath> res = null;
         for (String className : flowsInCallees.getClasses()) {
-            List<AccessPathPropagator> workList = new ArrayList<AccessPathPropagator>();
-
             boolean reverseFlows = manager.getConfig()
                     .getDataFlowDirection() == InfoflowConfiguration.DataFlowDirection.Backwards;
-            for (Taint taint : taintsFromAP)
-                workList.add(new AccessPathPropagator(taint, null, null, stmt, d1, taintedAbs, !reverseFlows));
 
             // Get the flows in this class
             ClassMethodSummaries classFlows = flowsInCallees.getClassSummaries(className);
@@ -1879,6 +1884,23 @@ public class StubDroidBasedTaintWrapper extends SummaryTaintWrapper {
             MethodSummaries flowsInCallee = classFlows.getMethodSummaries();
             if (flowsInCallee == null || flowsInCallee.isEmpty())
                 continue;
+
+            List<AccessPathPropagator> workList = new ArrayList<AccessPathPropagator>();
+            for (Taint taint : taintsFromAP) {
+                boolean preventPropagation = false;
+                if (flowsInCallee.hasClears()) {
+                    for (MethodClear clear : flowsInCallee.getAllClears()) {
+                        if (clear.isAlias() && flowMatchesTaint(clear, taint, stmt)) {
+                            killTaint = true;
+                            preventPropagation = clear.preventPropagation();
+                            break;
+                        }
+                    }
+                }
+
+                if (!preventPropagation)
+                    workList.add(new AccessPathPropagator(taint, null, null, stmt, d1, taintedAbs, !reverseFlows));
+            }
 
             // Apply the data flows until we reach a fixed point
             Set<AccessPath> resCallee = applyFlowsIterative(flowsInCallee, workList, false);
@@ -1891,11 +1913,12 @@ public class StubDroidBasedTaintWrapper extends SummaryTaintWrapper {
 
         // We always retain the incoming taint
         if (res == null || res.isEmpty())
-            return Collections.singleton(taintedAbs);
+            return killTaint ? Collections.emptySet() : Collections.singleton(taintedAbs);
 
         // Create abstractions from the access paths
         Set<Abstraction> resAbs = new HashSet<>(res.size() + 1);
-        resAbs.add(taintedAbs);
+        if (!killTaint)
+            resAbs.add(taintedAbs);
         for (AccessPath ap : res) {
             Abstraction newAbs = taintedAbs.deriveNewAbstraction(ap, stmt);
             newAbs.setCorrespondingCallSite(stmt);

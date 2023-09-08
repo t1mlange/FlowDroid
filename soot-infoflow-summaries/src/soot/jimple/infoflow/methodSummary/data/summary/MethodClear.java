@@ -15,12 +15,17 @@ import soot.jimple.infoflow.methodSummary.data.sourceSink.FlowConstraint;
  *
  */
 public class MethodClear extends AbstractMethodSummary {
-
 	private final FlowClear clearDefinition;
 	private final boolean preventPropagation;
 
+	public MethodClear(String methodSig, FlowClear clearDefinition, FlowConstraint[] constraints, boolean isAlias, boolean preventPropagation) {
+		super(methodSig, constraints, isAlias);
+		this.clearDefinition = clearDefinition;
+		this.preventPropagation = preventPropagation;
+	}
+
 	public MethodClear(String methodSig, FlowClear clearDefinition, FlowConstraint[] constraints, boolean preventPropagation) {
-		super(methodSig, constraints);
+		super(methodSig, constraints, false);
 		this.clearDefinition = clearDefinition;
 		this.preventPropagation = preventPropagation;
 	}
@@ -42,7 +47,7 @@ public class MethodClear extends AbstractMethodSummary {
 	public MethodClear replaceGaps(Map<Integer, GapDefinition> replacementMap) {
 		if (replacementMap == null)
 			return this;
-		return new MethodClear(methodSig, clearDefinition.replaceGaps(replacementMap), getConstraints(), preventPropagation);
+		return new MethodClear(methodSig, clearDefinition.replaceGaps(replacementMap), getConstraints(), isAlias, preventPropagation);
 	}
 
 	@Override

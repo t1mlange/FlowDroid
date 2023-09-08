@@ -179,9 +179,14 @@ public class StubDroidParser extends SummaryReader {
                 } else if (localName.equals(TREE_CLEAR) && xmlreader.isEndElement()) {
                     if (state == State.clear) {
                         state = State.method;
+
+                        String sAlias = clearAttributes.get(XMLConstants.ATTRIBUTE_IS_ALIAS);
+                        boolean alias = sAlias != null && sAlias.equals(XMLConstants.VALUE_TRUE);
+
                         String ppString = clearAttributes.get(ATTRIBUTE_PREVENT_PROPAGATION);
                         boolean preventProp = ppString == null || ppString.isEmpty() || ppString.equals(VALUE_TRUE);
-                        MethodClear clear = new MethodClear(currentMethod, createClear(summary, clearAttributes), constraints.toArray(new FlowConstraint[0]), preventProp);
+                        MethodClear clear = new MethodClear(currentMethod, createClear(summary, clearAttributes),
+                                constraints.toArray(new FlowConstraint[0]), alias, preventProp);
                         summary.addClear(clear);
                     } else
                         throw new SummaryXMLException();
@@ -470,8 +475,10 @@ public class StubDroidParser extends SummaryReader {
                     return ConstraintType.TRUE;
                 case VALUE_FALSE:
                     return ConstraintType.FALSE;
-                case "keep":
+                case StubDroidXMLConstants.CONSTRAINT_KEEP:
                     return ConstraintType.KEEP;
+                case StubDroidXMLConstants.CONSTRAINT_RO:
+                    return ConstraintType.READONLY;
                 case "shiftright":
                     return ConstraintType.SHIFT_RIGHT;
                 case "shiftleft":
