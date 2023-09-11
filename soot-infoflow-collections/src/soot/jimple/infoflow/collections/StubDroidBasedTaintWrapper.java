@@ -36,6 +36,7 @@ import soot.jimple.infoflow.typing.TypeUtils;
 import soot.jimple.infoflow.util.ByReferenceBoolean;
 import soot.jimple.infoflow.util.SootMethodRepresentationParser;
 import soot.jimple.infoflow.util.SystemClassHandler;
+import soot.jimple.spark.sets.PointsToSetInternal;
 import soot.util.ConcurrentHashMultiMap;
 import soot.util.MultiMap;
 
@@ -43,8 +44,9 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
-public class StubDroidBasedTaintWrapper extends SummaryTaintWrapper {
+public class StubDroidBasedTaintWrapper extends SummaryTaintWrapper implements ICollectionsSupport {
 
     private InfoflowManager manager;
     private AtomicInteger wrapperHits = new AtomicInteger();
@@ -321,16 +323,33 @@ public class StubDroidBasedTaintWrapper extends SummaryTaintWrapper {
         return newTaints;
     }
 
-    /**
-     * Creates a set of taints that can be propagated through method summaries based
-     * on the given access path. This method assumes that the given statement is a
-     * return site from a method.
-     *
-     * @param ap   The access path from which to create a taint
-     * @param stmt The statement at which the access path came in
-     * @param gap  The gap in which the taint is valid
-     * @return The taint derived from the given access path
-     */
+    private Set<Taint> createTaintFromAccessPathOnCallApprox(AccessPath ap, Stmt stmt) {
+        Value base = getMethodBase(stmt);
+        Set<Taint> newTaints = null;
+
+        // Check whether the base object or some field in it is tainted
+        if ((ap.isLocal() || ap.isInstanceFieldRef()) && base != null) {
+            if (newTaints == null)
+                newTaints = new HashSet<>();
+
+            newTaints.add(new Taint(SourceSinkType.Field, -1, ap.getBaseType().toString(), new AccessPathFragment(ap),
+                    ap.getTaintSubFields()));
+        }
+
+        return newTaints;
+    }
+
+
+        /**
+         * Creates a set of taints that can be propagated through method summaries based
+         * on the given access path. This method assumes that the given statement is a
+         * return site from a method.
+         *
+         * @param ap   The access path from which to create a taint
+         * @param stmt The statement at which the access path came in
+         * @param gap  The gap in which the taint is valid
+         * @return The taint derived from the given access path
+         */
     private Set<Taint> createTaintFromAccessPathOnReturn(AccessPath ap, Stmt stmt, GapDefinition gap) {
         SootMethod sm = manager.getICFG().getMethodOf(stmt);
         Set<Taint> res = null;
@@ -540,6 +559,297 @@ public class StubDroidBasedTaintWrapper extends SummaryTaintWrapper {
         return resAbs;
     }
 
+    protected AccessPathPropagator applyFlowApprox(MethodFlow flow, AccessPathPropagator propagator) {
+        final AbstractFlowSinkSource flowSource = flow.source();
+        AbstractFlowSinkSource flowSink = flow.sink();
+        final Taint taint = propagator.getTaint();
+
+        // Make sure that the base type of the incoming taint and the one of
+        // the summary are compatible
+        boolean typesCompatible = flowSource.getBaseType() == null
+                || isCastCompatible(TypeUtils.getTypeFromString(taint.getBaseType()),
+                TypeUtils.getTypeFromString(flowSource.getBaseType()));
+        if (!typesCompatible)
+            return null;
+
+        // If this flow starts at a gap, our current taint must be at that gap
+        if (taint.getGap() != flow.source().getGap())
+            return null;
+
+        // Maintain the stack of access path propagations
+        final AccessPathPropagator parent;
+        final GapDefinition gap, taintGap;
+        final Stmt stmt;
+        final Abstraction d1, d2;
+        if (flowSink.getGap() != null) { // ends in gap, push on stack
+            parent = propagator;
+            gap = flowSink.getGap();
+            stmt = null;
+            d1 = null;
+            d2 = null;
+            taintGap = null;
+        } else {
+            parent = safePopParent(propagator);
+            gap = propagator.getParent() == null ? null : propagator.getParent().getGap();
+            stmt = propagator.getParent() == null ? propagator.getStmt() : propagator.getParent().getStmt();
+            d1 = propagator.getParent() == null ? propagator.getD1() : propagator.getParent().getD1();
+            d2 = propagator.getParent() == null ? propagator.getD2() : propagator.getParent().getD2();
+            taintGap = propagator.getGap();
+        }
+
+        boolean addTaint = flowSource.getType() == SourceSinkType.Field && compareFieldsApprox(taint, flowSource);
+
+        // If we didn't find a match, there's little we can do
+        if (!addTaint)
+            return null;
+
+        int srcFieldLen = flowSource.getAccessPathLength();
+        for (int i = 0; i < taint.getAccessPathLength(); i += srcFieldLen) {
+            boolean correct = true;
+            boolean hasContext = false;
+            for (int j = 0; j < srcFieldLen; j++) {
+                String taintField = taint.getAccessPath().getField(i + j);
+                String sourceField = flowSource.getAccessPath().getField(j);
+                if (!sourceField.equals(taintField)) {
+                    correct = false;
+                    break;
+                }
+                hasContext |= taint.getAccessPath().getContext(i + j) != null;
+            }
+
+            if (correct && hasContext) {
+                ContextDefinition[][] newlyCreatedContext = new ContextDefinition[srcFieldLen][];
+                for (int j = 0; j < srcFieldLen; j++) {
+                    ContextDefinition[] taintCtxt = taint.getAccessPath().getContext(j);
+                    if (taintCtxt != null && Arrays.stream(flow.getConstraints()).anyMatch(c -> c.isIndexBased() && c.mightShift()
+                            && (c.getType() != SourceSinkType.Implicit || c.getImplicitLocation() == ImplicitLocation.First))) {
+                        Tristate lte = flow.sink().getConstraintType() == ConstraintType.SHIFT_RIGHT
+                                ? flowShiftRight(flowSource, flow, taint, stmt) : flowShiftLeft(flowSource, flow, taint, stmt);
+                        if (!lte.isFalse()) {
+                            ContextDefinition newCtxt = containerStrategy.shift(taintCtxt[0], new IntervalContext(1), lte.isTrue());
+                            if (newCtxt != null && newCtxt.containsInformation()) {
+                                newlyCreatedContext[j] = new ContextDefinition[]{newCtxt};
+                            } else {
+                                newlyCreatedContext[j] = null;
+                            }
+                        } else {
+                            newlyCreatedContext[j] = taintCtxt;
+                        }
+                    } else {
+                        newlyCreatedContext[j] = taintCtxt;
+                    }
+                }
+
+                taint.getAccessPath().addContext()
+            }
+        }
+
+        // Construct a new propagator
+        Taint newTaint = addSinkTaint(flow, taint, taintGap, stmt);
+        if (newTaint == null)
+            return null;
+
+        if (d2 != null && !d2.isAbstractionActive() && !d2.dependsOnCutAP() && flowSink.isReturn()) {
+            // Special case: x = f(y), if y is inactive, we can only taint x if we have some fields left in x
+            // See ln. 224 of InfoflowProblem.
+            if (!newTaint.hasAccessPath() || newTaint.getAccessPathLength() == 0)
+                return null;
+        }
+
+        return new AccessPathPropagator(newTaint, gap, parent, stmt, d1, d2,
+                propagator.isInversePropagator());
+    }
+
+    @Override
+    public Set<Abstraction> getTaintsForMethodApprox(Stmt stmt, Abstraction d1, Abstraction source) {
+        if (source.getAccessPath().getFragmentCount() == 0
+                || Arrays.stream(source.getAccessPath().getFragments()).noneMatch(f -> f.hasContext()))
+            return null;
+
+        if (!(stmt.getInvokeExpr() instanceof InstanceInvokeExpr))
+            return null;
+        InstanceInvokeExpr iiExpr = (InstanceInvokeExpr) stmt.getInvokeExpr();
+        Local base = (Local) iiExpr.getBase();
+
+        // We also need to shift if the base and the taint MAY alias. But we need the
+        // answer to that now, which clashes with the on-demand alias resolving of
+        // FlowDroid. Especially because we are not really able to correlate that a flow
+        // originated from an alias query here. So we use some coarser approximations to
+        // find out whether we need to shift or not.
+
+        // First, we check whether they must alias, which allows us to strong update
+        // here
+        Tristate found = Tristate.FALSE();
+        boolean mustAlias = !source.getAccessPath().isStaticFieldRef()
+                && manager.getAliasing().mustAlias(source.getAccessPath().getPlainValue(), base, stmt);
+        if (mustAlias) {
+            // Must alias means we definitely know how to precisely update here
+            found = Tristate.TRUE();
+        } else {
+            // Otherwise use the points-to information of SPARK to approximate here
+            PointsToSet basePts = Scene.v().getPointsToAnalysis().reachingObjects(base);
+            PointsToSet incomingPts = Scene.v().getPointsToAnalysis().reachingObjects(source.getAccessPath().getPlainValue());
+
+            if (basePts.hasNonEmptyIntersection(incomingPts)) {
+                // Both might alias
+
+                // Use the uniqueness property (variable points-to exactly one alloc site) to
+                // check whether we can perform a strong update
+                if (incomingPts instanceof PointsToSetInternal && ((PointsToSetInternal) incomingPts).size() == 1
+                    && basePts instanceof PointsToSetInternal && ((PointsToSetInternal) basePts).size() == 1)
+                    found = Tristate.TRUE();
+                else
+                    found = Tristate.MAYBE();
+            } else if (source.getAccessPath().getFragmentCount() > 0) {
+                PointsToSet incomingPts2 = Scene.v().getPointsToAnalysis().reachingObjects(source.getAccessPath().getPlainValue(),
+                        source.getAccessPath().getFirstField());
+
+                if (basePts.hasNonEmptyIntersection(incomingPts2)) {
+                    // Both might alias
+                    found = Tristate.MAYBE();
+                }
+            }
+        }
+
+        if (found.isFalse())
+            return null;
+
+        final SootMethod method = stmt.getInvokeExpr().getMethod();
+        final ByReferenceBoolean classSupported = new ByReferenceBoolean();
+        ClassSummaries flowsInCallees = getFlowSummariesForMethod(stmt, method, source, classSupported);
+        if (flowsInCallees == null || flowsInCallees.isEmpty())
+            return null;
+
+        Set<Taint> taintsFromAP = createTaintFromAccessPathOnCallApprox(source.getAccessPath(), stmt);
+        if (taintsFromAP == null || taintsFromAP.isEmpty())
+            return null;
+
+        List<AccessPathPropagator> workList = new ArrayList<AccessPathPropagator>();
+        Set<AccessPath> res = null;
+        boolean killTaint = false;
+        for (String className : flowsInCallees.getClasses()) {
+            // Get the flows in this class
+            ClassMethodSummaries classFlows = flowsInCallees.getClassSummaries(className);
+            if (classFlows == null || classFlows.isEmpty())
+                continue;
+
+            // Get the method-level flows
+            MethodSummaries flowsInCallee = classFlows.getMethodSummaries().getApproximateFlows();
+            if (flowsInCallee == null || !flowsInCallee.hasFlows())
+                continue;
+
+            for (Taint taint : taintsFromAP) {
+                boolean preventPropagation = false;
+                if (flowsInCallee.hasClears()) {
+                    for (MethodClear clear : flowsInCallee.getAllClears()) {
+                        if (clear.getClearDefinition().getType() == SourceSinkType.Field
+                            && compareFieldsApprox(taint, clear.getClearDefinition())) {
+                            killTaint = true;
+                            preventPropagation = clear.preventPropagation();
+                            break;
+                        }
+                    }
+                }
+
+                if (!preventPropagation) {
+                    workList.add(new AccessPathPropagator(taint, null, null, stmt, d1, source));
+                }
+            }
+
+            Set<AccessPathPropagator> doneSet = new HashSet<>(workList);
+            while (!workList.isEmpty()) {
+                final AccessPathPropagator curPropagator = workList.remove(0);
+                assert curPropagator.getGap() == null;
+
+                // Get the correct set of flows to apply
+
+                // Apply the flow summaries for other libraries
+                if (!flowsInCallee.isEmpty()) {
+                    for (MethodFlow flow : flowsInCallee) {
+                        // Apply the flow summary
+                        AccessPathPropagator newPropagator = applyFlowApprox(flow, curPropagator);
+
+                        if (newPropagator == null) {
+                            // Can we reverse the flow and apply it in the other direction?
+                            flow = getReverseFlowForAlias(flow);
+                            if (flow == null)
+                                continue;
+
+                            // Apply the reversed flow
+                            newPropagator = applyFlowApprox(flow, curPropagator);
+                            if (newPropagator == null)
+                                continue;
+                        }
+
+                        // Propagate it
+                        if (newPropagator.getParent() == null && newPropagator.getTaint().getGap() == null) {
+                            AccessPath ap = createAccessPathFromTaint(newPropagator.getTaint(), newPropagator.getStmt(),
+                                    curPropagator, false);
+                            if (ap == null)
+                                continue;
+                            else {
+                                if (res == null)
+                                    res = new HashSet<>();
+                                res.add(ap);
+                            }
+                        }
+
+                        // Final flows signal that the flow itself is complete and does not need
+                        // another iteration to be correct. This allows to model things like return
+                        // the previously held value etc.
+                        if (doneSet.add(newPropagator) && !flow.isFinal())
+                            workList.add(newPropagator);
+
+                        // If we have have tainted a heap field, we need to look for
+                        // aliases as well
+                        if (newPropagator.getTaint().hasAccessPath() && !flow.isFinal()) {
+                            AccessPathPropagator backwardsPropagator = newPropagator.deriveInversePropagator();
+                            if (doneSet.add(backwardsPropagator))
+                                workList.add(backwardsPropagator);
+                        }
+                    }
+                }
+            }
+        }
+
+        if (res == null)
+            return Collections.singleton(source);
+        return res.stream().map(ap -> manager.getAccessPathFactory().copyWithNewValue(ap, source.getAccessPath().getPlainValue()))
+                           .map(ap -> source.deriveNewAbstraction(ap, stmt))
+                           .collect(Collectors.toSet());
+    }
+
+    protected boolean compareFieldsApprox(Taint taintedPath, AbstractFlowSinkSource flowSource) {
+        // if we have x.f....fn and the source is x.f'.f1'...f'n+1 and we don't
+        // taint sub, we can't have a match
+        if (taintedPath.getAccessPathLength() < flowSource.getAccessPathLength()) {
+            if (!taintedPath.taintSubFields() || flowSource.isMatchStrict())
+                return false;
+        }
+
+        // Compare the shared sub-path
+        int srcFieldLen = flowSource.getAccessPathLength();
+        for (int i = 0; i < taintedPath.getAccessPathLength(); i += srcFieldLen) {
+            boolean correct = true;
+            boolean hasContext = false;
+            for (int j = 0; j < srcFieldLen; j++) {
+                String taintField = taintedPath.getAccessPath().getField(i + j);
+                String sourceField = flowSource.getAccessPath().getField(j);
+                if (!sourceField.equals(taintField)) {
+                    correct = false;
+                    break;
+                }
+                hasContext |= taintedPath.getAccessPath().getContext(i + j) != null;
+            }
+
+            if (correct && hasContext) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     /**
      * Method that is called when no summary exists for a given method
      *
@@ -684,7 +994,7 @@ public class StubDroidBasedTaintWrapper extends SummaryTaintWrapper {
     private Set<AccessPath> applyFlowsIterative(MethodSummaries flowsInCallee, List<AccessPathPropagator> workList,
                                                 boolean reverseFlows) {
         Set<AccessPath> res = null;
-        Set<AccessPathPropagator> doneSet = new HashSet<AccessPathPropagator>(workList);
+        Set<AccessPathPropagator> doneSet = new HashSet<>(workList);
         while (!workList.isEmpty()) {
             final AccessPathPropagator curPropagator = workList.remove(0);
             final GapDefinition curGap = curPropagator.getGap();

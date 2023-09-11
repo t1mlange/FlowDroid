@@ -55,60 +55,39 @@ public class CollectionWrapperPropagationRule extends WrapperPropagationRule {
 
         // Do not check taints that are not mentioned anywhere in the call
         final Aliasing aliasing = getAliasing();
-        Tristate found = Tristate.FALSE();
+        boolean found = false;
         if (aliasing != null && !source.getAccessPath().isStaticFieldRef() && !source.getAccessPath().isEmpty()) {
             // The base object must be tainted
             Local base = null;
             if (iStmt.getInvokeExpr() instanceof InstanceInvokeExpr) {
                 InstanceInvokeExpr iiExpr = (InstanceInvokeExpr) iStmt.getInvokeExpr();
                 base = (Local) iiExpr.getBase();
-                found = Tristate.fromBoolean(aliasing.mayAlias(base, source.getAccessPath().getPlainValue()));
+                found = aliasing.mayAlias(base, source.getAccessPath().getPlainValue());
             }
 
             // or one of the parameters must be tainted
-            if (found.isFalse())
+            if (!found)
                 for (int paramIdx = 0; paramIdx < iStmt.getInvokeExpr().getArgCount(); paramIdx++)
                     if (aliasing.mayAlias(source.getAccessPath().getPlainValue(),
                             iStmt.getInvokeExpr().getArg(paramIdx))) {
-                        found = Tristate.TRUE();
+                        found = true;
                         break;
                     }
 
-            if (found.isFalse() && base != null) {
-                // We also need to shift if the base and the taint MAY alias. But we need the
-                // answer to that now, which clashes with the on-demand alias resolving of
-                // FlowDroid. Especially because we are not really able to correlate that a flow
-                // originated from an alias query here. So we use some coarser approximations to
-                // find out whether we need to shift or not.
+            if (!found && base != null && manager.getTaintWrapper() instanceof ICollectionsSupport) {
+                Set<Abstraction> approx = ((ICollectionsSupport) manager.getTaintWrapper()).getTaintsForMethodApprox(iStmt, d1, source);
+                // null means there's nothing to update, so leave it to the flow function to apply the identity
+                if (approx == null)
+                    return null;
 
-                // First, we check whether they must alias, which allows us to strong update
-                // here
-                boolean mustAlias = !source.getAccessPath().isStaticFieldRef()
-                        && manager.getAliasing().mustAlias(source.getAccessPath().getPlainValue(), base, iStmt);
-                if (mustAlias) {
-                    // Must alias means we definitely know how to precisely update here
-                    found = Tristate.TRUE();
-                } else {
-                    // Otherwise use the points-to information of SPARK to approximate here
-                    PointsToSet basePts = Scene.v().getPointsToAnalysis().reachingObjects(base);
-                    PointsToSet incomingPts = Scene.v().getPointsToAnalysis().reachingObjects(base);
-
-                    if (basePts.hasNonEmptyIntersection(incomingPts)) {
-                        // Both might alias
-
-                        // Use the uniqueness property (variable points-to exactly one alloc site) to
-                        // check whether we can perform a strong update
-                        if (basePts instanceof PointsToSetInternal && ((PointsToSetInternal) basePts).size() == 1)
-                            found = Tristate.TRUE();
-                        else
-                            found = Tristate.MAYBE();
-                    }
-                }
+                // Assume our approximation did produce some taint and use that as a result
+                killSource.value = true;
+                return approx;
             }
         }
 
         // If nothing is tainted, we don't have any taints to propagate
-        if (found.isFalse())
+        if (!found)
             return null;
 
         // Do not apply the taint wrapper to statements that are sources on their own
@@ -121,12 +100,7 @@ public class CollectionWrapperPropagationRule extends WrapperPropagationRule {
                 return null;
         }
 
-        Set<Abstraction> res = null;
-        if (found.isTrue()) {
-           res = getManager().getTaintWrapper().getTaintsForMethod(iStmt, d1, source);
-        } else if (found.isMaybe() && getManager().getTaintWrapper() instanceof ICollectionsSupport) {
-            res = ((ICollectionsSupport) getManager().getTaintWrapper()).getTaintsForMethodApprox(iStmt, d1, source);
-        }
+        Set<Abstraction> res = getManager().getTaintWrapper().getTaintsForMethod(iStmt, d1, source);
 
         if (res != null) {
             Set<Abstraction> resWithAliases = new HashSet<>(res);
@@ -186,7 +160,8 @@ public class CollectionWrapperPropagationRule extends WrapperPropagationRule {
                         aliases.add(a);
                 }
 
-                getAliasing().computeAliases(d1, iStmt, val.getPlainValue(), aliases,
+                if (!aliases.isEmpty())
+                    getAliasing().computeAliases(d1, iStmt, val.getPlainValue(), aliases,
                         getManager().getICFG().getMethodOf(iStmt), abs);
             }
         }
