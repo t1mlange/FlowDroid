@@ -29,6 +29,51 @@ public class AliasListTestCode {
     }
 
     @FlowDroidTest(expected = 1)
+    public void testShiftOnAlias1() {
+        alias = null;
+
+        List<String> lst = new ArrayList<>();
+        lst.add(source()); // lst@0 tainted
+        alias = lst;
+        alias.add(0, "element"); // lst@0 must shift to the right
+        sink(lst.get(0));
+        sink(lst.get(1)); // only right, should be possible to use the uniqueness property of the alloc site
+        sink(lst.get(2));
+    }
+
+    @FlowDroidTest(expected = 1)
+    public void testShiftOnAlias2() {
+        alias = null;
+
+        List<String> lst = new ArrayList<>();
+        lst.add(source()); // lst@0 tainted
+        alias = lst;
+        alias.add(0, "element"); // lst@0 must shift to the right
+        sink(alias.get(0));
+        sink(alias.get(1)); // only right, should be possible to use the uniqueness property of the alloc site
+        sink(alias.get(2));
+    }
+
+    static class ListWrapper {
+        List<String> lst;
+    }
+    private ListWrapper alias2;
+
+    @FlowDroidTest(expected = 1)
+    public void testShiftOnAlias3() {
+        alias2 = null;
+
+        alias2 = new ListWrapper();
+        List<String> lst = new ArrayList<>();
+        lst.add(source()); // lst@0 tainted
+        alias2.lst = lst;
+        alias2.lst.add(0, "element"); // lst@0 must shift to the right
+        sink(alias2.lst.get(0));
+        sink(alias2.lst.get(1)); // only right, should be possible to use the uniqueness property of the alloc site
+        sink(alias2.lst.get(2));
+    }
+
+    @FlowDroidTest(expected = 1)
     public void testListShiftAlias1() {
         alias = null;
 

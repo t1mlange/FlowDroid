@@ -245,6 +245,24 @@ public class MethodSummaries implements Iterable<MethodFlow> {
 		return summaries;
 	}
 
+	public MethodSummaries getApproximateFlows() {
+		if (flows == null || flows.isEmpty())
+			return null;
+
+		MethodSummaries summaries = new MethodSummaries();
+		for (Pair<String, MethodFlow> flow : flows)
+			if (flow.getO2().sink().shiftConstraint())
+				summaries.addFlow(flow.getO2());
+
+		if (summaries.isEmpty())
+			return null;
+
+		if (clears != null && !clears.isEmpty())
+			summaries.mergeClears(clears.values());
+
+		return summaries;
+	}
+
 	/**
 	 * Adds a new flow for a method to this summary object
 	 * 
