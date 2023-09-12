@@ -108,7 +108,8 @@ public class TestConstantStrategy extends ConstantMapStrategy {
                     ? ((IntervalContext) ctxt).exactShift((IntervalContext) n)
                     : ((IntervalContext) ctxt).mayShift((IntervalContext) n);
 
-        throw new RuntimeException("Expect two interval contexts but got: " + ctxt.getClass().getName() + " and " + n.getClass().getName());
+        // We cannot shift any other indexes
+        return ctxt;
     }
 
     @Override
