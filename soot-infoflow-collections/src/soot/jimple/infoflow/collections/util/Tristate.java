@@ -49,12 +49,25 @@ public class Tristate {
 
     public Tristate and(Tristate other) {
         if (this.isTrue() && other.isTrue())
-            return TRUE();
+            return TRUE_INSTANCE;
 
         if (this.isFalse() || other.isFalse())
-            return FALSE();
+            return FALSE_INSTANCE;
 
-        return MAYBE();
+        return MAYBE_INSTANCE;
+    }
+
+    public Tristate negate() {
+        switch (internal) {
+            case MAYBE:
+                return MAYBE_INSTANCE;
+            case TRUE:
+                return FALSE_INSTANCE;
+            case FALSE:
+                return TRUE_INSTANCE;
+            default:
+                throw new RuntimeException("Case missing!");
+        }
     }
 
     @Override

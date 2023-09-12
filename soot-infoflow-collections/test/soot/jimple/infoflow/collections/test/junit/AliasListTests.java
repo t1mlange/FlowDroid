@@ -52,12 +52,10 @@ public class AliasListTests extends FlowDroidTests {
 
     }
 
-    @Test//(timeout = 30000)
+    @Test(timeout = 30000)
     public void testShiftOnAlias2() {
         IInfoflow infoflow = initInfoflow();
-        infoflow.getConfig().setAliasingAlgorithm(InfoflowConfiguration.AliasingAlgorithm.None);
         infoflow.getConfig().getPathConfiguration().setPathReconstructionMode(InfoflowConfiguration.PathReconstructionMode.Fast);
-        infoflow.setTaintPropagationHandler(new DebugFlowFunctionTaintPropagationHandler());
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
         Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
@@ -66,11 +64,10 @@ public class AliasListTests extends FlowDroidTests {
         Assert.assertFalse(containsStmtString(infoflow.getResults(), "get(int)>(2)"));
     }
 
-    @Test//(timeout = 30000)
+    @Test(timeout = 30000)
     public void testShiftOnAlias3() {
         IInfoflow infoflow = initInfoflow();
         infoflow.getConfig().getPathConfiguration().setPathReconstructionMode(InfoflowConfiguration.PathReconstructionMode.Fast);
-        infoflow.setTaintPropagationHandler(new DebugFlowFunctionTaintPropagationHandler());
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
         Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());

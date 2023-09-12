@@ -209,4 +209,16 @@ public class IteratorTestCode {
         sink(lst.get(0)); // Correct
         sink(lst.get(1)); // Correct
     }
+
+    @FlowDroidTest(expected = 1)
+    public void testIteratorAliasFlow() {
+        List<String> lst = new ArrayList<>();
+        Iterator<String> it = lst.iterator();
+        lst.add(source());
+        // it.remove(); <-- This would throw an CME.
+        // So we can assume we'll never have to invalidate an index that is added after the
+        // derivation of an iterator :)
+        sink(lst.get(0)); // Correct
+        sink(lst.get(1)); // Incorrect
+    }
 }

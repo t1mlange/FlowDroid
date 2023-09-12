@@ -251,7 +251,7 @@ public class MethodSummaries implements Iterable<MethodFlow> {
 
 		MethodSummaries summaries = new MethodSummaries();
 		for (Pair<String, MethodFlow> flow : flows)
-			if (flow.getO2().sink().shiftConstraint())
+			if (flow.getO2().sink().anyShift())
 				summaries.addFlow(flow.getO2());
 
 		if (summaries.isEmpty())

@@ -7,7 +7,6 @@ import soot.jimple.*;
 import soot.jimple.infoflow.InfoflowConfiguration;
 import soot.jimple.infoflow.InfoflowManager;
 import soot.jimple.infoflow.collections.context.IntervalContext;
-import soot.jimple.infoflow.collections.context.UnknownContext;
 import soot.jimple.infoflow.collections.strategies.containers.IContainerStrategy;
 import soot.jimple.infoflow.collections.strategies.containers.TestConstantStrategy;
 import soot.jimple.infoflow.collections.util.NonNullHashSet;
@@ -776,38 +775,6 @@ public class StubDroidBasedTaintWrapper extends SummaryTaintWrapper implements I
                             preventPropagation |= clear.preventPropagation();
                             break;
                         }
-
-                        if (!preventPropagation && taint.hasAccessPath() && clear.getClearDefinition().isConstrained()
-                            && Arrays.stream(clear.getConstraints()).anyMatch(c -> c.isIndexBased() && c.mightShift()
-                                && (c.getType() != SourceSinkType.Implicit || c.getImplicitLocation() == ImplicitLocation.First))) {
-                            ContextDefinition[] ctxt = taint.getAccessPath().getFirstFieldContext();
-                            ContextDefinition[] stmtCtxt = concretizeFlowConstraints(clear.getConstraints(), stmt, taint.getAccessPath().getFirstFieldContext());
-                            Tristate lte = containerStrategy.lessThanEqual(stmtCtxt[0], ctxt[0]);
-                            if (!lte.isFalse()) {
-                                ContextDefinition newCtxt = containerStrategy.shift(ctxt[0], new IntervalContext(-1), lte.isTrue());
-                                if (newCtxt == null)
-                                    continue;
-
-                                soot.jimple.infoflow.data.AccessPathFragment[] oldFragments = taintedAbs.getAccessPath().getFragments();
-                                soot.jimple.infoflow.data.AccessPathFragment[] fragments = new soot.jimple.infoflow.data.AccessPathFragment[oldFragments.length];
-                                System.arraycopy(oldFragments, 0, fragments, 1, fragments.length - 1);
-                                soot.jimple.infoflow.data.AccessPathFragment fragment = oldFragments[0];
-                                if (newCtxt == UnknownContext.v())
-                                    fragments[0] = fragment.copyWithNewContext(null);
-                                else
-                                    fragments[0] = fragment.copyWithNewContext(new ContextDefinition[] { newCtxt });
-                                AccessPath ap = manager.getAccessPathFactory().createAccessPath(taintedAbs.getAccessPath().getPlainValue(), fragments,
-                                        taintedAbs.getAccessPath().getTaintSubFields());
-                                if (ap != null) {
-                                    if (res == null)
-                                        res = new HashSet<>();
-                                    res.add(ap);
-                                }
-
-                                // This one superseeds the current incoming element
-                                killIncomingTaint.value = true;
-                            }
-                        }
                     }
                 }
 
@@ -880,7 +847,6 @@ public class StubDroidBasedTaintWrapper extends SummaryTaintWrapper implements I
                 for (MethodFlow flow : flowsInTarget) {
                     // Apply the flow summary
                     AccessPathPropagator newPropagator = applyFlow(flow, curPropagator);
-
 
                     if (newPropagator == null) {
                         // Can we reverse the flow and apply it in the other direction?
@@ -1217,7 +1183,6 @@ public class StubDroidBasedTaintWrapper extends SummaryTaintWrapper implements I
         return implementors;
     }
 
-
     /**
      * Applies a data flow summary to a given tainted access path
      *
@@ -1353,7 +1318,7 @@ public class StubDroidBasedTaintWrapper extends SummaryTaintWrapper implements I
             state = state.and(containerStrategy.intersect(taintContext[i], stmtCtxt[i]));
         }
 
-        return state;
+        return flowSource.getConstraintType() == ConstraintType.NO_MATCH ? Tristate.fromBoolean(state.isFalse()) : state;
     }
 
     protected Tristate matchShiftLeft(final AbstractFlowSinkSource flowSource, final AbstractMethodSummary flow,
@@ -1366,7 +1331,7 @@ public class StubDroidBasedTaintWrapper extends SummaryTaintWrapper implements I
         assert stmtCtxt.length == taintContext.length;
         Tristate state = Tristate.TRUE();
         for (int i = 0; i < stmtCtxt.length; i++) {
-            state = state.and(containerStrategy.lessThanEqual(taintContext[i], stmtCtxt[i]));
+            state = state.and(containerStrategy.lessThanEqual(stmtCtxt[i], taintContext[i]));
         }
 
         return state;
@@ -1741,18 +1706,24 @@ public class StubDroidBasedTaintWrapper extends SummaryTaintWrapper implements I
         }
 
         if (flow.sink().isConstrained()) {
-            FlowConstraint[] constraints = flow.getConstraints();
-            ContextDefinition[] ctxt = constraints.length == 0
-                    ? taint.getAccessPath().getFirstFieldContext()
-                    : concretizeFlowConstraints(flow.getConstraints(), stmt, taint.getAccessPath().getFirstFieldContext());
+            ContextDefinition[] ctxt = concretizeFlowConstraints(flow.getConstraints(), stmt, taint.hasAccessPath() ? taint.getAccessPath().getFirstFieldContext() : null);
             if (appendedFields != null)
                 appendedFields = appendedFields.addContext(ctxt);
-        } else if (flow.sink().shiftConstraint()) {
+        } else if (flow.sink().shiftLeft()) {
             ContextDefinition[] taintCtxt = taint.getAccessPath().getFirstFieldContext();
-            if (taintCtxt != null && Arrays.stream(flow.getConstraints()).anyMatch(c -> c.isIndexBased() && c.mightShift()
-                    && (c.getType() != SourceSinkType.Implicit || c.getImplicitLocation() == ImplicitLocation.First))) {
-                Tristate lte = flow.sink().getConstraintType() == ConstraintType.SHIFT_RIGHT
-                        ? flowShiftRight(flowSource, flow, taint, stmt) : flowShiftLeft(flowSource, flow, taint, stmt);
+            if (taintCtxt != null) {
+                Tristate lte = flowShiftLeft(flowSource, flow, taint, stmt);
+                if (!lte.isFalse()) {
+                    ContextDefinition newCtxt = containerStrategy.shift(taintCtxt[0], new IntervalContext(-1), lte.isTrue());
+                    if (newCtxt != null && appendedFields != null) {
+                        appendedFields = appendedFields.addContext(newCtxt.containsInformation() ? new ContextDefinition[]{newCtxt} : null);
+                    }
+                }
+            }
+        } else if (flow.sink().shiftRight()) {
+            ContextDefinition[] taintCtxt = taint.getAccessPath().getFirstFieldContext();
+            if (taintCtxt != null) {
+                Tristate lte = flowShiftRight(flowSource, flow, taint, stmt);
                 if (!lte.isFalse()) {
                     ContextDefinition newCtxt = containerStrategy.shift(taintCtxt[0], new IntervalContext(1), lte.isTrue());
                     if (newCtxt != null && appendedFields != null) {
