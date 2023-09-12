@@ -4,16 +4,13 @@ import soot.*;
 import soot.jimple.Constant;
 import soot.jimple.Stmt;
 import soot.jimple.infoflow.InfoflowManager;
-import soot.jimple.infoflow.collections.CollectionTaintWrapper;
 import soot.jimple.infoflow.collections.analyses.ReadOnlyListViewAnalysis;
 import soot.jimple.infoflow.collections.context.KeySetContext;
 import soot.jimple.infoflow.collections.context.UnknownContext;
 import soot.jimple.infoflow.collections.util.Tristate;
 import soot.jimple.infoflow.data.ContextDefinition;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Strategy that only reasons about maps with constant keys
@@ -77,6 +74,13 @@ public class ConstantMapStrategy implements IContainerStrategy {
         return UnknownContext.v();
     }
 
+    /**
+     * Checks whether an index should be resolved. This is a special case, where Lists and Sets share the same
+     * interface (Collection), yet we do not track Sets and thus, don't need to query the index for Sets.
+     *
+     * @param base base local
+     * @return true if index should be resovled
+     */
     protected boolean shouldResolveIndex(Value base) {
         if (!(base instanceof Local))
             return false;
