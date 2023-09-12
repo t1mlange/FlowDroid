@@ -25,7 +25,8 @@
             <flows>
                 <flow isAlias="false" typeChecking="false">
                     <from sourceSinkType="Parameter" ParameterIndex="1" />
-                    <to sourceSinkType="Field" AccessPath="[java.util.Collection: java.lang.Object[] innerArray]"
+                    <to sourceSinkType="Field"
+                        AccessPath="[java.util.Collection: java.lang.Object[] innerArray]"
                         AccessPathTypes="[java.lang.Object[]]" />
                 </flow>
             </flows>
@@ -189,11 +190,22 @@
                 <index sourceSinkType="Parameter"
                        ParameterIndex="0" />
             </constraints>
+            <flows>
+                <flow isAlias="false" typeChecking="false" final="true">
+                    <from sourceSinkType="Field"
+                          AccessPath="[java.util.Collection: java.lang.Object[] innerArray]"
+                          AccessPathTypes="[java.lang.Object[]]"
+                          constrained="noMatch" />
+                    <to sourceSinkType="Field"
+                        AccessPath="[java.util.Collection: java.lang.Object[] innerArray]"
+                        AccessPathTypes="[java.lang.Object[]]"
+                        constrained="shiftLeft" />
+                </flow>
+            </flows>
             <clears>
                 <clear sourceSinkType="Field"
                        AccessPath="[java.util.Collection: java.lang.Object[] innerArray]"
                        AccessPathTypes="[java.lang.Object[]]"
-                       constrained="true"
                        preventPropagation="false" />
             </clears>
         </method>

@@ -163,11 +163,19 @@ public abstract class AbstractFlowSinkSource {
 	}
 
 	public boolean isConstrained() {
-		return isConstrained == ConstraintType.TRUE;
+		return isConstrained == ConstraintType.TRUE || isConstrained == ConstraintType.NO_MATCH;
 	}
 
-	public boolean shiftConstraint() {
+	public boolean shiftRight() {
 		return isConstrained == ConstraintType.SHIFT_RIGHT;
+	}
+
+	public boolean shiftLeft() {
+		return isConstrained == ConstraintType.SHIFT_LEFT;
+	}
+
+	public boolean anyShift() {
+		return shiftLeft() || shiftRight();
 	}
 
 	public boolean keepConstraint() {
@@ -177,6 +185,7 @@ public abstract class AbstractFlowSinkSource {
 	public boolean keepOnRO() {
 		return isConstrained == ConstraintType.READONLY;
 	}
+
 	public ConstraintType getConstraintType() {
 		return isConstrained;
 	}

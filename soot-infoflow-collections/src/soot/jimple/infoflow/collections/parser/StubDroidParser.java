@@ -483,6 +483,8 @@ public class StubDroidParser extends SummaryReader {
                     return ConstraintType.SHIFT_RIGHT;
                 case "shiftleft":
                     return ConstraintType.SHIFT_LEFT;
+                case "nomatch":
+                    return ConstraintType.NO_MATCH;
                 default:
                     throw new RuntimeException("Unknown constraint type");
             }

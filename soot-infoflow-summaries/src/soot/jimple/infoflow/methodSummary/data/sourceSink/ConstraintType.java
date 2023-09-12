@@ -3,6 +3,8 @@ package soot.jimple.infoflow.methodSummary.data.sourceSink;
 public enum ConstraintType {
     TRUE,
     FALSE,
+    // Should not match
+    NO_MATCH,
     SHIFT_RIGHT,
     SHIFT_LEFT,
     // Tells to keep the constraint from the source field
