@@ -11,5 +11,7 @@ public enum ConstraintType {
     KEEP,
     // Tells to keep the constraint from the source field only
     // if the rhs is used in a read-only fashion
-    READONLY
+    READONLY,
+    // Tells to add the current constraint to the given one
+    APPEND
 }

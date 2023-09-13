@@ -580,9 +580,6 @@ public class StubDroidBasedTaintWrapper extends SummaryTaintWrapper implements I
                             break;
                         case Next:
                             ctxt[i] = containerStrategy.getNextPosition(((InstanceInvokeExpr) ie).getBase(), stmt);
-                            if (c.appendsTo()) {
-                                ctxt = containerStrategy.append(ctxt, taintCtxt);
-                            }
                             break;
                         default:
                             throw new RuntimeException("Missing case!");
@@ -801,6 +798,14 @@ public class StubDroidBasedTaintWrapper extends SummaryTaintWrapper implements I
         if (flow.sink().isConstrained()) {
             ContextDefinition[] ctxt = concretizeFlowConstraints(flow.getConstraints(), stmt, taint.hasAccessPath() ? taint.getAccessPath().getFirstFieldContext() : null);
             if (appendedFields != null && ctxt != null && !containerStrategy.shouldSmash(ctxt))
+                appendedFields = appendedFields.addContext(ctxt);
+        } else if (flow.sink().append()) {
+            // TODO: prevent infinite ascending chainatus
+
+            ContextDefinition[] stmtCtxt = concretizeFlowConstraints(flow.getConstraints(), stmt, null);
+            ContextDefinition[] taintCtxt = taint.getAccessPath().getFirstFieldContext();
+            ContextDefinition[] ctxt = containerStrategy.append(stmtCtxt, taintCtxt);
+            if (ctxt != null && !containerStrategy.shouldSmash(ctxt) && appendedFields != null)
                 appendedFields = appendedFields.addContext(ctxt);
         } else if (flow.sink().shiftLeft()) {
             ContextDefinition[] taintCtxt = taint.getAccessPath().getFirstFieldContext();
