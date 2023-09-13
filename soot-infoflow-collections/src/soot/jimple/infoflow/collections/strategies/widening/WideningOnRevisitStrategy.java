@@ -1,5 +1,7 @@
 package soot.jimple.infoflow.collections.strategies.widening;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.Set;
 
 import soot.Unit;
@@ -10,6 +12,7 @@ import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.data.AccessPathFragment;
 import soot.jimple.infoflow.data.ContextDefinition;
 import soot.util.ConcurrentHashMultiMap;
+import soot.util.IdentityHashSet;
 
 /**
  * Widens each fact that revisits a statement
@@ -33,15 +36,19 @@ public class WideningOnRevisitStrategy extends AbstractWidening {
 		if (abs.getAccessPath().getFragmentCount() == 0)
 			return false;
 
-		AccessPathFragment fragment = abs.getAccessPath().getFirstFragment();
-		if (!fragment.hasContext())
-			return false;
+		boolean hasPositionContext = false;
+		for (AccessPathFragment fragment : abs.getAccessPath().getFragments()) {
+			if (fragment.hasContext()) {
+				for (ContextDefinition ctxt : fragment.getContext()) {
+					if (ctxt instanceof PositionBasedContext) {
+						hasPositionContext = true;
+						break;
+					}
+				}
+			}
+		}
 
-		for (ContextDefinition ctxt : fragment.getContext())
-			if (ctxt instanceof PositionBasedContext)
-				return true;
-
-		return false;
+		return hasPositionContext;
 	}
 
 	@Override
@@ -57,7 +64,7 @@ public class WideningOnRevisitStrategy extends AbstractWidening {
 	@Override
 	public Abstraction widen(Abstraction abs, Unit u) {
 		// Only context in the domain are infinite
-		if (abs.getAccessPath().getFragmentCount() == 0 || !abs.getAccessPath().getFirstFragment().hasContext())
+		if (abs.getAccessPath().getFragmentCount() == 0)
 			return abs;
 
 		Stmt stmt = (Stmt) u;
@@ -66,20 +73,26 @@ public class WideningOnRevisitStrategy extends AbstractWidening {
 				|| !subSigs.contains(stmt.getInvokeExpr().getMethod().getSubSignature()))
 			return abs;
 
-		boolean seen = false;
-		Abstraction pred = abs;
-		while (pred != null) {
+		IdentityHashSet<Abstraction> visited = new IdentityHashSet<>();
+		Deque<Abstraction> q = new ArrayDeque<>();
+		q.add(abs);
+		while (!q.isEmpty()) {
+			Abstraction pred = q.pop();
 			if (seenAbstractions.contains(u, pred)) {
-				seen = true;
-				break;
+				// Widen
+				return forceWiden(abs, u);
 			}
-			pred = pred.getPredecessor();
+
+			if (visited.add(pred.getPredecessor()))
+				q.add(pred.getPredecessor());
+			abs.getNeighbors().forEach(
+					n -> {
+						if (visited.add(n))
+							q.add(n);
+					}
+			);
 		}
 
-		// If we haven't seen the abstraction, we can stop here
-		if (!seen)
-			return abs;
-
-		return forceWiden(abs, u);
+		return abs;
 	}
 }
