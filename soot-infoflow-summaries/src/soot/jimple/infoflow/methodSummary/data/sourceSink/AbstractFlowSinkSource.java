@@ -186,6 +186,8 @@ public abstract class AbstractFlowSinkSource {
 		return isConstrained == ConstraintType.READONLY;
 	}
 
+	public boolean append() { return isConstrained == ConstraintType.APPEND; }
+
 	public ConstraintType getConstraintType() {
 		return isConstrained;
 	}
