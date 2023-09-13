@@ -30,7 +30,7 @@ public class WideningOnShiftOperationStrategy extends AbstractWidening {
     @Override
     public Abstraction widen(Abstraction abs, Unit unit) {
         // Only context in the domain are infinite
-        if (abs.getAccessPath().getFragmentCount() == 0 || !abs.getAccessPath().getFirstFragment().hasContext())
+        if (abs.getAccessPath().getFragmentCount() == 0)
             return abs;
 
         Stmt stmt = (Stmt) unit;
