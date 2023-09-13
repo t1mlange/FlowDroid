@@ -139,12 +139,14 @@ public class SimpleListTests extends FlowDroidTests {
         Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
     }
 
-    @Test(timeout = 30000)
+    @Test//(timeout = 30000)
     public void testListInsertInLoop1() {
         IInfoflow infoflow = initInfoflow();
+        infoflow.setTaintPropagationHandler(new DebugFlowFunctionTaintPropagationHandler());
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
         // We mainly care about termination here
+        Assert.assertTrue(infoflow.getResults().getPerformanceData().getEdgePropagationCount() < 200);
     }
 
     @Test//(timeout = 30000)
@@ -153,6 +155,7 @@ public class SimpleListTests extends FlowDroidTests {
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
         // We mainly care about termination here
+        Assert.assertTrue(infoflow.getResults().getPerformanceData().getEdgePropagationCount() < 200);
     }
 
     @Test(timeout = 30000)
@@ -226,6 +229,11 @@ public class SimpleListTests extends FlowDroidTests {
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
         Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
+
+        Assert.assertFalse(containsStmtString(infoflow.getResults(), "get(int)>(0)"));
+        Assert.assertFalse(containsStmtString(infoflow.getResults(), "get(int)>(1)"));
+        Assert.assertFalse(containsStmtString(infoflow.getResults(), "get(int)>(2)"));
+        Assert.assertTrue(containsStmtString(infoflow.getResults(), "get(int)>(3)"));
     }
 
     @Test(timeout = 30000)
@@ -235,10 +243,29 @@ public class SimpleListTests extends FlowDroidTests {
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
         Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
+
+        Assert.assertFalse(containsStmtString(infoflow.getResults(), "get(int)>(0)"));
+        Assert.assertFalse(containsStmtString(infoflow.getResults(), "get(int)>(1)"));
+        Assert.assertTrue(containsStmtString(infoflow.getResults(), "get(int)>(2)"));
+        Assert.assertFalse(containsStmtString(infoflow.getResults(), "get(int)>(3)"));
     }
 
     @Test(timeout = 30000)
     public void testListAddAll3() {
+        IInfoflow infoflow = initInfoflow();
+        infoflow.getConfig().getPathConfiguration().setPathReconstructionMode(InfoflowConfiguration.PathReconstructionMode.Fast);
+        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
+        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
+
+        Assert.assertFalse(containsStmtString(infoflow.getResults(), "get(int)>(0)"));
+        Assert.assertTrue(containsStmtString(infoflow.getResults(), "get(int)>(1)"));
+        Assert.assertFalse(containsStmtString(infoflow.getResults(), "get(int)>(2)"));
+        Assert.assertFalse(containsStmtString(infoflow.getResults(), "get(int)>(3)"));
+    }
+
+    @Test(timeout = 30000)
+    public void testListAddAll4() {
         IInfoflow infoflow = initInfoflow();
         infoflow.getConfig().getPathConfiguration().setPathReconstructionMode(InfoflowConfiguration.PathReconstructionMode.Fast);
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";

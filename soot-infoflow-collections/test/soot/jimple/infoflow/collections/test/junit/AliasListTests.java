@@ -29,16 +29,6 @@ public class AliasListTests extends FlowDroidTests {
         Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
     }
 
-    private boolean containsStmtString(InfoflowResults res, String substr) {
-        for (DataFlowResult r : res.getResultSet()) {
-            for (Stmt s : r.getSource().getPath()) {
-                if (s.toString().contains(substr))
-                    return true;
-            }
-        }
-        return false;
-    }
-
     @Test//(timeout = 30000)
     public void testShiftOnAlias1() {
         IInfoflow infoflow = initInfoflow();

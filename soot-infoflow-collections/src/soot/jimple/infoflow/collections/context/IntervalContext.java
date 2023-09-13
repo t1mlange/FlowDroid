@@ -60,30 +60,7 @@ public class IntervalContext implements PositionBasedContext<IntervalContext> {
 	}
 
 	@Override
-	public IntervalContext mayShift(IntervalContext n) {
-		// If the shift shifts the lower bound, update it
-		int newMin = n.min < 0 ? Math.max(min + n.min, 0) : min;
-		// If the shift shifts the upper bound, update it
-		int newMax = n.max > 0 ? Math.min(max + n.max, Integer.MAX_VALUE) : max;
-
-		return new IntervalContext(newMin, newMax);
-	}
-
-	@Override
-	public IntervalContext exactRotate(IntervalContext n, IntervalContext bound) {
-		int min1 = (min + n.min) % bound.min;
-		int min2 = (min + n.min) % bound.max;
-		int max1 = (max + n.max) % bound.min;
-		int max2 = (max + n.max) % bound.max;
-		return new IntervalContext(Math.min(min1, min2), Math.max(max1, max2));
-	}
-
-	@Override
-	public IntervalContext mayRotate(IntervalContext n, IntervalContext bound) {
-		return this.union(exactRotate(n, bound));
-	}
-
-	private IntervalContext union(IntervalContext other) {
+	public IntervalContext union(IntervalContext other) {
 		return new IntervalContext(Math.min(this.min, other.min), Math.max(this.max, other.max));
 	}
 

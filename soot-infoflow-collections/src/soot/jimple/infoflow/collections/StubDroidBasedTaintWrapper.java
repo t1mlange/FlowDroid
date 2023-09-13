@@ -664,7 +664,7 @@ public class StubDroidBasedTaintWrapper extends SummaryTaintWrapper implements I
                         ContextDefinition c = f.getContext()[i];
                         if (c == null || !c.containsInformation())
                             continue;
-                        ctxt[i] = containerStrategy.shift(c, new IntervalContext(1), found.isTrue());
+                        ctxt[i] = containerStrategy.shift(c, 1, found.isTrue());
                         fragments[k] = f.copyWithNewContext(ctxt);
                     }
                 }
@@ -685,7 +685,7 @@ public class StubDroidBasedTaintWrapper extends SummaryTaintWrapper implements I
                         ContextDefinition c = f.getContext()[i];
                         if (c == null || !c.containsInformation())
                             continue;
-                        ctxt[i] = containerStrategy.shift(c, new IntervalContext(-1), found.isTrue());
+                        ctxt[i] = containerStrategy.shift(c, -1, found.isTrue());
                         fragments[k] = f.copyWithNewContext(ctxt);
                     }
                 }
@@ -1287,7 +1287,7 @@ public class StubDroidBasedTaintWrapper extends SummaryTaintWrapper implements I
                         case Next:
                             ctxt[i] = containerStrategy.getNextPosition(((InstanceInvokeExpr) ie).getBase(), stmt);
                             if (c.appendsTo()) {
-                                ctxt[i] = containerStrategy.shift(ctxt[i], taintCtxt[i], true);
+                                ctxt = containerStrategy.append(ctxt, taintCtxt);
                             }
                             break;
                         default:
@@ -1714,7 +1714,7 @@ public class StubDroidBasedTaintWrapper extends SummaryTaintWrapper implements I
             if (taintCtxt != null) {
                 Tristate lte = flowShiftLeft(flowSource, flow, taint, stmt);
                 if (!lte.isFalse()) {
-                    ContextDefinition newCtxt = containerStrategy.shift(taintCtxt[0], new IntervalContext(-1), lte.isTrue());
+                    ContextDefinition newCtxt = containerStrategy.shift(taintCtxt[0], -1, lte.isTrue());
                     if (newCtxt != null && appendedFields != null) {
                         appendedFields = appendedFields.addContext(newCtxt.containsInformation() ? new ContextDefinition[]{newCtxt} : null);
                     }
@@ -1725,7 +1725,7 @@ public class StubDroidBasedTaintWrapper extends SummaryTaintWrapper implements I
             if (taintCtxt != null) {
                 Tristate lte = flowShiftRight(flowSource, flow, taint, stmt);
                 if (!lte.isFalse()) {
-                    ContextDefinition newCtxt = containerStrategy.shift(taintCtxt[0], new IntervalContext(1), lte.isTrue());
+                    ContextDefinition newCtxt = containerStrategy.shift(taintCtxt[0], 1, lte.isTrue());
                     if (newCtxt != null && appendedFields != null) {
                         appendedFields = appendedFields.addContext(newCtxt.containsInformation() ? new ContextDefinition[]{newCtxt} : null);
                     }

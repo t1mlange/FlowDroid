@@ -14,6 +14,7 @@ import org.junit.Before;
 
 import soot.Scene;
 import soot.SootMethod;
+import soot.jimple.Stmt;
 import soot.jimple.infoflow.*;
 import soot.jimple.infoflow.android.SetupApplication;
 import soot.jimple.infoflow.cfg.DefaultBiDiICFGFactory;
@@ -23,11 +24,14 @@ import soot.jimple.infoflow.collections.parser.CollectionXMLParser;
 import soot.jimple.infoflow.collections.problems.rules.CollectionRulePropagationManagerFactory;
 import soot.jimple.infoflow.collections.solver.fastSolver.AppendingCollectionInfoflowSolver;
 import soot.jimple.infoflow.collections.solver.fastSolver.WideningCollectionInfoflowSolver;
+import soot.jimple.infoflow.collections.strategies.widening.WideningOnRevisitStrategy;
 import soot.jimple.infoflow.methodSummary.taintWrappers.SummaryTaintWrapper;
 import soot.jimple.infoflow.methodSummary.taintWrappers.TaintWrapperFactory;
 import soot.jimple.infoflow.problems.AbstractInfoflowProblem;
 import soot.jimple.infoflow.problems.rules.DefaultPropagationRuleManagerFactory;
 import soot.jimple.infoflow.problems.rules.IPropagationRuleManagerFactory;
+import soot.jimple.infoflow.results.DataFlowResult;
+import soot.jimple.infoflow.results.InfoflowResults;
 import soot.jimple.infoflow.solver.IInfoflowSolver;
 import soot.jimple.infoflow.solver.executors.InterruptableExecutor;
 import soot.jimple.infoflow.taintWrappers.ITaintPropagationWrapper;
@@ -150,7 +154,8 @@ public abstract class FlowDroidTests {
 			@Override
 			protected IInfoflowSolver createDataFlowSolver(InterruptableExecutor executor,
 					AbstractInfoflowProblem problem, InfoflowConfiguration.SolverConfiguration solverConfig) {
-				IInfoflowSolver solver = new WideningCollectionInfoflowSolver(problem, executor);
+				WideningCollectionInfoflowSolver solver = new WideningCollectionInfoflowSolver(problem, executor);
+				solver.setWideningStrategy(new WideningOnRevisitStrategy(manager, Collections.singleton("void add(int,java.lang.Object)")));
 				solverPeerGroup.addSolver(solver);
 				return solver;
 			}
@@ -188,5 +193,23 @@ public abstract class FlowDroidTests {
 		setConfiguration(setupApplication.getConfig());
 
 		return setupApplication;
+	}
+
+
+	/**
+	 * Test that the correct index was leaked
+	 *
+	 * @param res results
+	 * @param substr substring identifying the correct index
+	 * @return true if given substring matches a statement
+	 */
+	protected boolean containsStmtString(InfoflowResults res, String substr) {
+		for (DataFlowResult r : res.getResultSet()) {
+			for (Stmt s : r.getSource().getPath()) {
+				if (s.toString().contains(substr))
+					return true;
+			}
+		}
+		return false;
 	}
 }

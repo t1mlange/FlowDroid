@@ -14,6 +14,6 @@ public class ShiftRightOperation extends AbstractShiftOperation {
 
     @Override
     protected ContextDefinition shift(ContextDefinition ctxt, Stmt stmt, boolean exact, IContainerStrategy strategy) {
-        return strategy.shift(ctxt, new IntervalContext(1), exact);
+        return strategy.shift(ctxt, 1, exact);
     }
 }

@@ -128,12 +128,7 @@ public class ConstantMapStrategy implements IContainerStrategy {
     }
 
     @Override
-    public ContextDefinition shift(ContextDefinition ctxt, ContextDefinition n, boolean exact) {
-        return UnknownContext.v();
-    }
-
-    @Override
-    public ContextDefinition rotate(ContextDefinition ctxt, Stmt stmt, ContextDefinition n, ContextDefinition bound, boolean exact) {
+    public ContextDefinition shift(ContextDefinition ctxt, int n, boolean exact) {
         return UnknownContext.v();
     }
 

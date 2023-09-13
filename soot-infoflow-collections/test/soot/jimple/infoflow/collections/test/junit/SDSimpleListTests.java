@@ -19,7 +19,6 @@ public class SDSimpleListTests extends SimpleListTests {
 
     }
 
-
     @Override
     protected ITaintPropagationWrapper getTaintWrapper() {
         try {

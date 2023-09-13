@@ -94,16 +94,7 @@ public interface IContainerStrategy {
      * @param n
      * @return new context definition
      */
-    ContextDefinition shift(ContextDefinition ctxt, ContextDefinition n, boolean exact);
-
-    /**
-     * Shifts the ctxt to the right
-     *
-     * @param ctxt current context
-     * @param n
-     * @return new context definition
-     */
-    ContextDefinition rotate(ContextDefinition ctxt, Stmt stmt, ContextDefinition n, ContextDefinition bound, boolean exact);
+    ContextDefinition shift(ContextDefinition ctxt, int n, boolean exact);
 
     /**
      * Returns whether the context is still useful or not
