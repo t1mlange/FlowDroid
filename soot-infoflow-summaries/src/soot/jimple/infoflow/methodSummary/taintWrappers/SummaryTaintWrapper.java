@@ -77,11 +77,11 @@ import soot.util.MultiMap;
  */
 public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 
-	private InfoflowManager manager;
+	protected InfoflowManager manager;
 	private AtomicInteger wrapperHits = new AtomicInteger();
 	private AtomicInteger wrapperMisses = new AtomicInteger();
 	private boolean reportMissingSummaries = false;
-	private ITaintPropagationWrapper fallbackWrapper = null;
+	protected ITaintPropagationWrapper fallbackWrapper = null;
 
 	protected IMethodSummaryProvider flows;
 
@@ -89,7 +89,7 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 	private FastHierarchy fastHierarchy;
 	private SummaryResolver summaryResolver;
 
-	private MultiMap<Pair<Abstraction, SootMethod>, AccessPathPropagator> userCodeTaints = new ConcurrentHashMultiMap<>();
+	protected MultiMap<Pair<Abstraction, SootMethod>, AccessPathPropagator> userCodeTaints = new ConcurrentHashMultiMap<>();
 
 	/**
 	 * Handler that is used for injecting taints from callbacks implemented in user
@@ -309,8 +309,8 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 	 *                            value of a method call, otherwise false
 	 * @return The set of taints derived from the given access path
 	 */
-	private Set<Taint> createTaintFromAccessPathOnCall(AccessPath ap, Stmt stmt, boolean matchReturnedValues,
-			ByReferenceBoolean killIncomingSource) {
+	protected Set<Taint> createTaintFromAccessPathOnCall(AccessPath ap, Stmt stmt, boolean matchReturnedValues,
+														 ByReferenceBoolean killIncomingSource) {
 		Value base = getMethodBase(stmt);
 		Set<Taint> newTaints = null;
 
@@ -361,7 +361,7 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 	 * @param gap  The gap in which the taint is valid
 	 * @return The taint derived from the given access path
 	 */
-	private Set<Taint> createTaintFromAccessPathOnReturn(AccessPath ap, Stmt stmt, GapDefinition gap) {
+	protected Set<Taint> createTaintFromAccessPathOnReturn(AccessPath ap, Stmt stmt, GapDefinition gap) {
 		SootMethod sm = manager.getICFG().getMethodOf(stmt);
 		Set<Taint> res = null;
 
@@ -489,7 +489,7 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 	 * @param sm The method in which the access path shall be created
 	 * @return The access path derived from the given taint and method
 	 */
-	private Set<AccessPath> createAccessPathInMethod(Taint t, SootMethod sm) {
+	protected Set<AccessPath> createAccessPathInMethod(Taint t, SootMethod sm) {
 		// Convert the taints to Soot objects
 		SootField[] fields = safeGetFields(t.getAccessPath());
 		Type[] types = safeGetTypes(t.getAccessPath(), fields);
@@ -787,7 +787,7 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 	 * @return The reverse flow if the given flow works in both directions, null
 	 *         otherwise
 	 */
-	private MethodFlow getReverseFlowForAlias(MethodFlow flow) {
+	protected MethodFlow getReverseFlowForAlias(MethodFlow flow) {
 		// Reverse flows can only be applied if the flow is an
 		// aliasing relationship
 		if (!flow.isAlias())
@@ -911,7 +911,7 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 	 * @return The flow summaries for the method in the given gap if they exist,
 	 *         otherwise null
 	 */
-	private MethodSummaries getFlowSummariesForGap(GapDefinition gap) {
+	protected MethodSummaries getFlowSummariesForGap(GapDefinition gap) {
 		// If we have the method in Soot, we can be more clever
 		if (Scene.v().containsMethod(gap.getSignature())) {
 			SootMethod gapMethod = Scene.v().getMethod(gap.getSignature());
@@ -1048,7 +1048,7 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 	 * @param method The method for which to find implementations
 	 * @return A set containing all implementations of the given method
 	 */
-	private Collection<SootMethod> getAllImplementors(SootMethod method) {
+	protected Collection<SootMethod> getAllImplementors(SootMethod method) {
 		final String subSig = method.getSubSignature();
 		Set<SootMethod> implementors = new HashSet<SootMethod>();
 
@@ -1520,7 +1520,7 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 	 *              refers to the base type
 	 * @return The type at the given index inside the access path
 	 */
-	private String getAssignmentType(Taint taint, int idx) {
+	protected String getAssignmentType(Taint taint, int idx) {
 		if (idx < 0)
 			return taint.getBaseType();
 
@@ -1540,7 +1540,7 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 	 * @return The type of the value which the access path of the given source or
 	 *         sink finally references
 	 */
-	private String getAssignmentType(AbstractFlowSinkSource srcSink) {
+	protected String getAssignmentType(AbstractFlowSinkSource srcSink) {
 		if (!srcSink.hasAccessPath())
 			return srcSink.getBaseType();
 
@@ -1571,7 +1571,7 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 	 * @return The remaining fields which are tainted in the given access path, but
 	 *         which are not covered by the given flow summary source
 	 */
-	private AccessPathFragment getRemainingFields(AbstractFlowSinkSource flowSource, Taint taintedPath) {
+	protected AccessPathFragment getRemainingFields(AbstractFlowSinkSource flowSource, Taint taintedPath) {
 		if (!flowSource.hasAccessPath())
 			return taintedPath.getAccessPath();
 
