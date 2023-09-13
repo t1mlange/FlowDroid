@@ -66,6 +66,30 @@ public class AliasListTests extends FlowDroidTests {
         Assert.assertFalse(containsStmtString(infoflow.getResults(), "get(int)>(2)"));
     }
 
+    @Test(timeout = 30000)
+    public void testShiftOnAlias4() {
+        IInfoflow infoflow = initInfoflow();
+        infoflow.getConfig().getPathConfiguration().setPathReconstructionMode(InfoflowConfiguration.PathReconstructionMode.Fast);
+        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
+        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
+        Assert.assertTrue(containsStmtString(infoflow.getResults(), "get(int)>(0)"));
+        Assert.assertTrue(containsStmtString(infoflow.getResults(), "get(int)>(1)"));
+        Assert.assertFalse(containsStmtString(infoflow.getResults(), "get(int)>(2)"));
+    }
+
+    @Test(timeout = 30000)
+    public void testShiftOnAlias5() {
+        IInfoflow infoflow = initInfoflow();
+        infoflow.getConfig().getPathConfiguration().setPathReconstructionMode(InfoflowConfiguration.PathReconstructionMode.Fast);
+        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
+        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
+        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
+        Assert.assertTrue(containsStmtString(infoflow.getResults(), "get(int)>(0)"));
+        Assert.assertTrue(containsStmtString(infoflow.getResults(), "get(int)>(1)"));
+        Assert.assertFalse(containsStmtString(infoflow.getResults(), "get(int)>(2)"));
+    }
+
     @Ignore("The simplistic list size analysis overapproximates lists with aliases")
     @Test(timeout = 30000)
     public void testListShiftAlias1() {
