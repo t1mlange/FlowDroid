@@ -202,7 +202,7 @@ public class StubDroidBasedTaintWrapper extends SummaryTaintWrapper implements I
                         if (c == null || !c.containsInformation())
                             continue;
                         ctxt[i] = containerStrategy.shift(c, 1, found.isTrue());
-                        fragments[k] = f.copyWithNewContext(ctxt);
+                        fragments[k] = f.copyWithNewContext(containerStrategy.shouldSmash(ctxt) ? null : ctxt);
                     }
                 }
                 AccessPath ap = manager.getAccessPathFactory().createAccessPath(source.getAccessPath().getPlainValue(), source.getAccessPath().getBaseType(), fragments,
@@ -223,8 +223,8 @@ public class StubDroidBasedTaintWrapper extends SummaryTaintWrapper implements I
                         if (c == null || !c.containsInformation())
                             continue;
                         ctxt[i] = containerStrategy.shift(c, -1, found.isTrue());
-                        fragments[k] = f.copyWithNewContext(ctxt);
                     }
+                    fragments[k] = f.copyWithNewContext(containerStrategy.shouldSmash(ctxt) ? null : ctxt);
                 }
                 AccessPath ap = manager.getAccessPathFactory().createAccessPath(source.getAccessPath().getPlainValue(), source.getAccessPath().getBaseType(), fragments,
                         source.getAccessPath().getTaintSubFields(), false, true, source.getAccessPath().getArrayTaintType());
@@ -800,7 +800,7 @@ public class StubDroidBasedTaintWrapper extends SummaryTaintWrapper implements I
 
         if (flow.sink().isConstrained()) {
             ContextDefinition[] ctxt = concretizeFlowConstraints(flow.getConstraints(), stmt, taint.hasAccessPath() ? taint.getAccessPath().getFirstFieldContext() : null);
-            if (appendedFields != null)
+            if (appendedFields != null && ctxt != null && !containerStrategy.shouldSmash(ctxt))
                 appendedFields = appendedFields.addContext(ctxt);
         } else if (flow.sink().shiftLeft()) {
             ContextDefinition[] taintCtxt = taint.getAccessPath().getFirstFieldContext();

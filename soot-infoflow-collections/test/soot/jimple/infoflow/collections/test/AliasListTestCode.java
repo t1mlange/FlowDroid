@@ -73,6 +73,39 @@ public class AliasListTestCode {
         sink(alias2.lst.get(2));
     }
 
+    @FlowDroidTest(expected = 2)
+    public void testShiftOnAlias4() {
+        alias = null;
+
+        List<String> lst = new ArrayList<>();
+        lst.add(source()); // lst@0 tainted
+        if (new Random().nextBoolean())
+            alias = lst;
+        else
+            alias = new ArrayList<>();
+        alias.add(0, "element"); // lst@0 must shift to the right
+        sink(alias.get(0)); // right (because we cannot strong update)
+        sink(alias.get(1)); // right
+        sink(alias.get(2));
+    }
+
+
+    @FlowDroidTest(expected = 2)
+    public void testShiftOnAlias5() {
+        alias = null;
+
+        List<String> lst = new ArrayList<>();
+        lst.add(source()); // lst@0 tainted
+        if (new Random().nextBoolean())
+            alias = lst;
+        else
+            alias = new ArrayList<>();
+        alias.add(0, "element"); // lst@0 must shift to the right
+        sink(lst.get(0)); // right (because we cannot strong update)
+        sink(lst.get(1)); // right
+        sink(lst.get(2));
+    }
+
     @FlowDroidTest(expected = 1)
     public void testListShiftAlias1() {
         alias = null;
