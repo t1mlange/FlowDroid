@@ -2,9 +2,6 @@
 
 <collectionModel class="android.util.SparseArray" type="value">
     <method subsig="void append(int,java.lang.Object)">
-        <remove field="[android.util.SparseArray: byte[] data]">
-            <key idx="0" />
-        </remove>
         <insert field="[android.util.SparseArray: byte[] data]">
             <key idx="0" />
             <data idx="1" />
