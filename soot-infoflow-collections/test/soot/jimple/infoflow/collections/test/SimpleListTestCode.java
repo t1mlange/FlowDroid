@@ -314,4 +314,15 @@ public class SimpleListTestCode {
         sink(lst.get(2));
         sink(lst.get(3));
     }
+
+    @FlowDroidTest(expected = 2)
+    public void testListAddAll4() {
+        List<String> lst = new ArrayList<>();
+        lst.add(source());
+        while (new Random().nextBoolean()) {
+            lst.addAll(lst);
+        }
+        sink(lst.get(0));
+        sink(lst.get(1));
+    }
 }

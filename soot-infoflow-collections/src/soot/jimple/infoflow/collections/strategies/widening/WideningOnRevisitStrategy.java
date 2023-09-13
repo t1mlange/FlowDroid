@@ -83,14 +83,16 @@ public class WideningOnRevisitStrategy extends AbstractWidening {
 				return forceWiden(abs, u);
 			}
 
-			if (visited.add(pred.getPredecessor()))
+			if (pred.getPredecessor() != null && visited.add(pred.getPredecessor()))
 				q.add(pred.getPredecessor());
-			abs.getNeighbors().forEach(
-					n -> {
-						if (visited.add(n))
-							q.add(n);
-					}
-			);
+			if (pred.getNeighborCount() > 0) {
+				pred.getNeighbors().forEach(
+						n -> {
+							if (visited.add(n))
+								q.add(n);
+						}
+				);
+			}
 		}
 
 		return abs;

@@ -27,14 +27,6 @@ public interface PositionBasedContext<T extends PositionBasedContext<?>> extends
     Tristate lessThanEqual(T other);
 
     /**
-     * Shifts only one bound by n, determined by the sign of n
-     *
-     * @param n number of shifts
-     * @return new position-based context
-     */
-    T mayShift(T n);
-
-    /**
      * Shifts the position(s) by n
      *
      * @param n number of shifts
@@ -43,20 +35,10 @@ public interface PositionBasedContext<T extends PositionBasedContext<?>> extends
     T exactShift(T n);
 
     /**
-     * Union this with the rotation to receive an over-approximation
+     * Unions this with other
      *
-     * @param n     distance to be rotated
-     * @param bound modulo
+     * @param other other position-based context
      * @return new position-based context
      */
-    T mayRotate(T n, T bound);
-
-    /**
-     * Rotate the positions by n
-     *
-     * @param n     distance to be rotated
-     * @param bound modulo
-     * @return new position-based context
-     */
-    T exactRotate(T n, T bound);
+    T union(T other);
 }

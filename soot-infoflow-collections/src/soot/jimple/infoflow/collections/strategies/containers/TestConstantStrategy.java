@@ -3,17 +3,17 @@ package soot.jimple.infoflow.collections.strategies.containers;
 import java.util.concurrent.ConcurrentHashMap;
 
 import soot.Local;
-import soot.RefType;
 import soot.SootMethod;
 import soot.Value;
 import soot.jimple.IntConstant;
 import soot.jimple.Stmt;
 import soot.jimple.infoflow.InfoflowManager;
-import soot.jimple.infoflow.collections.CollectionTaintWrapper;
 import soot.jimple.infoflow.collections.analyses.ListSizeAnalysis;
 import soot.jimple.infoflow.collections.context.IntervalContext;
 import soot.jimple.infoflow.collections.context.KeySetContext;
 import soot.jimple.infoflow.collections.context.UnknownContext;
+import soot.jimple.infoflow.collections.strategies.containers.shift.IShiftOperation;
+import soot.jimple.infoflow.collections.strategies.containers.shift.PreciseShift;
 import soot.jimple.infoflow.collections.util.Tristate;
 import soot.jimple.infoflow.data.ContextDefinition;
 
@@ -31,9 +31,18 @@ public class TestConstantStrategy extends ConstantMapStrategy {
 
     private final ConcurrentHashMap<SootMethod, ListSizeAnalysis> implicitIndices;
 
+    private final IShiftOperation shiftOp;
+
     public TestConstantStrategy(InfoflowManager manager) {
         super(manager);
         this.implicitIndices = new ConcurrentHashMap<>();
+        this.shiftOp = new PreciseShift();
+    }
+
+    public TestConstantStrategy(InfoflowManager manager, IShiftOperation shiftOp) {
+        super(manager);
+        this.implicitIndices = new ConcurrentHashMap<>();
+        this.shiftOp = shiftOp;
     }
 
     public long getResolvedIndices() {
@@ -102,35 +111,19 @@ public class TestConstantStrategy extends ConstantMapStrategy {
     }
 
     @Override
-    public ContextDefinition shift(ContextDefinition ctxt, ContextDefinition n, boolean exact) {
-        if (ctxt instanceof IntervalContext && n instanceof IntervalContext)
-            return exact
-                    ? ((IntervalContext) ctxt).exactShift((IntervalContext) n)
-                    : ((IntervalContext) ctxt).mayShift((IntervalContext) n);
-
-        // We cannot shift any other indexes
-        return ctxt;
+    public ContextDefinition shift(ContextDefinition ctxt, int n, boolean exact) {
+        return shiftOp.shift(ctxt, n, exact);
     }
-
-    @Override
-    public ContextDefinition rotate(ContextDefinition ctxt, Stmt stmt, ContextDefinition n, ContextDefinition bound, boolean exact) {
-        if (ctxt instanceof IntervalContext && n instanceof IntervalContext && bound instanceof IntervalContext) {
-            IntervalContext dist = (IntervalContext) n;
-            IntervalContext mod = (IntervalContext) bound;
-            return exact ? ((IntervalContext) ctxt).exactRotate(dist, mod) : ((IntervalContext) ctxt).mayRotate(dist, mod);
-        }
-        throw new RuntimeException("Expect interval context but got instead: " + ctxt);
-    }
-
 
     @Override
     public ContextDefinition[] append(ContextDefinition[] ctxt1, ContextDefinition[] ctxt2) {
         // Shifting only occurs on lists
-        if (ctxt1.length != ctxt2.length || ctxt1.length != 1 || !(ctxt1[0] instanceof IntervalContext))
+        if (ctxt1 == null || ctxt2 == null
+                || ctxt1.length != ctxt2.length || ctxt1.length != 1 || !(ctxt1[0] instanceof IntervalContext))
             return null;
 
         ContextDefinition[] newCtxt = new ContextDefinition[1];
-        newCtxt[0] = shift(ctxt2[0], ctxt1[0], true);
+        newCtxt[0] = ((IntervalContext) ctxt1[0]).exactShift((IntervalContext) ctxt2[0]);
         return newCtxt;
     }
 
