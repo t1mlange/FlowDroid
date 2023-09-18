@@ -25,6 +25,7 @@ import soot.jimple.infoflow.methodSummary.taintWrappers.TaintWrapperFactory;
 import soot.jimple.infoflow.results.DataFlowResult;
 import soot.jimple.infoflow.results.InfoflowResults;
 import soot.jimple.infoflow.taintWrappers.ITaintPropagationWrapper;
+import soot.jimple.infoflow.util.DebugFlowFunctionTaintPropagationHandler;
 import soot.jimple.toolkits.ide.icfg.BiDiInterproceduralCFG;
 import soot.jimple.toolkits.ide.icfg.JimpleBasedInterproceduralCFG;
 import soot.toolkits.graph.BriefUnitGraph;
@@ -158,6 +159,14 @@ public class AndroidRegressionTests extends BaseJUnitTests {
         ssinks.add("<android.util.Log: int i(java.lang.String,java.lang.String)> -> _SINK_");
 
         InfoflowResults results = app.runInfoflow(PermissionMethodParser.fromStringList(ssinks));
+        Assert.assertEquals(1, results.size());
+    }
+
+    @Test
+    public void testThreadRunnable() throws XmlPullParserException, IOException {
+        SetupApplication app = initApplication("testAPKs/ThreadRunnable.apk");
+        app.setTaintPropagationHandler(new DebugFlowFunctionTaintPropagationHandler());
+        InfoflowResults results = app.runInfoflow("../soot-infoflow-android/SourcesAndSinks.txt");
         Assert.assertEquals(1, results.size());
     }
 }

@@ -7,7 +7,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -100,8 +99,7 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 							: getFlowSummariesForGap(parentGap);
 
 					// Create the new propagator, one for every taint
-					Set<AccessPathPropagator> workSet = new HashSet<>();
-					for (Taint returnTaint : returnTaints) {
+					Set<AccessPathPropagator> workSet = new HashSet<>();					for (Taint returnTaint : returnTaints) {
 						AccessPathPropagator newPropagator = new AccessPathPropagator(returnTaint, parentGap, parent,
 								propagator.getParent() == null ? null : propagator.getParent().getStmt(),
 								propagator.getParent() == null ? null : propagator.getParent().getD1(),
@@ -112,12 +110,12 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 					// Apply the aggregated propagators
 					boolean reverseFlows = manager.getConfig()
 							.getDataFlowDirection() == InfoflowConfiguration.DataFlowDirection.Backwards;
+					AccessPathPropagator rootPropagator = getOriginalCallSite(propagator);
 					Set<AccessPath> resultAPs = applyFlowsIterative(flowsInTarget, new ArrayList<>(workSet),
-							reverseFlows);
+							reverseFlows, rootPropagator.getStmt(), d2);
 
 					// Propagate the access paths
 					if (resultAPs != null && !resultAPs.isEmpty()) {
-						AccessPathPropagator rootPropagator = getOriginalCallSite(propagator);
 						for (AccessPath ap : resultAPs) {
 							Abstraction newAbs = rootPropagator.getD2().deriveNewAbstraction(ap,
 									rootPropagator.getStmt());
@@ -643,7 +641,7 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 			}
 
 			// Apply the data flows until we reach a fixed point
-			Set<AccessPath> resCallee = applyFlowsIterative(flowsInCallee, workList, false);
+			Set<AccessPath> resCallee = applyFlowsIterative(flowsInCallee, workList, false, stmt, taintedAbs);
 			if (resCallee != null && !resCallee.isEmpty()) {
 				if (res == null)
 					res = new HashSet<>();
@@ -657,16 +655,18 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 	 * Iteratively applies all of the given flow summaries until a fixed point is
 	 * reached. if the flow enters user code, an analysis of the corresponding
 	 * method will be spawned.
-	 * 
+	 *
 	 * @param flowsInCallee The flow summaries for the given callee
 	 * @param workList      The incoming propagators on which to apply the flow
 	 *                      summaries
 	 * @param reverseFlows  True if flows should be applied reverse. Useful for
 	 *                      back- wards analysis
+	 * @param stmt
+	 * @param incoming
 	 * @return The set of outgoing access paths
 	 */
 	private Set<AccessPath> applyFlowsIterative(MethodSummaries flowsInCallee, List<AccessPathPropagator> workList,
-			boolean reverseFlows) {
+												boolean reverseFlows, Stmt stmt, Abstraction incoming) {
 		Set<AccessPath> res = null;
 		Set<AccessPathPropagator> doneSet = new HashSet<AccessPathPropagator>(workList);
 		while (!workList.isEmpty()) {
@@ -684,14 +684,11 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 			if ((flowsInTarget == null || flowsInTarget.isEmpty()) && curGap != null) {
 				SootMethod callee = Scene.v().grabMethod(curGap.getSignature());
 				if (callee != null) {
-					for (SootMethod implementor : getAllImplementors(callee)) {
-						if (implementor.getDeclaringClass().isConcrete() && !implementor.getDeclaringClass().isPhantom()
-								&& implementor.isConcrete()) {
-							Set<AccessPathPropagator> implementorPropagators = spawnAnalysisIntoClientCode(implementor,
-									curPropagator);
-							if (implementorPropagators != null)
-								workList.addAll(implementorPropagators);
-						}
+					for (SootMethod implementor : getImplementors(stmt, callee)) {
+						Set<AccessPathPropagator> implementorPropagators = spawnAnalysisIntoClientCode(implementor,
+								curPropagator, stmt, incoming);
+						if (implementorPropagators != null)
+							workList.addAll(implementorPropagators);
 					}
 				}
 			}
@@ -792,15 +789,15 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 
 	/**
 	 * Spawns the analysis into a gap implementation inside user code
-	 * 
+	 *
 	 * @param implementor The target method inside the user code into which the
 	 *                    propagator shall be propagated
 	 * @param propagator  The implementor that gets propagated into user code
 	 * @return The taints at the end of the implementor method if a summary already
-	 *         exists, otherwise false
+	 * exists, otherwise false
 	 */
-	private Set<AccessPathPropagator> spawnAnalysisIntoClientCode(SootMethod implementor,
-			AccessPathPropagator propagator) {
+	protected Set<AccessPathPropagator> spawnAnalysisIntoClientCode(SootMethod implementor,
+			AccessPathPropagator propagator, Stmt stmt, Abstraction incoming) {
 		// If the implementor has not yet been loaded, we must do this now
 		if (!implementor.hasActiveBody()) {
 			synchronized (implementor) {
@@ -815,7 +812,7 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 		if (aps.isEmpty())
 			return null;
 		Set<Abstraction> absSet = new HashSet<>();
-		aps.forEach(ap -> absSet.add(new Abstraction(null, ap, null, null, false, false)));
+		aps.forEach(ap -> absSet.add(incoming.deriveNewAbstraction(ap, stmt)));
 		absSet.remove(null);
 
 		// We need to pop the last gap element off the stack
@@ -1001,16 +998,33 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 	}
 
 	/**
-	 * Gets all methods that implement the given abstract method. These are all
-	 * concrete methods with the same signature in all derived classes.
-	 * 
+	 * Gets suitable methods with an active body available being cast-compatible
+	 * with method. First checks the call-graph for the given statement for suitable
+	 * concrete callees. If no callee is matching, the hierarchy is used to find all
+	 * possible callees.
+	 *
+	 * @param stmt   The current statement
 	 * @param method The method for which to find implementations
-	 * @return A set containing all implementations of the given method
+	 * @return A set containing implementations of the given method
 	 */
-	protected Collection<SootMethod> getAllImplementors(SootMethod method) {
-		final String subSig = method.getSubSignature();
+	protected Collection<SootMethod> getImplementors(Stmt stmt, SootMethod method) {
 		Set<SootMethod> implementors = new HashSet<SootMethod>();
+		if (stmt != null) {
+			for (SootMethod callee : manager.getICFG().getCalleesOfCallAt(stmt)) {
+				if (!callee.isConcrete())
+					continue;
 
+				SootClass gapClass = method.getDeclaringClass();
+				SootClass implClass = callee.getDeclaringClass();
+				if (fastHierarchy.canStoreClass(implClass, gapClass))
+					implementors.add(callee);
+			}
+		}
+
+		if (!implementors.isEmpty())
+			return implementors;
+
+		final String subSig = method.getSubSignature();
 		List<SootClass> workList = new ArrayList<SootClass>();
 		workList.add(method.getDeclaringClass());
 		Set<SootClass> doneSet = new HashSet<SootClass>();
@@ -1027,7 +1041,7 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 				workList.addAll(hierarchy.getSubclassesOf(curClass));
 
 			SootMethod ifm = curClass.getMethodUnsafe(subSig);
-			if (ifm != null)
+			if (ifm != null && ifm.isConcrete())
 				implementors.add(ifm);
 		}
 
@@ -1717,7 +1731,7 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 				continue;
 
 			// Apply the data flows until we reach a fixed point
-			Set<AccessPath> resCallee = applyFlowsIterative(flowsInCallee, workList, false);
+			Set<AccessPath> resCallee = applyFlowsIterative(flowsInCallee, workList, false, stmt, taintedAbs);
 			if (resCallee != null && !resCallee.isEmpty()) {
 				if (res == null)
 					res = new HashSet<>();
@@ -1827,7 +1841,7 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 			}
 
 			// Apply the data flows until we reach a fixed point
-			Set<AccessPath> resCallee = applyFlowsIterative(flowsInCallee, workList, true);
+			Set<AccessPath> resCallee = applyFlowsIterative(flowsInCallee, workList, true, stmt, taintedAbs);
 			if (resCallee != null && !resCallee.isEmpty()) {
 				if (res == null)
 					res = new HashSet<>();

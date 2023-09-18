@@ -168,7 +168,8 @@ public class AliasProblem extends AbstractInfoflowProblem {
 				// we must not taint the left side. We can only taint
 				// the left side if the tainted value is some "x.y".
 				boolean aliasOverwritten = Aliasing.baseMatchesStrict(rightValue, source)
-						&& rightValue.getType() instanceof RefType && !source.dependsOnCutAP();
+						&& rightValue.getType() instanceof RefType && !source.dependsOnCutAP()
+						&& !source.getAccessPath().getTaintSubFields();
 
 				if (!aliasOverwritten && !(rightValue.getType() instanceof PrimType)) {
 					// If the tainted value 'b' is assigned to variable 'a' and
