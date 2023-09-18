@@ -303,7 +303,7 @@ public class IFDSSolver<N, D extends FastSolverLinkedNode<D, N>, I extends BiDiI
 
 		// for each possible callee
 		Collection<SootMethod> callees = icfg.getCalleesOfCallAt(n);
-		if (callees != null && !callees.isEmpty()) {
+ 		if (callees != null && !callees.isEmpty()) {
 			if (maxCalleesPerCallSite < 0 || callees.size() <= maxCalleesPerCallSite) {
 				callees.forEach(new Consumer<SootMethod>() {
 

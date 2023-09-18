@@ -1,7 +1,5 @@
 package soot.jimple.infoflow.collections;
 
-import heros.solver.Pair;
-import heros.solver.PathEdge;
 import soot.*;
 import soot.jimple.*;
 import soot.jimple.infoflow.InfoflowConfiguration;
@@ -22,7 +20,6 @@ import soot.jimple.infoflow.methodSummary.taintWrappers.AccessPathFragment;
 import soot.jimple.infoflow.methodSummary.taintWrappers.AccessPathPropagator;
 import soot.jimple.infoflow.methodSummary.taintWrappers.SummaryTaintWrapper;
 import soot.jimple.infoflow.methodSummary.taintWrappers.Taint;
-import soot.jimple.infoflow.solver.EndSummary;
 import soot.jimple.infoflow.typing.TypeUtils;
 import soot.jimple.infoflow.util.ByReferenceBoolean;
 import soot.jimple.spark.sets.PointsToSetInternal;
@@ -299,7 +296,7 @@ public class StubDroidBasedTaintWrapper extends SummaryTaintWrapper implements I
             }
 
             // Apply the data flows until we reach a fixed point
-            Set<AccessPath> resCallee = applyFlowsIterative(flowsInCallee, workList, false);
+            Set<AccessPath> resCallee = applyFlowsIterative(flowsInCallee, workList, false, stmt, taintedAbs);
             if (resCallee != null && !resCallee.isEmpty()) {
                 if (res == null)
                     res = new HashSet<>();
@@ -319,10 +316,12 @@ public class StubDroidBasedTaintWrapper extends SummaryTaintWrapper implements I
      *                      summaries
      * @param reverseFlows  True if flows should be applied reverse. Useful for
      *                      back- wards analysis
+     * @param stmt
+     * @param incoming
      * @return The set of outgoing access paths
      */
     private Set<AccessPath> applyFlowsIterative(MethodSummaries flowsInCallee, List<AccessPathPropagator> workList,
-                                                boolean reverseFlows) {
+                                                boolean reverseFlows, Stmt stmt, Abstraction incoming) {
         Set<AccessPath> res = null;
         Set<AccessPathPropagator> doneSet = new HashSet<>(workList);
         while (!workList.isEmpty()) {
@@ -340,16 +339,12 @@ public class StubDroidBasedTaintWrapper extends SummaryTaintWrapper implements I
             if ((flowsInTarget == null || flowsInTarget.isEmpty()) && curGap != null) {
                 SootMethod callee = Scene.v().grabMethod(curGap.getSignature());
                 if (callee != null) {
-                    Collection<SootMethod> implementors = getAllImplementors(callee);
-
+                    Collection<SootMethod> implementors = getImplementors(curPropagator.getStmt(), callee);
                     for (SootMethod implementor : implementors) {
-                        if (implementor.getDeclaringClass().isConcrete() && !implementor.getDeclaringClass().isPhantom()
-                                && implementor.isConcrete()) {
-                            Set<AccessPathPropagator> implementorPropagators = spawnAnalysisIntoClientCode(implementor,
-                                    curPropagator);
-                            if (implementorPropagators != null)
-                                workList.addAll(implementorPropagators);
-                        }
+                        Set<AccessPathPropagator> implementorPropagators = spawnAnalysisIntoClientCode(implementor,
+                                curPropagator, stmt, incoming);
+                        if (implementorPropagators != null)
+                            workList.addAll(implementorPropagators);
                     }
                 }
             }
@@ -406,76 +401,6 @@ public class StubDroidBasedTaintWrapper extends SummaryTaintWrapper implements I
         return res;
     }
 
-    /**
-     * Spawns the analysis into a gap implementation inside user code
-     *
-     * @param implementor The target method inside the user code into which the
-     *                    propagator shall be propagated
-     * @param propagator  The implementor that gets propagated into user code
-     * @return The taints at the end of the implementor method if a summary already
-     *         exists, otherwise false
-     */
-    private Set<AccessPathPropagator> spawnAnalysisIntoClientCode(SootMethod implementor,
-                                                                  AccessPathPropagator propagator) {
-        // If the implementor has not yet been loaded, we must do this now
-        if (!implementor.hasActiveBody()) {
-            synchronized (implementor) {
-                if (!implementor.hasActiveBody()) {
-                    implementor.retrieveActiveBody();
-                    manager.getICFG().notifyMethodChanged(implementor);
-                }
-            }
-        }
-
-        Set<AccessPath> aps = createAccessPathInMethod(propagator.getTaint(), implementor);
-        if (aps.isEmpty())
-            return null;
-        Set<Abstraction> absSet = new HashSet<>();
-        aps.forEach(ap -> absSet.add(propagator.getParent().getD2().deriveNewAbstraction(ap, null)));
-        absSet.remove(null);
-
-        // We need to pop the last gap element off the stack
-        AccessPathPropagator parent = safePopParent(propagator);
-        GapDefinition gap = propagator.getParent() == null ? null : propagator.getParent().getGap();
-
-        // We might already have a summary for the callee
-        Set<AccessPathPropagator> outgoingTaints = null;
-        for (Abstraction abs : absSet) {
-            Set<EndSummary<Unit, Abstraction>> endSummary = manager.getMainSolver().endSummary(implementor, abs);
-            if (endSummary != null && !endSummary.isEmpty()) {
-                for (EndSummary<Unit, Abstraction> pair : endSummary) {
-                    if (outgoingTaints == null)
-                        outgoingTaints = new HashSet<>();
-
-                    // Create the taint that corresponds to the access path leaving
-                    // the user-code method
-                    Set<Taint> newTaints = createTaintFromAccessPathOnReturn(pair.d4.getAccessPath(), (Stmt) pair.eP,
-                            propagator.getGap());
-                    if (newTaints != null) {
-                        for (Taint newTaint : newTaints) {
-                            AccessPathPropagator newPropagator = new AccessPathPropagator(newTaint, gap, parent,
-                                    propagator.getParent() == null ? null : propagator.getParent().getStmt(),
-                                    propagator.getParent() == null ? null : propagator.getParent().getD1(),
-                                    propagator.getParent() == null ? null : propagator.getParent().getD2());
-                            outgoingTaints.add(newPropagator);
-                        }
-                    }
-                }
-                continue;
-            }
-
-            // Register the new context so that we can get the taints back
-            this.userCodeTaints.put(new Pair<>(abs, implementor), propagator);
-
-            // if we don't have a summary, we need to inject the taints into the solver
-            for (Unit sP : manager.getICFG().getStartPointsOf(implementor)) {
-                PathEdge<Unit, Abstraction> edge = new PathEdge<>(abs, sP, abs);
-                manager.getMainSolver().processEdge(edge);
-            }
-        }
-
-        return outgoingTaints;
-    }
 
     /**
      * Applies a data flow summary to a given tainted access path
@@ -800,8 +725,7 @@ public class StubDroidBasedTaintWrapper extends SummaryTaintWrapper implements I
             if (appendedFields != null && ctxt != null && !containerStrategy.shouldSmash(ctxt))
                 appendedFields = appendedFields.addContext(ctxt);
         } else if (flow.sink().append()) {
-            // TODO: prevent infinite ascending chainatus
-
+            // TODO: prevent infinite ascending chains
             ContextDefinition[] stmtCtxt = concretizeFlowConstraints(flow.getConstraints(), stmt, null);
             ContextDefinition[] taintCtxt = taint.getAccessPath().getFirstFieldContext();
             ContextDefinition[] ctxt = containerStrategy.append(stmtCtxt, taintCtxt);
@@ -898,7 +822,7 @@ public class StubDroidBasedTaintWrapper extends SummaryTaintWrapper implements I
             }
 
             // Apply the data flows until we reach a fixed point
-            Set<AccessPath> resCallee = applyFlowsIterative(flowsInCallee, workList, false);
+            Set<AccessPath> resCallee = applyFlowsIterative(flowsInCallee, workList, false, stmt, taintedAbs);
             if (resCallee != null && !resCallee.isEmpty()) {
                 if (res == null)
                     res = new HashSet<>();

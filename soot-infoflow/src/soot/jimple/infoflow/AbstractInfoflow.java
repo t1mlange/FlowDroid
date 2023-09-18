@@ -1473,9 +1473,18 @@ public abstract class AbstractInfoflow implements IInfoflow {
 
 		// Exclude system classes
 		final String className = sm.getDeclaringClass().getName();
-		if (config.getIgnoreFlowsInSystemPackages() && SystemClassHandler.v().isClassInSystemPackage(className)
-				&& !isUserCodeClass(className))
-			return false;
+		if (config.getIgnoreFlowsInSystemPackages() && SystemClassHandler.v().isClassInSystemPackage(className)) {
+			if (isUserCodeClass(className)) {
+				// Sometimes the namespace used for apps coincides with a system package prefix.
+				// isUserCodeClass allows to still mark such methods as user code. To remember this decision
+				// without always calling isUserCodeClass (with a possible inefficient string lookup), we do use
+				// a tag instead.
+				sm.addTag(new FlowDroidEssentialMethodTag());
+				return true;
+			} else {
+				return false;
+			}
+		}
 
 		// Exclude library classes
 		if (config.getExcludeSootLibraryClasses() && sm.getDeclaringClass().isLibraryClass())
