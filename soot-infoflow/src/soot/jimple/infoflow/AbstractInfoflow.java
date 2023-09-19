@@ -578,9 +578,10 @@ public abstract class AbstractInfoflow implements IInfoflow {
 	 */
 	protected void runAnalysis(final ISourceSinkManager sourcesSinks, final Set<String> additionalSeeds) {
 		final InfoflowPerformanceData performanceData = createPerformanceDataClass();
+		IInfoflowCFG iCfg = null;
+		// Clear the data from previous runs
+		results = createResultsObject();
 		try {
-			// Clear the data from previous runs
-			results = createResultsObject();
 			results.setPerformanceData(performanceData);
 
 			// Print and check our configuration
@@ -629,7 +630,7 @@ public abstract class AbstractInfoflow implements IInfoflow {
 			if (config.getCallgraphAlgorithm() != CallgraphAlgorithm.OnDemand)
 				logger.info("Callgraph has {} edges", Scene.v().getCallGraph().size());
 
-			IInfoflowCFG iCfg = icfgFactory.buildBiDirICFG(config.getCallgraphAlgorithm(),
+			iCfg = icfgFactory.buildBiDirICFG(config.getCallgraphAlgorithm(),
 					config.getEnableExceptionTracking());
 
 			if (config.isTaintAnalysisEnabled())
@@ -641,10 +642,6 @@ public abstract class AbstractInfoflow implements IInfoflow {
 			logger.info(String.format("Data flow solver took %d seconds. Maximum memory consumption: %d MB",
 					performanceData.getTotalRuntimeSeconds(), performanceData.getMaxMemoryConsumption()));
 
-			// Provide the handler with the final results
-			for (ResultsAvailableHandler handler : onResultsAvailable)
-				handler.onResultsAvailable(iCfg, results);
-
 			// Write the Jimple files to disk if requested
 			if (config.getWriteOutputFiles())
 				PackManager.v().writeOutput();
@@ -652,11 +649,14 @@ public abstract class AbstractInfoflow implements IInfoflow {
 			StringWriter stacktrace = new StringWriter();
 			PrintWriter pw = new PrintWriter(stacktrace);
 			ex.printStackTrace(pw);
-			if (results != null)
-				results.addException(ex.getClass().getName() + ": " + ex.getMessage() + "\n" + stacktrace.toString());
+			results.addException(ex.getClass().getName() + ": " + ex.getMessage() + "\n" + stacktrace.toString());
 			logger.error("Exception during data flow analysis", ex);
 			if (throwExceptions)
 				throw ex;
+		} finally {
+			// Provide the handler with the final results
+			for (ResultsAvailableHandler handler : onResultsAvailable)
+				handler.onResultsAvailable(iCfg, results);
 		}
 	}
 
