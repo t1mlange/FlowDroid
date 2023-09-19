@@ -381,22 +381,14 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 	 * @param stmt The statement at which the access path shall be valid
 	 * @return The access path derived from the given taint
 	 */
-	protected AccessPath createAccessPathFromTaint(Taint t, Stmt stmt, AccessPathPropagator curr, boolean reverseFlows) {
-		soot.jimple.infoflow.data.AccessPathFragment[] fragments;
-		// Try to keep the access path from the old abstraction such that contexts are preserved
-		if (t.getAccessPathLength() > 0 && t.getAccessPath().equals(curr.getD2().getAccessPath())) {
-			int l = t.getAccessPathLength();
-			fragments = new soot.jimple.infoflow.data.AccessPathFragment[l];
-			System.arraycopy(curr.getD2().getAccessPath().getFragments(), 0, fragments, 0, l);
-		} else {
-			// Convert the taints to Soot objects
-			SootField[] fields = safeGetFields(t.getAccessPath());
-			Type[] types = safeGetTypes(t.getAccessPath(), fields);
-			ContextDefinition[][] contexts = safeGetContexts(t.getAccessPath());
-			fragments = soot.jimple.infoflow.data.AccessPathFragment.createFragmentArray(fields, types, contexts);
-		}
-
+	protected AccessPath createAccessPathFromTaint(Taint t, Stmt stmt, boolean reverseFlows) {
+		// Convert the taints to Soot objects
+		SootField[] fields = safeGetFields(t.getAccessPath());
+		Type[] types = safeGetTypes(t.getAccessPath(), fields);
+		ContextDefinition[][] contexts = safeGetContexts(t.getAccessPath());
 		Type baseType = TypeUtils.getTypeFromString(t.getBaseType());
+		soot.jimple.infoflow.data.AccessPathFragment fragments[] = soot.jimple.infoflow.data.AccessPathFragment
+				.createFragmentArray(fields, types, contexts);
 
 		// If the taint is a return value, we taint the left side of the
 		// assignment
@@ -715,7 +707,7 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 					// Propagate it
 					if (newPropagator.getParent() == null && newPropagator.getTaint().getGap() == null) {
 						AccessPath ap = createAccessPathFromTaint(newPropagator.getTaint(), newPropagator.getStmt(),
-								curPropagator, reverseFlows);
+								reverseFlows);
 						if (ap == null)
 							continue;
 						else {
