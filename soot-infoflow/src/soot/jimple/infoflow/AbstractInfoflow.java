@@ -1017,14 +1017,23 @@ public abstract class AbstractInfoflow implements IInfoflow {
 
 				// Update the statistics
 				{
-					ISolverTerminationReason reason = ((IMemoryBoundedSolver) forwardSolver).getTerminationReason();
-					if (reason != null) {
-						if (reason instanceof OutOfMemoryReason)
-							results.setTerminationState(
-									results.getTerminationState() | InfoflowResults.TERMINATION_DATA_FLOW_OOM);
-						else if (reason instanceof TimeoutReason)
-							results.setTerminationState(
-									results.getTerminationState() | InfoflowResults.TERMINATION_DATA_FLOW_TIMEOUT);
+					List<ISolverTerminationReason> reasons = new ArrayList<>(4);
+					reasons.add(((IMemoryBoundedSolver) forwardSolver).getTerminationReason());
+					if (backwardSolver != null)
+						reasons.add(((IMemoryBoundedSolver) backwardSolver).getTerminationReason());
+					if (additionalSolver != null)
+						reasons.add(((IMemoryBoundedSolver) additionalSolver).getTerminationReason());
+					if (additionalAliasSolver != null)
+						reasons.add(((IMemoryBoundedSolver) additionalAliasSolver).getTerminationReason());
+					for (ISolverTerminationReason reason : reasons) {
+						if (reason != null) {
+							if (reason instanceof OutOfMemoryReason)
+								results.setTerminationState(
+										results.getTerminationState() | InfoflowResults.TERMINATION_DATA_FLOW_OOM);
+							else if (reason instanceof TimeoutReason)
+								results.setTerminationState(
+										results.getTerminationState() | InfoflowResults.TERMINATION_DATA_FLOW_TIMEOUT);
+						}
 					}
 				}
 
