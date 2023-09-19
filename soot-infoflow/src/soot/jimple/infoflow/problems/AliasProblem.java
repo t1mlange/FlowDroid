@@ -669,7 +669,7 @@ public class AliasProblem extends AbstractInfoflowProblem {
 									registerActivationCallSite(callSite, callee, abs);
 								}
 							}
-						} else {
+						} else if (isReflectiveCallSite || ie.getArgCount() == callee.getParameterCount()){
 							boolean parameterAliases = false;
 
 							// check one of the call params are tainted (not if
@@ -729,7 +729,8 @@ public class AliasProblem extends AbstractInfoflowProblem {
 													Abstraction aliasAbs = checkAbstraction(
 															source.deriveNewAbstraction(aliasAp, (Stmt) exitStmt));
 
-													manager.getMainSolver()
+													if (aliasAbs != null)
+														manager.getMainSolver()
 															.processEdge(new PathEdge<>(d1, exitStmt, aliasAbs));
 												}
 											}
