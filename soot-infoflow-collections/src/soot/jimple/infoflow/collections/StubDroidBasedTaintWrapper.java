@@ -372,7 +372,7 @@ public class StubDroidBasedTaintWrapper extends SummaryTaintWrapper implements I
                     // Propagate it
                     if (newPropagator.getParent() == null && newPropagator.getTaint().getGap() == null) {
                         AccessPath ap = createAccessPathFromTaint(newPropagator.getTaint(), newPropagator.getStmt(),
-                                curPropagator, reverseFlows);
+                                reverseFlows);
                         if (ap == null)
                             continue;
                         else {
@@ -460,7 +460,7 @@ public class StubDroidBasedTaintWrapper extends SummaryTaintWrapper implements I
         if (flow.isCustom()) {
             newTaint = addCustomSinkTaint(flow, taint, taintGap);
         } else
-            newTaint = addSinkTaint(flow, taint, taintGap, stmt);
+            newTaint = addSinkTaint(flow, taint, taintGap, stmt, propagator.isInversePropagator());
         if (newTaint == null)
             return null;
 
@@ -646,6 +646,30 @@ public class StubDroidBasedTaintWrapper extends SummaryTaintWrapper implements I
     }
 
     /**
+     * Adding a list with addAll to itself might create an infinite ascending chain...
+     *
+     * @param flow method flow
+     * @param stmt current statement
+     * @return true if there might be an infinite ascending chain
+     */
+    private boolean appendInfiniteAscendingChain(MethodFlow flow, Stmt stmt) {
+        PointsToAnalysis pta = Scene.v().getPointsToAnalysis();
+        AccessPath sourceAp = createAccessPathFromTaint(new Taint(flow.source().getType(),
+                                                                  flow.source().getParameterIndex(),
+                                                                  flow.source().getBaseType(),
+                                                                  true),
+                                                        stmt, false);
+        AccessPath sinkAp = createAccessPathFromTaint(new Taint(flow.sink().getType(),
+                                                                flow.sink().getParameterIndex(),
+                                                                flow.sink().getBaseType(),
+                                                                true),
+                                                      stmt, false);
+        PointsToSet sourcePts = pta.reachingObjects(sourceAp.getPlainValue());
+        PointsToSet sinkPts = pta.reachingObjects(sinkAp.getPlainValue());
+        return sourcePts.hasNonEmptyIntersection(sinkPts);
+    }
+
+    /**
      * Given the taint at the source and the flow, computes the taint at the sink
      *
      * @param flow  The flow between source and sink
@@ -654,7 +678,7 @@ public class StubDroidBasedTaintWrapper extends SummaryTaintWrapper implements I
      * @return The taint at the sink that is obtained when applying the given flow
      *         to the given source taint
      */
-    protected Taint addSinkTaint(MethodFlow flow, Taint taint, GapDefinition gap, Stmt stmt) {
+    protected Taint addSinkTaint(MethodFlow flow, Taint taint, GapDefinition gap, Stmt stmt, boolean inversePropagator) {
         final AbstractFlowSinkSource flowSource = flow.source();
         final AbstractFlowSinkSource flowSink = flow.sink();
         final boolean taintSubFields = flow.sink().taintSubFields();
@@ -724,14 +748,13 @@ public class StubDroidBasedTaintWrapper extends SummaryTaintWrapper implements I
             ContextDefinition[] ctxt = concretizeFlowConstraints(flow.getConstraints(), stmt, taint.hasAccessPath() ? taint.getAccessPath().getFirstFieldContext() : null);
             if (appendedFields != null && ctxt != null && !containerStrategy.shouldSmash(ctxt))
                 appendedFields = appendedFields.addContext(ctxt);
-        } else if (flow.sink().append()) {
-            // TODO: prevent infinite ascending chains
+        } else if (flow.sink().append() && !appendInfiniteAscendingChain(flow, stmt)) {
             ContextDefinition[] stmtCtxt = concretizeFlowConstraints(flow.getConstraints(), stmt, null);
             ContextDefinition[] taintCtxt = taint.getAccessPath().getFirstFieldContext();
             ContextDefinition[] ctxt = containerStrategy.append(stmtCtxt, taintCtxt);
             if (ctxt != null && !containerStrategy.shouldSmash(ctxt) && appendedFields != null)
                 appendedFields = appendedFields.addContext(ctxt);
-        } else if (flow.sink().shiftLeft()) {
+        } else if (flow.sink().shiftLeft() && !inversePropagator) {
             ContextDefinition[] taintCtxt = taint.getAccessPath().getFirstFieldContext();
             if (taintCtxt != null) {
                 Tristate lte = flowShiftLeft(flowSource, flow, taint, stmt);
@@ -742,7 +765,7 @@ public class StubDroidBasedTaintWrapper extends SummaryTaintWrapper implements I
                     }
                 }
             }
-        } else if (flow.sink().shiftRight()) {
+        } else if (flow.sink().shiftRight() && !inversePropagator) {
             ContextDefinition[] taintCtxt = taint.getAccessPath().getFirstFieldContext();
             if (taintCtxt != null) {
                 Tristate lte = flowShiftRight(flowSource, flow, taint, stmt);
