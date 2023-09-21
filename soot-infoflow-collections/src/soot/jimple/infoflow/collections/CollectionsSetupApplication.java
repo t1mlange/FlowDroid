@@ -25,71 +25,22 @@ import java.util.Set;
 public class CollectionsSetupApplication extends SetupApplication {
     public CollectionsSetupApplication(InfoflowAndroidConfiguration config) {
         super(config);
-        addOptimizationPass(new SetupApplication.OptimizationPass() {
-            @Override
-            public void performCodeInstrumentationBeforeDCE(InfoflowManager manager, Set<SootMethod> excludedMethods) {
-                StringResourcesResolver res = new StringResourcesResolver();
-                res.initialize(manager.getConfig());
-                res.run(manager, excludedMethods, manager.getSourceSinkManager(), manager.getTaintWrapper());
-            }
-
-            @Override
-            public void performCodeInstrumentationAfterDCE(InfoflowManager manager, Set<SootMethod> excludedMethods) {
-
-            }
-        });
+        commonInit();
     }
 
     public CollectionsSetupApplication(String androidJar, String apkFileLocation) {
         super(androidJar, apkFileLocation);
-
-        addOptimizationPass(new SetupApplication.OptimizationPass() {
-            @Override
-            public void performCodeInstrumentationBeforeDCE(InfoflowManager manager, Set<SootMethod> excludedMethods) {
-                StringResourcesResolver res = new StringResourcesResolver();
-                res.initialize(manager.getConfig());
-                res.run(manager, excludedMethods, manager.getSourceSinkManager(), manager.getTaintWrapper());
-            }
-
-            @Override
-            public void performCodeInstrumentationAfterDCE(InfoflowManager manager, Set<SootMethod> excludedMethods) {
-
-            }
-        });
+        commonInit();
     }
 
     public CollectionsSetupApplication(String androidJar, String apkFileLocation, IIPCManager ipcManager) {
         super(androidJar, apkFileLocation, ipcManager);
-        addOptimizationPass(new SetupApplication.OptimizationPass() {
-            @Override
-            public void performCodeInstrumentationBeforeDCE(InfoflowManager manager, Set<SootMethod> excludedMethods) {
-                StringResourcesResolver res = new StringResourcesResolver();
-                res.initialize(manager.getConfig());
-                res.run(manager, excludedMethods, manager.getSourceSinkManager(), manager.getTaintWrapper());
-            }
-
-            @Override
-            public void performCodeInstrumentationAfterDCE(InfoflowManager manager, Set<SootMethod> excludedMethods) {
-
-            }
-        });
+        commonInit();
     }
 
     public CollectionsSetupApplication(InfoflowAndroidConfiguration config, IIPCManager ipcManager) {
         super(config, ipcManager);
-        addOptimizationPass(new SetupApplication.OptimizationPass() {
-            @Override
-            public void performCodeInstrumentationBeforeDCE(InfoflowManager manager, Set<SootMethod> excludedMethods) {
-                StringResourcesResolver res = new StringResourcesResolver();
-                res.initialize(manager.getConfig());
-                res.run(manager, excludedMethods, manager.getSourceSinkManager(), manager.getTaintWrapper());
-            }
-
-            @Override
-            public void performCodeInstrumentationAfterDCE(InfoflowManager manager, Set<SootMethod> excludedMethods) {
-
-            }
-        });
+        commonInit();
     }
 
     protected class CollectionsInPlaceInfoflow extends InPlaceInfoflow {
@@ -121,10 +72,24 @@ public class CollectionsSetupApplication extends SetupApplication {
         }
     }
 
+    private void commonInit() {
+        addOptimizationPass(new SetupApplication.OptimizationPass() {
+            @Override
+            public void performCodeInstrumentationBeforeDCE(InfoflowManager manager, Set<SootMethod> excludedMethods) {
+                StringResourcesResolver res = new StringResourcesResolver();
+                res.initialize(manager.getConfig());
+                res.run(manager, excludedMethods, manager.getSourceSinkManager(), manager.getTaintWrapper());
+            }
+
+            @Override
+            public void performCodeInstrumentationAfterDCE(InfoflowManager manager, Set<SootMethod> excludedMethods) {
+
+            }
+        });
+    }
+
     protected IInPlaceInfoflow createInfoflowInternal(Collection<SootMethod> lifecycleMethods) {
         final String androidJar = config.getAnalysisFileConfig().getAndroidPlatformDir();
-        if (config.getDataFlowDirection() == InfoflowConfiguration.DataFlowDirection.Backwards)
-            return new InPlaceBackwardsInfoflow(androidJar, forceAndroidJar, cfgFactory, lifecycleMethods);
         return new CollectionsInPlaceInfoflow(androidJar, forceAndroidJar, cfgFactory, lifecycleMethods);
     }
 }

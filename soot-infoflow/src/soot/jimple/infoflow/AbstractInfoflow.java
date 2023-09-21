@@ -1479,7 +1479,8 @@ public abstract class AbstractInfoflow implements IInfoflow {
 				// isUserCodeClass allows to still mark such methods as user code. To remember this decision
 				// without always calling isUserCodeClass (with a possible inefficient string lookup), we do use
 				// a tag instead.
-				sm.addTag(new FlowDroidEssentialMethodTag());
+				if (!sm.getDeclaringClass().hasTag(FlowDroidUserClass.TAG_NAME))
+					sm.getDeclaringClass().addTag(FlowDroidUserClass.v());
 				return true;
 			} else {
 				return false;

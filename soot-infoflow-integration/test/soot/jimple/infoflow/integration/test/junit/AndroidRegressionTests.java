@@ -180,6 +180,13 @@ public class AndroidRegressionTests extends BaseJUnitTests {
     @Test
     public void testThreadRunnable() throws XmlPullParserException, IOException {
         SetupApplication app = initApplication("testAPKs/ThreadRunnable.apk");
+        InfoflowResults results = app.runInfoflow("../soot-infoflow-android/SourcesAndSinks.txt");
+        Assert.assertEquals(1, results.size());
+    }
+
+    @Test
+    public void testThreadRunnableIndirect() throws XmlPullParserException, IOException {
+        SetupApplication app = initApplication("testAPKs/app-debug.apk");
         app.setTaintPropagationHandler(new DebugFlowFunctionTaintPropagationHandler());
         InfoflowResults results = app.runInfoflow("../soot-infoflow-android/SourcesAndSinks.txt");
         Assert.assertEquals(1, results.size());
