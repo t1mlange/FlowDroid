@@ -42,10 +42,7 @@ import soot.jimple.infoflow.aliasing.Aliasing;
 import soot.jimple.infoflow.aliasing.BackwardsFlowSensitiveAliasStrategy;
 import soot.jimple.infoflow.aliasing.IAliasingStrategy;
 import soot.jimple.infoflow.aliasing.NullAliasStrategy;
-import soot.jimple.infoflow.cfg.BiDirICFGFactory;
-import soot.jimple.infoflow.cfg.DefaultBiDiICFGFactory;
-import soot.jimple.infoflow.cfg.FlowDroidEssentialMethodTag;
-import soot.jimple.infoflow.cfg.LibraryClassPatcher;
+import soot.jimple.infoflow.cfg.*;
 import soot.jimple.infoflow.codeOptimization.DeadCodeEliminator;
 import soot.jimple.infoflow.codeOptimization.ICodeOptimizer;
 import soot.jimple.infoflow.config.IInfoflowConfig;
@@ -1421,7 +1418,8 @@ public abstract class AbstractInfoflow implements IInfoflow {
 				// isUserCodeClass allows to still mark such methods as user code. To remember this decision
 				// without always calling isUserCodeClass (with a possible inefficient string lookup), we do use
 				// a tag instead.
-				sm.addTag(new FlowDroidEssentialMethodTag());
+				if (!sm.getDeclaringClass().hasTag(FlowDroidUserClass.TAG_NAME))
+					sm.getDeclaringClass().addTag(FlowDroidUserClass.v());
 				return true;
 			} else {
 				return false;

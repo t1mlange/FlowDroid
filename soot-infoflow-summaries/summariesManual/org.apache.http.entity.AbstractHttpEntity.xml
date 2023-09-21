@@ -1,0 +1,6 @@
+<?xml version="1.0" ?>
+<summary fileFormatVersion="101">
+	<hierarchy>
+		<interface name="org.apache.http.HttpEntity" />
+	</hierarchy>
+</summary>

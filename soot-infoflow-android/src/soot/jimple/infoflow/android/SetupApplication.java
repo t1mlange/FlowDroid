@@ -75,6 +75,7 @@ import soot.jimple.infoflow.android.source.ConfigurationBasedCategoryFilter;
 import soot.jimple.infoflow.android.source.UnsupportedSourceSinkFormatException;
 import soot.jimple.infoflow.android.source.parsers.xml.XMLSourceSinkParser;
 import soot.jimple.infoflow.cfg.BiDirICFGFactory;
+import soot.jimple.infoflow.cfg.FlowDroidUserClass;
 import soot.jimple.infoflow.cfg.LibraryClassPatcher;
 import soot.jimple.infoflow.config.IInfoflowConfig;
 import soot.jimple.infoflow.data.Abstraction;
@@ -104,6 +105,7 @@ import soot.jimple.infoflow.taintWrappers.ITaintWrapperDataFlowAnalysis;
 import soot.jimple.infoflow.util.SystemClassHandler;
 import soot.jimple.infoflow.values.IValueProvider;
 import soot.options.Options;
+import soot.util.Chain;
 import soot.util.HashMultiMap;
 import soot.util.MultiMap;
 
@@ -1001,7 +1003,7 @@ public class SetupApplication implements ITaintWrapperDataFlowAnalysis {
 					Set<AndroidLayoutControl> controls = lfp.getUserControls().get(layoutFileName);
 					if (controls != null) {
 						for (AndroidLayoutControl lc : controls) {
-							if (!SystemClassHandler.v().isClassInSystemPackage(lc.getViewClass().getName()))
+							if (!SystemClassHandler.v().isClassInSystemPackage(lc.getViewClass()))
 								hasNewCallback |= registerCallbackMethodsForView(callbackClass, lc);
 						}
 					}
@@ -1077,7 +1079,7 @@ public class SetupApplication implements ITaintWrapperDataFlowAnalysis {
 	 */
 	private boolean registerCallbackMethodsForView(SootClass callbackClass, AndroidLayoutControl lc) {
 		// Ignore system classes
-		if (SystemClassHandler.v().isClassInSystemPackage(callbackClass.getName()))
+		if (SystemClassHandler.v().isClassInSystemPackage(callbackClass))
 			return false;
 
 		// Get common Android classes
@@ -1578,6 +1580,10 @@ public class SetupApplication implements ITaintWrapperDataFlowAnalysis {
 		// Get rid of leftovers from the last entry point
 		resultAggregator.clearLastResults();
 
+		// Before we do some app parsing, we need to make sure that all user classes are tagged
+		// accordingly to prevent filtering of accidental namespace clashes with system packages
+		tagUserCodeClasses();
+
 		// Perform basic app parsing
 		long callbackDuration = System.nanoTime();
 		try {
@@ -2007,5 +2013,17 @@ public class SetupApplication implements ITaintWrapperDataFlowAnalysis {
 
 	public void setUsageContextProvider(IUsageContextProvider usageContextProvider) {
 		this.usageContextProvider = usageContextProvider;
+	}
+
+	protected void tagUserCodeClasses() {
+		if (!SystemClassHandler.v().isClassInSystemPackage(manifest.getPackageName() + ".someClass"))
+			return;
+
+		Chain<SootClass> appClasses = Scene.v().getApplicationClasses();
+		for (SootClass appClass : appClasses) {
+			if (SystemClassHandler.v().isClassInSystemPackage(appClass)
+					&& appClass.getName().startsWith(manifest.getPackageName()))
+				appClass.addTag(FlowDroidUserClass.v());
+		}
 	}
 }

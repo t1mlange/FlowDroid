@@ -565,7 +565,7 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 	 */
 	protected void reportMissingMethod(SootMethod method) {
 		if (reportMissingSummaries
-				&& SystemClassHandler.v().isClassInSystemPackage(method.getDeclaringClass().getName()))
+				&& SystemClassHandler.v().isClassInSystemPackage(method.getDeclaringClass()))
 			System.out.println("Missing summary for class " + method.getDeclaringClass());
 	}
 
