@@ -127,7 +127,7 @@ public class TaintBenchTests extends FlowDroidTests {
         ssMap.put("scipiex.apk", "<java.io.OutputStream: void write(byte[])> -> _SINK_");
         ssMap.put("scipiex.apk", "<java.io.PrintWriter: void println(java.lang.String)> -> _SINK_");
         ssMap.put("slocker_android_samp.apk", "<android.telephony.TelephonyManager: java.lang.String getDeviceId()> -> _SOURCE_");
-//        ssMap.put("slocker_android_samp.apk", "<android.widget.EditText: android.text.Editable getText()> -> _SOURCE_");
+        ssMap.put("slocker_android_samp.apk", "<android.widget.EditText: android.text.Editable getText()> -> _SOURCE_");
         ssMap.put("slocker_android_samp.apk", "<org.apache.http.client.HttpClient: org.apache.http.HttpResponse execute(org.apache.http.client.methods.HttpUriRequest)> -> _SINK_");
         ssMap.put("sms_google.apk", "<com.google.elements.Utils: java.lang.String getDeviceId()> -> _SOURCE_");
         ssMap.put("sms_google.apk", "<org.apache.http.client.HttpClient: org.apache.http.HttpResponse execute(org.apache.http.client.methods.HttpUriRequest)> -> _SINK_");
@@ -538,8 +538,6 @@ public class TaintBenchTests extends FlowDroidTests {
     @Test
     public void testSlocker_android_samp() throws XmlPullParserException, IOException {
         SetupApplication app = initApplication(pathToAPKs + "/" + "slocker_android_samp.apk");
-        app.getConfig().setWriteOutputFiles(true);
-        app.setTaintPropagationHandler(new DebugFlowFunctionTaintPropagationHandler());
         app.addResultsAvailableHandler((cfg, results) -> compareResults("slocker_android_samp.apk", cfg, results));
         InfoflowResults results = app.runInfoflow(getSourcesAndSinks("slocker_android_samp.apk"));
     }

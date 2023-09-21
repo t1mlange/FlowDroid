@@ -419,6 +419,7 @@ public class StubDroidBasedTaintWrapper extends SummaryTaintWrapper implements I
         // Make sure that the base type of the incoming taint and the one of
         // the summary are compatible
         boolean typesCompatible = flowSource.getBaseType() == null
+                || taint.isStaticField()
                 || isCastCompatible(TypeUtils.getTypeFromString(taint.getBaseType()),
                 TypeUtils.getTypeFromString(flowSource.getBaseType()));
         if (!typesCompatible)
@@ -449,7 +450,7 @@ public class StubDroidBasedTaintWrapper extends SummaryTaintWrapper implements I
             taintGap = propagator.getGap();
         }
 
-        boolean addTaint = flowMatchesTaint(flow, taint, propagator.getStmt());
+        boolean addTaint = taint.isStaticField() || flowMatchesTaint(flow, taint, propagator.getStmt());
 
         // If we didn't find a match, there's little we can do
         if (!addTaint)
@@ -679,6 +680,9 @@ public class StubDroidBasedTaintWrapper extends SummaryTaintWrapper implements I
      *         to the given source taint
      */
     protected Taint addSinkTaint(MethodFlow flow, Taint taint, GapDefinition gap, Stmt stmt, boolean inversePropagator) {
+        if (taint.isStaticField() && flow.sink().hasGap())
+            return taint;
+
         final AbstractFlowSinkSource flowSource = flow.source();
         final AbstractFlowSinkSource flowSink = flow.sink();
         final boolean taintSubFields = flow.sink().taintSubFields();
