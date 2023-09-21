@@ -97,7 +97,7 @@ public class SummaryReader extends AbstractXMLReader {
 						// Some summaries are full signatures instead of subsignatures. We fix this on
 						// the fly.
 						if (currentMethod.contains(":"))
-							currentMethod = currentMethod.substring(currentMethod.indexOf(":") + 1);
+							currentMethod = currentMethod.substring(currentMethod.indexOf(": ") + 2);
 
 						String sIsExcluded = getAttributeByName(xmlreader, XMLConstants.ATTRIBUTE_IS_EXCLUDED);
 						if (sIsExcluded != null && sIsExcluded.equals(XMLConstants.VALUE_TRUE))
