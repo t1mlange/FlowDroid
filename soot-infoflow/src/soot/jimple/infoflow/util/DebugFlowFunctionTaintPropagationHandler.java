@@ -32,8 +32,6 @@ public class DebugFlowFunctionTaintPropagationHandler implements TaintPropagatio
 
     @Override
     public Set<Abstraction> notifyFlowOut(Unit stmt, Abstraction d1, Abstraction incoming, Set<Abstraction> outgoing, InfoflowManager manager, FlowFunctionType type) {
-//        System.out.println(manager.getICFG().getMethodOf(stmt));
-
         String typeString = "";
         switch (type) {
             case CallToReturnFlowFunction:
