@@ -31,6 +31,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Objects;
 import java.util.Set;
 
@@ -522,8 +523,6 @@ public class TaintBenchTests extends FlowDroidTests {
     @Test
     public void testSamsapo() throws XmlPullParserException, IOException {
         SetupApplication app = initApplication(pathToAPKs + "/" + "samsapo.apk");
-        app.getConfig().setWriteOutputFiles(true);
-        app.setTaintPropagationHandler(new DebugFlowFunctionTaintPropagationHandler());
         app.addResultsAvailableHandler((cfg, results) -> compareResults("samsapo.apk", cfg, results));
         InfoflowResults results = app.runInfoflow(getSourcesAndSinks("samsapo.apk"));
     }
@@ -531,14 +530,9 @@ public class TaintBenchTests extends FlowDroidTests {
 
     @Test
     public void testSave_me() throws XmlPullParserException, IOException {
-        int prev = -1;
-        while (true) {
-            SetupApplication app = initApplication(pathToAPKs + "/" + "save_me.apk");
-            InfoflowResults results = app.runInfoflow(getSourcesAndSinks("save_me.apk"));
-            if (prev == -1)
-                prev = results.getResultSet().size();
-            Assert.assertEquals(prev, results.getResultSet().size());
-        }
+        SetupApplication app = initApplication(pathToAPKs + "/" + "save_me.apk");
+        app.addResultsAvailableHandler((cfg, results) -> compareResults("save_me.apk", cfg, results));
+        InfoflowResults results = app.runInfoflow(getSourcesAndSinks("save_me.apk"));
     }
 
 

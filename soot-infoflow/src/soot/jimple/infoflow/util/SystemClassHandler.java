@@ -52,7 +52,7 @@ public class SystemClassHandler {
 	 * @return True if the given class belongs to a system package, otherwise false
 	 */
 	public boolean isClassInSystemPackage(SootClass clazz) {
-		return clazz != null && isClassInSystemPackage(clazz.getName()) && !clazz.hasTag(FlowDroidUserClass.TAG_NAME);
+		return clazz != null && !clazz.hasTag(FlowDroidUserClass.TAG_NAME) && isClassInSystemPackage(clazz.getName());
 	}
 
 	/**
@@ -77,7 +77,7 @@ public class SystemClassHandler {
 	 */
 	public boolean isClassInSystemPackage(Type type) {
 		if (type instanceof RefType)
-			return isClassInSystemPackage(((RefType) type).getSootClass().getName());
+			return isClassInSystemPackage(((RefType) type).getSootClass());
 		return false;
 	}
 
