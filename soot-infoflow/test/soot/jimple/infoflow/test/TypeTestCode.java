@@ -12,6 +12,7 @@
 package soot.jimple.infoflow.test;
 
 import java.io.Serializable;
+import java.util.Random;
 
 import soot.jimple.infoflow.test.android.Bundle;
 import soot.jimple.infoflow.test.android.ConnectionManager;
