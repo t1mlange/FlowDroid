@@ -1,6 +1,5 @@
 package soot.jimple.infoflow.collections.test.junit;
 
-import org.checkerframework.checker.units.qual.A;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -27,9 +26,7 @@ import soot.jimple.infoflow.util.DebugFlowFunctionTaintPropagationHandler;
 import soot.util.HashMultiMap;
 import soot.util.MultiMap;
 
-import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Objects;
@@ -86,7 +83,8 @@ public class TaintBenchTests extends FlowDroidTests {
         ssMap.put("beita_com_beita_contact.apk", "<javax.mail.Transport: void sendMessage(javax.mail.Message,javax.mail.Address[])> -> _SINK_");
         ssMap.put("chulia.apk", "<android.content.ContentResolver: android.database.Cursor query(android.net.Uri,java.lang.String[],java.lang.String,java.lang.String[],java.lang.String)> -> _SOURCE_");
         ssMap.put("chulia.apk", "<android.location.Location: double getLongitude()> -> _SOURCE_");
-        ssMap.put("chulia.apk", "<com.google.services.AlarmService: void sendBroadcast(android.content.Intent)> -> _SINK_"); // no traditional sink but needed because ICC
+        ssMap.put("chulia.apk", "<com.google.services.AlarmService: void sendBroadcast(android.content.Intent)> -> _SINK_");
+        // no traditional sink but needed because ICC
 //        ssMap.put("chulia.apk", "<org.apache.http.impl.client.DefaultHttpClient: org.apache.http.HttpResponse execute(org.apache.http.client.methods.HttpUriRequest)> -> _SINK_");
         ssMap.put("death_ring_materialflow.apk", "<android.telephony.gsm.SmsManager: void sendTextMessage(java.lang.String,java.lang.String,java.lang.String,android.app.PendingIntent,android.app.PendingIntent)> -> _SINK_");
         ssMap.put("death_ring_materialflow.apk", "<android.telephony.gsm.SmsMessage: java.lang.String getDisplayMessageBody()> -> _SOURCE_");
@@ -119,7 +117,6 @@ public class TaintBenchTests extends FlowDroidTests {
         ssMap.put("roidsec.apk", "<java.io.OutputStream: void write(byte[])> -> _SINK_");
         ssMap.put("samsapo.apk", "<android.database.Cursor: java.lang.String getString(int)> -> _SOURCE_");
         ssMap.put("samsapo.apk", "<android.telephony.gsm.SmsMessage: android.telephony.gsm.SmsMessage createFromPdu(byte[])> -> _SOURCE_");
-        ssMap.put("samsapo.apk", "<com.android.tools.system.MyPostRequest: android.os.AsyncTask execute(java.lang.Object[])> -> _SINK_");
         ssMap.put("samsapo.apk", "<org.apache.http.client.HttpClient: org.apache.http.HttpResponse execute(org.apache.http.client.methods.HttpUriRequest)> -> _SINK_");
         ssMap.put("save_me.apk", "<android.database.sqlite.SQLiteDatabase: android.database.Cursor query(java.lang.String,java.lang.String[],java.lang.String,java.lang.String[],java.lang.String,java.lang.String,java.lang.String)> -> _SOURCE_");
         ssMap.put("save_me.apk", "<android.net.wifi.WifiInfo: java.lang.String getMacAddress()> -> _SOURCE_");
@@ -180,7 +177,8 @@ public class TaintBenchTests extends FlowDroidTests {
         resultMap.put("proxy_samp.apk", new ExpectedResult("<java.io.File: void <init>(java.io.File,java.lang.String)>", "com.smart.studio.proxy.ProxyService.ProxyThread", "run", "<org.apache.http.impl.client.DefaultHttpClient: org.apache.http.HttpResponse execute(org.apache.http.client.methods.HttpUriRequest)>", "com.smart.studio.proxy.ProxyService.ProxyThread", "run"));
         resultMap.put("roidsec.apk", new ExpectedResult("<android.content.pm.PackageManager: java.util.List getInstalledPackages(int)>", "cn.phoneSync.PhoneSyncService", "getKernelApp", "<java.io.OutputStream: void write(byte[])>", "cn.phoneSync.PhoneSyncService", "BackConnTask"));
         resultMap.put("samsapo.apk", new ExpectedResult("<android.database.Cursor: java.lang.String getString(int)>", "com.android.tools.system.SplashScreen", "getMessages", "<org.apache.http.client.HttpClient: org.apache.http.HttpResponse execute(org.apache.http.client.methods.HttpUriRequest)>", "com.android.tools.system.MyPostRequest", "doInBackground"));
-        resultMap.put("samsapo.apk", new ExpectedResult("<android.telephony.gsm.SmsMessage: android.telephony.gsm.SmsMessage createFromPdu(byte[])>", "com.android.tools.system.SmsReceiver", "onReceive", "<com.android.tools.system.MyPostRequest: android.os.AsyncTask execute(java.lang.Object[])>", "com.android.tools.system.SmsReceiver", "onReceive"));
+        // Trash flow, contained in other flow, but marking execute as sink excludes the other flow....
+        // resultMap.put("samsapo.apk", new ExpectedResult("<android.telephony.gsm.SmsMessage: android.telephony.gsm.SmsMessage createFromPdu(byte[])>", "com.android.tools.system.SmsReceiver", "onReceive", "<com.android.tools.system.MyPostRequest: android.os.AsyncTask execute(java.lang.Object[])>", "com.android.tools.system.SmsReceiver", "onReceive"));
         resultMap.put("samsapo.apk", new ExpectedResult("<android.telephony.gsm.SmsMessage: android.telephony.gsm.SmsMessage createFromPdu(byte[])>", "com.android.tools.system.SmsReceiver", "onReceive", "<org.apache.http.client.HttpClient: org.apache.http.HttpResponse execute(org.apache.http.client.methods.HttpUriRequest)>", "com.android.tools.system.MyPostRequest", "doInBackground"));
         resultMap.put("save_me.apk", new ExpectedResult("<android.database.sqlite.SQLiteDatabase: android.database.Cursor query(java.lang.String,java.lang.String[],java.lang.String,java.lang.String[],java.lang.String,java.lang.String,java.lang.String)>", "com.savemebeta.DatabaseOperations", "getInformation", "<org.apache.http.client.HttpClient: org.apache.http.HttpResponse execute(org.apache.http.client.methods.HttpUriRequest)>", "com.savemebeta.CO.sendcontact", "doInBackground"));
         resultMap.put("save_me.apk", new ExpectedResult("<android.database.sqlite.SQLiteDatabase: android.database.Cursor query(java.lang.String,java.lang.String[],java.lang.String,java.lang.String[],java.lang.String,java.lang.String,java.lang.String)>", "com.savemebeta.DatabaseOperationssmssave", "getInformation", "<org.apache.http.client.HttpClient: org.apache.http.HttpResponse execute(org.apache.http.client.methods.HttpUriRequest)>", "com.savemebeta.Scan.sendsmsdata", "doInBackground"));
@@ -351,7 +349,6 @@ public class TaintBenchTests extends FlowDroidTests {
     @Test
     public void testChulia() throws XmlPullParserException, IOException {
         SetupApplication app = initApplication(pathToAPKs + "/" + "chulia.apk");
-        app.setTaintPropagationHandler(new DebugFlowFunctionTaintPropagationHandler());
         app.addResultsAvailableHandler((cfg, results) -> compareResults("chulia.apk", cfg, results));
         InfoflowResults results = app.runInfoflow(getSourcesAndSinks("chulia.apk"));
     }
@@ -379,7 +376,6 @@ public class TaintBenchTests extends FlowDroidTests {
     public void testExprespam() throws XmlPullParserException, IOException {
         SetupApplication app = initApplication(pathToAPKs + "/" + "exprespam.apk");
         app.getConfig().setWriteOutputFiles(true);
-        app.setTaintPropagationHandler(new DebugFlowFunctionTaintPropagationHandler());
         app.addResultsAvailableHandler((cfg, results) -> compareResults("exprespam.apk", cfg, results));
         InfoflowResults results = app.runInfoflow(getSourcesAndSinks("exprespam.apk"));
     }
@@ -396,8 +392,6 @@ public class TaintBenchTests extends FlowDroidTests {
     @Test
     public void testFakebank_android_samp() throws XmlPullParserException, IOException {
         SetupApplication app = initApplication(pathToAPKs + "/" + "fakebank_android_samp.apk");
-//        app.getConfig().setWriteOutputFiles(true);
-//        app.setTaintPropagationHandler(new DebugFlowFunctionTaintPropagationHandler());
         app.addResultsAvailableHandler((cfg, results) -> compareResults("fakebank_android_samp.apk", cfg, results));
         InfoflowResults results = app.runInfoflow(getSourcesAndSinks("fakebank_android_samp.apk"));
     }
@@ -539,6 +533,7 @@ public class TaintBenchTests extends FlowDroidTests {
     @Test
     public void testScipiex() throws XmlPullParserException, IOException {
         SetupApplication app = initApplication(pathToAPKs + "/" + "scipiex.apk");
+        app.getConfig().setWriteOutputFiles(true);
         app.addResultsAvailableHandler((cfg, results) -> compareResults("scipiex.apk", cfg, results));
         InfoflowResults results = app.runInfoflow(getSourcesAndSinks("scipiex.apk"));
     }
