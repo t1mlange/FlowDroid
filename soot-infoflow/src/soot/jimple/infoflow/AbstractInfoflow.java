@@ -1710,7 +1710,8 @@ public abstract class AbstractInfoflow implements IInfoflow {
 		for (Iterator<AbstractionAtSink> absAtSinkIt = res.iterator(); absAtSinkIt.hasNext();) {
 			AbstractionAtSink curAbs = absAtSinkIt.next();
 			for (AbstractionAtSink checkAbs : res) {
-				if (checkAbs != curAbs && checkAbs.getAbstraction().localEquals(curAbs.getAbstraction())) {
+				if (checkAbs != curAbs && checkAbs.getSinkStmt() == curAbs.getSinkStmt()
+						&& checkAbs.getAbstraction().localEquals(curAbs.getAbstraction())) {
 					if (checkAbs.getAbstraction().getAccessPath().entails(curAbs.getAbstraction().getAccessPath())) {
 						absAtSinkIt.remove();
 						break;
