@@ -12,6 +12,7 @@
 package soot.jimple.infoflow.test;
 
 import java.io.Serializable;
+import java.util.Random;
 
 import soot.jimple.infoflow.test.android.Bundle;
 import soot.jimple.infoflow.test.android.ConnectionManager;
@@ -667,4 +668,22 @@ public class TypeTestCode {
 		System.out.println(x.b.data);
 	}
 
+
+	public void arrayCastWithApTest1() {
+		String tainted = TelephonyManager.getDeviceId();
+		B a = new B();
+		a.data = tainted;
+		A[] array = new B[1];
+		array[0] = a;
+		// Incoming: array(B[]).data
+		// checkCast checks whether the cast can be done successfully
+		// and all fields in the access path are still valid given the
+		// new type. Given we do have an access path, the base is an array
+		// and the current statement is a cast, checkCast first has to unpack
+		// the array type before checking whether the fields still work with
+		// the new type.
+		B[] array2 = (B[]) array;
+		ConnectionManager cm = new ConnectionManager();
+		cm.publish(array2[0].data);
+	}
 }

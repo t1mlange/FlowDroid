@@ -18,6 +18,7 @@ import org.junit.Test;
 
 import soot.jimple.infoflow.IInfoflow;
 import soot.jimple.infoflow.InfoflowConfiguration.PathReconstructionMode;
+import soot.jimple.infoflow.util.DebugFlowFunctionTaintPropagationHandler;
 
 /**
  * These tests check taint propagation over various types
@@ -429,4 +430,13 @@ public abstract class TypeTests extends JUnitTests {
 		checkInfoflow(infoflow, 1);
 	}
 
+	@Test(timeout = 300000)
+	public void arrayCastWithApTest1() {
+		IInfoflow infoflow = initInfoflow();
+		infoflow.setTaintPropagationHandler(new DebugFlowFunctionTaintPropagationHandler());
+		List<String> epoints = new ArrayList<String>();
+		epoints.add("<soot.jimple.infoflow.test.TypeTestCode: void arrayCastWithApTest1()>");
+		infoflow.computeInfoflow(appPath, libPath, epoints, sources, sinks);
+		checkInfoflow(infoflow, 1);
+	}
 }
