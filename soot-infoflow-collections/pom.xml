@@ -149,5 +149,10 @@
             <type>test-jar</type>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20230618</version>
+        </dependency>
     </dependencies>
 </project>
