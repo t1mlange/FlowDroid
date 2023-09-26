@@ -76,7 +76,7 @@
 						AccessPathTypes="[java.lang.Object[]]"
 						constrained="true" />
 				</flow>
-				<flow isAlias="true" excludedOnClear="true">
+				<flow isAlias="true">
 					<from sourceSinkType="Field" />
 					<to sourceSinkType="Return" />
 				</flow>
@@ -100,7 +100,7 @@
 						AccessPathTypes="[java.lang.Object[]]"
 						constrained="true" />
 				</flow>
-				<flow isAlias="true" excludedOnClear="true">
+				<flow isAlias="true">
 					<from sourceSinkType="Field" />
 					<to sourceSinkType="Return" />
 				</flow>
@@ -290,7 +290,7 @@
 		</method>
 		<method id="org.json.JSONObject increment(java.lang.String)">
 			<flows>
-				<flow isAlias="true" excludedOnClear="true">
+				<flow isAlias="true">
 					<from sourceSinkType="Field" />
 					<to sourceSinkType="Return" />
 				</flow>
@@ -523,7 +523,6 @@
 				<key sourceSinkType="Parameter" ParameterIndex="0" />
 			</constraints>
 			<flows>
-			<flows>
 				<flow isAlias="false" typeChecking="false">
 					<from sourceSinkType="Field"
 						AccessPath="[org.json.JSONObject: java.lang.Object[] values]"
@@ -629,11 +628,17 @@
 						AccessPathTypes="[java.lang.Object[]]"
 						constrained="true" />
 				</flow>
-				<flow isAlias="true" excludedOnClear="true">
+				<flow isAlias="true">
 					<from sourceSinkType="Field" />
 					<to sourceSinkType="Return" />
 				</flow>
 			</flows>
+			<clears>
+				<clear  sourceSinkType="Field"
+						AccessPath="[org.json.JSONObject: java.lang.Object[] values]"
+						AccessPathTypes="[java.lang.Object[]]"
+						constrained="true" />
+			</clears>
 		</method>
 		<method id="org.json.JSONObject put(java.lang.String,java.util.Collection)">
 			<constraints>
@@ -653,11 +658,17 @@
 						AccessPathTypes="[java.lang.Object[]]"
 						constrained="true" />
 				</flow>
-				<flow isAlias="true" excludedOnClear="true">
+				<flow isAlias="true">
 					<from sourceSinkType="Field" />
 					<to sourceSinkType="Return" />
 				</flow>
 			</flows>
+			<clears>
+				<clear  sourceSinkType="Field"
+						AccessPath="[org.json.JSONObject: java.lang.Object[] values]"
+						AccessPathTypes="[java.lang.Object[]]"
+						constrained="true" />
+			</clears>
 		</method>
 		<method id="org.json.JSONObject put(java.lang.String,double)">
 			<constraints>
@@ -677,11 +688,17 @@
 						AccessPathTypes="[java.lang.Object[]]"
 						constrained="true" />
 				</flow>
-				<flow isAlias="true" excludedOnClear="true">
+				<flow isAlias="true">
 					<from sourceSinkType="Field" />
 					<to sourceSinkType="Return" />
 				</flow>
 			</flows>
+			<clears>
+				<clear  sourceSinkType="Field"
+						AccessPath="[org.json.JSONObject: java.lang.Object[] values]"
+						AccessPathTypes="[java.lang.Object[]]"
+						constrained="true" />
+			</clears>
 		</method>
 		<method id="org.json.JSONObject put(java.lang.String,int)">
 			<constraints>
@@ -701,11 +718,17 @@
 						AccessPathTypes="[java.lang.Object[]]"
 						constrained="true" />
 				</flow>
-				<flow isAlias="true" excludedOnClear="true">
+				<flow isAlias="true">
 					<from sourceSinkType="Field" />
 					<to sourceSinkType="Return" />
 				</flow>
 			</flows>
+			<clears>
+				<clear  sourceSinkType="Field"
+						AccessPath="[org.json.JSONObject: java.lang.Object[] values]"
+						AccessPathTypes="[java.lang.Object[]]"
+						constrained="true" />
+			</clears>
 		</method>
 		<method id="org.json.JSONObject put(java.lang.String,long)">
 			<constraints>
@@ -725,11 +748,17 @@
 						AccessPathTypes="[java.lang.Object[]]"
 						constrained="true" />
 				</flow>
-				<flow isAlias="true" excludedOnClear="true">
+				<flow isAlias="true">
 					<from sourceSinkType="Field" />
 					<to sourceSinkType="Return" />
 				</flow>
 			</flows>
+			<clears>
+				<clear  sourceSinkType="Field"
+						AccessPath="[org.json.JSONObject: java.lang.Object[] values]"
+						AccessPathTypes="[java.lang.Object[]]"
+						constrained="true" />
+			</clears>
 		</method>
 		<method id="org.json.JSONObject put(java.lang.String,java.util.Map)">
 			<constraints>
@@ -760,11 +789,17 @@
 						AccessPathTypes="[java.lang.Object[]]"
 						constrained="true" />
 				</flow>
-				<flow isAlias="true" excludedOnClear="true">
+				<flow isAlias="true">
 					<from sourceSinkType="Field" />
 					<to sourceSinkType="Return" />
 				</flow>
 			</flows>
+			<clears>
+				<clear  sourceSinkType="Field"
+						AccessPath="[org.json.JSONObject: java.lang.Object[] values]"
+						AccessPathTypes="[java.lang.Object[]]"
+						constrained="true" />
+			</clears>
 		</method>
 		<method id="org.json.JSONObject put(java.lang.String,java.lang.Object)">
 			<constraints>
@@ -784,11 +819,17 @@
 						AccessPathTypes="[java.lang.Object[]]"
 						constrained="true" />
 				</flow>
-				<flow isAlias="true" excludedOnClear="true">
+				<flow isAlias="true">
 					<from sourceSinkType="Field" />
 					<to sourceSinkType="Return" />
 				</flow>
 			</flows>
+			<clears>
+				<clear  sourceSinkType="Field"
+						AccessPath="[org.json.JSONObject: java.lang.Object[] values]"
+						AccessPathTypes="[java.lang.Object[]]"
+						constrained="true" />
+			</clears>
 		</method>
 		<method id="org.json.JSONObject putOnce(java.lang.String,java.lang.Object)">
 			<constraints>
@@ -808,7 +849,7 @@
 						AccessPathTypes="[java.lang.Object[]]"
 						constrained="true" />
 				</flow>
-				<flow isAlias="true" excludedOnClear="true">
+				<flow isAlias="true">
 					<from sourceSinkType="Field" />
 					<to sourceSinkType="Return" />
 				</flow>
@@ -832,11 +873,17 @@
 						AccessPathTypes="[java.lang.Object[]]"
 						constrained="true" />
 				</flow>
-				<flow isAlias="true" excludedOnClear="true">
+				<flow isAlias="true">
 					<from sourceSinkType="Field" />
 					<to sourceSinkType="Return" />
 				</flow>
 			</flows>
+			<clears>
+				<clear  sourceSinkType="Field"
+						AccessPath="[org.json.JSONObject: java.lang.Object[] values]"
+						AccessPathTypes="[java.lang.Object[]]"
+						constrained="true" />
+			</clears>
 		</method>
 		<method id="java.lang.String quote(java.lang.String)">
 			<flows>
