@@ -76,7 +76,7 @@
 						AccessPathTypes="[java.lang.Object[]]"
 						constrained="true" />
 				</flow>
-				<flow isAlias="true">
+				<flow isAlias="true" excludedOnClear="true">
 					<from sourceSinkType="Field" />
 					<to sourceSinkType="Return" />
 				</flow>
@@ -100,7 +100,7 @@
 						AccessPathTypes="[java.lang.Object[]]"
 						constrained="true" />
 				</flow>
-				<flow isAlias="true">
+				<flow isAlias="true" excludedOnClear="true">
 					<from sourceSinkType="Field" />
 					<to sourceSinkType="Return" />
 				</flow>
@@ -290,7 +290,7 @@
 		</method>
 		<method id="org.json.JSONObject increment(java.lang.String)">
 			<flows>
-				<flow isAlias="true">
+				<flow isAlias="true" excludedOnClear="true">
 					<from sourceSinkType="Field" />
 					<to sourceSinkType="Return" />
 				</flow>
@@ -629,7 +629,7 @@
 						AccessPathTypes="[java.lang.Object[]]"
 						constrained="true" />
 				</flow>
-				<flow isAlias="true">
+				<flow isAlias="true" excludedOnClear="true">
 					<from sourceSinkType="Field" />
 					<to sourceSinkType="Return" />
 				</flow>
@@ -653,7 +653,7 @@
 						AccessPathTypes="[java.lang.Object[]]"
 						constrained="true" />
 				</flow>
-				<flow isAlias="true">
+				<flow isAlias="true" excludedOnClear="true">
 					<from sourceSinkType="Field" />
 					<to sourceSinkType="Return" />
 				</flow>
@@ -677,7 +677,7 @@
 						AccessPathTypes="[java.lang.Object[]]"
 						constrained="true" />
 				</flow>
-				<flow isAlias="true">
+				<flow isAlias="true" excludedOnClear="true">
 					<from sourceSinkType="Field" />
 					<to sourceSinkType="Return" />
 				</flow>
@@ -701,7 +701,7 @@
 						AccessPathTypes="[java.lang.Object[]]"
 						constrained="true" />
 				</flow>
-				<flow isAlias="true">
+				<flow isAlias="true" excludedOnClear="true">
 					<from sourceSinkType="Field" />
 					<to sourceSinkType="Return" />
 				</flow>
@@ -725,7 +725,7 @@
 						AccessPathTypes="[java.lang.Object[]]"
 						constrained="true" />
 				</flow>
-				<flow isAlias="true">
+				<flow isAlias="true" excludedOnClear="true">
 					<from sourceSinkType="Field" />
 					<to sourceSinkType="Return" />
 				</flow>
@@ -760,7 +760,7 @@
 						AccessPathTypes="[java.lang.Object[]]"
 						constrained="true" />
 				</flow>
-				<flow isAlias="true">
+				<flow isAlias="true" excludedOnClear="true">
 					<from sourceSinkType="Field" />
 					<to sourceSinkType="Return" />
 				</flow>
@@ -784,7 +784,7 @@
 						AccessPathTypes="[java.lang.Object[]]"
 						constrained="true" />
 				</flow>
-				<flow isAlias="true">
+				<flow isAlias="true" excludedOnClear="true">
 					<from sourceSinkType="Field" />
 					<to sourceSinkType="Return" />
 				</flow>
@@ -808,7 +808,7 @@
 						AccessPathTypes="[java.lang.Object[]]"
 						constrained="true" />
 				</flow>
-				<flow isAlias="true">
+				<flow isAlias="true" excludedOnClear="true">
 					<from sourceSinkType="Field" />
 					<to sourceSinkType="Return" />
 				</flow>
@@ -832,7 +832,7 @@
 						AccessPathTypes="[java.lang.Object[]]"
 						constrained="true" />
 				</flow>
-				<flow isAlias="true">
+				<flow isAlias="true" excludedOnClear="true">
 					<from sourceSinkType="Field" />
 					<to sourceSinkType="Return" />
 				</flow>

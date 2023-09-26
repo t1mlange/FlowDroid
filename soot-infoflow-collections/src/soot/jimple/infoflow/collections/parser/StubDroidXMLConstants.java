@@ -14,4 +14,6 @@ public class StubDroidXMLConstants extends XMLConstants {
     public static final String MODE_APPEND = "append";
     public static final String CONSTRAINT_KEEP = "keep";
     public static final String CONSTRAINT_RO = "read-only";
+
+    public static final String EXCLUDED_ON_CLEAR = "excludedOnClear";
 }

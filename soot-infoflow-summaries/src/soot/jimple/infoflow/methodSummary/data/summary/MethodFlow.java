@@ -26,26 +26,30 @@ public class MethodFlow extends AbstractMethodSummary {
 	private final Boolean ignoreTypes;
 	private final Boolean cutSubFields;
 	private final boolean isFinal;
+	private final boolean excludedOnClear;
 
 	/**
 	 * Creates a new instance of the MethodFlow class
-	 * 
-	 * @param methodSig    The signature of the method containing the flow
-	 * @param from         The start of the data flow (source)
-	 * @param to           The end of the data flow (sink)
-	 * @param isAlias      True if the source and the sink alias, false if this is
-	 *                     not the case.
-	 * @param typeChecking True if type checking shall be performed before applying
-	 *                     this data flow, otherwise false
-	 * @param ignoreTypes  True if the type of potential fields should not be
-	 *                     altered
-	 * @param cutSubFields True if no sub fields shall be copied from the source to
-	 *                     the sink. If "a.b" is tainted and the source is "a", the
-	 *                     field "b" will not appended to the sink if this option is
-	 *                     enabled.
+	 *
+	 * @param methodSig       The signature of the method containing the flow
+	 * @param from            The start of the data flow (source)
+	 * @param to              The end of the data flow (sink)
+	 * @param isAlias         True if the source and the sink alias, false if this is
+	 *                        not the case.
+	 * @param typeChecking    True if type checking shall be performed before applying
+	 *                        this data flow, otherwise false
+	 * @param ignoreTypes     True if the type of potential fields should not be
+	 *                        altered
+	 * @param cutSubFields    True if no sub fields shall be copied from the source to
+	 *                        the sink. If "a.b" is tainted and the source is "a", the
+	 *                        field "b" will not appended to the sink if this option is
+	 *                        enabled.
+	 * @param constraints	  List of constraints that may be referenced in the flow
+	 * @param isFinal		  True if the flow should is complete, i.e. does not need a fixpoint
+	 * @param excludedOnClear True if the flow should not be applied if the incoming taint is killed
 	 */
 	public MethodFlow(String methodSig, FlowSource from, FlowSink to, boolean isAlias, Boolean typeChecking,
-			Boolean ignoreTypes, Boolean cutSubFields, FlowConstraint[] constraints, boolean isFinal) {
+					  Boolean ignoreTypes, Boolean cutSubFields, FlowConstraint[] constraints, boolean isFinal, boolean excludedOnClear) {
 		super(methodSig, constraints, isAlias);
 		this.from = from;
 		this.to = to;
@@ -53,6 +57,7 @@ public class MethodFlow extends AbstractMethodSummary {
 		this.ignoreTypes = ignoreTypes;
 		this.cutSubFields = cutSubFields;
 		this.isFinal = isFinal;
+		this.excludedOnClear = excludedOnClear;
 	}
 
 	/**
@@ -112,7 +117,7 @@ public class MethodFlow extends AbstractMethodSummary {
 				to.getAccessPath(), to.getGap(), to.isMatchStrict(), to.getConstraintType());
 		FlowSink reverseSink = new FlowSink(toType, from.getParameterIndex(), from.getBaseType(), from.getAccessPath(),
 				taintSubFields, from.getGap(), from.isMatchStrict(), from.getConstraintType());
-		return new MethodFlow(methodSig, reverseSource, reverseSink, isAlias, typeChecking, ignoreTypes, cutSubFields, constraints, isFinal);
+		return new MethodFlow(methodSig, reverseSource, reverseSink, isAlias, typeChecking, ignoreTypes, cutSubFields, constraints, isFinal, false);
 	}
 
 	/**
@@ -151,12 +156,16 @@ public class MethodFlow extends AbstractMethodSummary {
 		return isFinal;
 	}
 
+	public boolean isExcludedOnClear() {
+		return excludedOnClear;
+	}
+
 	@Override
 	public MethodFlow replaceGaps(Map<Integer, GapDefinition> replacementMap) {
 		if (replacementMap == null)
 			return this;
 		return new MethodFlow(methodSig, from.replaceGaps(replacementMap), to.replaceGaps(replacementMap), isAlias,
-				typeChecking, ignoreTypes, cutSubFields, constraints, isFinal);
+				typeChecking, ignoreTypes, cutSubFields, constraints, isFinal, false);
 	}
 
 	/**
