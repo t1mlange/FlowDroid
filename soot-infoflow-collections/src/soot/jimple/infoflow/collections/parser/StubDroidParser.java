@@ -72,6 +72,7 @@ public class StubDroidParser extends SummaryReader {
             Boolean ignoreTypes = null;
             Boolean cutSubfields = null;
             boolean isFinal = false;
+            boolean excludedOnClear = false;
 
             State state = State.summary;
             while (xmlreader.hasNext()) {
@@ -141,6 +142,10 @@ public class StubDroidParser extends SummaryReader {
                         String sIsFinal = getAttributeByName(xmlreader, StubDroidXMLConstants.ATTRIBUTE_FINAL);
                         if (sIsFinal != null && !sIsFinal.isEmpty())
                             isFinal = sIsFinal.equals(VALUE_TRUE);
+
+                        String sExcludedOnClear = getAttributeByName(xmlreader, StubDroidXMLConstants.EXCLUDED_ON_CLEAR);
+                        if (sExcludedOnClear != null && !sExcludedOnClear.isEmpty())
+                            excludedOnClear = sExcludedOnClear.equals(VALUE_TRUE);
                     } else
                         throw new SummaryXMLException();
                 } else if (localName.equals(TREE_CLEAR) && xmlreader.isStartElement()) {
@@ -169,11 +174,12 @@ public class StubDroidParser extends SummaryReader {
                     if (state == State.flow) {
                         state = State.method;
                         MethodFlow flow = new MethodFlow(currentMethod, createSource(summary, sourceAttributes),
-                                createSink(summary, sinkAttributes), isAlias, typeChecking, ignoreTypes, cutSubfields, constraints.toArray(new FlowConstraint[0]), isFinal);
+                                createSink(summary, sinkAttributes), isAlias, typeChecking, ignoreTypes, cutSubfields, constraints.toArray(new FlowConstraint[0]), isFinal, false);
                         summary.addFlow(flow);
 
                         isAlias = false;
                         isFinal = false;
+                        excludedOnClear = false;
                     } else
                         throw new SummaryXMLException();
                 } else if (localName.equals(TREE_CLEAR) && xmlreader.isEndElement()) {

@@ -431,7 +431,7 @@ public class InfoflowResultPostProcessor {
 		// Convert the method signature into a subsignature
 		String methodSubSig = SootMethodRepresentationParser.v().parseSootMethodString(method).getSubSignature();
 
-		MethodFlow mFlow = new MethodFlow(methodSubSig, source, sink, isAlias, true, false, false, null, false);
+		MethodFlow mFlow = new MethodFlow(methodSubSig, source, sink, isAlias, true, false, false, null, false, false);
 		if (summaries.addFlow(mFlow))
 			debugMSG(source, sink, isAlias);
 	}

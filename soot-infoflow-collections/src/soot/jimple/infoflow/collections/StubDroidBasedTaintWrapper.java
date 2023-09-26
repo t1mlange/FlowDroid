@@ -296,7 +296,8 @@ public class StubDroidBasedTaintWrapper extends SummaryTaintWrapper implements I
             }
 
             // Apply the data flows until we reach a fixed point
-            Set<AccessPath> resCallee = applyFlowsIterative(flowsInCallee, workList, false, stmt, taintedAbs);
+            Set<AccessPath> resCallee = applyFlowsIterative(flowsInCallee, workList, false, stmt, taintedAbs,
+                                                            killIncomingTaint);
             if (resCallee != null && !resCallee.isEmpty()) {
                 if (res == null)
                     res = new HashSet<>();
@@ -321,7 +322,8 @@ public class StubDroidBasedTaintWrapper extends SummaryTaintWrapper implements I
      * @return The set of outgoing access paths
      */
     private Set<AccessPath> applyFlowsIterative(MethodSummaries flowsInCallee, List<AccessPathPropagator> workList,
-                                                boolean reverseFlows, Stmt stmt, Abstraction incoming) {
+                                                boolean reverseFlows, Stmt stmt, Abstraction incoming,
+                                                ByReferenceBoolean killIncomingTaint) {
         Set<AccessPath> res = null;
         Set<AccessPathPropagator> doneSet = new HashSet<>(workList);
         while (!workList.isEmpty()) {
@@ -354,6 +356,9 @@ public class StubDroidBasedTaintWrapper extends SummaryTaintWrapper implements I
                 if (reverseFlows)
                     flowsInTarget = flowsInTarget.reverse();
                 for (MethodFlow flow : flowsInTarget) {
+                    if (flow.isExcludedOnClear() && killIncomingTaint.value)
+                        continue;
+
                     // Apply the flow summary
                     AccessPathPropagator newPropagator = applyFlow(flow, curPropagator);
 
@@ -815,7 +820,7 @@ public class StubDroidBasedTaintWrapper extends SummaryTaintWrapper implements I
         if (taintsFromAP == null || taintsFromAP.isEmpty())
             return Collections.emptySet();
 
-        boolean killTaint = false;
+        ByReferenceBoolean killIncomingTaint = new ByReferenceBoolean();
         Set<AccessPath> res = null;
         for (String className : flowsInCallees.getClasses()) {
             boolean reverseFlows = manager.getConfig()
@@ -831,6 +836,7 @@ public class StubDroidBasedTaintWrapper extends SummaryTaintWrapper implements I
             if (flowsInCallee == null || flowsInCallee.isEmpty())
                 continue;
 
+            boolean killTaint = false;
             List<AccessPathPropagator> workList = new ArrayList<AccessPathPropagator>();
             for (Taint taint : taintsFromAP) {
                 boolean preventPropagation = false;
@@ -844,12 +850,15 @@ public class StubDroidBasedTaintWrapper extends SummaryTaintWrapper implements I
                     }
                 }
 
+                if (killTaint)
+                    killIncomingTaint.value = true;
                 if (!preventPropagation)
                     workList.add(new AccessPathPropagator(taint, null, null, stmt, d1, taintedAbs, !reverseFlows));
             }
 
             // Apply the data flows until we reach a fixed point
-            Set<AccessPath> resCallee = applyFlowsIterative(flowsInCallee, workList, false, stmt, taintedAbs);
+            Set<AccessPath> resCallee = applyFlowsIterative(flowsInCallee, workList, false, stmt, taintedAbs,
+                                                            killIncomingTaint);
             if (resCallee != null && !resCallee.isEmpty()) {
                 if (res == null)
                     res = new HashSet<>();
@@ -859,11 +868,11 @@ public class StubDroidBasedTaintWrapper extends SummaryTaintWrapper implements I
 
         // We always retain the incoming taint
         if (res == null || res.isEmpty())
-            return killTaint ? Collections.emptySet() : Collections.singleton(taintedAbs);
+            return killIncomingTaint.value ? Collections.emptySet() : Collections.singleton(taintedAbs);
 
         // Create abstractions from the access paths
         Set<Abstraction> resAbs = new HashSet<>(res.size() + 1);
-        if (!killTaint)
+        if (!killIncomingTaint.value)
             resAbs.add(taintedAbs);
         for (AccessPath ap : res) {
             Abstraction newAbs = taintedAbs.deriveNewAbstraction(ap, stmt);

@@ -156,7 +156,7 @@ public class SummaryReader extends AbstractXMLReader {
 					if (state == State.flow) {
 						state = State.method;
 						MethodFlow flow = new MethodFlow(currentMethod, createSource(summary, sourceAttributes),
-								createSink(summary, sinkAttributes), isAlias, typeChecking, ignoreTypes, cutSubfields, null, false);
+								createSink(summary, sinkAttributes), isAlias, typeChecking, ignoreTypes, cutSubfields, null, false, false);
 						summary.addFlow(flow);
 
 						isAlias = false;
