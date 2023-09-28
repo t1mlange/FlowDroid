@@ -69,7 +69,7 @@ public class Abstraction implements Cloneable, FastSolverLinkedNode<Abstraction,
 	 */
 	protected List<UnitContainer> postdominators = null;
 	protected Unit dominator = null;
-	protected boolean isImplicit = false;
+	public boolean isImplicit = false;
 
 	/**
 	 * Only valid for inactive abstractions. Specifies whether an access paths has

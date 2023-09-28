@@ -27,6 +27,7 @@ import soot.jimple.StaticFieldRef;
  * (length is bounded by Infoflow.ACCESSPATHLENGTH)
  */
 public class AccessPath implements Cloneable {
+	public boolean visited = false;
 
 	private static AccessPath zeroAccessPath = null;
 
