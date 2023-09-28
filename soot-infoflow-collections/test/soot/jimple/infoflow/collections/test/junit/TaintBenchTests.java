@@ -10,6 +10,7 @@ import soot.jimple.infoflow.InfoflowConfiguration;
 import soot.jimple.infoflow.InfoflowManager;
 import soot.jimple.infoflow.android.SetupApplication;
 import soot.jimple.infoflow.android.data.parsers.PermissionMethodParser;
+import soot.jimple.infoflow.collections.CollectionsSetupApplication;
 import soot.jimple.infoflow.collections.StringResourcesResolver;
 import soot.jimple.infoflow.collections.StubDroidBasedTaintWrapper;
 import soot.jimple.infoflow.collections.parser.StubDroidSummaryProvider;
@@ -26,6 +27,7 @@ import soot.jimple.infoflow.util.DebugFlowFunctionTaintPropagationHandler;
 import soot.util.HashMultiMap;
 import soot.util.MultiMap;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
@@ -222,20 +224,7 @@ public class TaintBenchTests extends FlowDroidTests {
         if (androidJars == null)
             throw new RuntimeException("Android JAR dir not set");
 
-        SetupApplication setupApplication = new SetupApplication(androidJars, fileName);
-        setupApplication.addOptimizationPass(new SetupApplication.OptimizationPass() {
-            @Override
-            public void performCodeInstrumentationBeforeDCE(InfoflowManager manager, Set<SootMethod> excludedMethods) {
-                StringResourcesResolver res = new StringResourcesResolver();
-                res.initialize(manager.getConfig());
-                res.run(manager, excludedMethods, manager.getSourceSinkManager(), manager.getTaintWrapper());
-            }
-
-            @Override
-            public void performCodeInstrumentationAfterDCE(InfoflowManager manager, Set<SootMethod> excludedMethods) {
-
-            }
-        });
+        SetupApplication setupApplication = new CollectionsSetupApplication(androidJars, fileName);
         setupApplication.getConfig().setMergeDexFiles(true);
         setupApplication.setTaintWrapper(getTaintWrapper());
         setConfiguration(setupApplication.getConfig());
@@ -245,18 +234,18 @@ public class TaintBenchTests extends FlowDroidTests {
 
     @Override
     protected ITaintPropagationWrapper getTaintWrapper() {
-        try {
-            return TaintWrapperFactory.createTaintWrapperEager();
-        } catch (Exception e) {
-            throw new RuntimeException();
-        }
 //        try {
-//            StubDroidSummaryProvider sp = new StubDroidSummaryProvider(new File("stubdroidBased"));
-//            sp.loadAdditionalSummaries("summariesManual");
-//            return new StubDroidBasedTaintWrapper(sp);
+//            return TaintWrapperFactory.createTaintWrapperEager();
 //        } catch (Exception e) {
 //            throw new RuntimeException();
 //        }
+        try {
+            StubDroidSummaryProvider sp = new StubDroidSummaryProvider(new File("stubdroidBased"));
+            sp.loadAdditionalSummaries("summariesManual");
+            return new StubDroidBasedTaintWrapper(sp);
+        } catch (Exception e) {
+            throw new RuntimeException();
+        }
     }
 
     private static void compareResults(String apk, IInfoflowCFG cfg, InfoflowResults infoflowResults) {
