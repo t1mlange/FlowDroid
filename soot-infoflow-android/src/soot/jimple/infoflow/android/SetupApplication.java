@@ -1644,10 +1644,11 @@ public class SetupApplication implements ITaintWrapperDataFlowAnalysis {
 		// Print out the found results
 		{
 			int resCount = resultAggregator.getLastResults() == null ? 0 : resultAggregator.getLastResults().size();
+			int sourceCount = resultAggregator.getLastResults() == null ? 0 : resultAggregator.getLastResults().getResultSet().size();
 			if (config.getOneComponentAtATime())
 				logger.info("Found {} leaks for component {}", resCount, entrypoint);
 			else
-				logger.info("Found {} leaks", resCount);
+				logger.info("Found {} leaks from {} sources", resCount, sourceCount);
 		}
 
 		// Update the performance object with the real data

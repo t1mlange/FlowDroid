@@ -685,8 +685,9 @@ public class StubDroidBasedTaintWrapper extends SummaryTaintWrapper implements I
      *         to the given source taint
      */
     protected Taint addSinkTaint(MethodFlow flow, Taint taint, GapDefinition gap, Stmt stmt, boolean inversePropagator) {
-        if (taint.isStaticField() && flow.sink().hasGap())
+        if (taint.isStaticField()) {
             return taint;
+        }
 
         final AbstractFlowSinkSource flowSource = flow.source();
         final AbstractFlowSinkSource flowSink = flow.sink();
