@@ -159,7 +159,7 @@ public class InfoflowSolver extends IFDSSolver<Unit, Abstraction, IInfoflowCFG>
 
 	@Override
 	public long getPropagationCount() {
-		return propagationCount;
+		return jumpFunctions.size();
 	}
 
 	@Override
