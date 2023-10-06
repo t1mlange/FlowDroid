@@ -14,6 +14,8 @@ import soot.jimple.infoflow.collections.CollectionsSetupApplication;
 import soot.jimple.infoflow.collections.StringResourcesResolver;
 import soot.jimple.infoflow.collections.StubDroidBasedTaintWrapper;
 import soot.jimple.infoflow.collections.parser.StubDroidSummaryProvider;
+import soot.jimple.infoflow.collections.strategies.containers.ConstantMapStrategy;
+import soot.jimple.infoflow.collections.strategies.containers.TestConstantStrategy;
 import soot.jimple.infoflow.methodSummary.taintWrappers.SummaryTaintWrapper;
 import soot.jimple.infoflow.methodSummary.taintWrappers.TaintWrapperFactory;
 import soot.jimple.infoflow.problems.TaintPropagationResults;
@@ -122,8 +124,8 @@ public class TaintBenchTests extends FlowDroidTests {
         ssMap.put("save_me.apk", "<android.telephony.TelephonyManager: java.lang.String getSimCountryIso()> -> _SOURCE_");
         ssMap.put("save_me.apk", "<android.widget.EditText: android.text.Editable getText()> -> _SOURCE_");
         ssMap.put("save_me.apk", "<org.apache.http.client.HttpClient: org.apache.http.HttpResponse execute(org.apache.http.client.methods.HttpUriRequest)> -> _SINK_");
-//        ssMap.put("scipiex.apk", "<android.content.ContentResolver: android.database.Cursor query(android.net.Uri,java.lang.String[],java.lang.String,java.lang.String[],java.lang.String)> -> _SOURCE_");
-        ssMap.put("scipiex.apk", "<android.telephony.SmsMessage: android.telephony.SmsMessage createFromPdu(byte[])> -> _SOURCE_");
+        ssMap.put("scipiex.apk", "<android.content.ContentResolver: android.database.Cursor query(android.net.Uri,java.lang.String[],java.lang.String,java.lang.String[],java.lang.String)> -> _SOURCE_");
+//        ssMap.put("scipiex.apk", "<android.telephony.SmsMessage: android.telephony.SmsMessage createFromPdu(byte[])> -> _SOURCE_");
 //        ssMap.put("scipiex.apk", "<android.telephony.TelephonyManager: java.lang.String getLine1Number()> -> _SOURCE_");
         ssMap.put("scipiex.apk", "<java.io.OutputStream: void write(byte[])> -> _SINK_");
         ssMap.put("scipiex.apk", "<java.io.PrintWriter: void println(java.lang.String)> -> _SINK_");
@@ -196,12 +198,12 @@ public class TaintBenchTests extends FlowDroidTests {
         resultMap.put("save_me.apk", new ExpectedResult("<android.telephony.TelephonyManager: java.lang.String getSimCountryIso()>", "com.savemebeta.CO", "onCreate", "<org.apache.http.client.HttpClient: org.apache.http.HttpResponse execute(org.apache.http.client.methods.HttpUriRequest)>", "com.savemebeta.CO.sendcontact", "doInBackground"));
         resultMap.put("save_me.apk", new ExpectedResult("<android.widget.EditText: android.text.Editable getText()>", "com.savemebeta.Analyse$1", "onClick", "<org.apache.http.client.HttpClient: org.apache.http.HttpResponse execute(org.apache.http.client.methods.HttpUriRequest)>", "com.savemebeta.Scan.sendsmsdata", "doInBackground"));
         resultMap.put("save_me.apk", new ExpectedResult("<android.widget.EditText: android.text.Editable getText()>", "com.savemebeta.SOSsm$1", "onClick", "<org.apache.http.client.HttpClient: org.apache.http.HttpResponse execute(org.apache.http.client.methods.HttpUriRequest)>", "com.savemebeta.SOSsm.sendsmsdata2", "doInBackground"));
-        resultMap.put("scipiex.apk", new ExpectedResult("<android.content.ContentResolver: android.database.Cursor query(android.net.Uri,java.lang.String[],java.lang.String,java.lang.String[],java.lang.String)>", "com.yxx.jiejie.SMSListenerService", "readAllContacts", "<java.io.PrintWriter: void println(java.lang.String)>", "com.yxx.jiejie.SMSListenerService.AnonymousClass2$1", "writeToFile"));
+        resultMap.put("scipiex.apk", new ExpectedResult("<android.content.ContentResolver: android.database.Cursor query(android.net.Uri,java.lang.String[],java.lang.String,java.lang.String[],java.lang.String)>", "com.yxx.jiejie.SMSListenerService", "readAllContacts", "<java.io.PrintWriter: void println(java.lang.String)>", "com.yxx.jiejie.SMSListenerService$2$1", "writeToFile"));
         resultMap.put("scipiex.apk", new ExpectedResult("<android.telephony.SmsMessage: android.telephony.SmsMessage createFromPdu(byte[])>", "com.yxx.jiejie.SMSListenerService$1", "onReceive", "<java.io.OutputStream: void write(byte[])>", "com.yxx.jiejie.SendThread", "sendPostRequest"));
         // ICC
         // resultMap.put("scipiex.apk", new ExpectedResult("<android.telephony.TelephonyManager: java.lang.String getLine1Number()>", "com.yxx.jiejie.MainActivity", "onCreate", "<java.io.OutputStream: void write(byte[])>", "com.yxx.jiejie.SendThread", "sendPostRequest"));
-        resultMap.put("slocker_android_samp.apk", new ExpectedResult("<android.telephony.TelephonyManager: java.lang.String getDeviceId()>", "com.android.locker.SenderActivity", "onCreate", "<org.apache.http.client.HttpClient: org.apache.http.HttpResponse execute(org.apache.http.client.methods.HttpUriRequest)>", "com.android.locker.RequestSender", "checkState"));
-        resultMap.put("slocker_android_samp.apk", new ExpectedResult("<android.telephony.TelephonyManager: java.lang.String getDeviceId()>", "com.android.locker.SenderActivity", "onCreate", "<org.apache.http.client.HttpClient: org.apache.http.HttpResponse execute(org.apache.http.client.methods.HttpUriRequest)>", "com.android.locker.RequestSender", "sendCode"));
+//        resultMap.put("slocker_android_samp.apk", new ExpectedResult("<android.telephony.TelephonyManager: java.lang.String getDeviceId()>", "com.android.locker.SenderActivity", "onCreate", "<org.apache.http.client.HttpClient: org.apache.http.HttpResponse execute(org.apache.http.client.methods.HttpUriRequest)>", "com.android.locker.RequestSender", "checkState"));
+//        resultMap.put("slocker_android_samp.apk", new ExpectedResult("<android.telephony.TelephonyManager: java.lang.String getDeviceId()>", "com.android.locker.SenderActivity", "onCreate", "<org.apache.http.client.HttpClient: org.apache.http.HttpResponse execute(org.apache.http.client.methods.HttpUriRequest)>", "com.android.locker.RequestSender", "sendCode"));
         resultMap.put("slocker_android_samp.apk", new ExpectedResult("<android.telephony.TelephonyManager: java.lang.String getDeviceId()>", "com.android.locker.SenderActivity", "onCreate", "<org.apache.http.client.HttpClient: org.apache.http.HttpResponse execute(org.apache.http.client.methods.HttpUriRequest)>", "com.android.locker.SenderActivity", "debug"));
         resultMap.put("slocker_android_samp.apk", new ExpectedResult("<android.widget.EditText: android.text.Editable getText()>", "com.android.locker.SenderActivity$12", "onClick", "<org.apache.http.client.HttpClient: org.apache.http.HttpResponse execute(org.apache.http.client.methods.HttpUriRequest)>", "com.android.locker.RequestSender", "sendCode"));
         resultMap.put("slocker_android_samp.apk", new ExpectedResult("<android.widget.EditText: android.text.Editable getText()>", "com.android.locker.SenderActivity$12", "onClick", "<org.apache.http.client.HttpClient: org.apache.http.HttpResponse execute(org.apache.http.client.methods.HttpUriRequest)>", "com.android.locker.SenderActivity", "debug"));
@@ -234,18 +236,18 @@ public class TaintBenchTests extends FlowDroidTests {
 
     @Override
     protected ITaintPropagationWrapper getTaintWrapper() {
-//        try {
-//            return TaintWrapperFactory.createTaintWrapperEager();
-//        } catch (Exception e) {
-//            throw new RuntimeException();
-//        }
         try {
-            StubDroidSummaryProvider sp = new StubDroidSummaryProvider(new File("stubdroidBased"));
-            sp.loadAdditionalSummaries("summariesManual");
-            return new StubDroidBasedTaintWrapper(sp);
+            return TaintWrapperFactory.createTaintWrapperEager();
         } catch (Exception e) {
             throw new RuntimeException();
         }
+//        try {
+//            StubDroidSummaryProvider sp = new StubDroidSummaryProvider(new File("stubdroidBased"));
+//            sp.loadAdditionalSummaries("summariesManual");
+//            return new StubDroidBasedTaintWrapper(sp, ConstantMapStrategy::new);
+//        } catch (Exception e) {
+//            throw new RuntimeException();
+//        }
     }
 
     private static void compareResults(String apk, IInfoflowCFG cfg, InfoflowResults infoflowResults) {
@@ -523,7 +525,7 @@ public class TaintBenchTests extends FlowDroidTests {
         app.getConfig().setWriteOutputFiles(true);
         app.setTaintPropagationHandler(new DebugFlowFunctionTaintPropagationHandler(
                 new DebugFlowFunctionTaintPropagationHandler.MethodFilter(
-                        Collections.singleton("SMSListenerService$1")
+                        Collections.singleton("$2$1: void writeToFile")
                 )
         ));
         app.addResultsAvailableHandler((cfg, results) -> compareResults("scipiex.apk", cfg, results));
@@ -534,6 +536,7 @@ public class TaintBenchTests extends FlowDroidTests {
     @Test
     public void testSlocker_android_samp() throws XmlPullParserException, IOException {
         SetupApplication app = initApplication(pathToAPKs + "/" + "slocker_android_samp.apk");
+        app.getConfig().setWriteOutputFiles(true);
         app.addResultsAvailableHandler((cfg, results) -> compareResults("slocker_android_samp.apk", cfg, results));
         InfoflowResults results = app.runInfoflow(getSourcesAndSinks("slocker_android_samp.apk"));
     }

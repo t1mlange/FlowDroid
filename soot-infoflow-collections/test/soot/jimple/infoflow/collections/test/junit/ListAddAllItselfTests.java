@@ -35,7 +35,7 @@ public class ListAddAllItselfTests extends FlowDroidTests {
         try {
             StubDroidSummaryProvider sp = new StubDroidSummaryProvider(new File("stubdroidBased"));
             sp.loadAdditionalSummaries("summariesManual");
-            StubDroidBasedTaintWrapper sbtw = new StubDroidBasedTaintWrapper(sp) {
+            StubDroidBasedTaintWrapper sbtw = new StubDroidBasedTaintWrapper(sp, TestConstantStrategy::new) {
                 @Override
                 public void initialize(InfoflowManager manager) {
                     super.initialize(manager);
