@@ -334,7 +334,6 @@ public class ApiClassClient {
 		String ret = d.computeString((s) -> "Untainted string");
 		sink(ret);
 	}
-
 	public void iterativeApplyIsOverapproximation() {
 		Map<String, String> map = new HashMap<>();
 		// The summary map.values -> return should only be applied

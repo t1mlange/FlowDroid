@@ -1,6 +1,5 @@
 package soot.jimple.infoflow.methodSummary.data.summary;
 
-import soot.jimple.infoflow.data.ContextDefinition;
 import soot.jimple.infoflow.methodSummary.data.sourceSink.FlowConstraint;
 
 import java.util.Arrays;

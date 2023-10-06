@@ -433,7 +433,6 @@ public abstract class TypeTests extends JUnitTests {
 	@Test(timeout = 300000)
 	public void arrayCastWithApTest1() {
 		IInfoflow infoflow = initInfoflow();
-		infoflow.setTaintPropagationHandler(new DebugFlowFunctionTaintPropagationHandler());
 		List<String> epoints = new ArrayList<String>();
 		epoints.add("<soot.jimple.infoflow.test.TypeTestCode: void arrayCastWithApTest1()>");
 		infoflow.computeInfoflow(appPath, libPath, epoints, sources, sinks);
