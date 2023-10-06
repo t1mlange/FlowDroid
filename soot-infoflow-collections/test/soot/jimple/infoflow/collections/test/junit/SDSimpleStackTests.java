@@ -10,6 +10,7 @@ import soot.jimple.infoflow.IInfoflow;
 import soot.jimple.infoflow.InfoflowConfiguration;
 import soot.jimple.infoflow.collections.StubDroidBasedTaintWrapper;
 import soot.jimple.infoflow.collections.parser.StubDroidSummaryProvider;
+import soot.jimple.infoflow.collections.strategies.containers.TestConstantStrategy;
 import soot.jimple.infoflow.taintWrappers.ITaintPropagationWrapper;
 import soot.jimple.infoflow.util.DebugFlowFunctionTaintPropagationHandler;
 
@@ -24,7 +25,7 @@ public class SDSimpleStackTests extends SimpleStackTests {
         try {
             StubDroidSummaryProvider sp = new StubDroidSummaryProvider(new File("stubdroidBased"));
             sp.loadAdditionalSummaries("summariesManual");
-            return new StubDroidBasedTaintWrapper(sp);
+            return new StubDroidBasedTaintWrapper(sp, TestConstantStrategy::new);
         } catch (Exception e) {
             throw new RuntimeException();
         }

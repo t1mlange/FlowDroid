@@ -25,24 +25,28 @@ import soot.jimple.infoflow.util.ByReferenceBoolean;
 import soot.jimple.spark.sets.PointsToSetInternal;
 
 import java.util.*;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 public class StubDroidBasedTaintWrapper extends SummaryTaintWrapper implements ICollectionsSupport {
     protected IContainerStrategy containerStrategy;
+    protected Function<InfoflowManager, IContainerStrategy> gen;
 
     /**
      * Creates a new instance of the {@link SummaryTaintWrapper} class
      *
      * @param flows The flows loaded from disk
      */
-    public StubDroidBasedTaintWrapper(IMethodSummaryProvider flows) {
+    public StubDroidBasedTaintWrapper(IMethodSummaryProvider flows, Function<InfoflowManager, IContainerStrategy> gen) {
         super(flows);
+        this.gen = gen;
     }
 
     @Override
     public void initialize(InfoflowManager manager) {
         super.initialize(manager);
 
-        this.containerStrategy = new TestConstantStrategy(manager);
+        this.containerStrategy = gen.apply(manager);
     }
 
     @Override
