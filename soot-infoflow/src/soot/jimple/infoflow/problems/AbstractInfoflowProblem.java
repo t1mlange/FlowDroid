@@ -319,7 +319,7 @@ public abstract class AbstractInfoflowProblem
 	 */
 	protected Set<Abstraction> notifyOutFlowHandlers(Unit stmt, Abstraction d1, Abstraction incoming,
 			Set<Abstraction> outgoing, FlowFunctionType functionType) {
-		if (taintPropagationHandler != null && outgoing != null && !outgoing.isEmpty())
+		if (taintPropagationHandler != null)
 			outgoing = taintPropagationHandler.notifyFlowOut(stmt, d1, incoming, outgoing, manager, functionType);
 		return outgoing;
 	}
