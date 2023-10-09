@@ -16,7 +16,7 @@ public abstract class AbstractMethodSummary {
 
 	protected final String methodSig;
 	protected final FlowConstraint[] constraints;
-	protected final boolean isAlias;
+	protected final IsAliasType isAlias;
 
 	/**
 	 * Creates a new instance of the {@link AbstractMethodSummary} class
@@ -24,7 +24,7 @@ public abstract class AbstractMethodSummary {
 	 * @param methodSig
 	 *            The signature of the method containing the flow
 	 */
-	AbstractMethodSummary(String methodSig, FlowConstraint[] constraints, boolean isAlias) {
+	AbstractMethodSummary(String methodSig, FlowConstraint[] constraints, IsAliasType isAlias) {
 		this.methodSig = methodSig;
 		this.constraints = constraints;
 		this.isAlias = isAlias;
@@ -44,7 +44,11 @@ public abstract class AbstractMethodSummary {
 	 * @return True the source and the sink of this data flow alias, otherwise false
 	 */
 	public boolean isAlias() {
-		return this.isAlias;
+		return this.isAlias == IsAliasType.TRUE;
+	}
+
+	public boolean isAlias(boolean hasContext) {
+		return this.isAlias == IsAliasType.TRUE || (hasContext && isAlias == IsAliasType.WITH_CONTEXT);
 	}
 
 	/**

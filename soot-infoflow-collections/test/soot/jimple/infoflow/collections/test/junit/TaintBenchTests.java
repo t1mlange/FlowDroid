@@ -236,18 +236,18 @@ public class TaintBenchTests extends FlowDroidTests {
 
     @Override
     protected ITaintPropagationWrapper getTaintWrapper() {
-        try {
-            return TaintWrapperFactory.createTaintWrapperEager();
-        } catch (Exception e) {
-            throw new RuntimeException();
-        }
 //        try {
-//            StubDroidSummaryProvider sp = new StubDroidSummaryProvider(new File("stubdroidBased"));
-//            sp.loadAdditionalSummaries("summariesManual");
-//            return new StubDroidBasedTaintWrapper(sp, ConstantMapStrategy::new);
+//            return TaintWrapperFactory.createTaintWrapperEager();
 //        } catch (Exception e) {
 //            throw new RuntimeException();
 //        }
+        try {
+            StubDroidSummaryProvider sp = new StubDroidSummaryProvider(new File("stubdroidBased"));
+            sp.loadAdditionalSummaries("summariesManual");
+            return new StubDroidBasedTaintWrapper(sp, ConstantMapStrategy::new);
+        } catch (Exception e) {
+            throw new RuntimeException();
+        }
     }
 
     private static void compareResults(String apk, IInfoflowCFG cfg, InfoflowResults infoflowResults) {
@@ -339,6 +339,7 @@ public class TaintBenchTests extends FlowDroidTests {
     public void testChulia() throws XmlPullParserException, IOException {
         SetupApplication app = initApplication(pathToAPKs + "/" + "chulia.apk");
         app.addResultsAvailableHandler((cfg, results) -> compareResults("chulia.apk", cfg, results));
+//        app.setTaintPropagationHandler(new DebugFlowFunctionTaintPropagationHandler());
         InfoflowResults results = app.runInfoflow(getSourcesAndSinks("chulia.apk"));
     }
 

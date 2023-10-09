@@ -371,4 +371,10 @@ public class ApiClassClient {
 			return "some string";
 		});
 	}
+
+	public void noBogusBaseType() {
+		Data d = new Data();
+		d.setI(stringSource());
+		sink(d.getI());
+	}
 }

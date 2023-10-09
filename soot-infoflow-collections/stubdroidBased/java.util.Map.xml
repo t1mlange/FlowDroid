@@ -12,14 +12,14 @@
 						AccessPath="[java.util.Map: java.lang.Object[] keys]"
 						AccessPathTypes="[java.lang.Object[]]" />
 				</flow>
-				<flow isAlias="true" typeChecking="false" final="true">
+				<flow isAlias="withContext" typeChecking="false" final="true">
 					<from sourceSinkType="Parameter" ParameterIndex="1" />
 					<to sourceSinkType="Field"
 						AccessPath="[java.util.Map: java.lang.Object[] values]"
 						AccessPathTypes="[java.lang.Object[]]"
 						constrained="true" />
 				</flow>
-				<flow isAlias="true" typeChecking="false" final="true">
+				<flow isAlias="withContext" typeChecking="false" final="true">
 					<from sourceSinkType="Field"
 						AccessPath="[java.util.Map: java.lang.Object[] values]"
 						AccessPathTypes="[java.lang.Object[]]"
@@ -231,7 +231,7 @@
 					 ParameterIndex="0" />
 			</constraints>
 			<flows>
-				<flow isAlias="true" typeChecking="false">
+				<flow isAlias="withContext" typeChecking="false">
 					<from sourceSinkType="Field"
 						AccessPath="[java.util.Map: java.lang.Object[] values]"
 						AccessPathTypes="[java.lang.Object[]]"
@@ -247,7 +247,7 @@
 					 ParameterIndex="0" />
 			</constraints>
 			<flows>
-				<flow isAlias="true" typeChecking="false">
+				<flow isAlias="withContext" typeChecking="false">
 					<from sourceSinkType="Field"
 						AccessPath="[java.util.Map: java.lang.Object[] values]"
 						AccessPathTypes="[java.lang.Object[]]"
@@ -282,7 +282,7 @@
 						gap="42" />
 				</flow>
 				<!-- Base Object is tainted -->
-				<flow isAlias="true" typeChecking="false"
+				<flow isAlias="withContext" typeChecking="false"
 					  cutFirstField="true">
 					<from sourceSinkType="Field"
 						  AccessPath="[java.util.Map: java.lang.Object[] values]"
@@ -293,14 +293,14 @@
 						gap="42" />
 				</flow>
 				<!-- Lambda is tainted -->
-				<flow isAlias="true" typeChecking="false">
+				<flow isAlias="withContext" typeChecking="false">
 					<from sourceSinkType="Parameter"
 						  ParameterIndex="1" />
 					<to sourceSinkType="GapBaseObject"
 						gap="42" />
 				</flow>
 				<!-- gap to map -->
-				<flow isAlias="true" typeChecking="false">
+				<flow isAlias="withContext" typeChecking="false">
 					<from sourceSinkType="Return"
 						  gap="42" />
 					<to sourceSinkType="Field"
@@ -308,7 +308,7 @@
 						AccessPathTypes="[java.lang.Object[]]"
 						constrained="true" />
 				</flow>
-				<flow isAlias="true" typeChecking="false">
+				<flow isAlias="withContext" typeChecking="false">
 					<from sourceSinkType="Return"
 					 	  gap="42" />
 					<to sourceSinkType="Return" />

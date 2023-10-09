@@ -67,7 +67,7 @@ public class StubDroidParser extends SummaryReader {
 
             String currentMethod = "";
             int currentID = -1;
-            boolean isAlias = false;
+            IsAliasType isAlias = IsAliasType.FALSE;
             Boolean typeChecking = null;
             Boolean ignoreTypes = null;
             Boolean cutSubfields = null;
@@ -125,7 +125,7 @@ public class StubDroidParser extends SummaryReader {
                         sinkAttributes.clear();
                         state = State.flow;
                         String sAlias = getAttributeByName(xmlreader, XMLConstants.ATTRIBUTE_IS_ALIAS);
-                        isAlias = sAlias != null && sAlias.equals(XMLConstants.VALUE_TRUE);
+                        isAlias = parseIsAlias(sAlias);
 
                         String sTypeChecking = getAttributeByName(xmlreader, XMLConstants.ATTRIBUTE_TYPE_CHECKING);
                         if (sTypeChecking != null && !sTypeChecking.isEmpty())
@@ -177,7 +177,7 @@ public class StubDroidParser extends SummaryReader {
                                 createSink(summary, sinkAttributes), isAlias, typeChecking, ignoreTypes, cutSubfields, constraints.toArray(new FlowConstraint[0]), isFinal, false);
                         summary.addFlow(flow);
 
-                        isAlias = false;
+                        isAlias = IsAliasType.FALSE;
                         isFinal = false;
                         excludedOnClear = false;
                     } else
@@ -187,7 +187,7 @@ public class StubDroidParser extends SummaryReader {
                         state = State.method;
 
                         String sAlias = clearAttributes.get(XMLConstants.ATTRIBUTE_IS_ALIAS);
-                        boolean alias = sAlias != null && sAlias.equals(XMLConstants.VALUE_TRUE);
+                        IsAliasType alias = parseIsAlias(sAlias);
 
                         String ppString = clearAttributes.get(ATTRIBUTE_PREVENT_PROPAGATION);
                         boolean preventProp = ppString == null || ppString.isEmpty() || ppString.equals(VALUE_TRUE);
@@ -288,6 +288,23 @@ public class StubDroidParser extends SummaryReader {
         } finally {
             if (xmlreader != null)
                 xmlreader.close();
+        }
+    }
+
+    private IsAliasType parseIsAlias(String sAlias) throws SummaryXMLException {
+        if (sAlias == null)
+            return IsAliasType.FALSE;
+
+        switch (sAlias) {
+            case XMLConstants.VALUE_TRUE:
+                return IsAliasType.TRUE;
+            case "":
+            case XMLConstants.VALUE_FALSE:
+                return IsAliasType.FALSE;
+            case "withContext":
+                return IsAliasType.WITH_CONTEXT;
+            default:
+                throw new SummaryXMLException("Unknown isAlias value: " + sAlias);
         }
     }
 

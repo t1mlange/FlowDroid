@@ -741,7 +741,7 @@ public class StubDroidBasedTaintWrapper extends SummaryTaintWrapper implements I
         if (flowSink.getType() == SourceSinkType.GapBaseObject && remainingFields != null && !remainingFields.isEmpty())
             sourceSinkType = SourceSinkType.Field;
 
-        String sBaseType = sinkType == null ? null : "" + sinkType;
+        String sBaseType = null;
         if (!flow.getIgnoreTypes()) {
             // Compute the new base type
             Type newBaseType = manager.getTypeUtils().getMorePreciseType(taintType, sinkType);
@@ -847,7 +847,7 @@ public class StubDroidBasedTaintWrapper extends SummaryTaintWrapper implements I
                 boolean preventPropagation = false;
                 if (flowsInCallee.hasClears()) {
                     for (MethodClear clear : flowsInCallee.getAllClears()) {
-                        if (clear.isAlias() && flowMatchesTaint(clear, taint, stmt)) {
+                        if (clear.isAlias(taint.getAccessPath().getContexts() != null) && flowMatchesTaint(clear, taint, stmt)) {
                             killTaint = true;
                             preventPropagation = clear.preventPropagation();
                             break;

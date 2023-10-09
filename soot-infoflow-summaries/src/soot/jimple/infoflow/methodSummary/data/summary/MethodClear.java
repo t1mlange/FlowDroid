@@ -1,6 +1,5 @@
 package soot.jimple.infoflow.methodSummary.data.summary;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -18,16 +17,14 @@ public class MethodClear extends AbstractMethodSummary {
 	private final FlowClear clearDefinition;
 	private final boolean preventPropagation;
 
-	public MethodClear(String methodSig, FlowClear clearDefinition, FlowConstraint[] constraints, boolean isAlias, boolean preventPropagation) {
+	public MethodClear(String methodSig, FlowClear clearDefinition, FlowConstraint[] constraints, IsAliasType isAlias, boolean preventPropagation) {
 		super(methodSig, constraints, isAlias);
 		this.clearDefinition = clearDefinition;
 		this.preventPropagation = preventPropagation;
 	}
 
 	public MethodClear(String methodSig, FlowClear clearDefinition, FlowConstraint[] constraints, boolean preventPropagation) {
-		super(methodSig, constraints, false);
-		this.clearDefinition = clearDefinition;
-		this.preventPropagation = preventPropagation;
+		this(methodSig, clearDefinition, constraints, IsAliasType.FALSE, preventPropagation);
 	}
 
 	public boolean preventPropagation() {
