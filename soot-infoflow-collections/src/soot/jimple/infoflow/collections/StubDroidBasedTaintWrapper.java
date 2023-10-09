@@ -741,7 +741,7 @@ public class StubDroidBasedTaintWrapper extends SummaryTaintWrapper implements I
         if (flowSink.getType() == SourceSinkType.GapBaseObject && remainingFields != null && !remainingFields.isEmpty())
             sourceSinkType = SourceSinkType.Field;
 
-        String sBaseType = null;
+        String sBaseType = sinkType == null ? null : "" + sinkType;
         if (!flow.getIgnoreTypes()) {
             // Compute the new base type
             Type newBaseType = manager.getTypeUtils().getMorePreciseType(taintType, sinkType);

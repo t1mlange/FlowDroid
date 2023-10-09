@@ -339,7 +339,6 @@ public class TaintBenchTests extends FlowDroidTests {
     public void testChulia() throws XmlPullParserException, IOException {
         SetupApplication app = initApplication(pathToAPKs + "/" + "chulia.apk");
         app.addResultsAvailableHandler((cfg, results) -> compareResults("chulia.apk", cfg, results));
-//        app.setTaintPropagationHandler(new DebugFlowFunctionTaintPropagationHandler());
         InfoflowResults results = app.runInfoflow(getSourcesAndSinks("chulia.apk"));
     }
 
