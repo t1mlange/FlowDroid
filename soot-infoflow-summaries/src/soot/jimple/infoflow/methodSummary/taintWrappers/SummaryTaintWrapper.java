@@ -1463,7 +1463,7 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 		if (flowSink.getType() == SourceSinkType.GapBaseObject && remainingFields != null && !remainingFields.isEmpty())
 			sourceSinkType = SourceSinkType.Field;
 
-		String sBaseType = sinkType == null ? null : "" + sinkType;
+		String sBaseType = null;
 		if (!flow.getIgnoreTypes()) {
 			// Compute the new base type
 			Type newBaseType = manager.getTypeUtils().getMorePreciseType(taintType, sinkType);

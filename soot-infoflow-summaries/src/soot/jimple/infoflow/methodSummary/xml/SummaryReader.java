@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
+import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -15,12 +16,7 @@ import soot.jimple.infoflow.methodSummary.data.sourceSink.ConstraintType;
 import soot.jimple.infoflow.methodSummary.data.sourceSink.FlowClear;
 import soot.jimple.infoflow.methodSummary.data.sourceSink.FlowSink;
 import soot.jimple.infoflow.methodSummary.data.sourceSink.FlowSource;
-import soot.jimple.infoflow.methodSummary.data.summary.ClassMethodSummaries;
-import soot.jimple.infoflow.methodSummary.data.summary.GapDefinition;
-import soot.jimple.infoflow.methodSummary.data.summary.MethodClear;
-import soot.jimple.infoflow.methodSummary.data.summary.MethodFlow;
-import soot.jimple.infoflow.methodSummary.data.summary.MethodSummaries;
-import soot.jimple.infoflow.methodSummary.data.summary.SourceSinkType;
+import soot.jimple.infoflow.methodSummary.data.summary.*;
 import soot.jimple.infoflow.methodSummary.taintWrappers.AccessPathFragment;
 
 import static soot.jimple.infoflow.methodSummary.xml.XMLConstants.*;
@@ -61,7 +57,7 @@ public class SummaryReader extends AbstractXMLReader {
 
 			String currentMethod = "";
 			int currentID = -1;
-			boolean isAlias = false;
+			IsAliasType isAlias = IsAliasType.FALSE;
 			Boolean typeChecking = null;
 			Boolean ignoreTypes = null;
 			Boolean cutSubfields = null;
@@ -116,7 +112,7 @@ public class SummaryReader extends AbstractXMLReader {
 						sinkAttributes.clear();
 						state = State.flow;
 						String sAlias = getAttributeByName(xmlreader, XMLConstants.ATTRIBUTE_IS_ALIAS);
-						isAlias = sAlias != null && sAlias.equals(XMLConstants.VALUE_TRUE);
+						isAlias = (sAlias != null && sAlias.equals(XMLConstants.VALUE_TRUE)) ? IsAliasType.TRUE : IsAliasType.FALSE;
 
 						String sTypeChecking = getAttributeByName(xmlreader, XMLConstants.ATTRIBUTE_TYPE_CHECKING);
 						if (sTypeChecking != null && !sTypeChecking.isEmpty())
@@ -159,7 +155,7 @@ public class SummaryReader extends AbstractXMLReader {
 								createSink(summary, sinkAttributes), isAlias, typeChecking, ignoreTypes, cutSubfields, null, false, false);
 						summary.addFlow(flow);
 
-						isAlias = false;
+						isAlias = IsAliasType.FALSE;
 					} else
 						throw new SummaryXMLException();
 				} else if (localName.equals(TREE_CLEAR) && xmlreader.isEndElement()) {

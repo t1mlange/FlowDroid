@@ -48,7 +48,7 @@ public class MethodFlow extends AbstractMethodSummary {
 	 * @param isFinal		  True if the flow should is complete, i.e. does not need a fixpoint
 	 * @param excludedOnClear True if the flow should not be applied if the incoming taint is killed
 	 */
-	public MethodFlow(String methodSig, FlowSource from, FlowSink to, boolean isAlias, Boolean typeChecking,
+	public MethodFlow(String methodSig, FlowSource from, FlowSink to, IsAliasType isAlias, Boolean typeChecking,
 					  Boolean ignoreTypes, Boolean cutSubFields, FlowConstraint[] constraints, boolean isFinal, boolean excludedOnClear) {
 		super(methodSig, constraints, isAlias);
 		this.from = from;

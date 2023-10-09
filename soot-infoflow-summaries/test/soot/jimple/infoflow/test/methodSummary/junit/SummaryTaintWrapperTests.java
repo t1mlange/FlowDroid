@@ -27,6 +27,7 @@ import soot.jimple.infoflow.methodSummary.data.provider.EagerSummaryProvider;
 import soot.jimple.infoflow.methodSummary.taintWrappers.TaintWrapperFactory;
 import soot.jimple.infoflow.results.InfoflowResults;
 import soot.jimple.infoflow.taintWrappers.ITaintPropagationWrapper;
+import soot.jimple.infoflow.util.DebugFlowFunctionTaintPropagationHandler;
 import soot.options.Options;
 
 public abstract class SummaryTaintWrapperTests {
@@ -264,6 +265,11 @@ public abstract class SummaryTaintWrapperTests {
 		testFlowForMethod("<soot.jimple.infoflow.test.methodSummary.ApiClassClient: void sinkInUserCodeGap()>");
 	}
 
+	@Test(timeout = 30000)
+	public void noBogusBaseType() {
+		testFlowForMethod("<soot.jimple.infoflow.test.methodSummary.ApiClassClient: void noBogusBaseType()>");
+	}
+
 	@Test
 	public void testAllSummaries() throws URISyntaxException, IOException {
 		EagerSummaryProvider provider = new EagerSummaryProvider(TaintWrapperFactory.DEFAULT_SUMMARY_DIR);
@@ -274,6 +280,7 @@ public abstract class SummaryTaintWrapperTests {
 		IInfoflow iFlow = null;
 		try {
 			iFlow = initInfoflow();
+			iFlow.setTaintPropagationHandler(new DebugFlowFunctionTaintPropagationHandler());
 			iFlow.getConfig().getAccessPathConfiguration().setAccessPathLength(3);
 			iFlow.computeInfoflow(appPath, libPath, new DefaultEntryPointCreator(Collections.singletonList(m)),
 					Arrays.asList(source), Collections.singletonList(sink));
