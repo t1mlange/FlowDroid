@@ -8,7 +8,7 @@ import soot.jimple.infoflow.problems.rules.IPropagationRuleManagerFactory;
 import soot.jimple.infoflow.problems.rules.PropagationRuleManager;
 import soot.jimple.infoflow.problems.rules.forward.ArrayPropagationRule;
 import soot.jimple.infoflow.problems.rules.forward.ExceptionPropagationRule;
-import soot.jimple.infoflow.problems.rules.forward.ITaintPropagationRule;
+import soot.jimple.infoflow.problems.rules.ITaintPropagationRule;
 import soot.jimple.infoflow.problems.rules.forward.ImplicitPropagtionRule;
 import soot.jimple.infoflow.problems.rules.forward.SinkPropagationRule;
 import soot.jimple.infoflow.problems.rules.forward.SkipSystemClassRule;
@@ -17,7 +17,6 @@ import soot.jimple.infoflow.problems.rules.forward.StaticPropagationRule;
 import soot.jimple.infoflow.problems.rules.forward.StopAfterFirstKFlowsPropagationRule;
 import soot.jimple.infoflow.problems.rules.forward.StrongUpdatePropagationRule;
 import soot.jimple.infoflow.problems.rules.forward.TypingPropagationRule;
-import soot.jimple.infoflow.problems.rules.forward.WrapperPropagationRule;
 
 import java.util.ArrayList;
 import java.util.List;

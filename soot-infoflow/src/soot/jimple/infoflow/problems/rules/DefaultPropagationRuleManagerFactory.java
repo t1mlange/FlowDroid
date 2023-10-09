@@ -5,7 +5,6 @@ import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.problems.TaintPropagationResults;
 import soot.jimple.infoflow.problems.rules.forward.ArrayPropagationRule;
 import soot.jimple.infoflow.problems.rules.forward.ExceptionPropagationRule;
-import soot.jimple.infoflow.problems.rules.forward.ITaintPropagationRule;
 import soot.jimple.infoflow.problems.rules.forward.ImplicitPropagtionRule;
 import soot.jimple.infoflow.problems.rules.forward.SinkPropagationRule;
 import soot.jimple.infoflow.problems.rules.forward.SkipSystemClassRule;

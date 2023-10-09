@@ -1,4 +1,4 @@
-package soot.jimple.infoflow.problems.rules.forward;
+package soot.jimple.infoflow.problems.rules;
 
 import java.util.Collection;
 
