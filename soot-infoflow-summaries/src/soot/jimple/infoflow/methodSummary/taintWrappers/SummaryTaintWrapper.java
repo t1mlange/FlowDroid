@@ -242,6 +242,11 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 					final String superclassName = summaries.getSuperClass();
 					SootClass scSuperclass = Scene.v().forceResolve(superclassName, SootClass.SIGNATURES);
 					sc.setSuperclass(scSuperclass);
+				} else if (!summaries.isInterface() && !sc.hasSuperclass()) {
+					// If there's no superclass specified, use Object instead.
+					// Otherwise, some assumptions in the FastHierarchy break
+					// and the type intervals are bogus.
+					sc.setSuperclass(Scene.v().getSootClassUnsafe("java.lang.Object"));
 				}
 
 				// Register the interfaces
@@ -1463,7 +1468,7 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 		if (flowSink.getType() == SourceSinkType.GapBaseObject && remainingFields != null && !remainingFields.isEmpty())
 			sourceSinkType = SourceSinkType.Field;
 
-		String sBaseType = null;
+		String sBaseType = sinkType == null ? null : "" + sinkType;
 		if (!flow.getIgnoreTypes()) {
 			// Compute the new base type
 			Type newBaseType = manager.getTypeUtils().getMorePreciseType(taintType, sinkType);
