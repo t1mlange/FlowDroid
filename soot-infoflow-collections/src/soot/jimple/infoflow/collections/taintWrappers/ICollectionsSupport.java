@@ -1,4 +1,4 @@
-package soot.jimple.infoflow.collections;
+package soot.jimple.infoflow.collections.taintWrappers;
 
 import soot.jimple.Stmt;
 import soot.jimple.infoflow.collections.strategies.containers.IContainerStrategy;

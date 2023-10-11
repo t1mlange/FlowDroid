@@ -7,7 +7,7 @@ import soot.Value;
 import soot.jimple.*;
 import soot.jimple.infoflow.InfoflowManager;
 import soot.jimple.infoflow.aliasing.Aliasing;
-import soot.jimple.infoflow.collections.ICollectionsSupport;
+import soot.jimple.infoflow.collections.taintWrappers.ICollectionsSupport;
 import soot.jimple.infoflow.collections.strategies.containers.IContainerStrategy;
 import soot.jimple.infoflow.collections.util.Tristate;
 import soot.jimple.infoflow.data.Abstraction;

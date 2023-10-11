@@ -4,13 +4,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import soot.jimple.infoflow.IInfoflow;
 import soot.jimple.infoflow.InfoflowConfiguration;
-import soot.jimple.infoflow.collections.StubDroidBasedTaintWrapper;
-import soot.jimple.infoflow.collections.parser.StubDroidSummaryProvider;
-import soot.jimple.infoflow.collections.strategies.containers.TestConstantStrategy;
-import soot.jimple.infoflow.taintWrappers.ITaintPropagationWrapper;
-import soot.jimple.infoflow.util.DebugFlowFunctionTaintPropagationHandler;
 
-import java.io.File;
 import java.util.Collections;
 
 public class ArrayTests extends FlowDroidTests {

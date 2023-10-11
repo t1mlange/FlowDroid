@@ -1,11 +1,10 @@
-package soot.jimple.infoflow.collections;
+package soot.jimple.infoflow.collections.taintWrappers;
 
 import soot.*;
 import soot.jimple.*;
 import soot.jimple.infoflow.InfoflowConfiguration;
 import soot.jimple.infoflow.InfoflowManager;
 import soot.jimple.infoflow.collections.strategies.containers.IContainerStrategy;
-import soot.jimple.infoflow.collections.strategies.containers.TestConstantStrategy;
 import soot.jimple.infoflow.collections.util.NonNullHashSet;
 import soot.jimple.infoflow.collections.util.Tristate;
 import soot.jimple.infoflow.data.Abstraction;
@@ -26,9 +25,8 @@ import soot.jimple.spark.sets.PointsToSetInternal;
 
 import java.util.*;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
-public class StubDroidBasedTaintWrapper extends SummaryTaintWrapper implements ICollectionsSupport {
+public class CollectionSummaryTaintWrapper extends SummaryTaintWrapper implements ICollectionsSupport {
     protected IContainerStrategy containerStrategy;
     protected Function<InfoflowManager, IContainerStrategy> gen;
 
@@ -37,7 +35,7 @@ public class StubDroidBasedTaintWrapper extends SummaryTaintWrapper implements I
      *
      * @param flows The flows loaded from disk
      */
-    public StubDroidBasedTaintWrapper(IMethodSummaryProvider flows, Function<InfoflowManager, IContainerStrategy> gen) {
+    public CollectionSummaryTaintWrapper(IMethodSummaryProvider flows, Function<InfoflowManager, IContainerStrategy> gen) {
         super(flows);
         this.gen = gen;
     }

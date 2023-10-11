@@ -1,6 +1,5 @@
 package soot.jimple.infoflow.collections.problems.rules.forward;
 
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -11,17 +10,14 @@ import soot.jimple.Stmt;
 import soot.jimple.infoflow.InfoflowConfiguration.StaticFieldTrackingMode;
 import soot.jimple.infoflow.InfoflowManager;
 import soot.jimple.infoflow.aliasing.Aliasing;
-import soot.jimple.infoflow.collections.ICollectionsSupport;
-import soot.jimple.infoflow.collections.util.Tristate;
+import soot.jimple.infoflow.cfg.FlowDroidSourceStatement;
+import soot.jimple.infoflow.collections.taintWrappers.ICollectionsSupport;
 import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.data.AccessPath;
 import soot.jimple.infoflow.problems.TaintPropagationResults;
-import soot.jimple.infoflow.problems.rules.AbstractTaintPropagationRule;
 import soot.jimple.infoflow.problems.rules.forward.WrapperPropagationRule;
-import soot.jimple.infoflow.sourcesSinks.manager.SourceInfo;
 import soot.jimple.infoflow.typing.TypeUtils;
 import soot.jimple.infoflow.util.ByReferenceBoolean;
-import soot.jimple.spark.sets.PointsToSetInternal;
 
 /**
  * Rule that is specifically suited for Taint Wrappers with ICollectionsSupport
@@ -93,10 +89,7 @@ public class CollectionWrapperPropagationRule extends WrapperPropagationRule {
         // Do not apply the taint wrapper to statements that are sources on their own
         if (!getManager().getConfig().getInspectSources()) {
             // Check whether this can be a source at all
-            final SourceInfo sourceInfo = getManager().getSourceSinkManager() != null
-                    ? getManager().getSourceSinkManager().getSourceInfo(iStmt, getManager())
-                    : null;
-            if (sourceInfo != null)
+            if (iStmt.hasTag(FlowDroidSourceStatement.TAG_NAME))
                 return null;
         }
 

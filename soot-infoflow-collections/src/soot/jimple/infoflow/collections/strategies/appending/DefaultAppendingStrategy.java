@@ -5,9 +5,7 @@ import java.util.Set;
 
 import soot.SootField;
 import soot.Unit;
-import soot.jimple.Stmt;
 import soot.jimple.infoflow.InfoflowManager;
-import soot.jimple.infoflow.collections.CollectionTaintWrapper;
 import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.data.AccessPath;
 import soot.jimple.infoflow.data.AccessPathFragment;
@@ -33,7 +31,8 @@ public class DefaultAppendingStrategy implements AppendingStrategy<Unit, Abstrac
 
     @Override
     public boolean affectsContext(Unit unit) {
-        return ((CollectionTaintWrapper) manager.getTaintWrapper()).isLocationDependent((Stmt) unit);
+        // TODO
+        return false;
     }
 
     @Override

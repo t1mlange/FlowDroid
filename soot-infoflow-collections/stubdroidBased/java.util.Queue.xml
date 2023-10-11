@@ -68,6 +68,7 @@
 				<clear sourceSinkType="Field"
 					   AccessPath="[java.util.Collection: java.lang.Object[] innerArray]"
 					   AccessPathTypes="[java.lang.Object[]]"
+					   preventPropagation="false"
 					   constrained="true" />
 			</clears>
 		</method>

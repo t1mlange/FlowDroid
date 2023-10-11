@@ -13,11 +13,11 @@ import soot.jimple.infoflow.collections.CollectionInfoflow;
 import soot.jimple.infoflow.collections.taintWrappers.CollectionSummaryTaintWrapper;
 import soot.jimple.infoflow.collections.parser.StubDroidSummaryProvider;
 import soot.jimple.infoflow.collections.strategies.containers.TestConstantStrategy;
+import soot.jimple.infoflow.util.DebugFlowFunctionTaintPropagationHandler;
 
-public class VectorTests extends soot.jimple.infoflow.test.junit.VectorTests {
+public class ArrayTests extends soot.jimple.infoflow.test.junit.ArrayTests {
     @Override
     protected AbstractInfoflow createInfoflowInstance() {
-
         AbstractInfoflow result = new CollectionInfoflow("", false, new DefaultBiDiICFGFactory());
         try {
             StubDroidSummaryProvider sp = new StubDroidSummaryProvider(new File("stubdroidBased"));
@@ -26,16 +26,18 @@ public class VectorTests extends soot.jimple.infoflow.test.junit.VectorTests {
         } catch (Exception e) {
             throw new RuntimeException();
         }
+
+        result.setTaintPropagationHandler(new DebugFlowFunctionTaintPropagationHandler());
         return result;
     }
 
     @Test(timeout = 300000)
-    public void vectorRWPos1Test() {
+    public void arrayReadWritePos1Test() {
         IInfoflow infoflow = initInfoflow();
         List<String> epoints = new ArrayList<String>();
-        epoints.add("<soot.jimple.infoflow.test.VectorTestCode: void concreteWriteReadPos1Test()>");
+        epoints.add("<soot.jimple.infoflow.test.ArrayTestCode: void concreteWriteReadDiffPosTest()>");
         infoflow.computeInfoflow(appPath, libPath, epoints, sources, sinks);
-        // We are more precise :D
+        // We are more precise
         negativeCheckInfoflow(infoflow);
     }
 }
