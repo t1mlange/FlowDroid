@@ -332,6 +332,26 @@
                        preventPropagation="false" />
             </clears>
         </method>
+        <method id="java.lang.Object[] toArray()">
+            <flows>
+                <flow>
+                    <from sourceSinkType="Field"
+                          AccessPath="[java.util.Collection: java.lang.Object[] innerArray]"
+                          AccessPathTypes="[java.lang.Object[]]" />
+                    <to sourceSinkType="Return" constrained="keep" />
+                </flow>
+            </flows>
+        </method>
+        <method id="java.lang.Object[] toArray(java.lang.Object[])">
+            <flows>
+                <flow>
+                    <from sourceSinkType="Field"
+                          AccessPath="[java.util.Collection: java.lang.Object[] innerArray]"
+                          AccessPathTypes="[java.lang.Object[]]" />
+                    <to sourceSinkType="Return" constrained="keep" />
+                </flow>
+            </flows>
+        </method>
     </methods>
     <gaps>
         <!-- Gaps need the signature to match the exact class because there is no lookup for methods in superclasses -->

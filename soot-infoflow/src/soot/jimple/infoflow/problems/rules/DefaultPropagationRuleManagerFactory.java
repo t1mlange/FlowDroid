@@ -54,4 +54,7 @@ public class DefaultPropagationRuleManagerFactory implements IPropagationRuleMan
 				ruleList.toArray(new ITaintPropagationRule[0]));
 	}
 
+	public PropagationRuleManager createAliasRuleManager(InfoflowManager manager, Abstraction zeroValue) {
+		return null;
+	}
 }

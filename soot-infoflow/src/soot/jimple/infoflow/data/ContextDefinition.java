@@ -16,6 +16,15 @@ public interface ContextDefinition {
     boolean containsInformation();
 
     /**
+     * Gets whether the given context is imprecise, for example, because the context is built
+     * conditionally through multiple paths or the value itself contains some approximation.
+     * Users of this context should respect this flag and refrain from performing strong updates.
+     *
+     * @return true if the context is imprecise
+     */
+    boolean isImprecise();
+
+    /**
      *
      * @param other
      * @return

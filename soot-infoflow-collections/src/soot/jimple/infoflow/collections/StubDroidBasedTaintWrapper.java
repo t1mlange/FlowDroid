@@ -236,6 +236,11 @@ public class StubDroidBasedTaintWrapper extends SummaryTaintWrapper implements I
         return res.isEmpty() ? Collections.singleton(source) : res;
     }
 
+    @Override
+    public IContainerStrategy getContainerStrategy() {
+        return containerStrategy;
+    }
+
     /**
      * Computes library taints for the given method and incoming abstraction
      *
@@ -758,6 +763,8 @@ public class StubDroidBasedTaintWrapper extends SummaryTaintWrapper implements I
             }
         }
 
+        ContextDefinition[] baseCtxt = null;
+
         if (flow.sink().isConstrained()) {
             ContextDefinition[] ctxt = concretizeFlowConstraints(flow.getConstraints(), stmt, taint.hasAccessPath() ? taint.getAccessPath().getFirstFieldContext() : null);
             if (appendedFields != null && ctxt != null && !containerStrategy.shouldSmash(ctxt))
@@ -792,13 +799,21 @@ public class StubDroidBasedTaintWrapper extends SummaryTaintWrapper implements I
             }
         } else if (flow.sink().keepConstraint()
                     || (flow.sink().keepOnRO() && containerStrategy.isReadOnly(stmt))) {
-            ContextDefinition[] ctxt = taint.getAccessPath().getFirstFieldContext();
-            if (ctxt != null && appendedFields != null)
-                appendedFields = appendedFields.addContext(ctxt);
+            ContextDefinition[] ctxt;
+            if (lastCommonAPIdx == 0)
+                ctxt = taint.getBaseContext();
+            else
+                ctxt = taint.getAccessPath().getContext(lastCommonAPIdx - 1);
+            if (ctxt != null) {
+                if (appendedFields == null || appendedFields.isEmpty())
+                    baseCtxt = ctxt;
+                else
+                    appendedFields = appendedFields.addContext(ctxt);
+            }
         }
 
         // Taint the correct fields
-        return new Taint(sourceSinkType, flowSink.getParameterIndex(), sBaseType, appendedFields,
+        return new Taint(sourceSinkType, flowSink.getParameterIndex(), sBaseType, baseCtxt, appendedFields,
                 taintSubFields || taint.taintSubFields(), gap);
     }
 

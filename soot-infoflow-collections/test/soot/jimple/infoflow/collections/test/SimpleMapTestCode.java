@@ -393,4 +393,14 @@ public class SimpleMapTestCode {
 		map.forEach((k, v) -> sink(v));
 		sink("XXX");
 	}
+
+	private final String x = "XXXXX";
+
+	@FlowDroidTest(expected = 1)
+	public void testFinalFieldAsKey1() {
+		Map<String, String> map = new HashMap<>();
+		map.put(x, source());
+		sink(map.get(x));
+		sink(map.get("XXX"));
+	}
 }
