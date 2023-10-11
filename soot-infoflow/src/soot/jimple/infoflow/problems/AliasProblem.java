@@ -56,6 +56,7 @@ import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.data.AccessPath;
 import soot.jimple.infoflow.handlers.TaintPropagationHandler.FlowFunctionType;
 import soot.jimple.infoflow.problems.rules.EmptyPropagationRuleManagerFactory;
+import soot.jimple.infoflow.problems.rules.IPropagationRuleManagerFactory;
 import soot.jimple.infoflow.solver.functions.SolverCallFlowFunction;
 import soot.jimple.infoflow.solver.functions.SolverCallToReturnFlowFunction;
 import soot.jimple.infoflow.solver.functions.SolverNormalFlowFunction;
@@ -76,6 +77,10 @@ public class AliasProblem extends AbstractInfoflowProblem {
 
 	public AliasProblem(InfoflowManager manager) {
 		super(manager, null, EmptyPropagationRuleManagerFactory.INSTANCE);
+	}
+
+	public AliasProblem(InfoflowManager manager, IPropagationRuleManagerFactory factory) {
+		super(manager, null, factory);
 	}
 
 	@Override
@@ -171,7 +176,7 @@ public class AliasProblem extends AbstractInfoflowProblem {
 				// the left side if the tainted value is some "x.y".
 				boolean aliasOverwritten = Aliasing.baseMatchesStrict(rightValue, source)
 						&& rightValue.getType() instanceof RefType && !source.dependsOnCutAP()
-						&& !source.getAccessPath().getTaintSubFields();
+						;//&& !source.getAccessPath().getTaintSubFields();
 
 				if (!aliasOverwritten && !(rightValue.getType() instanceof PrimType)) {
 					// If the tainted value 'b' is assigned to variable 'a' and

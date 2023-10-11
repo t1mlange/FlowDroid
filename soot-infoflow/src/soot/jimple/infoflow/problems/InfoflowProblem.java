@@ -146,10 +146,11 @@ public class InfoflowProblem extends AbstractInfoflowProblem {
 				// Do we taint the contents of an array? If we do not
 				// differentiate, we do not set any special type.
 				ArrayTaintType arrayTaintType = source.getAccessPath().getArrayTaintType();
-				ContextDefinition[] ctxt = null;
+				ContextDefinition[] baseCtxt = null;
 				if (leftValue instanceof ArrayRef && manager.getConfig().getEnableArraySizeTainting()) {
 					arrayTaintType = ArrayTaintType.Contents;
-					ctxt = propagationRules.getArrayRule().getContextForArrayRef((ArrayRef) leftValue);
+					baseCtxt = propagationRules.getArrayContextProvider().getContextForArrayRef((ArrayRef) leftValue,
+																								assignStmt);
 				}
 
 				// also taint the target of the assignment
@@ -159,7 +160,7 @@ public class InfoflowProblem extends AbstractInfoflowProblem {
 								manager.getAccessPathFactory().createAccessPath(leftValue, true), assignStmt, true);
 					else {
 						AccessPath ap = manager.getAccessPathFactory().copyWithNewValue(source.getAccessPath(),
-								leftValue, targetType, cutFirstField, true, arrayTaintType);
+								leftValue, targetType, cutFirstField, true, arrayTaintType, baseCtxt);
 						newAbs = source.deriveNewAbstraction(ap, assignStmt);
 					}
 

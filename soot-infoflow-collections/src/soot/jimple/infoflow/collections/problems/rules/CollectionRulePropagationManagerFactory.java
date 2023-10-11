@@ -1,6 +1,7 @@
 package soot.jimple.infoflow.collections.problems.rules;
 
 import soot.jimple.infoflow.InfoflowManager;
+import soot.jimple.infoflow.collections.problems.rules.forward.ArrayWithIndexPropagationRule;
 import soot.jimple.infoflow.collections.problems.rules.forward.CollectionWrapperPropagationRule;
 import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.problems.TaintPropagationResults;
@@ -37,7 +38,7 @@ public class CollectionRulePropagationManagerFactory implements IPropagationRule
         ruleList.add(new StaticPropagationRule(manager, zeroValue, results));
 
         if (manager.getConfig().getEnableArrayTracking())
-            ruleList.add(new ArrayPropagationRule(manager, zeroValue, results));
+            ruleList.add(new ArrayWithIndexPropagationRule(manager, zeroValue, results));
         if (manager.getConfig().getEnableExceptionTracking())
             ruleList.add(new ExceptionPropagationRule(manager, zeroValue, results));
         if (manager.getTaintWrapper() != null)

@@ -18,17 +18,22 @@ import soot.jimple.Stmt;
 import soot.jimple.infoflow.*;
 import soot.jimple.infoflow.android.SetupApplication;
 import soot.jimple.infoflow.cfg.DefaultBiDiICFGFactory;
+import soot.jimple.infoflow.collections.CollectionInfoflow;
 import soot.jimple.infoflow.collections.CollectionTaintWrapper;
-import soot.jimple.infoflow.collections.StringResourcesResolver;
+import soot.jimple.infoflow.collections.CollectionsSetupApplication;
+import soot.jimple.infoflow.collections.StubDroidBasedTaintWrapper;
+import soot.jimple.infoflow.collections.codeOptimization.ConstantTagFolding;
+import soot.jimple.infoflow.collections.codeOptimization.StringResourcesResolver;
 import soot.jimple.infoflow.collections.parser.CollectionXMLParser;
+import soot.jimple.infoflow.collections.parser.StubDroidSummaryProvider;
 import soot.jimple.infoflow.collections.problems.rules.CollectionRulePropagationManagerFactory;
 import soot.jimple.infoflow.collections.solver.fastSolver.AppendingCollectionInfoflowSolver;
 import soot.jimple.infoflow.collections.solver.fastSolver.WideningCollectionInfoflowSolver;
+import soot.jimple.infoflow.collections.strategies.containers.TestConstantStrategy;
 import soot.jimple.infoflow.collections.strategies.widening.WideningOnRevisitStrategy;
 import soot.jimple.infoflow.methodSummary.taintWrappers.SummaryTaintWrapper;
 import soot.jimple.infoflow.methodSummary.taintWrappers.TaintWrapperFactory;
 import soot.jimple.infoflow.problems.AbstractInfoflowProblem;
-import soot.jimple.infoflow.problems.rules.DefaultPropagationRuleManagerFactory;
 import soot.jimple.infoflow.problems.rules.IPropagationRuleManagerFactory;
 import soot.jimple.infoflow.results.DataFlowResult;
 import soot.jimple.infoflow.results.InfoflowResults;
@@ -121,45 +126,18 @@ public abstract class FlowDroidTests {
 
 	protected ITaintPropagationWrapper getTaintWrapper() {
 		try {
-			SummaryTaintWrapper tw = TaintWrapperFactory
-					.createTaintWrapper(Collections.singleton("../soot-infoflow-summaries/summariesManual"));
-			CollectionXMLParser parser = new CollectionXMLParser();
-			File dir = new File("collectionModels");
-			for (File f : dir.listFiles())
-				parser.parse(f.getPath());
-			return new CollectionTaintWrapper(parser.getModels(), tw);
-		} catch (IOException | XMLStreamException e) {
-			throw new RuntimeException("Could not initialized Taintwrapper:");
+			StubDroidSummaryProvider sp = new StubDroidSummaryProvider(new File("stubdroidBased"));
+			sp.loadAdditionalSummaries("summariesManual");
+			return new StubDroidBasedTaintWrapper(sp, TestConstantStrategy::new);
+		} catch (Exception e) {
+			throw new RuntimeException();
 		}
 	}
 
 	protected abstract void setConfiguration(InfoflowConfiguration config);
 
 	protected IInfoflow initInfoflow() {
-		AbstractInfoflow result = new Infoflow("", false, new DefaultBiDiICFGFactory()) {
-			@Override
-			protected void performCodeInstrumentationBeforeDCE(InfoflowManager manager,
-					Set<SootMethod> excludedMethods) {
-				super.performCodeInstrumentationBeforeDCE(manager, excludedMethods);
-				StringResourcesResolver res = new StringResourcesResolver();
-				res.initialize(manager.getConfig());
-				res.run(manager, excludedMethods, manager.getSourceSinkManager(), manager.getTaintWrapper());
-			}
-
-			@Override
-			protected IPropagationRuleManagerFactory initializeRuleManagerFactory() {
-				return new CollectionRulePropagationManagerFactory();
-			}
-
-			@Override
-			protected IInfoflowSolver createDataFlowSolver(InterruptableExecutor executor,
-					AbstractInfoflowProblem problem, InfoflowConfiguration.SolverConfiguration solverConfig) {
-				WideningCollectionInfoflowSolver solver = new WideningCollectionInfoflowSolver(problem, executor);
-				solver.setWideningStrategy(new WideningOnRevisitStrategy(manager, Collections.singleton("void add(int,java.lang.Object)")));
-				solverPeerGroup.addSolver(solver);
-				return solver;
-			}
-		};
+		AbstractInfoflow result = new CollectionInfoflow("", false, new DefaultBiDiICFGFactory());
 		result.setThrowExceptions(true);
 		result.setTaintWrapper(getTaintWrapper());
 		setConfiguration(result.getConfig());
@@ -174,20 +152,7 @@ public abstract class FlowDroidTests {
 			throw new RuntimeException("Android JAR dir not set");
 		System.out.println("Loading Android.jar files from " + androidJars);
 
-		SetupApplication setupApplication = new SetupApplication(androidJars, fileName);
-		setupApplication.addOptimizationPass(new SetupApplication.OptimizationPass() {
-			@Override
-			public void performCodeInstrumentationBeforeDCE(InfoflowManager manager, Set<SootMethod> excludedMethods) {
-				StringResourcesResolver res = new StringResourcesResolver();
-				res.initialize(manager.getConfig());
-				res.run(manager, excludedMethods, manager.getSourceSinkManager(), manager.getTaintWrapper());
-			}
-
-			@Override
-			public void performCodeInstrumentationAfterDCE(InfoflowManager manager, Set<SootMethod> excludedMethods) {
-
-			}
-		});
+		SetupApplication setupApplication = new CollectionsSetupApplication(androidJars, fileName);
 		setupApplication.getConfig().setMergeDexFiles(true);
 		setupApplication.setTaintWrapper(getTaintWrapper());
 		setConfiguration(setupApplication.getConfig());

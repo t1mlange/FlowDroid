@@ -12,11 +12,8 @@ package soot.jimple.infoflow.data;
 
 import java.util.Arrays;
 
-import soot.Local;
-import soot.NullType;
-import soot.SootField;
-import soot.Type;
-import soot.Value;
+import com.google.common.base.Joiner;
+import soot.*;
 import soot.jimple.ArrayRef;
 import soot.jimple.InstanceFieldRef;
 import soot.jimple.Jimple;
@@ -36,7 +33,7 @@ public class AccessPath implements Cloneable {
 
 	private final Local value;
 	private final Type baseType;
-	private final ContextDefinition baseContext;
+	private final ContextDefinition[] baseContext;
 
 	private final AccessPathFragment[] fragments;
 
@@ -69,21 +66,21 @@ public class AccessPath implements Cloneable {
 
 	AccessPath(Local val, SootField[] appendingFields, Type valType, Type[] appendingFieldTypes, boolean taintSubFields,
 			boolean isCutOffApproximation, ArrayTaintType arrayTaintType, boolean canHaveImmutableAliases) {
-		this.value = val;
-		this.baseType = valType;
-		this.baseContext = null;
-		this.fragments = AccessPathFragment.createFragmentArray(appendingFields, appendingFieldTypes, null);
-		this.taintSubFields = taintSubFields;
-		this.cutOffApproximation = isCutOffApproximation;
-		this.arrayTaintType = arrayTaintType;
-		this.canHaveImmutableAliases = canHaveImmutableAliases;
+		this(val, valType, null,
+			 AccessPathFragment.createFragmentArray(appendingFields, appendingFieldTypes, null),
+			 taintSubFields, isCutOffApproximation, arrayTaintType, canHaveImmutableAliases);
 	}
 
 	AccessPath(Local val, Type valType, AccessPathFragment[] fragments, boolean taintSubFields,
 			boolean isCutOffApproximation, ArrayTaintType arrayTaintType, boolean canHaveImmutableAliases) {
+		this(val, valType, null, fragments, taintSubFields, isCutOffApproximation, arrayTaintType, canHaveImmutableAliases);
+	}
+
+	AccessPath(Local val, Type valType, ContextDefinition[] ctxt, AccessPathFragment[] fragments, boolean taintSubFields,
+			   boolean isCutOffApproximation, ArrayTaintType arrayTaintType, boolean canHaveImmutableAliases) {
 		this.value = val;
 		this.baseType = valType;
-		this.baseContext = null;
+		this.baseContext = ctxt;
 		this.fragments = fragments;
 		this.taintSubFields = taintSubFields;
 		this.cutOffApproximation = isCutOffApproximation;
@@ -361,6 +358,8 @@ public class AccessPath implements Cloneable {
 		String str = "";
 		if (value != null)
 			str += value.toString() + "(" + baseType + ")";
+		if (baseContext != null)
+			str += "@[" + Joiner.on(",").join(baseContext) + "]";
 		if (fragments != null && fragments.length > 0) {
 			for (int i = 0; i < fragments.length; i++)
 				if (fragments[i] != null) {
@@ -497,7 +496,7 @@ public class AccessPath implements Cloneable {
 	 *
 	 * @return The type of the base value
 	 */
-	public ContextDefinition getBaseContext() {
+	public ContextDefinition[] getBaseContext() {
 		return this.baseContext;
 	}
 

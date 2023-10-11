@@ -136,6 +136,13 @@ public class AccessPathFactory {
 	}
 
 	public AccessPath createAccessPath(Value val, Type valType, AccessPathFragment[] appendingFragments,
+									   boolean taintSubFields, boolean cutFirstField, boolean reduceBases, ArrayTaintType arrayTaintType,
+									   boolean canHaveImmutableAliases) {
+		return createAccessPath(val, valType, null, appendingFragments, taintSubFields, cutFirstField, reduceBases,
+				arrayTaintType, canHaveImmutableAliases);
+	}
+
+	public AccessPath createAccessPath(Value val, Type valType, ContextDefinition[] ctxt, AccessPathFragment[] appendingFragments,
 			boolean taintSubFields, boolean cutFirstField, boolean reduceBases, ArrayTaintType arrayTaintType,
 			boolean canHaveImmutableAliases) {
 		// Make sure that the base object is valid
@@ -416,7 +423,7 @@ public class AccessPathFactory {
 			}
 		}
 
-		return new AccessPath(value, baseType, fragments, taintSubFields, cutOffApproximation, arrayTaintType,
+		return new AccessPath(value, baseType, ctxt, fragments, taintSubFields, cutOffApproximation, arrayTaintType,
 				canHaveImmutableAliases);
 	}
 
@@ -493,14 +500,31 @@ public class AccessPathFactory {
 	 */
 	public AccessPath copyWithNewValue(AccessPath original, Value val, Type newType, boolean cutFirstField,
 			boolean reduceBases, ArrayTaintType arrayTaintType) {
+		return copyWithNewValue(original, val, newType, cutFirstField, reduceBases, arrayTaintType, null);
+	}
+
+	/**
+	 * value val gets new base, fields are preserved.
+	 *
+	 * @param original       The original access path
+	 * @param val            The new base value
+	 * @param reduceBases    True if circular types shall be reduced to bases
+	 * @param arrayTaintType The way a tainted array shall be handled
+	 * @param ctxt			 New context
+	 * @return This access path with the base replaced by the value given in the val
+	 *         parameter
+	 */
+	public AccessPath copyWithNewValue(AccessPath original, Value val, Type newType, boolean cutFirstField,
+									   boolean reduceBases, ArrayTaintType arrayTaintType, ContextDefinition[] baseCtxt) {
 		// If this copy would not add any new information, we can safely use the
 		// old object
 		if (original.getPlainValue() != null && original.getPlainValue().equals(val)
-				&& original.getBaseType().equals(newType) && original.getArrayTaintType() == arrayTaintType)
+				&& original.getBaseType().equals(newType) && original.getArrayTaintType() == arrayTaintType
+				&& Arrays.equals(original.getBaseContext(), baseCtxt))
 			return original;
 
 		// Create the new access path
-		AccessPath newAP = createAccessPath(val, newType, original.getFragments(), original.getTaintSubFields(),
+		AccessPath newAP = createAccessPath(val, newType, baseCtxt, original.getFragments(), original.getTaintSubFields(),
 				cutFirstField, reduceBases, arrayTaintType, original.getCanHaveImmutableAliases());
 
 		// Again, check whether we can do without the new object

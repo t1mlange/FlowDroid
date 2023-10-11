@@ -15,6 +15,7 @@ import soot.Unit;
 import soot.jimple.Stmt;
 import soot.jimple.infoflow.*;
 import soot.jimple.infoflow.cfg.DefaultBiDiICFGFactory;
+import soot.jimple.infoflow.collections.CollectionInfoflow;
 import soot.jimple.infoflow.collections.solver.fastSolver.AppendingCollectionInfoflowSolver;
 import soot.jimple.infoflow.collections.solver.fastSolver.WideningCollectionInfoflowSolver;
 import soot.jimple.infoflow.data.Abstraction;
@@ -110,7 +111,7 @@ public class AppendingTests extends FlowDroidTests {
 
     @Override
     protected IInfoflow initInfoflow() {
-        AbstractInfoflow result = new Infoflow("", false, new DefaultBiDiICFGFactory()) {
+        AbstractInfoflow result = new CollectionInfoflow("", false, new DefaultBiDiICFGFactory()) {
             @Override
             protected IInfoflowSolver createDataFlowSolver(InterruptableExecutor executor,
                                                            AbstractInfoflowProblem problem,

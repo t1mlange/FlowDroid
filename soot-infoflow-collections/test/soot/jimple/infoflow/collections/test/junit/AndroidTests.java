@@ -13,6 +13,7 @@ import soot.jimple.infoflow.InfoflowConfiguration;
 import soot.jimple.infoflow.android.SetupApplication;
 import soot.jimple.infoflow.results.DataFlowResult;
 import soot.jimple.infoflow.results.InfoflowResults;
+import soot.jimple.infoflow.util.DebugFlowFunctionTaintPropagationHandler;
 
 public class AndroidTests extends FlowDroidTests {
     @Override
@@ -39,5 +40,14 @@ public class AndroidTests extends FlowDroidTests {
                 }
             }
         }
+    }
+
+    @Test
+    public void testConstants() throws XmlPullParserException, IOException {
+        SetupApplication app = initApplication("testAPKs/AppWithConstantFields.apk");
+        app.getConfig().getPathConfiguration().setPathReconstructionMode(InfoflowConfiguration.PathReconstructionMode.Fast);
+        InfoflowResults results = app.runInfoflow("../soot-infoflow-android/SourcesAndSinks.txt");
+        Assert.assertEquals(3, results.size());
+        Assert.assertEquals(3, results.getResultSet().size());
     }
 }

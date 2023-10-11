@@ -1,22 +1,20 @@
 package soot.jimple.infoflow.collections;
 
 import soot.SootMethod;
-import soot.jimple.infoflow.InfoflowConfiguration;
 import soot.jimple.infoflow.InfoflowManager;
 import soot.jimple.infoflow.android.InfoflowAndroidConfiguration;
 import soot.jimple.infoflow.android.SetupApplication;
 import soot.jimple.infoflow.cfg.BiDirICFGFactory;
+import soot.jimple.infoflow.collections.codeOptimization.ConstantTagFolding;
+import soot.jimple.infoflow.collections.codeOptimization.StringResourcesResolver;
 import soot.jimple.infoflow.collections.problems.rules.CollectionRulePropagationManagerFactory;
-import soot.jimple.infoflow.collections.solver.fastSolver.WideningCollectionInfoflowSolver;
-import soot.jimple.infoflow.collections.strategies.widening.WideningOnRevisitStrategy;
+import soot.jimple.infoflow.collections.strategies.containers.ConstantMapStrategy;
+import soot.jimple.infoflow.collections.strategies.containers.IContainerStrategy;
+import soot.jimple.infoflow.collections.strategies.containers.TestConstantStrategy;
 import soot.jimple.infoflow.ipc.IIPCManager;
-import soot.jimple.infoflow.problems.AbstractInfoflowProblem;
 import soot.jimple.infoflow.problems.rules.IPropagationRuleManagerFactory;
-import soot.jimple.infoflow.solver.IInfoflowSolver;
-import soot.jimple.infoflow.solver.executors.InterruptableExecutor;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Set;
 
 /**
@@ -44,17 +42,9 @@ public class CollectionsSetupApplication extends SetupApplication {
     }
 
     protected class CollectionsInPlaceInfoflow extends InPlaceInfoflow {
+
         public CollectionsInPlaceInfoflow(String androidPath, boolean forceAndroidJar, BiDirICFGFactory icfgFactory, Collection<SootMethod> additionalEntryPointMethods) {
             super(androidPath, forceAndroidJar, icfgFactory, additionalEntryPointMethods);
-        }
-
-        @Override
-        protected void performCodeInstrumentationBeforeDCE(InfoflowManager manager,
-                                                           Set<SootMethod> excludedMethods) {
-            super.performCodeInstrumentationBeforeDCE(manager, excludedMethods);
-            StringResourcesResolver res = new StringResourcesResolver();
-            res.initialize(manager.getConfig());
-            res.run(manager, excludedMethods, manager.getSourceSinkManager(), manager.getTaintWrapper());
         }
 
         @Override
@@ -64,7 +54,8 @@ public class CollectionsSetupApplication extends SetupApplication {
 
 //        @Override
 //        protected IInfoflowSolver createDataFlowSolver(InterruptableExecutor executor,
-//                                                       AbstractInfoflowProblem problem, InfoflowConfiguration.SolverConfiguration solverConfig) {
+//                                                       AbstractInfoflowProblem problem,
+//                                                       InfoflowConfiguration.SolverConfiguration solverConfig) {
 //            WideningCollectionInfoflowSolver solver = new WideningCollectionInfoflowSolver(problem, executor);
 //            solver.setWideningStrategy(new WideningOnRevisitStrategy(manager, Collections.singleton("void add(int,java.lang.Object)")));
 //            solverPeerGroup.addSolver(solver);
@@ -76,6 +67,10 @@ public class CollectionsSetupApplication extends SetupApplication {
         addOptimizationPass(new SetupApplication.OptimizationPass() {
             @Override
             public void performCodeInstrumentationBeforeDCE(InfoflowManager manager, Set<SootMethod> excludedMethods) {
+                ConstantTagFolding ctf = new ConstantTagFolding();
+                ctf.initialize(manager.getConfig());
+                ctf.run(manager, excludedMethods, manager.getSourceSinkManager(), manager.getTaintWrapper());
+
                 StringResourcesResolver res = new StringResourcesResolver();
                 res.initialize(manager.getConfig());
                 res.run(manager, excludedMethods, manager.getSourceSinkManager(), manager.getTaintWrapper());
