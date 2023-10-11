@@ -5,9 +5,6 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
-
-import javax.xml.stream.XMLStreamException;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -19,22 +16,12 @@ import soot.jimple.infoflow.*;
 import soot.jimple.infoflow.android.SetupApplication;
 import soot.jimple.infoflow.cfg.DefaultBiDiICFGFactory;
 import soot.jimple.infoflow.collections.CollectionInfoflow;
-import soot.jimple.infoflow.collections.CollectionTaintWrapper;
 import soot.jimple.infoflow.collections.CollectionsSetupApplication;
-import soot.jimple.infoflow.collections.StubDroidBasedTaintWrapper;
-import soot.jimple.infoflow.collections.codeOptimization.ConstantTagFolding;
-import soot.jimple.infoflow.collections.codeOptimization.StringResourcesResolver;
-import soot.jimple.infoflow.collections.parser.CollectionXMLParser;
+import soot.jimple.infoflow.collections.taintWrappers.CollectionSummaryTaintWrapper;
 import soot.jimple.infoflow.collections.parser.StubDroidSummaryProvider;
-import soot.jimple.infoflow.collections.problems.rules.CollectionRulePropagationManagerFactory;
 import soot.jimple.infoflow.collections.solver.fastSolver.AppendingCollectionInfoflowSolver;
-import soot.jimple.infoflow.collections.solver.fastSolver.WideningCollectionInfoflowSolver;
 import soot.jimple.infoflow.collections.strategies.containers.TestConstantStrategy;
-import soot.jimple.infoflow.collections.strategies.widening.WideningOnRevisitStrategy;
-import soot.jimple.infoflow.methodSummary.taintWrappers.SummaryTaintWrapper;
-import soot.jimple.infoflow.methodSummary.taintWrappers.TaintWrapperFactory;
 import soot.jimple.infoflow.problems.AbstractInfoflowProblem;
-import soot.jimple.infoflow.problems.rules.IPropagationRuleManagerFactory;
 import soot.jimple.infoflow.results.DataFlowResult;
 import soot.jimple.infoflow.results.InfoflowResults;
 import soot.jimple.infoflow.solver.IInfoflowSolver;
@@ -128,7 +115,7 @@ public abstract class FlowDroidTests {
 		try {
 			StubDroidSummaryProvider sp = new StubDroidSummaryProvider(new File("stubdroidBased"));
 			sp.loadAdditionalSummaries("summariesManual");
-			return new StubDroidBasedTaintWrapper(sp, TestConstantStrategy::new);
+			return new CollectionSummaryTaintWrapper(sp, TestConstantStrategy::new);
 		} catch (Exception e) {
 			throw new RuntimeException();
 		}

@@ -17,6 +17,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import soot.jimple.infoflow.IInfoflow;
+import soot.jimple.infoflow.util.DebugFlowFunctionTaintPropagationHandler;
 
 /**
  * check taint propagation in all sorts of lists, for example LinkedLists,

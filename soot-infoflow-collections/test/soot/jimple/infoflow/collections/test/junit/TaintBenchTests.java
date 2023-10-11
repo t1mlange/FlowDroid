@@ -10,7 +10,7 @@ import soot.jimple.infoflow.InfoflowConfiguration;
 import soot.jimple.infoflow.android.SetupApplication;
 import soot.jimple.infoflow.android.data.parsers.PermissionMethodParser;
 import soot.jimple.infoflow.collections.CollectionsSetupApplication;
-import soot.jimple.infoflow.collections.StubDroidBasedTaintWrapper;
+import soot.jimple.infoflow.collections.taintWrappers.CollectionSummaryTaintWrapper;
 import soot.jimple.infoflow.collections.parser.StubDroidSummaryProvider;
 import soot.jimple.infoflow.collections.strategies.containers.ConstantMapStrategy;
 import soot.jimple.infoflow.results.DataFlowResult;
@@ -238,7 +238,7 @@ public class TaintBenchTests extends FlowDroidTests {
         try {
             StubDroidSummaryProvider sp = new StubDroidSummaryProvider(new File("stubdroidBased"));
             sp.loadAdditionalSummaries("summariesManual");
-            return new StubDroidBasedTaintWrapper(sp, ConstantMapStrategy::new);
+            return new CollectionSummaryTaintWrapper(sp, ConstantMapStrategy::new);
         } catch (Exception e) {
             throw new RuntimeException();
         }
