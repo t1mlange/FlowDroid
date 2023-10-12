@@ -96,11 +96,8 @@ public class CoarserReuseCollectionInfoflowSolver extends CollectionInfoflowSolv
 		final Abstraction d1 = edge.factAtSource();
 		final Unit n = edge.getTarget(); // a call node; line 14...
 
-		final Abstraction d2Prev = edge.factAtTarget();
-		assert d2Prev != null;
-
-		// Widen if needed
-		final Abstraction d2 = widening == null ? d2Prev : widening.widen(d2Prev, n);
+		final Abstraction d2 = edge.factAtTarget();
+		assert d2 != null;
 
 		Collection<Unit> returnSiteUnits = icfg.getReturnSitesOfCallAt(n);
 
@@ -188,8 +185,10 @@ public class CoarserReuseCollectionInfoflowSolver extends CollectionInfoflowSolv
 						d3 = memoryManager.handleGeneratedMemoryObject(d2, d3);
 					if (d3 != null) {
 						// Add result to check for widening
-						if (widening != null)
-							widening.recordNewFact(d3, n);
+						if (widening != null && d2 != d3) {
+							// Widen if needed
+							d3 = widening == null ? d3 : widening.widen(d2, d3, n);
+						}
 
 						schedulingStrategy.propagateCallToReturnFlow(d1, returnSiteUnit, d3, n, false);
 					}

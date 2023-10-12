@@ -85,6 +85,7 @@
                             <resources>
                                 <resource>
                                     <directory>../soot-infoflow/build/testclasses</directory>
+                                    <directory>../soot-infoflow-summaries/build/testclasses</directory>
                                 </resource>
                             </resources>
                         </configuration>
@@ -111,11 +112,6 @@
 
     <dependencies>
         <dependency>
-            <groupId>de.fraunhofer.sit.sse.flowdroid</groupId>
-            <artifactId>soot-infoflow</artifactId>
-            <version>${revision}</version>
-        </dependency>
-        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.13.1</version>
@@ -123,19 +119,29 @@
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-simple</artifactId>
+            <artifactId>slf4j-api</artifactId>
             <version>${slf4j.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>${slf4j.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>de.fraunhofer.sit.sse.flowdroid</groupId>
-            <artifactId>soot-infoflow-summaries</artifactId>
+            <artifactId>soot-infoflow</artifactId>
             <version>${revision}</version>
         </dependency>
         <dependency>
             <groupId>de.fraunhofer.sit.sse.flowdroid</groupId>
             <artifactId>soot-infoflow-android</artifactId>
             <version>${revision}</version>
-            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>de.fraunhofer.sit.sse.flowdroid</groupId>
+            <artifactId>soot-infoflow-summaries</artifactId>
+            <version>${revision}</version>
         </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>
@@ -145,6 +151,20 @@
         <dependency>
             <groupId>de.fraunhofer.sit.sse.flowdroid</groupId>
             <artifactId>soot-infoflow</artifactId>
+            <version>${revision}</version>
+            <type>test-jar</type>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>de.fraunhofer.sit.sse.flowdroid</groupId>
+            <artifactId>soot-infoflow-android</artifactId>
+            <version>${revision}</version>
+            <type>test-jar</type>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>de.fraunhofer.sit.sse.flowdroid</groupId>
+            <artifactId>soot-infoflow-summaries</artifactId>
             <version>${revision}</version>
             <type>test-jar</type>
             <scope>compile</scope>

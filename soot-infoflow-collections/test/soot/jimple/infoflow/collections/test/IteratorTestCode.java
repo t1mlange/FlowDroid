@@ -11,7 +11,7 @@ import static soot.jimple.infoflow.collections.test.Helper.sink;
 import static soot.jimple.infoflow.collections.test.Helper.source;
 
 public class IteratorTestCode {
-    @FlowDroidTest(expected = 1)
+    @FlowDroidTest(expected = 0)
     public void testListSublist1() {
         List<String> lst = new ArrayList<>();
         String tainted = source();
@@ -20,6 +20,7 @@ public class IteratorTestCode {
         lst.add("yyy");
         List<String> subList = lst.subList(0, 1);
         sink(lst.get(1));
+        System.out.println(subList.get(0));
     }
 
     @FlowDroidTest(expected = 1)
@@ -31,6 +32,7 @@ public class IteratorTestCode {
         lst.add("yyy");
         List<String> subList = lst.subList(0, 1);
         sink(lst.get(1));
+        System.out.println(subList.get(0));
     }
 
     @FlowDroidTest(expected = 0)

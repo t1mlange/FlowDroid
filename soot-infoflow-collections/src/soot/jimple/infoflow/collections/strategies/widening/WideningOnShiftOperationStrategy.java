@@ -23,22 +23,12 @@ public class WideningOnShiftOperationStrategy extends AbstractWidening {
     }
 
     @Override
-    public void recordNewFact(Abstraction fact, Unit unit) {
-        // NO-OP
-    }
-
-    @Override
-    public Abstraction widen(Abstraction abs, Unit unit) {
-        // Only context in the domain are infinite
-        if (abs.getAccessPath().getFragmentCount() == 0)
-            return abs;
-
+    public Abstraction widen(Abstraction d2, Abstraction d3, Unit unit) {
         Stmt stmt = (Stmt) unit;
         // Only shifting can produce infinite ascending chains
-        if (!stmt.containsInvokeExpr()
-                || !shiftSigs.contains(stmt.getInvokeExpr().getMethod().getSubSignature()))
-            return abs;
+        if (!stmt.containsInvokeExpr() || !isShift(d2, d3))
+            return d3;
 
-        return forceWiden(abs, unit);
+        return forceWiden(d3, unit);
     }
 }

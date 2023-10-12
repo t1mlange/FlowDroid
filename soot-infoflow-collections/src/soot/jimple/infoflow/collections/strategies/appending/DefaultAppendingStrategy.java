@@ -14,7 +14,7 @@ public class DefaultAppendingStrategy implements AppendingStrategy<Unit, Abstrac
     private final InfoflowManager manager;
     private final Set<SootField> contextFields;
 
-    public DefaultAppendingStrategy(InfoflowManager manager, Set<SootField> contextFields, Set<String> methods) {
+    public DefaultAppendingStrategy(InfoflowManager manager, Set<SootField> contextFields) {
         this.manager = manager;
         this.contextFields = contextFields;
     }
