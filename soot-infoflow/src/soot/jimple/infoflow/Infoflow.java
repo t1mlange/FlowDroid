@@ -101,14 +101,13 @@ public class Infoflow extends AbstractInfoflow {
 		InfoflowManager aliasManager = null;
 		switch (getConfig().getAliasingAlgorithm()) {
 		case FlowSensitive:
-			aliasManager = new InfoflowManager(config, null, new BackwardsInfoflowCFG(iCfg), sourcesSinks, taintWrapper,
+			aliasManager = new InfoflowManager(config, backSolver, new BackwardsInfoflowCFG(iCfg), sourcesSinks, taintWrapper,
 					hierarchy, manager);
 			backProblem = new AliasProblem(aliasManager);
-
 			// We need to create the right data flow solver
 			SolverConfiguration solverConfig = config.getSolverConfiguration();
 			backSolver = createDataFlowSolver(executor, backProblem, solverConfig);
-
+			aliasManager.setMainSolver(backSolver);
 			backSolver.setMemoryManager(memoryManager);
 			backSolver.setPredecessorShorteningMode(
 					pathConfigToShorteningMode(manager.getConfig().getPathConfiguration()));

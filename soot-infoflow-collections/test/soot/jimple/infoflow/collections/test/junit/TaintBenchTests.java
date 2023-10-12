@@ -375,6 +375,7 @@ public class TaintBenchTests extends FlowDroidTests {
     @Test
     public void testFakebank_android_samp() throws XmlPullParserException, IOException {
         SetupApplication app = initApplication(pathToAPKs + "/" + "fakebank_android_samp.apk");
+        app.getConfig().setWriteOutputFiles(true);
         app.addResultsAvailableHandler((cfg, results) -> compareResults("fakebank_android_samp.apk", cfg, results));
         InfoflowResults results = app.runInfoflow(getSourcesAndSinks("fakebank_android_samp.apk"));
     }

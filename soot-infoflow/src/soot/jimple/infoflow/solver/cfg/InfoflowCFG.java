@@ -25,15 +25,7 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 
 import heros.solver.IDESolver;
-import soot.Local;
-import soot.RefType;
-import soot.Scene;
-import soot.SootField;
-import soot.SootMethod;
-import soot.Trap;
-import soot.Unit;
-import soot.Value;
-import soot.ValueBox;
+import soot.*;
 import soot.jimple.AssignStmt;
 import soot.jimple.FieldRef;
 import soot.jimple.InvokeExpr;
@@ -513,6 +505,12 @@ public class InfoflowCFG implements IInfoflowCFG {
 	public void notifyMethodChanged(SootMethod m) {
 		if (delegate instanceof JimpleBasedInterproceduralCFG)
 			((JimpleBasedInterproceduralCFG) delegate).initializeUnitToOwner(m);
+	}
+
+	@Override
+	public void notifyNewBody(Body b) {
+		if (delegate instanceof JimpleBasedInterproceduralCFG)
+			((JimpleBasedInterproceduralCFG) delegate).initializeUnitToOwner(b);
 	}
 
 	@Override

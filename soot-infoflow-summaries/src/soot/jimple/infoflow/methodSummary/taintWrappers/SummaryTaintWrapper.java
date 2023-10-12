@@ -832,14 +832,8 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 	protected Set<AccessPathPropagator> spawnAnalysisIntoClientCode(SootMethod implementor,
 			AccessPathPropagator propagator, Stmt stmt, Abstraction incoming) {
 		// If the implementor has not yet been loaded, we must do this now
-		if (!implementor.hasActiveBody()) {
-			synchronized (implementor) {
-				if (!implementor.hasActiveBody()) {
-					implementor.retrieveActiveBody();
-					manager.getICFG().notifyMethodChanged(implementor);
-				}
-			}
-		}
+		if (!implementor.hasActiveBody())
+			implementor.retrieveActiveBody(body -> manager.getICFG().notifyNewBody(body));
 
 		Set<AccessPath> aps = createAccessPathInMethod(propagator.getTaint(), implementor);
 		if (aps.isEmpty())
