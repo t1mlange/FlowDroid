@@ -810,7 +810,7 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 	 * @param type The type to check
 	 * @return True if objects of the given type can have aliases, otherwise false
 	 */
-	private boolean canTypeAlias(String type) {
+	protected boolean canTypeAlias(String type) {
 		Type tp = TypeUtils.getTypeFromString(type);
 		if (tp instanceof PrimType)
 			return false;

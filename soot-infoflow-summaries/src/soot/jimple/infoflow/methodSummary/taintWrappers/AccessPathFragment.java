@@ -169,7 +169,7 @@ public class AccessPathFragment {
 	 * @return The name of the field at the given index
 	 */
 	public ContextDefinition[] getContext(int idx) {
-		if (idx < 0 || idx >= contexts.length)
+		if (contexts == null || idx < 0 || idx >= contexts.length)
 			return null;
 		return contexts[idx];
 	}

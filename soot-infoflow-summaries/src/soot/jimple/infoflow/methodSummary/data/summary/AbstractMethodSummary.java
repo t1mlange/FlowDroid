@@ -1,6 +1,8 @@
 package soot.jimple.infoflow.methodSummary.data.summary;
 
+import soot.jimple.infoflow.methodSummary.data.sourceSink.AbstractFlowSinkSource;
 import soot.jimple.infoflow.methodSummary.data.sourceSink.FlowConstraint;
+import soot.jimple.infoflow.methodSummary.taintWrappers.Taint;
 
 import java.util.Arrays;
 import java.util.Map;
@@ -46,8 +48,20 @@ public abstract class AbstractMethodSummary {
 		return this.isAlias == IsAliasType.TRUE;
 	}
 
-	public boolean isAlias(boolean hasContext) {
-		return this.isAlias == IsAliasType.TRUE || (hasContext && isAlias == IsAliasType.WITH_CONTEXT);
+	public abstract boolean isAlias(Taint t);
+
+	protected boolean isAlias(Taint t, AbstractFlowSinkSource flow) {
+		if (this.isAlias == IsAliasType.TRUE)
+			return true;
+
+		boolean hasContext;
+		int fromLen = flow.getAccessPathLength();
+		if (fromLen == 0)
+			hasContext = t.getBaseContext() != null;
+		else
+			hasContext = t.getAccessPath().getContext(fromLen - 1) != null;
+
+		return (hasContext && isAlias == IsAliasType.WITH_CONTEXT);
 	}
 
 	/**
