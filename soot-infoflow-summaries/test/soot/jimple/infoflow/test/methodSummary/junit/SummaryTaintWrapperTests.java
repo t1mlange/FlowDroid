@@ -275,7 +275,6 @@ public abstract class SummaryTaintWrapperTests {
 		IInfoflow iFlow = null;
 		try {
 			iFlow = initInfoflow();
-			iFlow.setTaintPropagationHandler(new DebugFlowFunctionTaintPropagationHandler());
 			iFlow.getConfig().getAccessPathConfiguration().setAccessPathLength(3);
 			iFlow.computeInfoflow(appPath, libPath, new DefaultEntryPointCreator(Collections.singletonList(m)),
 					Arrays.asList(source), Collections.singletonList(sink));

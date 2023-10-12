@@ -1,13 +1,13 @@
 package soot.jimple.infoflow.collections.strategies.widening;
 
-import java.util.ArrayDeque;
-import java.util.Deque;
-import java.util.Set;
+import java.util.*;
 
+import soot.SootMethod;
 import soot.Unit;
 import soot.jimple.Stmt;
 import soot.jimple.infoflow.InfoflowManager;
 import soot.jimple.infoflow.collections.context.PositionBasedContext;
+import soot.jimple.infoflow.collections.taintWrappers.ICollectionsSupport;
 import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.data.AccessPathFragment;
 import soot.jimple.infoflow.data.ContextDefinition;
@@ -23,64 +23,31 @@ public class WideningOnRevisitStrategy extends AbstractWidening {
 	// Cache of abstractions seen at a shift statement
 	private final ConcurrentHashMultiMap<Unit, Abstraction> seenAbstractions;
 
-	// Contains all subsignatures that may result in an infinite domain
-	private final Set<String> subSigs;
-
-	public WideningOnRevisitStrategy(InfoflowManager manager, Set<String> subSigs) {
+	public WideningOnRevisitStrategy(InfoflowManager manager) {
 		super(manager);
 		this.seenAbstractions = new ConcurrentHashMultiMap<>();
-		this.subSigs = subSigs;
-	}
-
-	private boolean isWideningCandidate(Abstraction abs) {
-		if (abs.getAccessPath().getFragmentCount() == 0)
-			return false;
-
-		boolean hasPositionContext = false;
-		for (AccessPathFragment fragment : abs.getAccessPath().getFragments()) {
-			if (fragment.hasContext()) {
-				for (ContextDefinition ctxt : fragment.getContext()) {
-					if (ctxt instanceof PositionBasedContext) {
-						hasPositionContext = true;
-						break;
-					}
-				}
-			}
-		}
-
-		return hasPositionContext;
 	}
 
 	@Override
-	public void recordNewFact(Abstraction fact, Unit u) {
-		// Only shifting can produce infinite ascending chains
+	public Abstraction widen(Abstraction d2, Abstraction d3, Unit u) {
 		Stmt stmt = (Stmt) u;
-		if (stmt.containsInvokeExpr()
-				&& subSigs.contains(stmt.getInvokeExpr().getMethod().getSubSignature())
-				&& isWideningCandidate(fact))
-			seenAbstractions.put(u, fact);
-	}
+		// Only shifting can produce infinite ascending chains,
+		// check whether this unit shifted the result
+		if (!stmt.containsInvokeExpr() || !isShift(d2, d3))
+			return d3;
 
-	@Override
-	public Abstraction widen(Abstraction abs, Unit u) {
-		// Only context in the domain are infinite
-		if (abs.getAccessPath().getFragmentCount() == 0)
-			return abs;
-
-		Stmt stmt = (Stmt) u;
-		// Only shifting can produce infinite ascending chains
-		if (!stmt.containsInvokeExpr()
-				|| !subSigs.contains(stmt.getInvokeExpr().getMethod().getSubSignature()))
-			return abs;
-
+		// BFS through the abstraction graph
+		// Check: have we seen the incoming fact already?
 		IdentityHashSet<Abstraction> visited = new IdentityHashSet<>();
 		Deque<Abstraction> q = new ArrayDeque<>();
-		q.add(abs);
+		q.add(d3.getPredecessor());
+		if (d3.getNeighborCount() > 0)
+			q.addAll(d3.getNeighbors());
 		while (!q.isEmpty()) {
 			Abstraction pred = q.pop();
 			if (seenAbstractions.contains(u, pred)) {
-				// Widen
-				return forceWiden(abs, u);
+				// Widen because this is a revisit
+				return forceWiden(d3, u);
 			}
 
 			if (pred.getPredecessor() != null && visited.add(pred.getPredecessor()))
@@ -95,6 +62,8 @@ public class WideningOnRevisitStrategy extends AbstractWidening {
 			}
 		}
 
-		return abs;
+		// Add the outgoing fact to the seen abstractions
+		seenAbstractions.put(u, d3);
+		return d3;
 	}
 }

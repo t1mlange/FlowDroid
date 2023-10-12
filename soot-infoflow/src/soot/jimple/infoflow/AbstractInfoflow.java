@@ -723,9 +723,6 @@ public abstract class AbstractInfoflow implements IInfoflow {
 			// Initialize the alias analysis
 			Abstraction zeroValue = Abstraction.getZeroAbstraction(manager.getConfig().getFlowSensitiveAliasing());
 			IAliasingStrategy aliasingStrategy = createAliasAnalysis(sourcesSinks, iCfg, executor, memoryManager);
-			System.out.println("Normal: " + System.identityHashCode(manager));
-			System.out.println("Alias: " + System.identityHashCode(aliasingStrategy.getSolver().getTabulationProblem().getManager()));
-
 
 			IInfoflowSolver backwardSolver = aliasingStrategy.getSolver();
 			if (backwardSolver != null) {

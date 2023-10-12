@@ -24,6 +24,7 @@ import soot.jimple.infoflow.typing.TypeUtils;
 import soot.jimple.infoflow.util.ByReferenceBoolean;
 import soot.jimple.spark.sets.PointsToSetInternal;
 
+import java.lang.reflect.Method;
 import java.util.*;
 import java.util.function.Function;
 

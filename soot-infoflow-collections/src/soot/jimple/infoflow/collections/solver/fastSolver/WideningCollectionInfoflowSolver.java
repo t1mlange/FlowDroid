@@ -28,11 +28,8 @@ public class WideningCollectionInfoflowSolver extends CollectionInfoflowSolver {
         final Abstraction d1 = edge.factAtSource();
         final Unit n = edge.getTarget(); // a call node; line 14...
 
-        final Abstraction d2Prev = edge.factAtTarget();
-        assert d2Prev != null;
-
-        // Widen if needed
-        final Abstraction d2 = widening == null ? d2Prev : widening.widen(d2Prev, n);
+        final Abstraction d2 = edge.factAtTarget();
+        assert d2 != null;
 
         Collection<Unit> returnSiteNs = icfg.getReturnSitesOfCallAt(n);
 
@@ -94,8 +91,9 @@ public class WideningCollectionInfoflowSolver extends CollectionInfoflowSolver {
                         d3 = memoryManager.handleGeneratedMemoryObject(d2, d3);
                     if (d3 != null) {
                         // Add result to check for widening
-                        if (widening != null)
-                            widening.recordNewFact(d3, n);
+                        if (widening != null && d3 != d2) {
+                            d3 = widening.widen(d2, d3, n);
+                        }
 
                         schedulingStrategy.propagateCallToReturnFlow(d1, returnSiteN, d3, n, false);
                     }

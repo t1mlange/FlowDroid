@@ -10,21 +10,21 @@ import soot.jimple.infoflow.solver.fastSolver.FastSolverLinkedNode;
  */
 public interface WideningStrategy<N, D extends FastSolverLinkedNode<D, N>> {
     /**
-     * Callback called on each new fact created by a call to return flow function
-     *
-     * @param fact new fact
-     * @param n program point
-     */
-    void recordNewFact(D fact, N n);
-
-    /**
      * Widens the abstraction
      *
-     * @param fact current fact
-     * @param n program point
+     * @param d2   incoming fact
+     * @param d3   outgoing fact
+     * @param n    program point
      * @return possibly widened fact
      */
-    D widen(D fact, N n);
+    D widen(D d2, D d3, N n);
 
+    /**
+     * Widen the fact according to the widening strategy
+     *
+     * @param fact current fact
+     * @param n    program point
+     * @return widened fact
+     */
     D forceWiden(D fact, N n);
 }

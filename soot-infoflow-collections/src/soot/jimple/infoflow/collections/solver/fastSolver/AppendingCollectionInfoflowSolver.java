@@ -74,9 +74,7 @@ public class AppendingCollectionInfoflowSolver extends CollectionInfoflowSolver 
     protected void processCall(PathEdge<Unit, Abstraction> edge) {
         final Abstraction d1 = edge.factAtSource();
         final Unit n = edge.getTarget(); // a call node; line 14...
-        final Abstraction d2Prev = edge.factAtTarget();
-        // Widen if needed
-        final Abstraction d2 = widening == null ? d2Prev : widening.widen(d2Prev, n);
+        final Abstraction d2 = edge.factAtTarget();
         assert d2 != null;
         Collection<Unit> returnSiteNs = icfg.getReturnSitesOfCallAt(n);
 
@@ -121,8 +119,7 @@ public class AppendingCollectionInfoflowSolver extends CollectionInfoflowSolver 
                                     applyEndSummaryOnCallWith(d1, n, d2, returnSiteNs, sCalledProcN, d3, prevSeenAbs);
 
                                     // We are done here
-                                    continue;
-                                }
+                                    continue;                                }
                             }
 
                             // register the fact that <sp,d3> has an incoming edge from
@@ -155,8 +152,10 @@ public class AppendingCollectionInfoflowSolver extends CollectionInfoflowSolver 
                         d3 = memoryManager.handleGeneratedMemoryObject(d2, d3);
                     if (d3 != null) {
                         // Add result to check for widening
-                        if (widening != null)
-                            widening.recordNewFact(d3, n);
+                        if (widening != null && d2 != d3) {
+                            // Widen if needed
+                            d3 = widening.widen(d2, d3, n);
+                        }
 
                         schedulingStrategy.propagateCallToReturnFlow(d1, returnSiteN, d3, n, true);
                     }
