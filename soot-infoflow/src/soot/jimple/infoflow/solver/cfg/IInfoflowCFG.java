@@ -7,10 +7,7 @@ package soot.jimple.infoflow.solver.cfg;
 import java.util.Collection;
 import java.util.List;
 
-import soot.SootField;
-import soot.SootMethod;
-import soot.Unit;
-import soot.Value;
+import soot.*;
 import soot.jimple.InvokeExpr;
 import soot.jimple.toolkits.ide.icfg.BiDiInterproceduralCFG;
 
@@ -166,7 +163,7 @@ public interface IInfoflowCFG extends BiDiInterproceduralCFG<Unit, SootMethod> {
 	public boolean hasSideEffects(SootMethod method);
 
 	/**
-	 * Re-initializes the mapping betwween statements and owning methods after a
+	 * Re-initializes the mapping between statements and owning methods after a
 	 * method has changed.
 	 * 
 	 * @param m
@@ -175,8 +172,15 @@ public interface IInfoflowCFG extends BiDiInterproceduralCFG<Unit, SootMethod> {
 	public void notifyMethodChanged(SootMethod m);
 
 	/**
+	 * Initializes the mapping between statements and owning body.
+	 *
+	 * @param b The body for which to initialize the mapping
+	 */
+	public void notifyNewBody(Body b);
+
+	/**
 	 * Checks whether the given method reads the given value
-	 * 
+	 *
 	 * @param m
 	 *            The method to check
 	 * @param v

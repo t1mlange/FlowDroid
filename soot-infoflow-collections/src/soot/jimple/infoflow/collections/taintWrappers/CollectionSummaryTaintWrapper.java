@@ -4,6 +4,7 @@ import soot.*;
 import soot.jimple.*;
 import soot.jimple.infoflow.InfoflowConfiguration;
 import soot.jimple.infoflow.InfoflowManager;
+import soot.jimple.infoflow.collections.context.UnknownContext;
 import soot.jimple.infoflow.collections.strategies.containers.IContainerStrategy;
 import soot.jimple.infoflow.collections.util.NonNullHashSet;
 import soot.jimple.infoflow.collections.util.Tristate;
@@ -545,6 +546,9 @@ public class CollectionSummaryTaintWrapper extends SummaryTaintWrapper implement
                             throw new RuntimeException("Missing case!");
                     }
                     break;
+                case Any:
+                    ctxt[i] = UnknownContext.v();
+                    break;
                 default:
                     throw new RuntimeException("Unknown context!");
             }
@@ -824,7 +828,11 @@ public class CollectionSummaryTaintWrapper extends SummaryTaintWrapper implement
                 ctxt = taint.getBaseContext();
             else
                 ctxt = taint.getAccessPath().getContext(lastCommonAPIdx - 1);
+
             if (ctxt != null) {
+                // We may only address one constraint in the source and have another constraint
+                // that is kept in the sink. Here we filter the used constraints out.
+                ctxt = filterContexts(ctxt, flow.getConstraints());
                 if (appendedFields == null || appendedFields.isEmpty())
                     baseCtxt = ctxt;
                 else
@@ -835,6 +843,27 @@ public class CollectionSummaryTaintWrapper extends SummaryTaintWrapper implement
         // Taint the correct fields
         return new Taint(sourceSinkType, flowSink.getParameterIndex(), sBaseType, baseCtxt, appendedFields,
                 taintSubFields || taint.taintSubFields(), gap);
+    }
+
+    private ContextDefinition[] filterContexts(ContextDefinition[] ctxt, FlowConstraint[] constraints) {
+        // If the current method does not use constraints,
+        // we keep the full context.
+        if (constraints.length == 0)
+            return ctxt;
+
+        ContextDefinition[] newCtxt = new ContextDefinition[ctxt.length];
+        int i = 0;
+        for (int k = 0; k < constraints.length; k++) {
+            FlowConstraint constraint = constraints[k];
+            if (constraint.getType() == SourceSinkType.Any) {
+                newCtxt[i++] = ctxt[k];
+            }
+        }
+        if (i == 0)
+            return null;
+        else if (i == ctxt.length)
+            return newCtxt;
+        return Arrays.copyOf(newCtxt, i);
     }
 
     @Override
