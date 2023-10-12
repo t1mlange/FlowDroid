@@ -10,6 +10,7 @@ import soot.Type;
 import soot.jimple.infoflow.methodSummary.data.sourceSink.FlowConstraint;
 import soot.jimple.infoflow.methodSummary.data.sourceSink.FlowSink;
 import soot.jimple.infoflow.methodSummary.data.sourceSink.FlowSource;
+import soot.jimple.infoflow.methodSummary.taintWrappers.Taint;
 import soot.jimple.infoflow.util.SootMethodRepresentationParser;
 
 /**
@@ -158,6 +159,11 @@ public class MethodFlow extends AbstractMethodSummary {
 
 	public boolean isExcludedOnClear() {
 		return excludedOnClear;
+	}
+
+	@Override
+	public boolean isAlias(Taint t) {
+		return isAlias(t, from);
 	}
 
 	@Override

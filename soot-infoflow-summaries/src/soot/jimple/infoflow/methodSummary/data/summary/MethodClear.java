@@ -5,6 +5,7 @@ import java.util.Objects;
 
 import soot.jimple.infoflow.methodSummary.data.sourceSink.FlowClear;
 import soot.jimple.infoflow.methodSummary.data.sourceSink.FlowConstraint;
+import soot.jimple.infoflow.methodSummary.taintWrappers.Taint;
 
 /**
  * A taint clearing definition. This class models the fact that a library method
@@ -38,6 +39,11 @@ public class MethodClear extends AbstractMethodSummary {
 	 */
 	public FlowClear getClearDefinition() {
 		return clearDefinition;
+	}
+
+	@Override
+	public boolean isAlias(Taint t) {
+		return isAlias(t, clearDefinition);
 	}
 
 	@Override

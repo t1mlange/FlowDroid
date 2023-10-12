@@ -53,6 +53,7 @@ public class SimpleVectorTests extends FlowDroidTests {
     public void testVectorInsertElementAt2() {
         IInfoflow infoflow = initInfoflow();
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
+        infoflow.setTaintPropagationHandler(new DebugFlowFunctionTaintPropagationHandler());
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
         Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
     }

@@ -371,7 +371,7 @@ public class CollectionSummaryTaintWrapper extends SummaryTaintWrapper implement
 
                     if (newPropagator == null) {
                         // Can we reverse the flow and apply it in the other direction?
-                        flow = getReverseFlowForAlias(flow);
+                        flow = getReverseFlowForAlias(flow, curPropagator.getTaint());
                         if (flow == null)
                             continue;
 
@@ -413,6 +413,28 @@ public class CollectionSummaryTaintWrapper extends SummaryTaintWrapper implement
         return res;
     }
 
+    protected MethodFlow getReverseFlowForAlias(MethodFlow flow, Taint t) {
+        MethodFlow reversed = flow.reverse();
+        // Reverse flows can only be applied if the flow is an
+        // aliasing relationship
+        if (!reversed.isAlias(t))
+            return null;
+
+        // Reverse flows can only be applied to heap objects
+        if (!canTypeAlias(flow.source().getLastFieldType()))
+            return null;
+        if (!canTypeAlias(flow.sink().getLastFieldType()))
+            return null;
+
+        // There cannot be any flows to the return values of
+        // gaps
+        if (flow.source().getGap() != null && flow.source().getType() == SourceSinkType.Return)
+            return null;
+        if (flow.sink().getGap() != null && flow.sink().getType() == SourceSinkType.Return)
+            return null;
+
+        return reversed;
+    }
 
     /**
      * Applies a data flow summary to a given tainted access path
@@ -860,7 +882,7 @@ public class CollectionSummaryTaintWrapper extends SummaryTaintWrapper implement
                 boolean preventPropagation = false;
                 if (flowsInCallee.hasClears()) {
                     for (MethodClear clear : flowsInCallee.getAllClears()) {
-                        if (clear.isAlias(taint.getAccessPath().getContexts() != null) && flowMatchesTaint(clear, taint, stmt)) {
+                        if (clear.isAlias(taint) && flowMatchesTaint(clear, taint, stmt)) {
                             killTaint = true;
                             preventPropagation = clear.preventPropagation();
                             break;
