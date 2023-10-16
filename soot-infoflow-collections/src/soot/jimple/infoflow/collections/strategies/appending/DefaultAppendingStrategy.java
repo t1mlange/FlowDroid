@@ -1,10 +1,11 @@
 package soot.jimple.infoflow.collections.strategies.appending;
 
 import java.util.Arrays;
-import java.util.Set;
+import java.util.Collection;
+import java.util.HashSet;
 
-import soot.SootField;
-import soot.Unit;
+import soot.*;
+import soot.jimple.Stmt;
 import soot.jimple.infoflow.InfoflowManager;
 import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.data.AccessPath;
@@ -12,11 +13,26 @@ import soot.jimple.infoflow.data.AccessPathFragment;
 
 public class DefaultAppendingStrategy implements AppendingStrategy<Unit, Abstraction> {
     private final InfoflowManager manager;
-    private final Set<SootField> contextFields;
+    private final FastHierarchy fh;
+    private Collection<SootField> contextFields;
+    private Collection<SootMethod> affectsMethods;
 
-    public DefaultAppendingStrategy(InfoflowManager manager, Set<SootField> contextFields) {
+    public DefaultAppendingStrategy(InfoflowManager manager) {
         this.manager = manager;
-        this.contextFields = contextFields;
+        this.fh = Scene.v().getOrMakeFastHierarchy();
+    }
+
+    @Override
+    public void initialize(Collection<SootField> fields, Collection<SootMethod> methods) {
+        contextFields = fields;
+        affectsMethods = new HashSet<>(methods);
+        for (SootMethod sm : methods) {
+            for (SootClass sc : fh.getSubclassesOf(sm.getDeclaringClass())) {
+                SootMethod override = sc.getMethodUnsafe(sm.getNumberedSubSignature());
+                if (override != null)
+                    affectsMethods.add(override);
+            }
+        }
     }
 
     @Override
@@ -31,8 +47,8 @@ public class DefaultAppendingStrategy implements AppendingStrategy<Unit, Abstrac
 
     @Override
     public boolean affectsContext(Unit unit) {
-        // TODO
-        return false;
+        Stmt stmt = (Stmt) unit;
+        return stmt.containsInvokeExpr() && affectsMethods.contains(stmt.getInvokeExpr().getMethod());
     }
 
     @Override
