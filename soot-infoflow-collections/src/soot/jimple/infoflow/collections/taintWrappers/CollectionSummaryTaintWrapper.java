@@ -5,6 +5,7 @@ import soot.jimple.*;
 import soot.jimple.infoflow.InfoflowConfiguration;
 import soot.jimple.infoflow.InfoflowManager;
 import soot.jimple.infoflow.collections.context.UnknownContext;
+import soot.jimple.infoflow.collections.solver.fastSolver.AppendingCollectionInfoflowSolver;
 import soot.jimple.infoflow.collections.strategies.containers.IContainerStrategy;
 import soot.jimple.infoflow.collections.util.NonNullHashSet;
 import soot.jimple.infoflow.collections.util.Tristate;
@@ -20,11 +21,11 @@ import soot.jimple.infoflow.methodSummary.taintWrappers.AccessPathFragment;
 import soot.jimple.infoflow.methodSummary.taintWrappers.AccessPathPropagator;
 import soot.jimple.infoflow.methodSummary.taintWrappers.SummaryTaintWrapper;
 import soot.jimple.infoflow.methodSummary.taintWrappers.Taint;
+import soot.jimple.infoflow.solver.IInfoflowSolver;
 import soot.jimple.infoflow.typing.TypeUtils;
 import soot.jimple.infoflow.util.ByReferenceBoolean;
 import soot.jimple.spark.sets.PointsToSetInternal;
 
-import java.lang.reflect.Method;
 import java.util.*;
 import java.util.function.Function;
 
@@ -47,6 +48,78 @@ public class CollectionSummaryTaintWrapper extends SummaryTaintWrapper implement
         super.initialize(manager);
 
         this.containerStrategy = gen.apply(manager);
+
+        initializeAppendingSolver(manager.getMainSolver());
+        initializeAppendingSolver(manager.getAliasSolver());
+    }
+
+    private SootField getConstrainedField(AbstractFlowSinkSource afss) {
+        ConstraintType ct = afss.getConstraintType();
+        if (ct == null || ct == ConstraintType.FALSE)
+            return null;
+        else
+            return safeGetField(afss.getAccessPath().getFirstFieldName());
+    }
+
+    private boolean flowDependsOnContext(AbstractFlowSinkSource afss) {
+        switch (afss.getConstraintType()) {
+            case TRUE:
+            case SHIFT_LEFT:
+            case SHIFT_RIGHT:
+            case READONLY:
+            case APPEND:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    private SootMethod methodSigToMethod(String clazz, String subsig) {
+        SootClass sc = Scene.v().getSootClassUnsafe(clazz);
+        SootMethod sm = null;
+        while (sm == null && sc != null) {
+            sm = sc.getMethodUnsafe(subsig);
+            sc = sc.getSuperclassUnsafe();
+        }
+        return sm;
+    }
+
+    private void initializeAppendingSolver(IInfoflowSolver solver) {
+        if (!(solver instanceof AppendingCollectionInfoflowSolver))
+            return;
+
+        HashSet<SootMethod> methods = new NonNullHashSet<>();
+        HashSet<SootField> fields = new NonNullHashSet<>();
+        ClassSummaries cs = flows.getSummaries();
+        for (ClassMethodSummaries ms : cs.getAllSummaries()) {
+            for (MethodFlow flow : ms.getMethodSummaries().getAllFlows()) {
+                if (flow.getConstraints() == null)
+                    continue;
+
+                SootField sourcef = getConstrainedField(flow.source());
+                fields.add(sourcef);
+                SootField sinkf = getConstrainedField(flow.sink());
+                fields.add(sinkf);
+
+                if (flowDependsOnContext(flow.source()))
+                    methods.add(methodSigToMethod(ms.getClassName(), flow.methodSig()));
+                if (flow.isAlias() && flowDependsOnContext(flow.sink()))
+                    methods.add(methodSigToMethod(ms.getClassName(), flow.methodSig()));
+            }
+
+            if (ms.hasClears()) {
+                for (MethodClear clear : ms.getAllClears()) {
+                    if (clear.getConstraints() == null)
+                        continue;
+
+                    SootField clearf = getConstrainedField(clear.getClearDefinition());
+                    if (clearf != null)
+                        fields.add(clearf);
+                }
+            }
+        }
+
+        ((AppendingCollectionInfoflowSolver) solver).getAppendingStrategy().initialize(fields, methods);
     }
 
     @Override

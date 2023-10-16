@@ -111,16 +111,8 @@ public class AppendingTests extends FlowDroidTests {
 
     @Override
     protected IInfoflow initInfoflow() {
-        AbstractInfoflow result = new CollectionInfoflow("", false, new DefaultBiDiICFGFactory()) {
-            @Override
-            protected IInfoflowSolver createDataFlowSolver(InterruptableExecutor executor,
-                                                           AbstractInfoflowProblem problem,
-                                                           InfoflowConfiguration.SolverConfiguration solverConfig) {
-                IInfoflowSolver solver = new AppendingCollectionInfoflowSolver(problem, executor);
-                solverPeerGroup.addSolver(solver);
-                return solver;
-            }
-        };
+        AbstractInfoflow result = new CollectionInfoflow("", false, new DefaultBiDiICFGFactory())
+                                                        .withSolver(CollectionInfoflow.Solver.Appending);
         result.setThrowExceptions(true);
         result.setTaintWrapper(getTaintWrapper());
         setConfiguration(result.getConfig());

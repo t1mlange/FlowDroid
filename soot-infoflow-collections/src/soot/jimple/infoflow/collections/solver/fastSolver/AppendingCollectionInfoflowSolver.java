@@ -35,6 +35,10 @@ public class AppendingCollectionInfoflowSolver extends CollectionInfoflowSolver 
         this.appending = appending;
     }
 
+    public AppendingStrategy<Unit, Abstraction> getAppendingStrategy() {
+        return this.appending;
+    }
+
     // Map (Method, Param) to whether it may reach a context dependent operation. Contains == not reusable.
     @SynchronizedBy("Thread-safe data structure")
     private final ConcurrentSetWithRunnable<Pair<SootMethod, Local>> notReusable = new ConcurrentSetWithRunnable<>();
