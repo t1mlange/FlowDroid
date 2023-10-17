@@ -41,10 +41,10 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>${maven-surefire-plugin.version}</version>
                 <configuration>
-                    <excludes>
-                        ${parent.basedir}/soot-infoflow/**/*
-                        ${parent.basedir}/soot-infoflow-summaries/**/*
-                    </excludes>
+                    <includes>
+                        <!-- We include previous test classes but only want to run the tests from this project -->
+                        soot/jimple/infoflow/collections/test/**/*
+                    </includes>
                 </configuration>
             </plugin>
             <plugin>
