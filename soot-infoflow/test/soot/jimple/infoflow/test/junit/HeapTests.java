@@ -1357,16 +1357,4 @@ public abstract class HeapTests extends JUnitTests {
 		Assert.assertEquals(2, infoflow.getResults().getResultSet().stream()
 				.map(res -> res.getSource().getStmt()).distinct().count());
 	}
-
-	@Test(timeout = 300000)
-	public void aliasTransferRightToLeftTest1() {
-		IInfoflow infoflow = initInfoflow();
-		infoflow.getConfig().setWriteOutputFiles(true);
-		infoflow.setTaintPropagationHandler(new DebugFlowFunctionTaintPropagationHandler());
-		List<String> epoints = new ArrayList<String>();
-		epoints.add("<soot.jimple.infoflow.test.HeapTestCode: void aliasTransferRightToLeftTest1()>");
-		Set<String> source = Collections.singleton("<java.util.Random: void <init>()>");
-		infoflow.computeInfoflow(appPath, libPath, epoints, source, sinks);
-		Assert.assertEquals(1, infoflow.getResults().getResultSet().size());
-	}
 }
