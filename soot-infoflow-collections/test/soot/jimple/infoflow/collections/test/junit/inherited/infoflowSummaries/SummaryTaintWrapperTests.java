@@ -70,4 +70,10 @@ public class SummaryTaintWrapperTests extends soot.jimple.infoflow.test.methodSu
 
         return result;
     }
+
+    @Test(timeout = 30000)
+    public void iterativeApplyIsOverapproximation() {
+        // TODO: move final attribute toward upstream
+        testNoFlowForMethod("<soot.jimple.infoflow.test.methodSummary.ApiClassClient: void iterativeApplyIsOverapproximation()>");
+    }
 }
