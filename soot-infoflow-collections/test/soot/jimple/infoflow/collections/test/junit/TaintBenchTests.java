@@ -1,6 +1,7 @@
 package soot.jimple.infoflow.collections.test.junit;
 
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.xmlpull.v1.XmlPullParserException;
@@ -289,10 +290,11 @@ public class TaintBenchTests extends FlowDroidTests {
 
     }
 
-    private static final String pathToAPKs = "/home/lange/Downloads/TaintBench(1)";
+    private static final String pathToAPKs = "testAPKs/TaintBench";
 
     @Test
     public void testBackflash() throws XmlPullParserException, IOException {
+        Assume.assumeTrue(new File(pathToAPKs + "/" + "backflash.apk").exists());
         SetupApplication app = initApplication(pathToAPKs + "/" + "backflash.apk");
         app.addResultsAvailableHandler((cfg, results) -> compareResults("backflash.apk", cfg, results));
         InfoflowResults results = app.runInfoflow(getSourcesAndSinks("backflash.apk"));
@@ -301,6 +303,7 @@ public class TaintBenchTests extends FlowDroidTests {
 
     @Test
     public void testBeita_com_beita_contact() throws XmlPullParserException, IOException {
+        Assume.assumeTrue(new File(pathToAPKs + "/" + "beita_com_beita_contact.apk").exists());
         SetupApplication app = initApplication(pathToAPKs + "/" + "beita_com_beita_contact.apk");
         app.addResultsAvailableHandler((cfg, results) -> compareResults("beita_com_beita_contact.apk", cfg, results));
         InfoflowResults results = app.runInfoflow(getSourcesAndSinks("beita_com_beita_contact.apk"));
@@ -311,6 +314,7 @@ public class TaintBenchTests extends FlowDroidTests {
 
     @Test
     public void testCajino_baidu() throws XmlPullParserException, IOException {
+        Assume.assumeTrue(new File(pathToAPKs + "/" + "cajino_baidu.apk").exists());
         SetupApplication app = initApplication(pathToAPKs + "/" + "cajino_baidu.apk");
         app.addResultsAvailableHandler((cfg, results) -> compareResults("cajino_baidu.apk", cfg, results));
         InfoflowResults results = app.runInfoflow(getSourcesAndSinks("cajino_baidu.apk"));
@@ -320,6 +324,7 @@ public class TaintBenchTests extends FlowDroidTests {
 
     @Test
     public void testChat_hook() throws XmlPullParserException, IOException {
+        Assume.assumeTrue(new File(pathToAPKs + "/" + "chat_hook.apk").exists());
         SetupApplication app = initApplication(pathToAPKs + "/" + "chat_hook.apk");
         app.addResultsAvailableHandler((cfg, results) -> compareResults("chat_hook.apk", cfg, results));
         InfoflowResults results = app.runInfoflow(getSourcesAndSinks("chat_hook.apk"));
@@ -329,6 +334,7 @@ public class TaintBenchTests extends FlowDroidTests {
 
     @Test
     public void testChulia() throws XmlPullParserException, IOException {
+        Assume.assumeTrue(new File(pathToAPKs + "/" + "chulia.apk").exists());
         SetupApplication app = initApplication(pathToAPKs + "/" + "chulia.apk");
         app.addResultsAvailableHandler((cfg, results) -> compareResults("chulia.apk", cfg, results));
         InfoflowResults results = app.runInfoflow(getSourcesAndSinks("chulia.apk"));
@@ -337,6 +343,7 @@ public class TaintBenchTests extends FlowDroidTests {
 
     @Test
     public void testDeath_ring_materialflow() throws XmlPullParserException, IOException {
+        Assume.assumeTrue(new File(pathToAPKs + "/" + "death_ring_materialflow.apk").exists());
         SetupApplication app = initApplication(pathToAPKs + "/" + "death_ring_materialflow.apk");
         app.addResultsAvailableHandler((cfg, results) -> compareResults("death_ring_materialflow.apk", cfg, results));
         InfoflowResults results = app.runInfoflow(getSourcesAndSinks("death_ring_materialflow.apk"));
@@ -345,6 +352,7 @@ public class TaintBenchTests extends FlowDroidTests {
 
     @Test
     public void testDsencrypt_samp() throws XmlPullParserException, IOException {
+        Assume.assumeTrue(new File(pathToAPKs + "/" + "dsencrypt_samp.apk").exists());
         SetupApplication app = initApplication(pathToAPKs + "/" + "dsencrypt_samp.apk");
         app.addResultsAvailableHandler((cfg, results) -> compareResults("dsencrypt_samp.apk", cfg, results));
         InfoflowResults results = app.runInfoflow(getSourcesAndSinks("dsencrypt_samp.apk"));
@@ -355,6 +363,7 @@ public class TaintBenchTests extends FlowDroidTests {
 
     @Test
     public void testExprespam() throws XmlPullParserException, IOException {
+        Assume.assumeTrue(new File(pathToAPKs + "/" + "exprespam.apk").exists());
         SetupApplication app = initApplication(pathToAPKs + "/" + "exprespam.apk");
         app.getConfig().setWriteOutputFiles(true);
         app.addResultsAvailableHandler((cfg, results) -> compareResults("exprespam.apk", cfg, results));
@@ -364,6 +373,7 @@ public class TaintBenchTests extends FlowDroidTests {
 
     @Test
     public void testFakeappstore() throws XmlPullParserException, IOException {
+        Assume.assumeTrue(new File(pathToAPKs + "/" + "fakeappstore.apk").exists());
         SetupApplication app = initApplication(pathToAPKs + "/" + "fakeappstore.apk");
         app.addResultsAvailableHandler((cfg, results) -> compareResults("fakeappstore.apk", cfg, results));
         InfoflowResults results = app.runInfoflow(getSourcesAndSinks("fakeappstore.apk"));
@@ -372,6 +382,7 @@ public class TaintBenchTests extends FlowDroidTests {
 
     @Test
     public void testFakebank_android_samp() throws XmlPullParserException, IOException {
+        Assume.assumeTrue(new File(pathToAPKs + "/" + "fakebank_android_samp.apk").exists());
         SetupApplication app = initApplication(pathToAPKs + "/" + "fakebank_android_samp.apk");
         app.getConfig().setWriteOutputFiles(true);
         app.addResultsAvailableHandler((cfg, results) -> compareResults("fakebank_android_samp.apk", cfg, results));
@@ -381,6 +392,7 @@ public class TaintBenchTests extends FlowDroidTests {
 
     @Test
     public void testFakedaum() throws XmlPullParserException, IOException {
+        Assume.assumeTrue(new File(pathToAPKs + "/" + "fakedaum.apk").exists());
         SetupApplication app = initApplication(pathToAPKs + "/" + "fakedaum.apk");
         app.addResultsAvailableHandler((cfg, results) -> compareResults("fakedaum.apk", cfg, results));
         InfoflowResults results = app.runInfoflow(getSourcesAndSinks("fakedaum.apk"));
@@ -389,6 +401,7 @@ public class TaintBenchTests extends FlowDroidTests {
 
     @Test
     public void testFakemart() throws XmlPullParserException, IOException {
+        Assume.assumeTrue(new File(pathToAPKs + "/" + "fakemart.apk").exists());
         SetupApplication app = initApplication(pathToAPKs + "/" + "fakemart.apk");
         app.addResultsAvailableHandler((cfg, results) -> compareResults("fakemart.apk", cfg, results));
         InfoflowResults results = app.runInfoflow(getSourcesAndSinks("fakemart.apk"));
@@ -397,6 +410,7 @@ public class TaintBenchTests extends FlowDroidTests {
 
     @Test
     public void testFakeplay() throws XmlPullParserException, IOException {
+        Assume.assumeTrue(new File(pathToAPKs + "/" + "fakeplay.apk").exists());
         SetupApplication app = initApplication(pathToAPKs + "/" + "fakeplay.apk");
         app.addResultsAvailableHandler((cfg, results) -> compareResults("fakeplay.apk", cfg, results));
         InfoflowResults results = app.runInfoflow(getSourcesAndSinks("fakeplay.apk"));
@@ -405,6 +419,7 @@ public class TaintBenchTests extends FlowDroidTests {
 
     @Test
     public void testFaketaobao() throws XmlPullParserException, IOException {
+        Assume.assumeTrue(new File(pathToAPKs + "/" + "faketaobao.apk").exists());
         SetupApplication app = initApplication(pathToAPKs + "/" + "faketaobao.apk");
         app.addResultsAvailableHandler((cfg, results) -> compareResults("faketaobao.apk", cfg, results));
         InfoflowResults results = app.runInfoflow(getSourcesAndSinks("faketaobao.apk"));
@@ -414,6 +429,7 @@ public class TaintBenchTests extends FlowDroidTests {
     @Ignore("Soot problem or bullshit ground-truth")
     @Test
     public void testGodwon_samp() throws XmlPullParserException, IOException {
+        Assume.assumeTrue(new File(pathToAPKs + "/" + "godwon_samp.apk").exists());
         SetupApplication app = initApplication(pathToAPKs + "/" + "godwon_samp.apk");
         app.getConfig().setWriteOutputFiles(true);
         app.addResultsAvailableHandler((cfg, results) -> compareResults("godwon_samp.apk", cfg, results));
@@ -423,6 +439,7 @@ public class TaintBenchTests extends FlowDroidTests {
 
     @Test
     public void testHummingbad_android_samp() throws XmlPullParserException, IOException {
+        Assume.assumeTrue(new File(pathToAPKs + "/" + "hummingbad_android_samp.apk").exists());
         SetupApplication app = initApplication(pathToAPKs + "/" + "hummingbad_android_samp.apk");
         app.addResultsAvailableHandler((cfg, results) -> compareResults("hummingbad_android_samp.apk", cfg, results));
         InfoflowResults results = app.runInfoflow(getSourcesAndSinks("hummingbad_android_samp.apk"));
@@ -432,6 +449,7 @@ public class TaintBenchTests extends FlowDroidTests {
 
     @Test
     public void testJollyserv() throws XmlPullParserException, IOException {
+        Assume.assumeTrue(new File(pathToAPKs + "/" + "jollyserv.apk").exists());
         SetupApplication app = initApplication(pathToAPKs + "/" + "jollyserv.apk");
         app.addResultsAvailableHandler((cfg, results) -> compareResults("jollyserv.apk", cfg, results));
         InfoflowResults results = app.runInfoflow(getSourcesAndSinks("jollyserv.apk"));
@@ -441,6 +459,7 @@ public class TaintBenchTests extends FlowDroidTests {
 
     @Test
     public void testOverlay_android_samp() throws XmlPullParserException, IOException {
+        Assume.assumeTrue(new File(pathToAPKs + "/" + "overlay_android_samp.apk").exists());
         SetupApplication app = initApplication(pathToAPKs + "/" + "overlay_android_samp.apk");
         app.addResultsAvailableHandler((cfg, results) -> compareResults("overlay_android_samp.apk", cfg, results));
         InfoflowResults results = app.runInfoflow(getSourcesAndSinks("overlay_android_samp.apk"));
@@ -449,6 +468,7 @@ public class TaintBenchTests extends FlowDroidTests {
 
     @Test
     public void testOverlaylocker2_android_samp() throws XmlPullParserException, IOException {
+        Assume.assumeTrue(new File(pathToAPKs + "/" + "overlaylocker2_android_samp.apk").exists());
         SetupApplication app = initApplication(pathToAPKs + "/" + "overlaylocker2_android_samp.apk");
         app.addResultsAvailableHandler((cfg, results) -> compareResults("overlaylocker2_android_samp.apk", cfg, results));
         InfoflowResults results = app.runInfoflow(getSourcesAndSinks("overlaylocker2_android_samp.apk"));
@@ -458,6 +478,7 @@ public class TaintBenchTests extends FlowDroidTests {
 
     @Test
     public void testPhospy() throws XmlPullParserException, IOException {
+        Assume.assumeTrue(new File(pathToAPKs + "/" + "phospy.apk").exists());
         SetupApplication app = initApplication(pathToAPKs + "/" + "phospy.apk");
         app.addResultsAvailableHandler((cfg, results) -> compareResults("phospy.apk", cfg, results));
         InfoflowResults results = app.runInfoflow(getSourcesAndSinks("phospy.apk"));
@@ -466,6 +487,7 @@ public class TaintBenchTests extends FlowDroidTests {
 
     @Test
     public void testProxy_samp() throws XmlPullParserException, IOException {
+        Assume.assumeTrue(new File(pathToAPKs + "/" + "proxy_samp.apk").exists());
         SetupApplication app = initApplication(pathToAPKs + "/" + "proxy_samp.apk");
         app.addResultsAvailableHandler((cfg, results) -> compareResults("proxy_samp.apk", cfg, results));
         InfoflowResults results = app.runInfoflow(getSourcesAndSinks("proxy_samp.apk"));
@@ -474,6 +496,7 @@ public class TaintBenchTests extends FlowDroidTests {
 
     @Test
     public void testRemote_control_smack() throws XmlPullParserException, IOException {
+        Assume.assumeTrue(new File(pathToAPKs + "/" + "remote_control_smack.apk").exists());
         SetupApplication app = initApplication(pathToAPKs + "/" + "remote_control_smack.apk");
         app.addResultsAvailableHandler((cfg, results) -> compareResults("remote_control_smack.apk", cfg, results));
         InfoflowResults results = app.runInfoflow(getSourcesAndSinks("remote_control_smack.apk"));
@@ -482,6 +505,7 @@ public class TaintBenchTests extends FlowDroidTests {
 
     @Test
     public void testRepane() throws XmlPullParserException, IOException {
+        Assume.assumeTrue(new File(pathToAPKs + "/" + "repane.apk").exists());
         SetupApplication app = initApplication(pathToAPKs + "/" + "repane.apk");
         app.addResultsAvailableHandler((cfg, results) -> compareResults("repane.apk", cfg, results));
         InfoflowResults results = app.runInfoflow(getSourcesAndSinks("repane.apk"));
@@ -490,6 +514,7 @@ public class TaintBenchTests extends FlowDroidTests {
 
     @Test
     public void testRoidsec() throws XmlPullParserException, IOException {
+        Assume.assumeTrue(new File(pathToAPKs + "/" + "roidsec.apk").exists());
         SetupApplication app = initApplication(pathToAPKs + "/" + "roidsec.apk");
         app.addResultsAvailableHandler((cfg, results) -> compareResults("roidsec.apk", cfg, results));
         InfoflowResults results = app.runInfoflow(getSourcesAndSinks("roidsec.apk"));
@@ -498,6 +523,7 @@ public class TaintBenchTests extends FlowDroidTests {
 
     @Test
     public void testSamsapo() throws XmlPullParserException, IOException {
+        Assume.assumeTrue(new File(pathToAPKs + "/" + "samsapo.apk").exists());
         SetupApplication app = initApplication(pathToAPKs + "/" + "samsapo.apk");
         app.addResultsAvailableHandler((cfg, results) -> compareResults("samsapo.apk", cfg, results));
         InfoflowResults results = app.runInfoflow(getSourcesAndSinks("samsapo.apk"));
@@ -506,6 +532,7 @@ public class TaintBenchTests extends FlowDroidTests {
 
     @Test
     public void testSave_me() throws XmlPullParserException, IOException {
+        Assume.assumeTrue(new File(pathToAPKs + "/" + "save_me.apk").exists());
         SetupApplication app = initApplication(pathToAPKs + "/" + "save_me.apk");
         app.addResultsAvailableHandler((cfg, results) -> compareResults("save_me.apk", cfg, results));
         InfoflowResults results = app.runInfoflow(getSourcesAndSinks("save_me.apk"));
@@ -514,6 +541,7 @@ public class TaintBenchTests extends FlowDroidTests {
 
     @Test
     public void testScipiex() throws XmlPullParserException, IOException {
+        Assume.assumeTrue(new File(pathToAPKs + "/" + "scipiex.apk").exists());
         SetupApplication app = initApplication(pathToAPKs + "/" + "scipiex.apk");
         app.getConfig().setWriteOutputFiles(true);
         app.setTaintPropagationHandler(new DebugFlowFunctionTaintPropagationHandler(
@@ -528,6 +556,7 @@ public class TaintBenchTests extends FlowDroidTests {
 
     @Test
     public void testSlocker_android_samp() throws XmlPullParserException, IOException {
+        Assume.assumeTrue(new File(pathToAPKs + "/" + "slocker_android_samp.apk").exists());
         SetupApplication app = initApplication(pathToAPKs + "/" + "slocker_android_samp.apk");
         app.getConfig().setWriteOutputFiles(true);
         app.addResultsAvailableHandler((cfg, results) -> compareResults("slocker_android_samp.apk", cfg, results));
@@ -537,6 +566,7 @@ public class TaintBenchTests extends FlowDroidTests {
 
     @Test
     public void testSms_google() throws XmlPullParserException, IOException {
+        Assume.assumeTrue(new File(pathToAPKs + "/" + "sms_google.apk").exists());
         SetupApplication app = initApplication(pathToAPKs + "/" + "sms_google.apk");
         app.addResultsAvailableHandler((cfg, results) -> compareResults("sms_google.apk", cfg, results));
         InfoflowResults results = app.runInfoflow(getSourcesAndSinks("sms_google.apk"));
@@ -545,6 +575,7 @@ public class TaintBenchTests extends FlowDroidTests {
 
     @Test
     public void testSms_send_locker_qqmagic() throws XmlPullParserException, IOException {
+        Assume.assumeTrue(new File(pathToAPKs + "/" + "sms_send_locker_qqmagic.apk").exists());
         SetupApplication app = initApplication(pathToAPKs + "/" + "sms_send_locker_qqmagic.apk");
         app.addResultsAvailableHandler((cfg, results) -> compareResults("sms_send_locker_qqmagic.apk", cfg, results));
         InfoflowResults results = app.runInfoflow(getSourcesAndSinks("sms_send_locker_qqmagic.apk"));
@@ -553,6 +584,7 @@ public class TaintBenchTests extends FlowDroidTests {
 
     @Test
     public void testSmssend_packageinstaller() throws XmlPullParserException, IOException {
+        Assume.assumeTrue(new File(pathToAPKs + "/" + "smssend_packageInstaller.apk").exists());
         SetupApplication app = initApplication(pathToAPKs + "/" + "smssend_packageInstaller.apk");
         app.addResultsAvailableHandler((cfg, results) -> compareResults("smssend_packageInstaller.apk", cfg, results));
         InfoflowResults results = app.runInfoflow(getSourcesAndSinks("smssend_packageInstaller.apk"));
@@ -561,6 +593,7 @@ public class TaintBenchTests extends FlowDroidTests {
 
     @Test
     public void testSmssilience_fake_vertu() throws XmlPullParserException, IOException {
+        Assume.assumeTrue(new File(pathToAPKs + "/" + "smssilience_fake_vertu.apk").exists());
         SetupApplication app = initApplication(pathToAPKs + "/" + "smssilience_fake_vertu.apk");
         app.addResultsAvailableHandler((cfg, results) -> compareResults("smssilience_fake_vertu.apk", cfg, results));
         InfoflowResults results = app.runInfoflow(getSourcesAndSinks("smssilience_fake_vertu.apk"));
@@ -570,6 +603,7 @@ public class TaintBenchTests extends FlowDroidTests {
 
     @Test
     public void testSmsstealer_kysn_assassincreed_android_samp() throws XmlPullParserException, IOException {
+        Assume.assumeTrue(new File(pathToAPKs + "/" + "smsstealer_kysn_assassincreed_android_samp.apk").exists());
         SetupApplication app = initApplication(pathToAPKs + "/" + "smsstealer_kysn_assassincreed_android_samp.apk");
         app.addResultsAvailableHandler((cfg, results) -> compareResults("smsstealer_kysn_assassincreed_android_samp.apk", cfg, results));
         InfoflowResults results = app.runInfoflow(getSourcesAndSinks("smsstealer_kysn_assassincreed_android_samp.apk"));
@@ -578,6 +612,7 @@ public class TaintBenchTests extends FlowDroidTests {
 
     @Test
     public void testStels_flashplayer_android_update() throws XmlPullParserException, IOException {
+        Assume.assumeTrue(new File(pathToAPKs + "/" + "stels_flashplayer_android_update.apk").exists());
         SetupApplication app = initApplication(pathToAPKs + "/" + "stels_flashplayer_android_update.apk");
         app.addResultsAvailableHandler((cfg, results) -> compareResults("stels_flashplayer_android_update.apk", cfg, results));
         InfoflowResults results = app.runInfoflow(getSourcesAndSinks("stels_flashplayer_android_update.apk"));
@@ -586,6 +621,7 @@ public class TaintBenchTests extends FlowDroidTests {
 
     @Test
     public void testTetus() throws XmlPullParserException, IOException {
+        Assume.assumeTrue(new File(pathToAPKs + "/" + "tetus.apk").exists());
         SetupApplication app = initApplication(pathToAPKs + "/" + "tetus.apk");
         app.addResultsAvailableHandler((cfg, results) -> compareResults("tetus.apk", cfg, results));
         InfoflowResults results = app.runInfoflow(getSourcesAndSinks("tetus.apk"));
@@ -594,6 +630,7 @@ public class TaintBenchTests extends FlowDroidTests {
 
     @Test
     public void testThe_interview_movieshow() throws XmlPullParserException, IOException {
+        Assume.assumeTrue(new File(pathToAPKs + "/" + "the_interview_movieshow.apk").exists());
         SetupApplication app = initApplication(pathToAPKs + "/" + "the_interview_movieshow.apk");
         app.addResultsAvailableHandler((cfg, results) -> compareResults("the_interview_movieshow.apk", cfg, results));
         InfoflowResults results = app.runInfoflow(getSourcesAndSinks("the_interview_movieshow.apk"));
@@ -603,6 +640,7 @@ public class TaintBenchTests extends FlowDroidTests {
 
     @Test
     public void testThreatjapan_uracto() throws XmlPullParserException, IOException {
+        Assume.assumeTrue(new File(pathToAPKs + "/" + "threatjapan_uracto.apk").exists());
         SetupApplication app = initApplication(pathToAPKs + "/" + "threatjapan_uracto.apk");
         app.addResultsAvailableHandler((cfg, results) -> compareResults("threatjapan_uracto.apk", cfg, results));
         InfoflowResults results = app.runInfoflow(getSourcesAndSinks("threatjapan_uracto.apk"));
@@ -612,6 +650,7 @@ public class TaintBenchTests extends FlowDroidTests {
 
     @Test
     public void testVibleaker_android_samp() throws XmlPullParserException, IOException {
+        Assume.assumeTrue(new File(pathToAPKs + "/" + "vibleaker_android_samp.apk").exists());
         SetupApplication app = initApplication(pathToAPKs + "/" + "vibleaker_android_samp.apk");
         app.addResultsAvailableHandler((cfg, results) -> compareResults("vibleaker_android_samp.apk", cfg, results));
         InfoflowResults results = app.runInfoflow(getSourcesAndSinks("vibleaker_android_samp.apk"));
@@ -621,6 +660,7 @@ public class TaintBenchTests extends FlowDroidTests {
     @Ignore("CG Problem")
     @Test
     public void testXbot_android_samp() throws XmlPullParserException, IOException {
+        Assume.assumeTrue(new File(pathToAPKs + "/" + "xbot_android_samp.apk").exists());
         SetupApplication app = initApplication(pathToAPKs + "/" + "xbot_android_samp.apk");
         app.addResultsAvailableHandler((cfg, results) -> compareResults("xbot_android_samp.apk", cfg, results));
         InfoflowResults results = app.runInfoflow(getSourcesAndSinks("xbot_android_samp.apk"));

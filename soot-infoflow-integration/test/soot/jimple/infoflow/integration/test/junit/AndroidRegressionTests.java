@@ -7,6 +7,7 @@ import java.util.*;
 import javax.xml.stream.XMLStreamException;
 
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Test;
 import org.xmlpull.v1.XmlPullParserException;
 
@@ -177,9 +178,12 @@ public class AndroidRegressionTests extends BaseJUnitTests {
         Assert.assertEquals(1, results.size());
     }
 
+
     @Test
     public void testThreadRunnable() throws XmlPullParserException, IOException {
         SetupApplication app = initApplication("testAPKs/ThreadRunnable.apk");
+        Assume.assumeTrue("There is no mechanism to fixup access paths at return edges",
+                app.getConfig().getDataFlowDirection() == InfoflowConfiguration.DataFlowDirection.Forwards);
         InfoflowResults results = app.runInfoflow("../soot-infoflow-android/SourcesAndSinks.txt");
         Assert.assertEquals(1, results.size());
     }
@@ -187,6 +191,8 @@ public class AndroidRegressionTests extends BaseJUnitTests {
     @Test
     public void testThreadRunnableIndirect() throws XmlPullParserException, IOException {
         SetupApplication app = initApplication("testAPKs/ThreadRunnableIndirect.apk");
+        Assume.assumeTrue("There is no mechanism to fixup access paths at return edges",
+                app.getConfig().getDataFlowDirection() == InfoflowConfiguration.DataFlowDirection.Forwards);
         InfoflowResults results = app.runInfoflow("../soot-infoflow-android/SourcesAndSinks.txt");
         Assert.assertEquals(1, results.size());
     }

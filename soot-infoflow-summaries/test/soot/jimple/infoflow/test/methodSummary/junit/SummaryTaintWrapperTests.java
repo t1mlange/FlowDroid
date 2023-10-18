@@ -246,11 +246,6 @@ public abstract class SummaryTaintWrapperTests {
 	}
 
 	@Test(timeout = 30000)
-	public void iterativeApplyIsOverapproximation() {
-		testNoFlowForMethod("<soot.jimple.infoflow.test.methodSummary.ApiClassClient: void iterativeApplyIsOverapproximation()>");
-	}
-
-	@Test(timeout = 30000)
 	public void staticFieldInUserCodeGap() {
 		testFlowForMethod("<soot.jimple.infoflow.test.methodSummary.ApiClassClient: void staticFieldInUserCodeGap()>");
 	}
@@ -284,7 +279,7 @@ public abstract class SummaryTaintWrapperTests {
 		checkInfoflow(iFlow, 1);
 	}
 
-	private void testNoFlowForMethod(String m) {
+	protected void testNoFlowForMethod(String m) {
 		IInfoflow iFlow = null;
 		try {
 			iFlow = initInfoflow();

@@ -51,7 +51,7 @@ public class CollectionWrapperPropagationRule extends WrapperPropagationRule {
 
         // Do not check taints that are not mentioned anywhere in the call
         final Aliasing aliasing = getAliasing();
-        boolean found = source.getAccessPath().isStaticFieldRef();
+        boolean found = source.getAccessPath().isStaticFieldRef() || source.getAccessPath().isEmpty();
         if (aliasing != null && !found && !source.getAccessPath().isEmpty()) {
             // The base object must be tainted
             Local base = null;
