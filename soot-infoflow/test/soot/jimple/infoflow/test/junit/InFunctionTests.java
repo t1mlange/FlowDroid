@@ -24,11 +24,12 @@ import soot.jimple.ReturnStmt;
 import soot.jimple.infoflow.IInfoflow;
 import soot.jimple.infoflow.entryPointCreators.DefaultEntryPointCreator;
 import soot.jimple.infoflow.sourcesSinks.manager.DefaultSourceSinkManager;
+import soot.jimple.infoflow.util.DebugFlowFunctionTaintPropagationHandler;
 
 /**
  * contain tests for Taintwrapper and parameters as sources and sinks
  */
-public abstract class InFunctionTests extends JUnitTests {
+ public abstract class InFunctionTests extends JUnitTests {
 
 	private static final String SOURCE_STRING_PARAMETER = "@parameter0: java.lang.String";
 	private static final String SOURCE_STRING_PARAMETER2 = "@parameter1: java.lang.String";
@@ -50,6 +51,7 @@ public abstract class InFunctionTests extends JUnitTests {
 	@Test(timeout = 300000)
 	public void inFunctionTest1() {
 		IInfoflow infoflow = initInfoflow(true);
+		infoflow.setTaintPropagationHandler(new DebugFlowFunctionTaintPropagationHandler());
 		String epoint = "<soot.jimple.infoflow.test.InFunctionCode: java.lang.String infSourceCode1(java.lang.String)>";
 
 		DefaultSourceSinkManager ssm = new DefaultSourceSinkManager(sources, sinks);
