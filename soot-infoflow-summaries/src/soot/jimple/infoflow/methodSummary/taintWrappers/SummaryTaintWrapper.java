@@ -264,11 +264,6 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 					final String superclassName = summaries.getSuperClass();
 					SootClass scSuperclass = Scene.v().forceResolve(superclassName, SootClass.SIGNATURES);
 					sc.setSuperclass(scSuperclass);
-				} else if (!summaries.isInterface() && !sc.hasSuperclass()) {
-					// If there's no superclass specified, use Object instead.
-					// Otherwise, some assumptions in the FastHierarchy break
-					// and the type intervals are bogus.
-					sc.setSuperclass(Scene.v().getSootClassUnsafe("java.lang.Object"));
 				}
 
 				// Register the interfaces
