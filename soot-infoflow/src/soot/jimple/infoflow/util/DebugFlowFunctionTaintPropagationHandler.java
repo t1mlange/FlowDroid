@@ -6,6 +6,7 @@ import soot.jimple.infoflow.InfoflowManager;
 import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.handlers.TaintPropagationHandler;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -17,6 +18,10 @@ import java.util.Set;
 public class DebugFlowFunctionTaintPropagationHandler implements TaintPropagationHandler {
     public static class MethodFilter {
         private final Set<String> signatures;
+
+        public MethodFilter(String signature) {
+            this.signatures = Collections.singleton(signature);
+        }
 
         public MethodFilter(Set<String> signatures) {
             this.signatures = signatures;
