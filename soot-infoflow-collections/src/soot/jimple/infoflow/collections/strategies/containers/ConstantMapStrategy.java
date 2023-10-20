@@ -19,8 +19,8 @@ import java.util.*;
  */
 public class ConstantMapStrategy implements IContainerStrategy {
     // Benign race on the counters because they are on the critical path within the data flow analysis
-    private long resolvedKeys;
-    private long unresolvedKeys;
+    protected long resolvedKeys;
+    protected long unresolvedKeys;
 
     protected final InfoflowManager manager;
 
