@@ -3,9 +3,7 @@ package soot.jimple.infoflow.collections.test.junit.inherited.infoflowSummaries;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.junit.Test;
 
@@ -15,11 +13,9 @@ import soot.jimple.infoflow.InfoflowConfiguration;
 import soot.jimple.infoflow.cfg.DefaultBiDiICFGFactory;
 import soot.jimple.infoflow.collections.CollectionInfoflow;
 import soot.jimple.infoflow.collections.taintWrappers.CollectionSummaryTaintWrapper;
-import soot.jimple.infoflow.collections.parser.StubDroidSummaryProvider;
+import soot.jimple.infoflow.collections.parser.CollectionSummaryParser;
 import soot.jimple.infoflow.collections.strategies.containers.TestConstantStrategy;
 import soot.jimple.infoflow.config.IInfoflowConfig;
-import soot.jimple.infoflow.methodSummary.taintWrappers.TaintWrapperFactory;
-import soot.jimple.infoflow.util.DebugFlowFunctionTaintPropagationHandler;
 import soot.options.Options;
 
 import javax.xml.stream.XMLStreamException;
@@ -57,7 +53,7 @@ public class SummaryTaintWrapperTests extends soot.jimple.infoflow.test.methodSu
         result.setSootConfig(testConfig);
 
         try {
-            StubDroidSummaryProvider sp = new StubDroidSummaryProvider(new File("stubdroidBased"));
+            CollectionSummaryParser sp = new CollectionSummaryParser(new File("stubdroidBased"));
             sp.loadAdditionalSummaries("../soot-infoflow-summaries/testSummaries/soot.jimple.infoflow.test.methodSummary.ApiClass.xml");
             sp.loadAdditionalSummaries("../soot-infoflow-summaries/testSummaries/soot.jimple.infoflow.test.methodSummary.GapClass.xml");
             sp.loadAdditionalSummaries("../soot-infoflow-summaries/testSummaries/soot.jimple.infoflow.test.methodSummary.Data.xml");

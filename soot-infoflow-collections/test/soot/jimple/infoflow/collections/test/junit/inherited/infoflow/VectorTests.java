@@ -11,7 +11,7 @@ import soot.jimple.infoflow.IInfoflow;
 import soot.jimple.infoflow.cfg.DefaultBiDiICFGFactory;
 import soot.jimple.infoflow.collections.CollectionInfoflow;
 import soot.jimple.infoflow.collections.taintWrappers.CollectionSummaryTaintWrapper;
-import soot.jimple.infoflow.collections.parser.StubDroidSummaryProvider;
+import soot.jimple.infoflow.collections.parser.CollectionSummaryParser;
 import soot.jimple.infoflow.collections.strategies.containers.TestConstantStrategy;
 
 public class VectorTests extends soot.jimple.infoflow.test.junit.VectorTests {
@@ -20,7 +20,7 @@ public class VectorTests extends soot.jimple.infoflow.test.junit.VectorTests {
 
         AbstractInfoflow result = new CollectionInfoflow("", false, new DefaultBiDiICFGFactory());
         try {
-            StubDroidSummaryProvider sp = new StubDroidSummaryProvider(new File("stubdroidBased"));
+            CollectionSummaryParser sp = new CollectionSummaryParser(new File("stubdroidBased"));
             sp.loadAdditionalSummaries("summariesManual");
             result.setTaintWrapper(new CollectionSummaryTaintWrapper(sp, TestConstantStrategy::new));
         } catch (Exception e) {

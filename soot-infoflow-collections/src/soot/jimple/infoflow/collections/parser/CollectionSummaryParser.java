@@ -9,7 +9,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-public class StubDroidSummaryProvider extends XMLSummaryProvider {
+public class CollectionSummaryParser extends XMLSummaryProvider {
 
     /**
      * Loads a summary from a folder within the StubDroid jar file.
@@ -19,8 +19,8 @@ public class StubDroidSummaryProvider extends XMLSummaryProvider {
      * @throws URISyntaxException
      * @throws IOException
      */
-    public StubDroidSummaryProvider(String folderInJar) throws URISyntaxException, IOException {
-        this(folderInJar, StubDroidSummaryProvider.class);
+    public CollectionSummaryParser(String folderInJar) throws URISyntaxException, IOException {
+        this(folderInJar, CollectionSummaryParser.class);
     }
 
     /**
@@ -32,7 +32,7 @@ public class StubDroidSummaryProvider extends XMLSummaryProvider {
      * @throws URISyntaxException
      * @throws IOException
      */
-    public StubDroidSummaryProvider(String folderInJar, Class<?> parentClass) throws URISyntaxException, IOException {
+    public CollectionSummaryParser(String folderInJar, Class<?> parentClass) throws URISyntaxException, IOException {
         summaryReader = new StubDroidParser();
         loadSummariesFromJAR(folderInJar, parentClass, p -> loadClass(p));
     }
@@ -42,7 +42,7 @@ public class StubDroidSummaryProvider extends XMLSummaryProvider {
      *
      * @param source The single file or directory to load
      */
-    public StubDroidSummaryProvider(File source) {
+    public CollectionSummaryParser(File source) {
         this(Collections.singletonList(source));
     }
 
@@ -51,21 +51,16 @@ public class StubDroidSummaryProvider extends XMLSummaryProvider {
      *
      * @param files The files to load
      */
-    public StubDroidSummaryProvider(List<File> files) {
+    public CollectionSummaryParser(List<File> files) {
         summaryReader = new StubDroidParser();
         loadSummariesFromFiles(files, f -> loadClass(f));
     }
 
     public void loadAdditionalSummaries(String folderInJar) throws URISyntaxException, IOException {
-        loadSummariesFromJAR(folderInJar, StubDroidSummaryProvider.class, p -> {
+        loadSummariesFromJAR(folderInJar, CollectionSummaryParser.class, p -> {
             if (!loadedClasses.contains(fileToClass(p.getFileName().toString())))
                 loadClass(p);
         });
-    }
-
-    @Override
-    public boolean mayHaveSummaryForMethod(String subsig) {
-        return subsigMethodsWithSummaries.contains(subsig);
     }
 
     @Override
