@@ -14,7 +14,7 @@ import soot.jimple.infoflow.InfoflowManager;
 import soot.jimple.infoflow.collections.taintWrappers.CollectionSummaryTaintWrapper;
 import soot.jimple.infoflow.collections.context.IntervalContext;
 import soot.jimple.infoflow.collections.context.UnknownContext;
-import soot.jimple.infoflow.collections.parser.StubDroidSummaryProvider;
+import soot.jimple.infoflow.collections.parser.CollectionSummaryParser;
 import soot.jimple.infoflow.collections.strategies.containers.TestConstantStrategy;
 import soot.jimple.infoflow.data.ContextDefinition;
 import soot.jimple.infoflow.taintWrappers.ITaintPropagationWrapper;
@@ -25,7 +25,7 @@ public class ListAddAllItselfTests extends FlowDroidTests {
 
     protected ITaintPropagationWrapper getTaintWrapper() {
         try {
-            StubDroidSummaryProvider sp = new StubDroidSummaryProvider(new File("stubdroidBased"));
+            CollectionSummaryParser sp = new CollectionSummaryParser(new File("stubdroidBased"));
             sp.loadAdditionalSummaries("summariesManual");
             CollectionSummaryTaintWrapper sbtw = new CollectionSummaryTaintWrapper(sp, TestConstantStrategy::new) {
                 @Override

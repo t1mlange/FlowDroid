@@ -2,6 +2,7 @@ package soot.jimple.infoflow.collections.test.junit;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -18,9 +19,13 @@ import soot.jimple.infoflow.cfg.DefaultBiDiICFGFactory;
 import soot.jimple.infoflow.collections.CollectionInfoflow;
 import soot.jimple.infoflow.collections.CollectionsSetupApplication;
 import soot.jimple.infoflow.collections.taintWrappers.CollectionSummaryTaintWrapper;
-import soot.jimple.infoflow.collections.parser.StubDroidSummaryProvider;
+import soot.jimple.infoflow.collections.parser.CollectionSummaryParser;
 import soot.jimple.infoflow.collections.solver.fastSolver.AppendingCollectionInfoflowSolver;
 import soot.jimple.infoflow.collections.strategies.containers.TestConstantStrategy;
+import soot.jimple.infoflow.collections.taintWrappers.PrioritizingMethodSummaryProvider;
+import soot.jimple.infoflow.methodSummary.data.provider.EagerSummaryProvider;
+import soot.jimple.infoflow.methodSummary.data.provider.IMethodSummaryProvider;
+import soot.jimple.infoflow.methodSummary.taintWrappers.TaintWrapperFactory;
 import soot.jimple.infoflow.problems.AbstractInfoflowProblem;
 import soot.jimple.infoflow.results.DataFlowResult;
 import soot.jimple.infoflow.results.InfoflowResults;
@@ -113,8 +118,10 @@ public abstract class FlowDroidTests {
 
 	protected ITaintPropagationWrapper getTaintWrapper() {
 		try {
-			StubDroidSummaryProvider sp = new StubDroidSummaryProvider(new File("stubdroidBased"));
-			sp.loadAdditionalSummaries("summariesManual");
+			ArrayList<IMethodSummaryProvider> providers = new ArrayList<>();
+			providers.add(new CollectionSummaryParser("stubdroidBased"));
+			providers.add(new EagerSummaryProvider(TaintWrapperFactory.DEFAULT_SUMMARY_DIR));
+			PrioritizingMethodSummaryProvider sp = new PrioritizingMethodSummaryProvider(providers);
 			return new CollectionSummaryTaintWrapper(sp, TestConstantStrategy::new);
 		} catch (Exception e) {
 			throw new RuntimeException();
