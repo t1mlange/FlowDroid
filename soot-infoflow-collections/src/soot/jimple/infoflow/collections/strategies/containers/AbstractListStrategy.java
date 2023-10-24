@@ -13,6 +13,7 @@ import soot.jimple.infoflow.collections.context.IntervalContext;
 import soot.jimple.infoflow.collections.context.KeySetContext;
 import soot.jimple.infoflow.collections.context.UnknownContext;
 import soot.jimple.infoflow.collections.strategies.containers.shift.IShiftOperation;
+import soot.jimple.infoflow.collections.strategies.containers.shift.MinMaxShift;
 import soot.jimple.infoflow.collections.strategies.containers.shift.PreciseShift;
 import soot.jimple.infoflow.collections.util.Tristate;
 import soot.jimple.infoflow.data.ContextDefinition;
@@ -31,7 +32,7 @@ public abstract class AbstractListStrategy extends ConstantMapStrategy {
 
     public AbstractListStrategy(InfoflowManager manager) {
         super(manager);
-        this.shiftOp = new PreciseShift();
+        this.shiftOp = new MinMaxShift();
     }
 
     public AbstractListStrategy(InfoflowManager manager, IShiftOperation shiftOp) {
