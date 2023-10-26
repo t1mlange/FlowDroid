@@ -1,9 +1,7 @@
 package soot.jimple.infoflow.util;
 
-import java.util.ArrayDeque;
-import java.util.Deque;
-import java.util.IdentityHashMap;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import com.google.common.collect.Sets;
 import org.slf4j.Logger;
@@ -141,5 +139,52 @@ public final class DebugAbstractionTree {
 			}
 		}
 		return visited.size();
+	}
+
+	/**
+	 * Get the maximum neighbor count
+	 *
+	 * @param absCollection collection of abtractions
+	 * @param n n abstractions with the maximum neighbors
+	 * @return
+	 */
+	public static List<Abstraction> getWithMaxNeighbors(Abstraction abs, int n) {
+		Set<Abstraction> visited = Sets.newIdentityHashSet();
+		Deque<Abstraction> worklist = new ArrayDeque<>();
+		worklist.add(abs);
+		while (!worklist.isEmpty()) {
+			Abstraction curr = worklist.poll();
+			if (visited.add(curr)) {
+				if (curr.getPredecessor() != null)
+					worklist.add(curr.getPredecessor());
+				if (curr.getNeighborCount() > 0)
+					worklist.addAll(curr.getNeighbors());
+			}
+		}
+
+		return visited.parallelStream()
+				.sorted(Comparator.comparingInt(Abstraction::getNeighborCount).reversed())
+				.limit(n)
+				.collect(Collectors.toList());
+	}
+
+
+	public static Abstraction getMaxNeighbors(Abstraction abs) {
+		Set<Abstraction> visited = Sets.newIdentityHashSet();
+		Deque<Abstraction> worklist = new ArrayDeque<>();
+		worklist.add(abs);
+		while (!worklist.isEmpty()) {
+			Abstraction curr = worklist.poll();
+			if (visited.add(curr)) {
+				if (curr.getPredecessor() != null)
+					worklist.add(curr.getPredecessor());
+				if (curr.getNeighborCount() > 0)
+					worklist.addAll(curr.getNeighbors());
+			}
+		}
+
+		return visited.parallelStream()
+				.max(Comparator.comparingInt(Abstraction::getNeighborCount))
+				.orElse(null);
 	}
 }
