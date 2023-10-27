@@ -38,6 +38,8 @@ public class ContextSensitivePathBuilder extends ConcurrentAbstractionPathBuilde
 	// Set holds all paths that reach a source
 	protected ConcurrentHashSet<SourceContextAndPath> sourceReachingScaps = new ConcurrentHashSet<>();
 
+	private final int maxJoinPoints;
+
 	/**
 	 * Creates a new instance of the {@link ContextSensitivePathBuilder} class
 	 * 
@@ -46,6 +48,7 @@ public class ContextSensitivePathBuilder extends ConcurrentAbstractionPathBuilde
 	 */
 	public ContextSensitivePathBuilder(InfoflowManager manager) {
 		super(manager, createExecutor(manager));
+		this.maxJoinPoints = config.getSolverConfiguration().getMaxJoinPointAbstractions();
 	}
 
 	private static InterruptableExecutor createExecutor(InfoflowManager manager) {
@@ -95,8 +98,11 @@ public class ContextSensitivePathBuilder extends ConcurrentAbstractionPathBuilde
 					// Process the predecessor
 					processAndQueue(pred, scap);
 
+					int n = pred.getNeighborCount();
 					// Process the predecessor's neighbors
-					if (pred.getNeighbors() != null) {
+					// only if it has neighbors (n > 0)
+					// and the neighbors are not cut off (n < maxJoinPoints)
+					if (n > 0 && (maxJoinPoints < 0 || n < maxJoinPoints)) {
 						for (Abstraction neighbor : pred.getNeighbors()) {
 							processAndQueue(neighbor, scap);
 						}
