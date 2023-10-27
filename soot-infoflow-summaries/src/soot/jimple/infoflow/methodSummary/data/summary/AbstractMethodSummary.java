@@ -58,8 +58,10 @@ public abstract class AbstractMethodSummary {
 		int fromLen = flow.getAccessPathLength();
 		if (fromLen == 0)
 			hasContext = t.getBaseContext() != null;
-		else
+		else if (t.getAccessPathLength() >= fromLen)
 			hasContext = t.getAccessPath().getContext(fromLen - 1) != null;
+		else
+			hasContext = false;
 
 		return (hasContext && isAlias == IsAliasType.WITH_CONTEXT);
 	}
