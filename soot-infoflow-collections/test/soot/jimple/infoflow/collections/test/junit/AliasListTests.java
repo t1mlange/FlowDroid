@@ -6,12 +6,8 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import soot.jimple.Stmt;
 import soot.jimple.infoflow.IInfoflow;
 import soot.jimple.infoflow.InfoflowConfiguration;
-import soot.jimple.infoflow.results.DataFlowResult;
-import soot.jimple.infoflow.results.InfoflowResults;
-import soot.jimple.infoflow.util.DebugFlowFunctionTaintPropagationHandler;
 
 public class AliasListTests extends FlowDroidTests {
     @Override
@@ -29,7 +25,7 @@ public class AliasListTests extends FlowDroidTests {
         Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
     }
 
-    @Test//(timeout = 30000)
+    @Test(timeout = 30000)
     public void testShiftOnAlias1() {
         IInfoflow infoflow = initInfoflow();
         infoflow.getConfig().getPathConfiguration().setPathReconstructionMode(InfoflowConfiguration.PathReconstructionMode.Fast);
