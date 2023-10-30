@@ -441,6 +441,10 @@ public class CollectionSummaryTaintWrapper extends SummaryTaintWrapper implement
                     if (flow.isExcludedOnClear() && killIncomingTaint.value)
                         continue;
 
+                    // Do not apply the normal flows for alias queries
+                    if (curPropagator.isInversePropagator() && !flow.isAlias())
+                        continue;
+
                     // Apply the flow summary
                     AccessPathPropagator newPropagator = applyFlow(flow, curPropagator);
 
