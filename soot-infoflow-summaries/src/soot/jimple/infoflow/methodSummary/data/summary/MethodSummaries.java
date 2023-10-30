@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import heros.solver.Pair;
 import soot.Scene;
@@ -259,6 +260,33 @@ public class MethodSummaries implements Iterable<MethodFlow> {
 
 		if (clears != null && !clears.isEmpty())
 			summaries.mergeClears(clears.values());
+
+		return summaries;
+	}
+
+
+	public MethodSummaries filterForAliases() {
+		MethodSummaries summaries = null;
+
+		// Get the flows
+		if (flows != null && !flows.isEmpty()) {
+			Set<MethodFlow> sigFlows = flows.values().stream().filter(f -> f.isAlias != IsAliasType.FALSE).collect(Collectors.toSet());
+			if (!sigFlows.isEmpty()) {
+				if (summaries == null)
+					summaries = new MethodSummaries();
+				summaries.mergeFlows(sigFlows);
+			}
+		}
+
+		// Get the clears
+		if (clears != null && !clears.isEmpty()) {
+			Set<MethodClear> sigClears = clears.values().stream().filter(f -> f.isAlias != IsAliasType.FALSE).collect(Collectors.toSet());
+			if (!sigClears.isEmpty()) {
+				if (summaries == null)
+					summaries = new MethodSummaries();
+				summaries.mergeClears(sigClears);
+			}
+		}
 
 		return summaries;
 	}
