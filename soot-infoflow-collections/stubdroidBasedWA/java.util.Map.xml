@@ -12,7 +12,7 @@
 						AccessPath="[java.util.Map: java.lang.Object[] keys]"
 						AccessPathTypes="[java.lang.Object[]]" />
 				</flow>
-				<flow isAlias="false" typeChecking="false" final="true">
+				<flow isAlias="withContext" typeChecking="false" final="true">
 					<from sourceSinkType="Parameter" ParameterIndex="1" />
 					<to sourceSinkType="Field"
 						AccessPath="[java.util.Map: java.lang.Object[] values]"
@@ -282,7 +282,7 @@
 						gap="42" />
 				</flow>
 				<!-- Base Object is tainted -->
-				<flow isAlias="false" typeChecking="false"
+				<flow isAlias="withContext" typeChecking="false"
 					  cutFirstField="true">
 					<from sourceSinkType="Field"
 						  AccessPath="[java.util.Map: java.lang.Object[] values]"
@@ -300,7 +300,7 @@
 						gap="42" />
 				</flow>
 				<!-- gap to map -->
-				<flow isAlias="false" typeChecking="false">
+				<flow isAlias="withContext" typeChecking="false">
 					<from sourceSinkType="Return"
 						  gap="42" />
 					<to sourceSinkType="Field"
