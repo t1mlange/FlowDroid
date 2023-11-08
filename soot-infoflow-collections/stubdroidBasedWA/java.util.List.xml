@@ -11,7 +11,7 @@
                        ParameterIndex="0" />
             </constraints>
             <flows>
-                <flow isAlias="false" typeChecking="false" final="true">
+                <flow isAlias="withContext" typeChecking="false" final="true">
                     <from sourceSinkType="Parameter" ParameterIndex="1" />
                     <to sourceSinkType="Field"
                         AccessPath="[java.util.Collection: java.lang.Object[] innerArray]"

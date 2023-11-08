@@ -1798,6 +1798,9 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 			MethodSummaries flowsInCallee = classFlows.getMethodSummaries();
 			if (flowsInCallee == null || flowsInCallee.isEmpty())
 				continue;
+			flowsInCallee = flowsInCallee.filterForAliases();
+			if (flowsInCallee == null || flowsInCallee.isEmpty())
+				continue;
 
 			// Apply the data flows until we reach a fixed point
 			Set<AccessPath> resCallee = applyFlowsIterative(flowsInCallee, workList, false, stmt, taintedAbs);
