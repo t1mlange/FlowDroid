@@ -25,8 +25,8 @@ import soot.jimple.infoflow.data.ContextDefinition;
  */
 public abstract class AbstractListStrategy extends ConstantMapStrategy {
     // Benign race on the counters because they are on the critical path within the data flow analysis
-    protected long resolvedIndices;
-    protected long unresolvedIndices;
+    private long resolvedIndices;
+    private long unresolvedIndices;
 
     private final IShiftOperation shiftOp;
 

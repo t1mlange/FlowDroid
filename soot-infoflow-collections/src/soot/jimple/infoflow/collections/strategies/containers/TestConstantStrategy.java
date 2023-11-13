@@ -60,12 +60,10 @@ public class TestConstantStrategy extends AbstractListStrategy {
                     sm -> new ListSizeAnalysis(manager.getICFG().getOrCreateUnitGraph(sm)));
             ListSizeAnalysis.ListSize size = lstSizeAnalysis.getFlowBefore(stmt).get(value);
             if (size != null && !size.isBottom()) {
-                resolvedIndices++;
                 return new IntervalContext(decr ? size.getSize() - 1 : size.getSize());
             }
         }
 
-        unresolvedIndices++;
         return UnknownContext.v();
     }
 }
