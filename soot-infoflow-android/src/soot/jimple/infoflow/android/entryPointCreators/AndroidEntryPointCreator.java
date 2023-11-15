@@ -10,14 +10,10 @@
  ******************************************************************************/
 package soot.jimple.infoflow.android.entryPointCreators;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.io.File;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.util.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,6 +48,7 @@ import soot.jimple.infoflow.data.SootMethodAndClass;
 import soot.jimple.infoflow.entryPointCreators.IEntryPointCreator;
 import soot.jimple.infoflow.util.SootMethodRepresentationParser;
 import soot.jimple.infoflow.util.SystemClassHandler;
+import soot.jimple.toolkits.callgraph.ReachableMethods;
 import soot.jimple.toolkits.scalar.NopEliminator;
 import soot.options.Options;
 import soot.util.HashMultiMap;
@@ -113,6 +110,46 @@ public class AndroidEntryPointCreator extends AbstractAndroidEntryPointCreator i
 		reset();
 
 		logger.info(String.format("Creating Android entry point for %d components...", components.size()));
+
+		{
+			File f = new File("unique_packages.txt");
+			if (!f.exists())
+				throw new RuntimeException("WHERE IS UNIQUE_PACKAGES");
+			List<String> lines;
+			try {
+				lines = Files.readAllLines(f.getAbsoluteFile().toPath(), Charset.defaultCharset());
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
+
+			Set<SootMethod> mset = new HashSet<>();
+			for (SootClass sc : new ArrayList<>(Scene.v().getApplicationClasses())) {
+				if (lines.stream().noneMatch(line -> sc.getName().startsWith(line))) {
+					sc.setLibraryClass();
+					continue;
+				}
+
+				for (SootMethod sm : sc.getMethods()) {
+					if (sm.getDeclaringClass().isInterface())
+						continue;
+					if (!sm.isConcrete() || !sm.isPublic())
+						continue;
+
+					sm.retrieveActiveBody();
+					if (!sm.hasActiveBody())
+						continue;
+
+					mset.add(sm);
+				}
+
+				for (SootMethod sm : mset) {
+					createClassInstances(Collections.singleton(sm.getDeclaringClass()));
+					Local l = localVarsForClasses.get(sm.getDeclaringClass());
+					if (l != null)
+						createPlainMethodCall(l, sm);
+				}
+			}
+		}
 
 		// For some weird reason unknown to anyone except the flying spaghetti
 		// monster, the onCreate() methods of content providers run even before

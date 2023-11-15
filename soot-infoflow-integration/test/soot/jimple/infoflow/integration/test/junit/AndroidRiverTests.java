@@ -7,6 +7,7 @@ import soot.Scene;
 import soot.SootMethod;
 import soot.Unit;
 import soot.jimple.infoflow.android.SetupApplication;
+import soot.jimple.infoflow.android.callbacks.codeql.CallbackEnricher;
 import soot.jimple.infoflow.android.source.parsers.xml.XMLSourceSinkParser;
 import soot.jimple.infoflow.methodSummary.taintWrappers.TaintWrapperFactory;
 import soot.jimple.infoflow.results.DataFlowResult;
@@ -77,11 +78,23 @@ public class AndroidRiverTests extends RiverJUnitTests {
         // Also see OutputStreamTestCode#testPrintWriter3 but this time in Android
         // because Soot generates different jimple for Android and Java.
         SetupApplication app = initApplication("testAPKs/PrintWriterTest.apk");
-        app.getConfig().setWriteOutputFiles(true);
         XMLSourceSinkParser parser = XMLSourceSinkParser.fromFile("./build/classes/res/AndroidRiverSourcesAndSinks.xml");
         InfoflowResults results = app.runInfoflow(parser);
         Assert.assertEquals(1, results.size());
     }
+
+    @Test//(timeout = 300000)
+    public void adb() throws IOException {
+        // Also see OutputStreamTestCode#testPrintWriter3 but this time in Android
+        // because Soot generates different jimple for Android and Java.
+        SetupApplication app = initApplication("/home/lange/paper-remote/paper-conditionalflows/fdroid-results/AppManager/AppManager-debug.apk");
+        XMLSourceSinkParser parser = XMLSourceSinkParser.fromFile("./build/classes/res/AndroidRiverSourcesAndSinks.xml");
+//        app.addPreprocessor(new CallbackEnricher(app.getConfig().getAnalysisFileConfig().getTargetAPKFile()));
+        app.getConfig().setExcludeSootLibraryClasses(true);
+        InfoflowResults results = app.runInfoflow(parser);
+        Assert.assertEquals(1, results.size());
+    }
+
 
     @Test
     public void externalCacheDirTest() throws IOException {

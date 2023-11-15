@@ -11,16 +11,11 @@
 package soot.jimple.infoflow.android;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.util.*;
 
 import javax.xml.stream.XMLStreamException;
 
@@ -30,14 +25,7 @@ import org.xml.sax.SAXException;
 import org.xmlpull.v1.XmlPullParserException;
 
 import heros.solver.Pair;
-import soot.G;
-import soot.Main;
-import soot.PackManager;
-import soot.Scene;
-import soot.SootClass;
-import soot.SootField;
-import soot.SootMethod;
-import soot.Unit;
+import soot.*;
 import soot.jimple.Stmt;
 import soot.jimple.infoflow.AbstractInfoflow;
 import soot.jimple.infoflow.BackwardsInfoflow;
@@ -107,6 +95,7 @@ import soot.jimple.infoflow.taintWrappers.ITaintPropagationWrapper;
 import soot.jimple.infoflow.taintWrappers.ITaintWrapperDataFlowAnalysis;
 import soot.jimple.infoflow.util.SystemClassHandler;
 import soot.jimple.infoflow.values.IValueProvider;
+import soot.jimple.toolkits.callgraph.ReachableMethods;
 import soot.options.Options;
 import soot.util.HashMultiMap;
 import soot.util.MultiMap;
@@ -1314,6 +1303,41 @@ public class SetupApplication implements ITaintWrapperDataFlowAnalysis {
 			return super.isUserCodeClass(className) || className.startsWith(packageName);
 		}
 
+
+//		@Override
+//		protected Collection<SootMethod> getMethodsForSeeds(IInfoflowCFG icfg) {
+//			if (!manager.getConfig().getExcludeSootLibraryClasses())
+//				return super.getMethodsForSeeds(icfg);
+//
+//			File f = new File("unique_packages.txt");
+//			if (!f.exists())
+//				throw new RuntimeException("WHERE IS UNIQUE_PACKAGES");
+//			List<String> lines;
+//			try {
+//				lines = Files.readAllLines(f.getAbsoluteFile().toPath(), Charset.defaultCharset());
+//			} catch (Exception e) {
+//				throw new RuntimeException(e);
+//			}
+//
+//			List<SootMethod> seeds = new LinkedList<>();
+//			for (SootClass sc : new HashSet<>(Scene.v().getApplicationClasses())) {
+//				if (lines.stream().noneMatch(line -> sc.getName().startsWith(line))) {
+//					sc.setLibraryClass();
+//					continue;
+//				}
+//
+//				for (SootMethod sm : sc.getMethods()) {
+//					if (!sm.isConcrete())
+//						continue;
+//
+//					sm.retrieveActiveBody();
+//					icfg.notifyMethodChanged(sm);
+//					if (isValidSeedMethod(sm))
+//						seeds.add(sm);
+//				}
+//			}
+//			return seeds;
+//		}
 	}
 
 	protected class InPlaceBackwardsInfoflow extends BackwardsInfoflow implements IInPlaceInfoflow {
