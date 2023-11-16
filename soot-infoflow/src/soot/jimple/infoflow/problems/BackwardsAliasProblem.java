@@ -625,12 +625,6 @@ public class BackwardsAliasProblem extends AbstractInfoflowProblem {
 					}
 
 					private Set<Abstraction> computeTargetsInternal(Abstraction d1, Abstraction source) {
-						// If excluded or we do not anything about the callee,
-						// we just pass the taint over the statement
-						if (interproceduralCFG().getCalleesOfCallAt(callSite).isEmpty()) {
-							return Collections.singleton(source);
-						}
-
 						if (taintWrapper != null) {
 							if (taintWrapper.isExclusive(callStmt, source)) {
 								handOver(d1, callSite, source);
@@ -652,6 +646,12 @@ public class BackwardsAliasProblem extends AbstractInfoflowProblem {
 						}
 
 						if (isExcluded(callee)) {
+							return Collections.singleton(source);
+						}
+
+						// If excluded or we do not anything about the callee,
+						// we just pass the taint over the statement
+						if (interproceduralCFG().getCalleesOfCallAt(callSite).isEmpty()) {
 							return Collections.singleton(source);
 						}
 

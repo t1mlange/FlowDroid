@@ -11,7 +11,7 @@
 						AccessPath="[java.io.File: java.lang.String fileName]"
 						AccessPathTypes="[java.lang.String]" />
 				</flow>
-				<flow isAlias="false" typeChecking="false">
+				<flow isAlias="false" typeChecking="false" excludedInRiver="true">
 					<from sourceSinkType="Parameter" ParameterIndex="1" />
 					<to sourceSinkType="Field"
 						AccessPath="[java.io.File: java.lang.String fileName]"
@@ -37,7 +37,7 @@
 						AccessPath="[java.io.File: java.lang.String fileName]"
 						AccessPathTypes="[java.lang.String]" />
 				</flow>
-				<flow isAlias="false" typeChecking="false">
+				<flow isAlias="false" typeChecking="false" excludedInRiver="true">
 					<from sourceSinkType="Parameter" ParameterIndex="1" />
 					<to sourceSinkType="Field"
 						AccessPath="[java.io.File: java.lang.String fileName]"
@@ -173,6 +173,18 @@
 						AccessPathTypes="[java.lang.String]" />
 					<to sourceSinkType="Return"
 						AccessPath="[java.net.URL: java.lang.String file]"
+						AccessPathTypes="[java.lang.String]" />
+				</flow>
+			</flows>
+		</method>
+		<method id="java.io.File[] listFiles()">
+			<flows>
+				<flow isAlias="false" typeChecking="false">
+					<from sourceSinkType="Field"
+						  AccessPath="[java.io.File: java.lang.String fileName]"
+						  AccessPathTypes="[java.lang.String]" />
+					<to sourceSinkType="Return"
+						AccessPath="[java.io.File: java.lang.String fileName]"
 						AccessPathTypes="[java.lang.String]" />
 				</flow>
 			</flows>

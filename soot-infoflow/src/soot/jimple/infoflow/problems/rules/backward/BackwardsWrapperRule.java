@@ -122,6 +122,10 @@ public class BackwardsWrapperRule extends AbstractTaintPropagationRule {
 
 		Set<Abstraction> res = wrapper.getInverseTaintsForMethod(stmt, d1, source);
 		if (res != null) {
+			for (Abstraction abs : res)
+				if (abs != source)
+					abs.setCorrespondingCallSite(stmt);
+
 			Set<Abstraction> resWAliases = new HashSet<>();
 
 			SootMethod sm = manager.getICFG().getMethodOf(stmt);
@@ -189,11 +193,6 @@ public class BackwardsWrapperRule extends AbstractTaintPropagationRule {
 			}
 			res = resWAliases;
 		}
-
-		if (res != null)
-			for (Abstraction abs : res)
-				if (abs != source)
-					abs.setCorrespondingCallSite(stmt);
 
 		return res;
 	}

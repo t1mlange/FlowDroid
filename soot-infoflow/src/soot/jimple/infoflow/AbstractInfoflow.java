@@ -404,6 +404,7 @@ public abstract class AbstractInfoflow implements IInfoflow {
 
 	private void setChaOptions() {
 		Options.v().setPhaseOption("cg.cha", "on");
+		Options.v().setPhaseOption("cg.cha", "apponly:true");
 	}
 
 	private void setSparkOptions() {
@@ -795,6 +796,7 @@ public abstract class AbstractInfoflow implements IInfoflow {
 					reverseAliasing.excludeMethodFromMustAlias(dummyMainMethod);
 				additionalManager.setAliasing(reverseAliasing);
 				additionalManager.setAliasSolver(additionalAliasSolver);
+//				additionalManager.getAliasSolver().getTabulationProblem().setTaintPropagationHandler(new DebugFlowFunctionTaintPropagationHandler());
 
 				manager.additionalManager = additionalManager;
 
@@ -1677,9 +1679,7 @@ public abstract class AbstractInfoflow implements IInfoflow {
 			AbstractionAtSink curAbs = absAtSinkIt.next();
 			for (AbstractionAtSink checkAbs : res) {
 				if (checkAbs != curAbs && checkAbs.getSinkStmt() == curAbs.getSinkStmt()
-						&& checkAbs.getAbstraction().isImplicit() == curAbs.getAbstraction().isImplicit()
-						&& checkAbs.getAbstraction().getSourceContext() == curAbs.getAbstraction().getSourceContext()
-						&& checkAbs.getAbstraction().getTurnUnit() == curAbs.getAbstraction().getTurnUnit()) {
+					&& checkAbs.getAbstraction().localEquals(curAbs.getAbstraction())) {
 					if (checkAbs.getAbstraction().getAccessPath().entails(curAbs.getAbstraction().getAccessPath())) {
 						absAtSinkIt.remove();
 						break;

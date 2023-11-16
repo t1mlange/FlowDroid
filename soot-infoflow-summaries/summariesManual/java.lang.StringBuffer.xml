@@ -21,7 +21,7 @@
 		</method>
 		<method id="java.lang.StringBuffer append(boolean)">
 			<flows>
-				<flow isAlias="false" typeChecking="false">
+				<flow isAlias="false" typeChecking="false" cutSubfields="true">
 					<from sourceSinkType="Parameter" ParameterIndex="0" />
 					<to sourceSinkType="Field" 
 						 />
@@ -32,7 +32,7 @@
 				</flow>
 			</flows>
 		</method>
-		<method id="java.lang.StringBuffer append(char)">
+		<method id="java.lang.StringBuffer append(char)" cutSubfields="true">
 			<flows>
 				<flow isAlias="false" typeChecking="false">
 					<from sourceSinkType="Parameter" ParameterIndex="0" />
@@ -45,7 +45,7 @@
 				</flow>
 			</flows>
 		</method>
-		<method id="java.lang.StringBuffer append(char[])">
+		<method id="java.lang.StringBuffer append(char[])" cutSubfields="true">
 			<flows>
 				<flow isAlias="false" typeChecking="false">
 					<from sourceSinkType="Parameter" ParameterIndex="0" />
@@ -58,7 +58,7 @@
 				</flow>
 			</flows>
 		</method>
-		<method id="java.lang.StringBuffer append(char[],int,int)">
+		<method id="java.lang.StringBuffer append(char[],int,int)" cutSubfields="true">
 			<flows>
 				<flow isAlias="false" typeChecking="false">
 					<from sourceSinkType="Parameter" ParameterIndex="0" />
@@ -71,7 +71,7 @@
 				</flow>
 			</flows>
 		</method>
-		<method id="java.lang.StringBuffer append(double)">
+		<method id="java.lang.StringBuffer append(double)" cutSubfields="true">
 			<flows>
 				<flow isAlias="false" typeChecking="false">
 					<from sourceSinkType="Parameter" ParameterIndex="0" />
@@ -84,7 +84,7 @@
 				</flow>
 			</flows>
 		</method>
-		<method id="java.lang.StringBuffer append(float)">
+		<method id="java.lang.StringBuffer append(float)" cutSubfields="true">
 			<flows>
 				<flow isAlias="false" typeChecking="false">
 					<from sourceSinkType="Parameter" ParameterIndex="0" />
@@ -97,7 +97,7 @@
 				</flow>
 			</flows>
 		</method>
-		<method id="java.lang.StringBuffer append(int)">
+		<method id="java.lang.StringBuffer append(int)" cutSubfields="true">
 			<flows>
 				<flow isAlias="false" typeChecking="false">
 					<from sourceSinkType="Parameter" ParameterIndex="0" />
@@ -112,7 +112,7 @@
 		</method>
 		<method id="java.lang.StringBuffer append(java.lang.AbstractStringBuffer)">
 			<flows>
-				<flow isAlias="false" typeChecking="false">
+				<flow isAlias="false" typeChecking="false" cutSubfields="true">
 					<from sourceSinkType="Parameter" ParameterIndex="0" />
 					<to sourceSinkType="Field" 
 						 />
@@ -125,7 +125,7 @@
 		</method>
 		<method id="java.lang.StringBuffer append(java.lang.CharSequence)">
 			<flows>
-				<flow isAlias="false" typeChecking="false">
+				<flow isAlias="false" typeChecking="false" cutSubfields="true">
 					<from sourceSinkType="Parameter" ParameterIndex="0" />
 					<to sourceSinkType="Field" 
 						 />
@@ -138,7 +138,7 @@
 		</method>
 		<method id="java.lang.StringBuffer append(java.lang.CharSequence,int,int)">
 			<flows>
-				<flow isAlias="false" typeChecking="false">
+				<flow isAlias="false" typeChecking="false" cutSubfields="true">
 					<from sourceSinkType="Parameter" ParameterIndex="0" />
 					<to sourceSinkType="Field" 
 						 />
@@ -151,7 +151,7 @@
 		</method>
 		<method id="java.lang.StringBuffer append(java.lang.Object)">
 			<flows>
-				<flow isAlias="false" typeChecking="false">
+				<flow isAlias="false" typeChecking="false" cutSubfields="true">
 					<from sourceSinkType="Parameter" ParameterIndex="0" />
 					<to sourceSinkType="Field" 
 						 />
@@ -164,7 +164,7 @@
 		</method>
 		<method id="java.lang.StringBuffer append(java.lang.String)">
 			<flows>
-				<flow isAlias="false" typeChecking="false">
+				<flow isAlias="false" typeChecking="false" cutSubfields="true">
 					<from sourceSinkType="Parameter" ParameterIndex="0" />
 					<to sourceSinkType="Field" 
 						 />
@@ -177,12 +177,12 @@
 		</method>
 		<method id="java.lang.StringBuffer append(java.lang.StringBuffer)">
 			<flows>
-				<flow isAlias="false" typeChecking="false">
+				<flow isAlias="false" typeChecking="false" cutSubfields="true">
 					<from sourceSinkType="Parameter" ParameterIndex="0" />
 					<to sourceSinkType="Field" 
 						 />
 				</flow>
-				<flow isAlias="true" typeChecking="false">
+				<flow isAlias="true" typeChecking="false" cutSubfields="true">
 					<from sourceSinkType="Field" />
 					<to sourceSinkType="Return" />
 				</flow>
@@ -190,7 +190,7 @@
 		</method>
 		<method id="java.lang.StringBuffer append(long)">
 			<flows>
-				<flow isAlias="false" typeChecking="false">
+				<flow isAlias="false" typeChecking="false" cutSubfields="true">
 					<from sourceSinkType="Parameter" ParameterIndex="0" />
 					<to sourceSinkType="Field" 
 						 />
@@ -203,7 +203,7 @@
 		</method>
 		<method id="java.lang.StringBuffer appendCodePoint(int)">
 			<flows>
-				<flow isAlias="false" typeChecking="false">
+				<flow isAlias="false" typeChecking="false" cutSubfields="true">
 					<from sourceSinkType="Parameter" ParameterIndex="0" />
 					<to sourceSinkType="Field" 
 						 />
@@ -216,7 +216,7 @@
 		</method>
 		<method id="java.lang.StringBuffer insert(int,boolean)">
 			<flows>
-				<flow isAlias="false" typeChecking="false">
+				<flow isAlias="false" typeChecking="false" cutSubfields="true">
 					<from sourceSinkType="Parameter" ParameterIndex="1" />
 					<to sourceSinkType="Field" 
 						 />
@@ -229,7 +229,7 @@
 		</method>
 		<method id="java.lang.StringBuffer insert(int,char)">
 			<flows>
-				<flow isAlias="false" typeChecking="false">
+				<flow isAlias="false" typeChecking="false" cutSubfields="true">
 					<from sourceSinkType="Parameter" ParameterIndex="1" />
 					<to sourceSinkType="Field" 
 						 />
@@ -242,7 +242,7 @@
 		</method>
 		<method id="java.lang.StringBuffer insert(int,char[])">
 			<flows>
-				<flow isAlias="false" typeChecking="false">
+				<flow isAlias="false" typeChecking="false" cutSubfields="true">
 					<from sourceSinkType="Parameter" ParameterIndex="1" />
 					<to sourceSinkType="Field" 
 						 />
@@ -255,7 +255,7 @@
 		</method>
 		<method id="java.lang.StringBuffer insert(int,char[],int,int)">
 			<flows>
-				<flow isAlias="false" typeChecking="false">
+				<flow isAlias="false" typeChecking="false" cutSubfields="true">
 					<from sourceSinkType="Parameter" ParameterIndex="1" />
 					<to sourceSinkType="Field" 
 						 />
@@ -268,7 +268,7 @@
 		</method>
 		<method id="java.lang.StringBuffer insert(int,double)">
 			<flows>
-				<flow isAlias="false" typeChecking="false">
+				<flow isAlias="false" typeChecking="false" cutSubfields="true">
 					<from sourceSinkType="Parameter" ParameterIndex="1" />
 					<to sourceSinkType="Field" 
 						 />
@@ -281,7 +281,7 @@
 		</method>
 		<method id="java.lang.StringBuffer insert(int,float)">
 			<flows>
-				<flow isAlias="false" typeChecking="false">
+				<flow isAlias="false" typeChecking="false" cutSubfields="true">
 					<from sourceSinkType="Parameter" ParameterIndex="1" />
 					<to sourceSinkType="Field" 
 						 />
@@ -294,7 +294,7 @@
 		</method>
 		<method id="java.lang.StringBuffer insert(int,int)">
 			<flows>
-				<flow isAlias="false" typeChecking="false">
+				<flow isAlias="false" typeChecking="false" cutSubfields="true">
 					<from sourceSinkType="Parameter" ParameterIndex="1" />
 					<to sourceSinkType="Field" 
 						 />
@@ -307,7 +307,7 @@
 		</method>
 		<method id="java.lang.StringBuffer insert(int,java.lang.CharSequence)">
 			<flows>
-				<flow isAlias="false" typeChecking="false">
+				<flow isAlias="false" typeChecking="false" cutSubfields="true">
 					<from sourceSinkType="Parameter" ParameterIndex="1" />
 					<to sourceSinkType="Field" 
 						 />
@@ -320,12 +320,12 @@
 		</method>
 		<method id="java.lang.StringBuffer insert(int,java.lang.CharSequence,int,int)">
 			<flows>
-				<flow isAlias="false" typeChecking="false">
+				<flow isAlias="false" typeChecking="false" cutSubfields="true">
 					<from sourceSinkType="Parameter" ParameterIndex="1" />
 					<to sourceSinkType="Field" 
 						 />
 				</flow>
-				<flow isAlias="true" typeChecking="false">
+				<flow isAlias="true" typeChecking="false" cutSubfields="true">
 					<from sourceSinkType="Field" />
 					<to sourceSinkType="Return" />
 				</flow>
@@ -333,7 +333,7 @@
 		</method>
 		<method id="java.lang.StringBuffer insert(int,java.lang.Object)">
 			<flows>
-				<flow isAlias="false" typeChecking="false">
+				<flow isAlias="false" typeChecking="false" cutSubfields="true">
 					<from sourceSinkType="Parameter" ParameterIndex="1" />
 					<to sourceSinkType="Field" 
 						 />
@@ -346,7 +346,7 @@
 		</method>
 		<method id="java.lang.StringBuffer insert(int,java.lang.String)">
 			<flows>
-				<flow isAlias="false" typeChecking="false">
+				<flow isAlias="false" typeChecking="false" cutSubfields="true">
 					<from sourceSinkType="Parameter" ParameterIndex="1" />
 					<to sourceSinkType="Field" 
 						 />
@@ -359,7 +359,7 @@
 		</method>
 		<method id="java.lang.StringBuffer insert(int,long)">
 			<flows>
-				<flow isAlias="false" typeChecking="false">
+				<flow isAlias="false" typeChecking="false" cutSubfields="true">
 					<from sourceSinkType="Parameter" ParameterIndex="1" />
 					<to sourceSinkType="Field" 
 						 />
@@ -372,7 +372,7 @@
 		</method>
 		<method id="java.lang.StringBuffer replace(int,int,java.lang.String)">
 			<flows>
-				<flow isAlias="false" typeChecking="false">
+				<flow isAlias="false" typeChecking="false" cutSubfields="true">
 					<from sourceSinkType="Parameter" ParameterIndex="2" />
 					<to sourceSinkType="Field" 
 						 />

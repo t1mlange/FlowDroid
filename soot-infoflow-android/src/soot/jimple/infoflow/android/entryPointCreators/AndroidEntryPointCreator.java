@@ -111,46 +111,6 @@ public class AndroidEntryPointCreator extends AbstractAndroidEntryPointCreator i
 
 		logger.info(String.format("Creating Android entry point for %d components...", components.size()));
 
-		{
-			File f = new File("unique_packages.txt");
-			if (!f.exists())
-				throw new RuntimeException("WHERE IS UNIQUE_PACKAGES");
-			List<String> lines;
-			try {
-				lines = Files.readAllLines(f.getAbsoluteFile().toPath(), Charset.defaultCharset());
-			} catch (Exception e) {
-				throw new RuntimeException(e);
-			}
-
-			Set<SootMethod> mset = new HashSet<>();
-			for (SootClass sc : new ArrayList<>(Scene.v().getApplicationClasses())) {
-				if (lines.stream().noneMatch(line -> sc.getName().startsWith(line))) {
-					sc.setLibraryClass();
-					continue;
-				}
-
-				for (SootMethod sm : sc.getMethods()) {
-					if (sm.getDeclaringClass().isInterface())
-						continue;
-					if (!sm.isConcrete() || !sm.isPublic())
-						continue;
-
-					sm.retrieveActiveBody();
-					if (!sm.hasActiveBody())
-						continue;
-
-					mset.add(sm);
-				}
-
-				for (SootMethod sm : mset) {
-					createClassInstances(Collections.singleton(sm.getDeclaringClass()));
-					Local l = localVarsForClasses.get(sm.getDeclaringClass());
-					if (l != null)
-						createPlainMethodCall(l, sm);
-				}
-			}
-		}
-
 		// For some weird reason unknown to anyone except the flying spaghetti
 		// monster, the onCreate() methods of content providers run even before
 		// the application object's onCreate() is called.

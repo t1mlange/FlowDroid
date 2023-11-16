@@ -1,0 +1,24 @@
+<?xml version="1.0" ?>
+<summary fileFormatVersion="101">
+	<hierarchy superClass="java.lang.Object">
+		<interface name="java.lang.Cloneable" />
+	</hierarchy>
+	<methods>
+		<method id="java.lang.String getString(int)">
+			<flows>
+				<flow isAlias="false" typeChecking="false">
+					<from sourceSinkType="Field" />
+					<to sourceSinkType="Return"/>
+				</flow>
+			</flows>
+		</method>
+		<method id="int getInt(int)">
+			<flows>
+				<flow isAlias="false" typeChecking="false">
+					<from sourceSinkType="Field" />
+					<to sourceSinkType="Return"/>
+				</flow>
+			</flows>
+		</method>
+	</methods>
+</summary>

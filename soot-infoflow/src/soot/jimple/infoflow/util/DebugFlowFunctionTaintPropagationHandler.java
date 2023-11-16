@@ -49,12 +49,13 @@ public class DebugFlowFunctionTaintPropagationHandler implements TaintPropagatio
         }
             if (type == FlowFunctionType.ReturnFlowFunction) {
                 Unit out = stmt;
-                for (Abstraction abs : outgoing) {
-                    if (abs.getCorrespondingCallSite() != null) {
-                        out = abs.getCorrespondingCallSite();
-                        break;
+                if (outgoing != null)
+                    for (Abstraction abs : outgoing) {
+                        if (abs.getCorrespondingCallSite() != null) {
+                            out = abs.getCorrespondingCallSite();
+                            break;
+                        }
                     }
-                }
                     System.out.println(this.prefix + " " + typeString + " @ " + out + ":\n\tIn: " + incoming + "\n\tOut: " + outgoing + "\n");
             } else
                 System.out.println(this.prefix + " " + typeString + " @ " + stmt + ":\n\tIn: " + incoming + "\n\tOut: " + outgoing + "\n");

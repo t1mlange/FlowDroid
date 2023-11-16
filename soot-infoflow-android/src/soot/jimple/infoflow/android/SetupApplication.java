@@ -26,7 +26,7 @@ import org.xmlpull.v1.XmlPullParserException;
 
 import heros.solver.Pair;
 import soot.*;
-import soot.jimple.Stmt;
+import soot.jimple.*;
 import soot.jimple.infoflow.AbstractInfoflow;
 import soot.jimple.infoflow.BackwardsInfoflow;
 import soot.jimple.infoflow.IInfoflow;
@@ -71,6 +71,7 @@ import soot.jimple.infoflow.cfg.LibraryClassPatcher;
 import soot.jimple.infoflow.config.IInfoflowConfig;
 import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.data.FlowDroidMemoryManager.PathDataErasureMode;
+import soot.jimple.infoflow.data.SootMethodAndClass;
 import soot.jimple.infoflow.entryPointCreators.SimulatedCodeElementTag;
 import soot.jimple.infoflow.handlers.PostAnalysisHandler;
 import soot.jimple.infoflow.handlers.PreAnalysisHandler;
@@ -93,9 +94,11 @@ import soot.jimple.infoflow.sourcesSinks.definitions.MethodSourceSinkDefinition;
 import soot.jimple.infoflow.sourcesSinks.manager.ISourceSinkManager;
 import soot.jimple.infoflow.taintWrappers.ITaintPropagationWrapper;
 import soot.jimple.infoflow.taintWrappers.ITaintWrapperDataFlowAnalysis;
+import soot.jimple.infoflow.util.SootMethodRepresentationParser;
 import soot.jimple.infoflow.util.SystemClassHandler;
 import soot.jimple.infoflow.values.IValueProvider;
 import soot.jimple.toolkits.callgraph.ReachableMethods;
+import soot.jimple.toolkits.scalar.NopEliminator;
 import soot.options.Options;
 import soot.util.HashMultiMap;
 import soot.util.MultiMap;
@@ -1303,41 +1306,40 @@ public class SetupApplication implements ITaintWrapperDataFlowAnalysis {
 			return super.isUserCodeClass(className) || className.startsWith(packageName);
 		}
 
+		@Override
+		protected Collection<SootMethod> getMethodsForSeeds(IInfoflowCFG icfg) {
+			if (!manager.getConfig().getExcludeSootLibraryClasses())
+				return super.getMethodsForSeeds(icfg);
 
-//		@Override
-//		protected Collection<SootMethod> getMethodsForSeeds(IInfoflowCFG icfg) {
-//			if (!manager.getConfig().getExcludeSootLibraryClasses())
-//				return super.getMethodsForSeeds(icfg);
-//
-//			File f = new File("unique_packages.txt");
-//			if (!f.exists())
-//				throw new RuntimeException("WHERE IS UNIQUE_PACKAGES");
-//			List<String> lines;
-//			try {
-//				lines = Files.readAllLines(f.getAbsoluteFile().toPath(), Charset.defaultCharset());
-//			} catch (Exception e) {
-//				throw new RuntimeException(e);
-//			}
-//
-//			List<SootMethod> seeds = new LinkedList<>();
-//			for (SootClass sc : new HashSet<>(Scene.v().getApplicationClasses())) {
-//				if (lines.stream().noneMatch(line -> sc.getName().startsWith(line))) {
-//					sc.setLibraryClass();
-//					continue;
-//				}
-//
-//				for (SootMethod sm : sc.getMethods()) {
-//					if (!sm.isConcrete())
-//						continue;
-//
-//					sm.retrieveActiveBody();
-//					icfg.notifyMethodChanged(sm);
-//					if (isValidSeedMethod(sm))
-//						seeds.add(sm);
-//				}
-//			}
-//			return seeds;
-//		}
+			File f = new File("unique_packages.txt");
+			if (!f.exists())
+				throw new RuntimeException("WHERE IS UNIQUE_PACKAGES, I'm here: " + new File("").getAbsolutePath());
+			List<String> lines;
+			try {
+				lines = Files.readAllLines(f.getAbsoluteFile().toPath(), Charset.defaultCharset());
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
+
+			List<SootMethod> seeds = new LinkedList<>();
+			for (SootClass sc : new ArrayList<>(Scene.v().getApplicationClasses())) {
+				if (lines.stream().noneMatch(line -> sc.getName().startsWith(line))) {
+					sc.setLibraryClass();
+					continue;
+				}
+
+				for (SootMethod sm : sc.getMethods()) {
+					if (!sm.isConcrete())
+						continue;
+
+					sm.retrieveActiveBody();
+					icfg.notifyMethodChanged(sm);
+					if (isValidSeedMethod(sm))
+						seeds.add(sm);
+				}
+			}
+			return seeds;
+		}
 	}
 
 	protected class InPlaceBackwardsInfoflow extends BackwardsInfoflow implements IInPlaceInfoflow {
