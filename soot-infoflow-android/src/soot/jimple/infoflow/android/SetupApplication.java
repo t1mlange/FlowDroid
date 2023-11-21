@@ -1323,10 +1323,10 @@ public class SetupApplication implements ITaintWrapperDataFlowAnalysis {
 
 			List<SootMethod> seeds = new LinkedList<>();
 			for (SootClass sc : new ArrayList<>(Scene.v().getApplicationClasses())) {
-				if (lines.stream().noneMatch(line -> sc.getName().startsWith(line))) {
-					sc.setLibraryClass();
-					continue;
-				}
+//				if (lines.stream().noneMatch(line -> sc.getName().startsWith(line))) {
+//					sc.setLibraryClass();
+//					continue;
+//				}
 
 				for (SootMethod sm : sc.getMethods()) {
 					if (!sm.isConcrete())

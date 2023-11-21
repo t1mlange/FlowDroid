@@ -34,6 +34,9 @@ public class SourcePropagationRule extends AbstractTaintPropagationRule {
 	private Collection<Abstraction> propagate(Abstraction d1, Abstraction source, Stmt stmt,
 			ByReferenceBoolean killSource, ByReferenceBoolean killAll) {
 		if (source == getZeroValue()) {
+			if (!manager.getICFG().getMethodOf(stmt).getName().contains("copyFile"))
+				return null;
+
 			// Check whether this can be a source at all
 			final SourceInfo sourceInfo = getManager().getSourceSinkManager() != null
 					? getManager().getSourceSinkManager().getSourceInfo(stmt, getManager())
