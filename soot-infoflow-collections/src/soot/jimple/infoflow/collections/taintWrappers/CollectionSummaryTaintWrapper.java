@@ -660,7 +660,7 @@ public class CollectionSummaryTaintWrapper extends SummaryTaintWrapper implement
         assert stmtCtxt.length == taintContext.length;
         Tristate state = Tristate.TRUE();
         for (int i = 0; i < stmtCtxt.length; i++) {
-            state = state.and(containerStrategy.lessThanEqual(stmtCtxt[i], taintContext[i]));
+            state = state.and(containerStrategy.lessThanEqual(taintContext[i], stmtCtxt[i]).negate());
         }
 
         return state;
