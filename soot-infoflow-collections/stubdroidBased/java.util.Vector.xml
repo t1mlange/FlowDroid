@@ -194,8 +194,7 @@
                 <flow isAlias="false" typeChecking="false" final="true">
                     <from sourceSinkType="Field"
                           AccessPath="[java.util.Collection: java.lang.Object[] innerArray]"
-                          AccessPathTypes="[java.lang.Object[]]"
-                          constrained="noMatch" />
+                          AccessPathTypes="[java.lang.Object[]]" />
                     <to sourceSinkType="Field"
                         AccessPath="[java.util.Collection: java.lang.Object[] innerArray]"
                         AccessPathTypes="[java.lang.Object[]]"
@@ -205,8 +204,7 @@
             <clears>
                 <clear sourceSinkType="Field"
                        AccessPath="[java.util.Collection: java.lang.Object[] innerArray]"
-                       AccessPathTypes="[java.lang.Object[]]"
-                       preventPropagation="false" />
+                       AccessPathTypes="[java.lang.Object[]]" />
             </clears>
         </method>
         <method id="void setElementAt(java.lang.Object,int)">

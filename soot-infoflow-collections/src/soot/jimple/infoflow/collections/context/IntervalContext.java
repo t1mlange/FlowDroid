@@ -73,7 +73,7 @@ public class IntervalContext implements PositionBasedContext<IntervalContext> {
 	public Tristate lessThanEqual(IntervalContext other) {
 		if (max <= other.min)
 			return Tristate.TRUE();
-		if (other.max <= min)
+		if (other.max < min)
 			return Tristate.FALSE();
 		return Tristate.MAYBE();
 	}

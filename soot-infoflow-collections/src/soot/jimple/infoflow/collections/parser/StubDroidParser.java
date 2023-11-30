@@ -174,7 +174,7 @@ public class StubDroidParser extends SummaryReader {
                     if (state == State.flow) {
                         state = State.method;
                         MethodFlow flow = new MethodFlow(currentMethod, createSource(summary, sourceAttributes),
-                                createSink(summary, sinkAttributes), isAlias, typeChecking, ignoreTypes, cutSubfields, constraints.toArray(new FlowConstraint[0]), isFinal, false);
+                                createSink(summary, sinkAttributes), isAlias, typeChecking, ignoreTypes, cutSubfields, constraints.toArray(new FlowConstraint[0]), isFinal, excludedOnClear);
                         summary.addFlow(flow);
 
                         isAlias = IsAliasType.FALSE;
@@ -511,7 +511,7 @@ public class StubDroidParser extends SummaryReader {
                 case "append":
                     return ConstraintType.APPEND;
                 default:
-                    throw new RuntimeException("Unknown constraint type");
+                    throw new RuntimeException("Unknown constraint type: " + attr);
             }
         }
         return ConstraintType.FALSE;

@@ -131,6 +131,10 @@
                 <directory>stubdroidBased</directory>
                 <targetPath>stubdroidBased</targetPath>
             </resource>
+            <resource>
+                <directory>stubdroidBasedWA</directory>
+                <targetPath>stubdroidBasedWA</targetPath>
+            </resource>
         </resources>
     </build>
 

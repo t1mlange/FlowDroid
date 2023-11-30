@@ -120,7 +120,7 @@ public abstract class FlowDroidTests {
 	protected ITaintPropagationWrapper getTaintWrapper() {
 		try {
 			ArrayList<IMethodSummaryProvider> providers = new ArrayList<>();
-			providers.add(new CollectionSummaryParser("stubdroidBased"));
+			providers.add(new CollectionSummaryParser("stubdroidBasedWA"));
 			providers.add(new EagerSummaryProvider(TaintWrapperFactory.DEFAULT_SUMMARY_DIR));
 			PrioritizingMethodSummaryProvider sp = new PrioritizingMethodSummaryProvider(providers);
 			return new CollectionSummaryTaintWrapper(sp, m -> new TestConstantStrategy(m, new PreciseShift()));
