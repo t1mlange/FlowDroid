@@ -57,7 +57,7 @@ public class IntervalContext implements PositionBasedContext<IntervalContext> {
 		if (newMin < 0) {
 			// We cannot have indices less than zero
 			if (newMax < 0)
-				return null;
+				return this;
 			// If the max is above zero, keep the minimum at zero
 			newMin = 0;
 		}
