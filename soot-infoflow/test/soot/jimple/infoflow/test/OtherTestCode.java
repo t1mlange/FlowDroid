@@ -684,5 +684,4 @@ public class OtherTestCode {
 		// add42 call can be shortened at applyEndSummaryOnCall()
 		cm.publish(add42(i));
 	}
-
 }

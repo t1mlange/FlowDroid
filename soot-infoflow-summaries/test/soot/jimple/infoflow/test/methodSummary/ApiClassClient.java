@@ -1,5 +1,9 @@
 package soot.jimple.infoflow.test.methodSummary;
 
+import soot.jbco.util.Rand;
+import soot.jimple.infoflow.test.android.ConnectionManager;
+import soot.jimple.infoflow.test.android.TelephonyManager;
+
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectOutputStream;
 import java.io.ObjectOutputStream.PutField;
@@ -333,5 +337,22 @@ public class ApiClassClient {
 		d.stringField = stringSource();
 		String ret = d.computeString((s) -> "Untainted string");
 		sink(ret);
+	}
+
+	public void pathBuilderTest1() {
+		if (new Random().nextBoolean())
+			log(stringSource());
+	}
+
+	private void log(String s) {
+		if (s.length() > 4096) {
+			int n = s.length() / 4096;
+			for (int i = 0; i < s.length() / 4096; i++) {
+				String sub = s.substring(4096 * i, 4096 * (i + 1));
+				sink(sub);
+			}
+		} else {
+			sink(s);
+		}
 	}
 }
