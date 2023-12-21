@@ -200,26 +200,14 @@ public class CollectionSummaryTaintWrapper extends SummaryTaintWrapper implement
             PointsToSet incomingPts = Scene.v().getPointsToAnalysis().reachingObjects(source.getAccessPath().getPlainValue());
 
             if (basePts.hasNonEmptyIntersection(incomingPts)) {
-                // Both might alias
-
-                // Use the uniqueness property (variable points-to exactly one alloc site) to
-                // check whether we can perform a strong update
-                if (incomingPts instanceof PointsToSetInternal && ((PointsToSetInternal) incomingPts).size() == 1
-                        && basePts instanceof PointsToSetInternal && ((PointsToSetInternal) basePts).size() == 1)
-                    found = Tristate.TRUE();
-                else
-                    found = Tristate.MAYBE();
+                found = Tristate.MAYBE();
             } else if (source.getAccessPath().getFragmentCount() > 0) {
-                boolean isUnique = basePts instanceof PointsToSetInternal && ((PointsToSetInternal) basePts).size() == 1;
                 for (soot.jimple.infoflow.data.AccessPathFragment f : source.getAccessPath().getFragments()) {
                     incomingPts = Scene.v().getPointsToAnalysis().reachingObjects(incomingPts,
                             f.getField());
-                    isUnique = isUnique && incomingPts instanceof PointsToSetInternal
-                                        && ((PointsToSetInternal) incomingPts).size() == 1;
-
                     if (basePts.hasNonEmptyIntersection(incomingPts)) {
                         // Both might alias
-                        found = isUnique ? Tristate.TRUE() : Tristate.MAYBE();
+                        found = Tristate.MAYBE();
                         break;
                     }
                 }
