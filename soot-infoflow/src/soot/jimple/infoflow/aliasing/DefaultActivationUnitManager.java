@@ -1,22 +1,17 @@
 package soot.jimple.infoflow.aliasing;
 
-import polyglot.ast.For;
 import soot.SootMethod;
 import soot.Unit;
 import soot.jimple.infoflow.InfoflowConfiguration;
 import soot.jimple.infoflow.InfoflowManager;
 import soot.jimple.infoflow.data.Abstraction;
-import soot.jimple.infoflow.problems.AbstractInfoflowProblem;
 import soot.jimple.infoflow.solver.cfg.IInfoflowCFG;
 
-import java.lang.ref.SoftReference;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class DefaultActivationUnitManager implements IFlowSensitivityUnitManager {
-    private final Map<Unit, CallSites> activationUnitsToCallSites = new ConcurrentHashMap<>();
+    private final Map<Unit, CallSite> activationUnitsToCallSites = new ConcurrentHashMap<>();
 
     private final InfoflowManager manager;
 
@@ -34,7 +29,7 @@ public class DefaultActivationUnitManager implements IFlowSensitivityUnitManager
 
         if (activationUnit == null)
             return false;
-        CallSites callSites = activationUnitsToCallSites.get(activationUnit);
+        CallSite callSites = activationUnitsToCallSites.get(activationUnit);
         if (callSites != null)
             return callSites.containsCallSite(callSite);
         return false;
@@ -48,7 +43,7 @@ public class DefaultActivationUnitManager implements IFlowSensitivityUnitManager
         if (activationUnit == null)
             return activationAbs;
 
-        CallSites callSites = activationUnitsToCallSites.computeIfAbsent(activationUnit, (u) -> new CallSites());
+        CallSite callSites = activationUnitsToCallSites.computeIfAbsent(activationUnit, (u) -> new CallSite());
         if (callSites.containsCallSite(callSite))
             return activationAbs;
 

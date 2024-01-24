@@ -755,10 +755,6 @@ public abstract class AbstractInfoflow implements IInfoflow {
 			if (nativeCallHandler != null)
 				forwardProblem.setNativeCallHandler(nativeCallHandler);
 
-			if (aliasingStrategy.getSolver() != null) {
-				aliasingStrategy.getSolver().getTabulationProblem().setActivationUnitsToCallSites(forwardProblem);
-			}
-
 			IInfoflowSolver additionalSolver = null;
 			IInfoflowSolver additionalAliasSolver = null;
 			INativeCallHandler additionalNativeCallHandler = null;

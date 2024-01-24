@@ -5,11 +5,12 @@ import soot.Unit;
 import soot.jimple.infoflow.collect.ConcurrentHashSet;
 import soot.jimple.infoflow.solver.cfg.IInfoflowCFG;
 
-import java.lang.ref.SoftReference;
 import java.util.Set;
 
-public class CallSites {
+public class CallSite {
     private Set<Unit> callsites = new ConcurrentHashSet<>();
+
+    // Cache of call-site methods to prevent unit-to-owner map lookup
     private Set<SootMethod> callsiteMethods = new ConcurrentHashSet<>();
 
     public boolean containsCallSite(Unit callSite) {

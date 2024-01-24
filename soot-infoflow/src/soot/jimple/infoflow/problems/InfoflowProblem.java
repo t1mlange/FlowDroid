@@ -45,6 +45,7 @@ import soot.jimple.Stmt;
 import soot.jimple.infoflow.InfoflowConfiguration.StaticFieldTrackingMode;
 import soot.jimple.infoflow.InfoflowManager;
 import soot.jimple.infoflow.aliasing.Aliasing;
+import soot.jimple.infoflow.aliasing.IFlowSensitivityUnitManager;
 import soot.jimple.infoflow.callmappers.CallerCalleeManager;
 import soot.jimple.infoflow.callmappers.ICallerCalleeArgumentMapper;
 import soot.jimple.infoflow.cfg.FlowDroidSinkStatement;
@@ -65,8 +66,9 @@ import soot.jimple.infoflow.util.ByReferenceBoolean;
 public class InfoflowProblem extends AbstractInfoflowProblem {
 
 	public InfoflowProblem(InfoflowManager manager, Abstraction zeroValue,
-			IPropagationRuleManagerFactory ruleManagerFactory) {
-		super(manager, zeroValue, ruleManagerFactory);
+						   IPropagationRuleManagerFactory ruleManagerFactory,
+						   IFlowSensitivityUnitManager flowSensitivityManager) {
+		super(manager, zeroValue, ruleManagerFactory, flowSensitivityManager);
 	}
 
 	@Override

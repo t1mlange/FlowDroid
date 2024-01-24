@@ -12,11 +12,7 @@ package soot.jimple.infoflow;
 import soot.Unit;
 import soot.jimple.Stmt;
 import soot.jimple.infoflow.InfoflowConfiguration.SolverConfiguration;
-import soot.jimple.infoflow.aliasing.FlowSensitiveAliasStrategy;
-import soot.jimple.infoflow.aliasing.IAliasingStrategy;
-import soot.jimple.infoflow.aliasing.LazyAliasingStrategy;
-import soot.jimple.infoflow.aliasing.NullAliasStrategy;
-import soot.jimple.infoflow.aliasing.PtsBasedAliasStrategy;
+import soot.jimple.infoflow.aliasing.*;
 import soot.jimple.infoflow.cfg.BiDirICFGFactory;
 import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.globalTaints.GlobalTaintManager;
@@ -102,7 +98,8 @@ public class Infoflow extends AbstractInfoflow {
 		case FlowSensitive:
 			aliasManager = new InfoflowManager(config, null, new BackwardsInfoflowCFG(iCfg), sourcesSinks, taintWrapper,
 					hierarchy, manager);
-			backProblem = new AliasProblem(aliasManager);
+			backProblem = new AliasProblem(aliasManager,
+					manager.getMainSolver().getTabulationProblem().getFlowSensitivityUnitManager());
 
 			// We need to create the right data flow solver
 			SolverConfiguration solverConfig = config.getSolverConfiguration();
@@ -148,7 +145,21 @@ public class Infoflow extends AbstractInfoflow {
 
 	@Override
 	protected InfoflowProblem createInfoflowProblem(Abstraction zeroValue) {
-		return new InfoflowProblem(manager, zeroValue, ruleManagerFactory);
+		IFlowSensitivityUnitManager flowSensitivityManager;
+		switch (getConfig().getAliasingAlgorithm()) {
+			case FlowSensitive:
+				flowSensitivityManager = new DefaultActivationUnitManager(manager);
+				break;
+			case PtsBased:
+			case None:
+			case Lazy:
+				flowSensitivityManager = new NullFlowSensitivityUnitManager();
+				break;
+			default:
+				throw new RuntimeException("Unknown aliasing algorithm");
+		}
+
+		return new InfoflowProblem(manager, zeroValue, ruleManagerFactory, flowSensitivityManager);
 	}
 
 	@Override
