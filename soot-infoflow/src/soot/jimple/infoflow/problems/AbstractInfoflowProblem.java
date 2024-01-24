@@ -10,13 +10,10 @@
  ******************************************************************************/
 package soot.jimple.infoflow.problems;
 
-import java.lang.ref.SoftReference;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,8 +26,8 @@ import soot.jimple.CaughtExceptionRef;
 import soot.jimple.DefinitionStmt;
 import soot.jimple.InvokeExpr;
 import soot.jimple.infoflow.InfoflowManager;
+import soot.jimple.infoflow.aliasing.IFlowSensitivityUnitManager;
 import soot.jimple.infoflow.cfg.FlowDroidEssentialMethodTag;
-import soot.jimple.infoflow.collect.ConcurrentHashSet;
 import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.handlers.TaintPropagationHandler;
 import soot.jimple.infoflow.handlers.TaintPropagationHandler.FlowFunctionType;
@@ -67,44 +64,19 @@ public abstract class AbstractInfoflowProblem
 
 	protected TaintPropagationHandler taintPropagationHandler = null;
 
-	private static class CallSite {
-		public Set<Unit> callsites = new ConcurrentHashSet<>();
-		public SoftReference<Set<SootMethod>> callsiteMethods = new SoftReference<>(new ConcurrentHashSet<>());
-
-		public boolean addCallsite(Unit callSite, IInfoflowCFG icfg) {
-			if (callsites.add(callSite)) {
-				Set<SootMethod> c = callsiteMethods.get();
-				if (c == null) {
-					c = new ConcurrentHashSet<>();
-					callsiteMethods = new SoftReference<>(c);
-				}
-				c.add(icfg.getMethodOf(callSite));
-				return true;
-			}
-			return false;
-		}
-	}
-
-	private ConcurrentHashMap<Unit, CallSite> activationUnitsToCallSites = new ConcurrentHashMap<Unit, CallSite>();
-
 	protected final PropagationRuleManager propagationRules;
 	protected final TaintPropagationResults results;
 
-	private static Function<? super Unit, ? extends CallSite> createNewCallSite = new Function<Unit, CallSite>() {
-
-		@Override
-		public CallSite apply(Unit t) {
-			return new CallSite();
-		}
-	};
+	protected final IFlowSensitivityUnitManager flowSensitivityManager;
 
 	public AbstractInfoflowProblem(InfoflowManager manager, Abstraction zeroValue,
-			IPropagationRuleManagerFactory ruleManagerFactory) {
+			IPropagationRuleManagerFactory ruleManagerFactory, IFlowSensitivityUnitManager flowSensitivityManager) {
 		super(manager.getICFG());
 		this.manager = manager;
 		this.zeroValue = zeroValue == null ? createZeroValue() : zeroValue;
 		this.results = new TaintPropagationResults(manager);
 		this.propagationRules = ruleManagerFactory.createRuleManager(manager, this.zeroValue, results);
+		this.flowSensitivityManager = flowSensitivityManager;
 	}
 
 	public void setSolver(IInfoflowSolver solver) {
@@ -170,57 +142,15 @@ public abstract class AbstractInfoflowProblem
 	}
 
 	public boolean isCallSiteActivatingTaint(Unit callSite, Unit activationUnit) {
-		if (!manager.getConfig().getFlowSensitiveAliasing())
-			return false;
-
-		if (activationUnit == null)
-			return false;
-		CallSite callSites = activationUnitsToCallSites.get(activationUnit);
-		if (callSites != null)
-			return callSites.callsites.contains(callSite);
-		return false;
+		return flowSensitivityManager.isCallSiteActivatingTaint(callSite, activationUnit);
 	}
 
-	protected boolean registerActivationCallSite(Unit callSite, SootMethod callee, Abstraction activationAbs) {
-		if (!manager.getConfig().getFlowSensitiveAliasing())
-			return false;
-		Unit activationUnit = activationAbs.getActivationUnit();
-		if (activationUnit == null)
-			return false;
-
-		CallSite callSites = activationUnitsToCallSites.computeIfAbsent(activationUnit, createNewCallSite);
-		if (callSites.callsites.contains(callSite))
-			return false;
-
-		IInfoflowCFG icfg = (IInfoflowCFG) super.interproceduralCFG();
-		if (!activationAbs.isAbstractionActive()) {
-			if (!callee.getActiveBody().getUnits().contains(activationUnit)) {
-				Set<SootMethod> cm = callSites.callsiteMethods.get();
-				if (cm != null) {
-					if (!cm.contains(callee))
-						return false;
-				} else {
-					cm = new HashSet<>();
-					boolean found = false;
-					for (Unit au : callSites.callsites) {
-						cm.add(icfg.getMethodOf(au));
-						if (callee.getActiveBody().getUnits().contains(au)) {
-							found = true;
-							break;
-						}
-					}
-					callSites.callsiteMethods = new SoftReference<Set<SootMethod>>(cm);
-					if (!found)
-						return false;
-				}
-			}
-		}
-
-		return callSites.addCallsite(callSite, icfg);
+	protected Abstraction registerActivationCallSite(Unit callSite, SootMethod callee, Abstraction activationAbs, Abstraction source) {
+		return flowSensitivityManager.registerCallSite(callSite, callee, activationAbs, source);
 	}
 
-	public void setActivationUnitsToCallSites(AbstractInfoflowProblem other) {
-		this.activationUnitsToCallSites = other.activationUnitsToCallSites;
+	public IFlowSensitivityUnitManager getFlowSensitivityUnitManager() {
+		return flowSensitivityManager;
 	}
 
 	@Override

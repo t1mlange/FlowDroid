@@ -49,6 +49,7 @@ import soot.jimple.UnopExpr;
 import soot.jimple.infoflow.InfoflowConfiguration.StaticFieldTrackingMode;
 import soot.jimple.infoflow.InfoflowManager;
 import soot.jimple.infoflow.aliasing.Aliasing;
+import soot.jimple.infoflow.aliasing.IFlowSensitivityUnitManager;
 import soot.jimple.infoflow.callmappers.CallerCalleeManager;
 import soot.jimple.infoflow.callmappers.ICallerCalleeArgumentMapper;
 import soot.jimple.infoflow.cfg.FlowDroidSinkStatement;
@@ -77,8 +78,8 @@ public class AliasProblem extends AbstractInfoflowProblem {
 		taintWrapper = wrapper;
 	}
 
-	public AliasProblem(InfoflowManager manager) {
-		super(manager, null, EmptyPropagationRuleManagerFactory.INSTANCE);
+	public AliasProblem(InfoflowManager manager, IFlowSensitivityUnitManager flowSensitivityUnitManager) {
+		super(manager, null, EmptyPropagationRuleManagerFactory.INSTANCE, flowSensitivityUnitManager);
 	}
 
 	@Override
@@ -636,7 +637,7 @@ public class AliasProblem extends AbstractInfoflowProblem {
 						// easy: static
 						if (manager.getConfig().getStaticFieldTrackingMode() != StaticFieldTrackingMode.None
 								&& source.getAccessPath().isStaticFieldRef()) {
-							registerActivationCallSite(callSite, callee, source);
+							source = registerActivationCallSite(callSite, callee, source, source);
 							return notifyOutFlowHandlers(exitStmt, d1, source, Collections.singleton(source),
 									FlowFunctionType.ReturnFlowFunction);
 						}
@@ -693,8 +694,8 @@ public class AliasProblem extends AbstractInfoflowProblem {
 											source.deriveNewAbstraction(ap, (Stmt) exitStmt));
 
 									if (abs != null) {
+										abs = registerActivationCallSite(callSite, callee, abs, source);
 										res.add(abs);
-										registerActivationCallSite(callSite, callee, abs);
 
 										// Check whether the call site created an alias by having two equal
 										// arguments, e.g. caller(o, o);. If yes, inject the other parameter
@@ -755,8 +756,8 @@ public class AliasProblem extends AbstractInfoflowProblem {
 											Abstraction abs = checkAbstraction(
 													source.deriveNewAbstraction(ap, (Stmt) exitStmt));
 											if (abs != null) {
+												abs = registerActivationCallSite(callSite, callee, abs, source);
 												res.add(abs);
-												registerActivationCallSite(callSite, callee, abs);
 											}
 										}
 
