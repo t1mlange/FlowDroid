@@ -1,9 +1,10 @@
-package soot.jimple.infoflow.aliasing;
+package soot.jimple.infoflow.aliasing.unitManager;
 
 import soot.SootMethod;
 import soot.Unit;
 import soot.jimple.infoflow.InfoflowConfiguration;
 import soot.jimple.infoflow.InfoflowManager;
+import soot.jimple.infoflow.aliasing.IFlowSensitivityUnitManager;
 import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.solver.cfg.IInfoflowCFG;
 
@@ -24,9 +25,6 @@ public class DefaultActivationUnitManager implements IFlowSensitivityUnitManager
 
     @Override
     public boolean isCallSiteActivatingTaint(Unit callSite, Unit activationUnit) {
-        if (!manager.getConfig().getFlowSensitiveAliasing())
-            return false;
-
         if (activationUnit == null)
             return false;
         CallSite callSites = activationUnitsToCallSites.get(activationUnit);
@@ -37,8 +35,6 @@ public class DefaultActivationUnitManager implements IFlowSensitivityUnitManager
 
     @Override
     public Abstraction registerCallSite(Unit callSite, SootMethod callee, Abstraction activationAbs, Abstraction prev) {
-        if (!manager.getConfig().getFlowSensitiveAliasing())
-            return activationAbs;
         Unit activationUnit = activationAbs.getActivationUnit();
         if (activationUnit == null)
             return activationAbs;
@@ -48,12 +44,9 @@ public class DefaultActivationUnitManager implements IFlowSensitivityUnitManager
             return activationAbs;
 
         IInfoflowCFG icfg = manager.getICFG();
-        if (!activationAbs.isAbstractionActive()) {
-            if (!callee.getActiveBody().getUnits().contains(activationUnit)) {
-                if (!callSites.containsCallSiteMethod(callee))
-                    return activationAbs;
-            }
-        }
+        if (!callee.getActiveBody().getUnits().contains(activationUnit))
+            if (!callSites.containsCallSiteMethod(callee))
+                return activationAbs;
 
         callSites.addCallsite(callSite, icfg);
         return activationAbs;

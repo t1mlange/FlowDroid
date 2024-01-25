@@ -1,4 +1,4 @@
-package soot.jimple.infoflow.aliasing.mergeReplay;
+package soot.jimple.infoflow.aliasing.unitManager;
 
 import soot.SootMethod;
 import soot.Unit;

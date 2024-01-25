@@ -13,6 +13,8 @@ import soot.Unit;
 import soot.jimple.Stmt;
 import soot.jimple.infoflow.InfoflowConfiguration.SolverConfiguration;
 import soot.jimple.infoflow.aliasing.*;
+import soot.jimple.infoflow.aliasing.unitManager.DefaultActivationUnitManager;
+import soot.jimple.infoflow.aliasing.unitManager.NullFlowSensitivityUnitManager;
 import soot.jimple.infoflow.cfg.BiDirICFGFactory;
 import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.globalTaints.GlobalTaintManager;
