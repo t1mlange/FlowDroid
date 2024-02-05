@@ -708,6 +708,7 @@ public class AliasProblem extends AbstractInfoflowProblem {
 														abs.getAccessPath().getBaseType(), false);
 												Abstraction aliasAbs = checkAbstraction(
 														source.deriveNewAbstraction(aliasAp, (Stmt) exitStmt));
+												aliasAbs = registerActivationCallSite(callSite, callee, aliasAbs, source);
 
 												manager.getMainSolver()
 														.processEdge(new PathEdge<>(d1, exitStmt, aliasAbs));

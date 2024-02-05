@@ -11,12 +11,15 @@
 package soot.jimple.infoflow.solver.fastSolver;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Set;
 
 import heros.FlowFunction;
 import heros.solver.PathEdge;
 import soot.SootMethod;
 import soot.Unit;
+import soot.jimple.infoflow.aliasing.IFlowSensitivityUnitManager;
+import soot.jimple.infoflow.aliasing.unitManager.IMergeReplay;
 import soot.jimple.infoflow.collect.MyConcurrentHashMap;
 import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.problems.AbstractInfoflowProblem;
@@ -82,6 +85,13 @@ public class InfoflowSolver extends IFDSSolver<Unit, Abstraction, BiDiInterproce
 	public void applySummary(SootMethod callee, Abstraction d3, Unit callSite, Abstraction d2, Abstraction d1) {
 		Collection<Unit> returnSiteNs = icfg.getReturnSitesOfCallAt(callSite);
 		applyEndSummaryOnCall(d1, callSite, d2, returnSiteNs, callee, d3);
+	}
+
+	@Override
+	Set<Abstraction> onCallFlow(Abstraction d1, Unit unit, Abstraction d2, SootMethod sCalledProcN, Abstraction d3) {
+		IFlowSensitivityUnitManager fsm = problem.getFlowSensitivityUnitManager();
+		return fsm instanceof IMergeReplay ? ((IMergeReplay) fsm).concretize(d1, unit, d2, sCalledProcN, d3, solverId)
+				: Collections.singleton(d3);
 	}
 
 	@Override

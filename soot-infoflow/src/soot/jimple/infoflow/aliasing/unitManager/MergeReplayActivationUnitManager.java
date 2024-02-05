@@ -69,7 +69,7 @@ public class MergeReplayActivationUnitManager extends DefaultActivationUnitManag
     @Override
     public Set<Abstraction> concretize(Abstraction d1, Unit callSite, Abstraction d2,
                                        SootMethod callee, Abstraction d3, boolean solverId) {
-        if (solverId) /* == alias */ {
+        if (!solverId) /* == alias */ {
             return Collections.singleton(useGlobalUnit(d3));
         } else {
             // TODO: leave this for the caller?

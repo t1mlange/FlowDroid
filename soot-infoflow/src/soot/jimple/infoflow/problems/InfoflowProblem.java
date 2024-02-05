@@ -46,6 +46,7 @@ import soot.jimple.infoflow.InfoflowConfiguration.StaticFieldTrackingMode;
 import soot.jimple.infoflow.InfoflowManager;
 import soot.jimple.infoflow.aliasing.Aliasing;
 import soot.jimple.infoflow.aliasing.IFlowSensitivityUnitManager;
+import soot.jimple.infoflow.aliasing.unitManager.SymbolicActivationUnit;
 import soot.jimple.infoflow.callmappers.CallerCalleeManager;
 import soot.jimple.infoflow.callmappers.ICallerCalleeArgumentMapper;
 import soot.jimple.infoflow.cfg.FlowDroidSinkStatement;
@@ -538,7 +539,8 @@ public class InfoflowProblem extends AbstractInfoflowProblem {
 						// this method, it will not get activated = it can be
 						// removed:
 						if (!newSource.isAbstractionActive())
-							if (interproceduralCFG().getMethodOf(newSource.getActivationUnit()) == callee)
+							if (!(source.getActivationUnit() instanceof SymbolicActivationUnit)
+									&& interproceduralCFG().getMethodOf(newSource.getActivationUnit()) == callee)
 								return null;
 
 						ByReferenceBoolean killAll = new ByReferenceBoolean();
