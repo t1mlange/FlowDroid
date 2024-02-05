@@ -8,9 +8,7 @@ import soot.jimple.Stmt;
 import soot.jimple.infoflow.InfoflowConfiguration.DataFlowDirection;
 import soot.jimple.infoflow.aliasing.IAliasingStrategy;
 import soot.jimple.infoflow.aliasing.IFlowSensitivityUnitManager;
-import soot.jimple.infoflow.aliasing.unitManager.DefaultActivationUnitManager;
-import soot.jimple.infoflow.aliasing.unitManager.MergeReplayActivationUnitManager;
-import soot.jimple.infoflow.aliasing.unitManager.NullFlowSensitivityUnitManager;
+import soot.jimple.infoflow.aliasing.unitManager.*;
 import soot.jimple.infoflow.cfg.BiDirICFGFactory;
 import soot.jimple.infoflow.codeOptimization.AddNopStmt;
 import soot.jimple.infoflow.codeOptimization.ICodeOptimizer;
@@ -98,9 +96,11 @@ public class BackwardsInfoflow extends AbstractInfoflow {
 
 		switch (getConfig().getSolverConfiguration().getFlowSensitivityMode()) {
 			case Default:
-				return new DefaultActivationUnitManager(manager);
-			case MergeReplay:
-				return new MergeReplayActivationUnitManager(manager);
+				return new DefaultTurnUnitManager(manager);
+			case Legacy:
+				return new LegacyTurnUnitManager(manager);
+//			case MergeReplay:
+//				return new MergeReplayActivationUnitManager(manager);
 			default:
 				throw new RuntimeException("Unknown flow sensitivity mode");
 		}
