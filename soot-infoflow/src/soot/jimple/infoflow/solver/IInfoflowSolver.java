@@ -54,6 +54,8 @@ public interface IInfoflowSolver {
 	public void applySummary(SootMethod callee, Abstraction d3, Unit callSite,
 							 Abstraction d2, Abstraction d1);
 
+	public boolean addIncoming(SootMethod m, Abstraction d3, Unit n, Abstraction d1, Abstraction d2);
+
 	/**
 	 * Cleans up some unused memory. Results will still be available afterwards, but
 	 * no intermediate computation values.

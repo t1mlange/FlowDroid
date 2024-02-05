@@ -67,16 +67,15 @@ public abstract class AbstractInfoflowProblem
 	protected final PropagationRuleManager propagationRules;
 	protected final TaintPropagationResults results;
 
-	protected final IFlowSensitivityUnitManager flowSensitivityManager;
+	protected IFlowSensitivityUnitManager flowSensitivityManager;
 
 	public AbstractInfoflowProblem(InfoflowManager manager, Abstraction zeroValue,
-			IPropagationRuleManagerFactory ruleManagerFactory, IFlowSensitivityUnitManager flowSensitivityManager) {
+			IPropagationRuleManagerFactory ruleManagerFactory) {
 		super(manager.getICFG());
 		this.manager = manager;
 		this.zeroValue = zeroValue == null ? createZeroValue() : zeroValue;
 		this.results = new TaintPropagationResults(manager);
 		this.propagationRules = ruleManagerFactory.createRuleManager(manager, this.zeroValue, results);
-		this.flowSensitivityManager = flowSensitivityManager;
 	}
 
 	public void setSolver(IInfoflowSolver solver) {
@@ -85,6 +84,10 @@ public abstract class AbstractInfoflowProblem
 
 	public void setZeroValue(Abstraction zeroValue) {
 		this.zeroValue = zeroValue;
+	}
+
+	public void setFlowSensitivityManager(IFlowSensitivityUnitManager flowSensitivityManager) {
+		this.flowSensitivityManager = flowSensitivityManager;
 	}
 
 	/**

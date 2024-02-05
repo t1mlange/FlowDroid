@@ -78,8 +78,8 @@ public class AliasProblem extends AbstractInfoflowProblem {
 		taintWrapper = wrapper;
 	}
 
-	public AliasProblem(InfoflowManager manager, IFlowSensitivityUnitManager flowSensitivityUnitManager) {
-		super(manager, null, EmptyPropagationRuleManagerFactory.INSTANCE, flowSensitivityUnitManager);
+	public AliasProblem(InfoflowManager manager) {
+		super(manager, null, EmptyPropagationRuleManagerFactory.INSTANCE);
 	}
 
 	@Override

@@ -66,9 +66,8 @@ import soot.jimple.infoflow.util.ByReferenceBoolean;
 public class InfoflowProblem extends AbstractInfoflowProblem {
 
 	public InfoflowProblem(InfoflowManager manager, Abstraction zeroValue,
-						   IPropagationRuleManagerFactory ruleManagerFactory,
-						   IFlowSensitivityUnitManager flowSensitivityManager) {
-		super(manager, zeroValue, ruleManagerFactory, flowSensitivityManager);
+						   IPropagationRuleManagerFactory ruleManagerFactory) {
+		super(manager, zeroValue, ruleManagerFactory);
 	}
 
 	@Override
@@ -538,7 +537,7 @@ public class InfoflowProblem extends AbstractInfoflowProblem {
 						// if abstraction is not active and activeStmt was in
 						// this method, it will not get activated = it can be
 						// removed:
-						if (!newSource.isAbstractionActive() && newSource.getActivationUnit() != null)
+						if (!newSource.isAbstractionActive())
 							if (interproceduralCFG().getMethodOf(newSource.getActivationUnit()) == callee)
 								return null;
 

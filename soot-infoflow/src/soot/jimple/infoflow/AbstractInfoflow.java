@@ -38,10 +38,7 @@ import soot.jimple.infoflow.InfoflowConfiguration.PathConfiguration;
 import soot.jimple.infoflow.InfoflowConfiguration.SolverConfiguration;
 import soot.jimple.infoflow.InfoflowConfiguration.SootIntegrationMode;
 import soot.jimple.infoflow.InfoflowConfiguration.StaticFieldTrackingMode;
-import soot.jimple.infoflow.aliasing.Aliasing;
-import soot.jimple.infoflow.aliasing.BackwardsFlowSensitiveAliasStrategy;
-import soot.jimple.infoflow.aliasing.IAliasingStrategy;
-import soot.jimple.infoflow.aliasing.NullAliasStrategy;
+import soot.jimple.infoflow.aliasing.*;
 import soot.jimple.infoflow.cfg.*;
 import soot.jimple.infoflow.codeOptimization.DeadCodeEliminator;
 import soot.jimple.infoflow.codeOptimization.ICodeOptimizer;
@@ -739,10 +736,15 @@ public abstract class AbstractInfoflow implements IInfoflow {
 			// We need to create the right data flow solver
 			IInfoflowSolver forwardSolver = createDataFlowSolver(executor, forwardProblem);
 
+			IFlowSensitivityUnitManager fm = getFlowSensitivityUnitManager();
+			forwardProblem.setFlowSensitivityManager(fm);
+
 			// Set the options
 			manager.setMainSolver(forwardSolver);
-			if (aliasingStrategy.getSolver() != null)
+			if (aliasingStrategy.getSolver() != null) {
 				aliasingStrategy.getSolver().getTabulationProblem().getManager().setMainSolver(forwardSolver);
+				aliasingStrategy.getSolver().getTabulationProblem().setFlowSensitivityManager(fm);
+			}
 			solvers.add(forwardSolver);
 
 			memoryWatcher.addSolver((IMemoryBoundedSolver) forwardSolver);
@@ -1764,6 +1766,8 @@ public abstract class AbstractInfoflow implements IInfoflow {
 	 */
 	protected abstract IAliasingStrategy createAliasAnalysis(final ISourceSinkManager sourcesSinks, IInfoflowCFG iCfg,
 			InterruptableExecutor executor, IMemoryManager<Abstraction, Unit> memoryManager);
+
+	protected abstract IFlowSensitivityUnitManager getFlowSensitivityUnitManager();
 
 	/**
 	 * Initializes the alias analysis for the backward direction
