@@ -50,7 +50,6 @@ public class SymbolicActivationUnit extends JNopStmt {
     }
 
     public boolean addConcreteUnit(Unit u) {
-        assert !(u instanceof SymbolicActivationUnit);
         return this.concreteUnits.add(u);
     }
 

@@ -44,6 +44,7 @@ import soot.jimple.infoflow.sourcesSinks.manager.SourceInfo;
 import soot.jimple.infoflow.taintWrappers.AbstractTaintWrapper;
 import soot.jimple.infoflow.taintWrappers.IReversibleTaintWrapper;
 import soot.jimple.infoflow.taintWrappers.ITaintPropagationWrapper;
+import soot.jimple.infoflow.util.DebugFlowFunctionTaintPropagationHandler;
 
 /**
  * tests aliasing of heap references
@@ -668,6 +669,8 @@ public abstract class HeapTests extends JUnitTests {
 
 		List<String> epoints = new ArrayList<String>();
 		epoints.add("<soot.jimple.infoflow.test.HeapTestCode: void singleAliasTest()>");
+		infoflow.setTaintPropagationHandler(new DebugFlowFunctionTaintPropagationHandler("Main"));
+		infoflow.setAliasPropagationHandler(new DebugFlowFunctionTaintPropagationHandler("Alias"));
 		infoflow.computeInfoflow(appPath, libPath, epoints, sources, sinks);
 		checkInfoflow(infoflow, 1);
 	}
@@ -1373,7 +1376,9 @@ public abstract class HeapTests extends JUnitTests {
 		IInfoflow infoflow = initInfoflow();
 		List<String> epoints = new ArrayList<String>();
 		epoints.add("<soot.jimple.infoflow.test.HeapTestCode: void duplicatePropagationAndFP1()>");
+		infoflow.setAliasPropagationHandler(new DebugFlowFunctionTaintPropagationHandler());
 		infoflow.computeInfoflow(appPath, libPath, epoints, sources, sinks);
+
 		checkInfoflow(infoflow, 1);
 		Assert.assertEquals(1, infoflow.getResults().numConnections());
 	}
