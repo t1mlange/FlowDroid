@@ -12,9 +12,9 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class DefaultActivationUnitManager implements IFlowSensitivityUnitManager {
-    private final Map<Unit, CallSite> activationUnitsToCallSites = new ConcurrentHashMap<>();
+    protected final Map<Unit, CallSite> activationUnitsToCallSites = new ConcurrentHashMap<>();
 
-    private final InfoflowManager manager;
+    protected final InfoflowManager manager;
 
     public DefaultActivationUnitManager(InfoflowManager manager) {
         this.manager = manager;
@@ -28,9 +28,7 @@ public class DefaultActivationUnitManager implements IFlowSensitivityUnitManager
         if (activationUnit == null)
             return false;
         CallSite callSites = activationUnitsToCallSites.get(activationUnit);
-        if (callSites != null)
-            return callSites.containsCallSite(callSite);
-        return false;
+        return callSites != null && callSites.containsCallSite(callSite);
     }
 
     @Override
@@ -44,8 +42,8 @@ public class DefaultActivationUnitManager implements IFlowSensitivityUnitManager
             return activationAbs;
 
         IInfoflowCFG icfg = manager.getICFG();
-        if (!callee.getActiveBody().getUnits().contains(activationUnit))
-            if (!callSites.containsCallSiteMethod(callee))
+        if (!callee.getActiveBody().getUnits().contains(activationUnit)
+            && !callSites.containsCallSiteMethod(callee))
                 return activationAbs;
 
         callSites.addCallsite(callSite, icfg);

@@ -672,7 +672,7 @@ public class FlowInsensitiveSolver<N extends Unit, D extends FastSolverLinkedNod
 		return incoming.get(new Pair<SootMethod, D>(m, d1));
 	}
 
-	protected boolean addIncoming(SootMethod m, D d3, Unit n, D d1, D d2) {
+	public boolean addIncoming(SootMethod m, D d3, Unit n, D d1, D d2) {
 		MyConcurrentHashMap<Unit, Map<D, D>> summaries = incoming.putIfAbsentElseGet(new Pair<SootMethod, D>(m, d3),
 				new MyConcurrentHashMap<Unit, Map<D, D>>());
 		Map<D, D> set = summaries.putIfAbsentElseGet(n, new ConcurrentHashMap<D, D>());

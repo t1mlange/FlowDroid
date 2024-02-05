@@ -166,9 +166,12 @@ public class Abstraction implements Cloneable, FastSolverLinkedNode<Abstraction,
 
 	public Abstraction replaceActivationUnit(Stmt activationUnit) {
 		assert !this.isAbstractionActive();
+		assert this.neighbors == null;
 
 		Abstraction abs = new Abstraction(accessPath, this);
-		abs.predecessor = this;
+		abs.predecessor = this.predecessor;
+		abs.correspondingCallSite = this.correspondingCallSite;
+		abs.currentStmt = this.currentStmt;
 		abs.activationUnit = activationUnit;
 		return abs;
 	}

@@ -165,6 +165,18 @@ public class InfoflowConfiguration {
 		Precise
 	}
 
+	public static enum FlowSensitivityMode {
+		/**
+		 * Propagate the concrete activation unit in the data flow fact.
+		 */
+		Default,
+		/**
+		 * Symbolize activation units, see Merge-Replay: Efficient IFDS-Based Taint Analysis
+		 * by Consolidating Equivalent Value Flows (ASE '23)
+		 */
+		MergeReplay
+	}
+
 	public static enum DataFlowDirection {
 		/**
 		 * Use the default forwards infoflow search
@@ -997,6 +1009,7 @@ public class InfoflowConfiguration {
 	public static class SolverConfiguration {
 		private DataFlowSolver dataFlowSolver = DataFlowSolver.ContextFlowSensitive;
 		private SparsePropagationStrategy sparsePropagationStrategy = SparsePropagationStrategy.Precise;
+		private FlowSensitivityMode flowSensitivityMode = FlowSensitivityMode.Default;
 		private int maxJoinPointAbstractions = 10;
 		private int maxCalleesPerCallSite = 75;
 		private int maxAbstractionPathLength = 100;
@@ -1051,6 +1064,22 @@ public class InfoflowConfiguration {
 		 */
 		public void setSparsePropagationStrategy(SparsePropagationStrategy sparsePropagationStrategy) {
 			this.sparsePropagationStrategy = sparsePropagationStrategy;
+		}
+
+		/**
+		 *
+		 * @return
+		 */
+		public FlowSensitivityMode getFlowSensitivityMode() {
+			return this.flowSensitivityMode;
+		}
+
+		/**
+		 *
+		 * @param flowSensitivityMode
+		 */
+		public void setFlowSensitivityMode(FlowSensitivityMode flowSensitivityMode) {
+			this.flowSensitivityMode = flowSensitivityMode;
 		}
 
 		/**

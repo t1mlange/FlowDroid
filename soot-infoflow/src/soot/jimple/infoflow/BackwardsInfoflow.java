@@ -7,6 +7,10 @@ import soot.Unit;
 import soot.jimple.Stmt;
 import soot.jimple.infoflow.InfoflowConfiguration.DataFlowDirection;
 import soot.jimple.infoflow.aliasing.IAliasingStrategy;
+import soot.jimple.infoflow.aliasing.IFlowSensitivityUnitManager;
+import soot.jimple.infoflow.aliasing.unitManager.DefaultActivationUnitManager;
+import soot.jimple.infoflow.aliasing.unitManager.MergeReplayActivationUnitManager;
+import soot.jimple.infoflow.aliasing.unitManager.NullFlowSensitivityUnitManager;
 import soot.jimple.infoflow.cfg.BiDirICFGFactory;
 import soot.jimple.infoflow.codeOptimization.AddNopStmt;
 import soot.jimple.infoflow.codeOptimization.ICodeOptimizer;
@@ -85,6 +89,21 @@ public class BackwardsInfoflow extends AbstractInfoflow {
 			GlobalTaintManager globalTaintManager) {
 		return new InfoflowManager(config, null, new BackwardsInfoflowCFG(iCfg), sourcesSinks, taintWrapper, hierarchy,
 				globalTaintManager);
+	}
+
+	@Override
+	protected IFlowSensitivityUnitManager getFlowSensitivityUnitManager() {
+		if (getConfig().getAliasingAlgorithm() != InfoflowConfiguration.AliasingAlgorithm.FlowSensitive)
+			return new NullFlowSensitivityUnitManager();
+
+		switch (getConfig().getSolverConfiguration().getFlowSensitivityMode()) {
+			case Default:
+				return new DefaultActivationUnitManager(manager);
+			case MergeReplay:
+				return new MergeReplayActivationUnitManager(manager);
+			default:
+				throw new RuntimeException("Unknown flow sensitivity mode");
+		}
 	}
 
 	@Override

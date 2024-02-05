@@ -14,6 +14,7 @@ import soot.jimple.Stmt;
 import soot.jimple.infoflow.InfoflowConfiguration.SolverConfiguration;
 import soot.jimple.infoflow.aliasing.*;
 import soot.jimple.infoflow.aliasing.unitManager.DefaultActivationUnitManager;
+import soot.jimple.infoflow.aliasing.unitManager.MergeReplayActivationUnitManager;
 import soot.jimple.infoflow.aliasing.unitManager.NullFlowSensitivityUnitManager;
 import soot.jimple.infoflow.cfg.BiDirICFGFactory;
 import soot.jimple.infoflow.data.Abstraction;
@@ -100,8 +101,7 @@ public class Infoflow extends AbstractInfoflow {
 		case FlowSensitive:
 			aliasManager = new InfoflowManager(config, null, new BackwardsInfoflowCFG(iCfg), sourcesSinks, taintWrapper,
 					hierarchy, manager);
-			backProblem = new AliasProblem(aliasManager,
-					manager.getMainSolver().getTabulationProblem().getFlowSensitivityUnitManager());
+			backProblem = new AliasProblem(aliasManager);
 
 			// We need to create the right data flow solver
 			SolverConfiguration solverConfig = config.getSolverConfiguration();
@@ -146,22 +146,23 @@ public class Infoflow extends AbstractInfoflow {
 	}
 
 	@Override
-	protected InfoflowProblem createInfoflowProblem(Abstraction zeroValue) {
-		IFlowSensitivityUnitManager flowSensitivityManager;
-		switch (getConfig().getAliasingAlgorithm()) {
-			case FlowSensitive:
-				flowSensitivityManager = new DefaultActivationUnitManager(manager);
-				break;
-			case PtsBased:
-			case None:
-			case Lazy:
-				flowSensitivityManager = new NullFlowSensitivityUnitManager();
-				break;
-			default:
-				throw new RuntimeException("Unknown aliasing algorithm");
-		}
+	protected IFlowSensitivityUnitManager getFlowSensitivityUnitManager() {
+		if (getConfig().getAliasingAlgorithm() != InfoflowConfiguration.AliasingAlgorithm.FlowSensitive)
+			return new NullFlowSensitivityUnitManager();
 
-		return new InfoflowProblem(manager, zeroValue, ruleManagerFactory, flowSensitivityManager);
+		switch (getConfig().getSolverConfiguration().getFlowSensitivityMode()) {
+			case Default:
+				return new DefaultActivationUnitManager(manager);
+			case MergeReplay:
+				return new MergeReplayActivationUnitManager(manager);
+			default:
+				throw new RuntimeException("Unknown flow sensitivity mode");
+		}
+	}
+
+	@Override
+	protected InfoflowProblem createInfoflowProblem(Abstraction zeroValue) {
+		return new InfoflowProblem(manager, zeroValue, ruleManagerFactory);
 	}
 
 	@Override
