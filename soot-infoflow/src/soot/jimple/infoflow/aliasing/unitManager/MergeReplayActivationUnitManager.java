@@ -5,7 +5,6 @@ import soot.SootMethod;
 import soot.Unit;
 import soot.jimple.Stmt;
 import soot.jimple.infoflow.InfoflowManager;
-import soot.jimple.infoflow.aliasing.IFlowSensitivityUnitManager;
 import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.solver.IncomingRecord;
 import soot.util.ConcurrentHashMultiMap;
@@ -18,7 +17,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-public class MergeReplayActivationUnitManager extends DefaultActivationUnitManager {
+public class MergeReplayActivationUnitManager extends DefaultActivationUnitManager implements IMergeReplay {
     // Keeps track of all symbolic activation units
     private final Map<SymbolicActivationUnit, SymbolicActivationUnit> symbolSet = new ConcurrentHashMap<>();
 
@@ -60,34 +59,39 @@ public class MergeReplayActivationUnitManager extends DefaultActivationUnitManag
         return retSiteAbs.replaceActivationUnit(sym);
     }
 
-    private Abstraction abstractUnit(Abstraction d1, Unit callSite, Abstraction d2,
-                                          SootMethod callee, Abstraction d3) {
+    @Override
+    public Abstraction useGlobalUnit(Abstraction d3) {
         if (d3.getActivationUnit() == SymbolicActivationUnit.GAU)
             return d3;
         return d3.replaceActivationUnit(SymbolicActivationUnit.GAU);
     }
 
-    private Set<Abstraction> concretize(Abstraction d1, Unit callSite, Abstraction d2,
-                                        SootMethod callee, Abstraction d3) {
-        // TODO: leave this for the caller?
-        if (d3.isAbstractionActive())
-            return Collections.singleton(d3);
+    @Override
+    public Set<Abstraction> concretize(Abstraction d1, Unit callSite, Abstraction d2,
+                                       SootMethod callee, Abstraction d3, boolean solverId) {
+        if (solverId) /* == alias */ {
+            return Collections.singleton(useGlobalUnit(d3));
+        } else {
+            // TODO: leave this for the caller?
+            if (d3.isAbstractionActive())
+                return Collections.singleton(d3);
 
-        Unit activationUnit = d3.getActivationUnit();
-        // TODO: shouldn't the concrete unit be symbolized again?
-        if (activationUnit == SymbolicActivationUnit.GAU
-                || !(activationUnit instanceof SymbolicActivationUnit))
-            return Collections.singleton(d3);
+            Unit activationUnit = d3.getActivationUnit();
+            // TODO: shouldn't the concrete unit be symbolized again?
+            if (activationUnit == SymbolicActivationUnit.GAU
+                    || !(activationUnit instanceof SymbolicActivationUnit))
+                return Collections.singleton(d3);
 
-        SymbolicActivationUnit sym = (SymbolicActivationUnit) activationUnit;
-        SootMethod caller = manager.getICFG().getMethodOf(callSite);
-        if (!sym.matchesContext(caller, callee))
-            return Collections.singleton(d3.replaceActivationUnit(SymbolicActivationUnit.GAU));
+            SymbolicActivationUnit sym = (SymbolicActivationUnit) activationUnit;
+            SootMethod caller = manager.getICFG().getMethodOf(callSite);
+            if (!sym.matchesContext(caller, callee))
+                return Collections.singleton(d3.replaceActivationUnit(SymbolicActivationUnit.GAU));
 
-        symbolicIncoming.put(sym, new IncomingRecord<>(callSite, d1, d2, d3));
-        return sym.getConcreteUnits().stream()
-                .map(au -> d3.replaceActivationUnit((Stmt) au))
-                .collect(Collectors.toSet());
+            symbolicIncoming.put(sym, new IncomingRecord<>(callSite, d1, d2, d3));
+            return sym.getConcreteUnits().stream()
+                    .map(au -> d3.replaceActivationUnit((Stmt) au))
+                    .collect(Collectors.toSet());
+        }
     }
 
     // TODO: attatchActivationUnit in their artifact seems wrong???

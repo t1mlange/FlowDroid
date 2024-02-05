@@ -167,12 +167,12 @@ public class Abstraction implements Cloneable, FastSolverLinkedNode<Abstraction,
 	public Abstraction replaceActivationUnit(Stmt activationUnit) {
 		assert !this.isAbstractionActive();
 		assert this.neighbors == null;
-
-		Abstraction abs = new Abstraction(accessPath, this);
-		abs.predecessor = this.predecessor;
-		abs.correspondingCallSite = this.correspondingCallSite;
-		abs.currentStmt = this.currentStmt;
+		Abstraction abs = deriveNewAbstractionMutable(accessPath, null);
 		abs.activationUnit = activationUnit;
+		// FlowDroid uses cut-offs, one of which is based on the propagation path length.
+		// We do not count this derivation as the path length to ensure consistent cut-offs
+		// across configurations.
+		abs.propagationPathLength -= 1;
 		return abs;
 	}
 

@@ -18,6 +18,7 @@ import soot.jimple.infoflow.nativeCallHandler.BackwardNativeCallHandler;
 import soot.jimple.infoflow.problems.BackwardsInfoflowProblem;
 import soot.jimple.infoflow.problems.rules.BackwardPropagationRuleManagerFactory;
 import soot.jimple.infoflow.results.BackwardsInfoflowResults;
+import soot.jimple.infoflow.results.DataFlowResult;
 import soot.jimple.infoflow.results.InfoflowResults;
 import soot.jimple.infoflow.solver.cfg.BackwardsInfoflowCFG;
 import soot.jimple.infoflow.solver.cfg.IInfoflowCFG;
@@ -27,6 +28,8 @@ import soot.jimple.infoflow.sourcesSinks.manager.IReversibleSourceSinkManager;
 import soot.jimple.infoflow.sourcesSinks.manager.ISourceSinkManager;
 import soot.jimple.infoflow.sourcesSinks.manager.SinkInfo;
 import soot.jimple.infoflow.sourcesSinks.manager.SourceInfo;
+
+import javax.xml.crypto.Data;
 
 public class BackwardsInfoflow extends AbstractInfoflow {
 
@@ -87,23 +90,6 @@ public class BackwardsInfoflow extends AbstractInfoflow {
 			GlobalTaintManager globalTaintManager) {
 		return new InfoflowManager(config, null, new BackwardsInfoflowCFG(iCfg), sourcesSinks, taintWrapper, hierarchy,
 				globalTaintManager);
-	}
-
-	@Override
-	protected IFlowSensitivityUnitManager getFlowSensitivityUnitManager() {
-		if (getConfig().getAliasingAlgorithm() != InfoflowConfiguration.AliasingAlgorithm.FlowSensitive)
-			return new NullFlowSensitivityUnitManager();
-
-		switch (getConfig().getSolverConfiguration().getFlowSensitivityMode()) {
-			case Default:
-				return new DefaultTurnUnitManager(manager);
-			case Legacy:
-				return new LegacyTurnUnitManager(manager);
-//			case MergeReplay:
-//				return new MergeReplayActivationUnitManager(manager);
-			default:
-				throw new RuntimeException("Unknown flow sensitivity mode");
-		}
 	}
 
 	@Override

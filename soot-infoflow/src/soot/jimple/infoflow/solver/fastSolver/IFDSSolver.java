@@ -41,6 +41,7 @@ import heros.solver.Pair;
 import heros.solver.PathEdge;
 import soot.SootMethod;
 import soot.jimple.infoflow.collect.MyConcurrentHashMap;
+import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.memory.IMemoryBoundedSolver;
 import soot.jimple.infoflow.memory.ISolverTerminationReason;
 import soot.jimple.infoflow.solver.AbstractIFDSSolver;
@@ -285,6 +286,10 @@ public class IFDSSolver<N, D extends FastSolverLinkedNode<D, N>, I extends BiDiI
 		propagationCount++;
 	}
 
+	Set<D> onCallFlow(D d1, N n, D d2, SootMethod sCalledProcN, D d3) {
+		return Collections.singleton(d3);
+	}
+
 	/**
 	 * Lines 13-20 of the algorithm; processing a call site in the caller's context.
 	 *
@@ -320,29 +325,30 @@ public class IFDSSolver<N, D extends FastSolverLinkedNode<D, N>, I extends BiDiI
 						if (res != null && !res.isEmpty()) {
 							Collection<N> startPointsOf = icfg.getStartPointsOf(sCalledProcN);
 							// for each result node of the call-flow function
-							for (D d3 : res) {
-								if (memoryManager != null)
-									d3 = memoryManager.handleGeneratedMemoryObject(d2, d3);
-								if (d3 == null)
-									continue;
+							for (D d3sym : res) {
+								for (D d3 : onCallFlow(d1, n, d2, sCalledProcN, d3sym)) {
+									if (memoryManager != null)
+										d3 = memoryManager.handleGeneratedMemoryObject(d2, d3);
+									if (d3 == null)
+										continue;
 
-								// for each callee's start point(s)
-								for (N sP : startPointsOf) {
-									// create initial self-loop
-									schedulingStrategy.propagateCallFlow(d3, sP, d3, n, false); // line 15
+									// for each callee's start point(s)
+									for (N sP : startPointsOf) {
+										// create initial self-loop
+										schedulingStrategy.propagateCallFlow(d3, sP, d3, n, false); // line 15
+									}
+
+									// register the fact that <sp,d3> has an incoming edge from
+									// <n,d2>
+									// line 15.1 of Naeem/Lhotak/Rodriguez
+									if (!addIncoming(sCalledProcN, d3, n, d1, d2))
+										continue;
+
+									applyEndSummaryOnCall(d1, n, d2, returnSiteNs, sCalledProcN, d3);
 								}
-
-								// register the fact that <sp,d3> has an incoming edge from
-								// <n,d2>
-								// line 15.1 of Naeem/Lhotak/Rodriguez
-								if (!addIncoming(sCalledProcN, d3, n, d1, d2))
-									continue;
-
-								applyEndSummaryOnCall(d1, n, d2, returnSiteNs, sCalledProcN, d3);
 							}
 						}
 					}
-
 				});
 			}
 		}
