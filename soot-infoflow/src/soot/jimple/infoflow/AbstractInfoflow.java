@@ -1576,6 +1576,7 @@ public abstract class AbstractInfoflow implements IInfoflow {
 			case Forwards:
 				switch (getConfig().getSolverConfiguration().getFlowSensitivityMode()) {
 					case Default:
+					case Legacy:
 						return new DefaultActivationUnitManager(manager);
 					case MergeReplay:
 						return new MergeReplayActivationUnitManager(manager);
