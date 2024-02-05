@@ -12,7 +12,7 @@ public class NullFlowSensitivityUnitManager implements IFlowSensitivityUnitManag
     }
 
     @Override
-    public boolean isCallSiteActivatingTaint(Unit callSite, Unit activationUnit) {
+    public boolean pathFromCallToUnitExists(Unit callSite, Unit flowUnit) {
         return false;
     }
 }

@@ -327,7 +327,7 @@ public class BackwardsAliasProblem extends AbstractInfoflowProblem {
 
 						// TurnUnit is the sink. Below this stmt, the taint is not valid anymore
 						// Therefore we turn around here.
-						if (source.getTurnUnit() == callSite) {
+						if (callSite == source.getTurnUnit()) {
 							return notifyOutFlowHandlers(callSite, d1, source, null,
 									TaintPropagationHandler.FlowFunctionType.CallFlowFunction);
 						}
@@ -469,7 +469,7 @@ public class BackwardsAliasProblem extends AbstractInfoflowProblem {
 
 						// TurnUnit is the sink. Below this stmt, the taint is not valid anymore
 						// Therefore we turn around here.
-						if (source.getTurnUnit() == callSite) {
+						if (isCallSiteActivatingTaint(callSite, source.getTurnUnit())) {
 							return notifyOutFlowHandlers(callSite, calleeD1, source, null,
 									TaintPropagationHandler.FlowFunctionType.ReturnFlowFunction);
 						}
@@ -623,10 +623,7 @@ public class BackwardsAliasProblem extends AbstractInfoflowProblem {
 
 						// TurnUnit is the sink. Below this stmt, the taint is not valid anymore
 						// Therefore we turn around here.
-						if (source.getTurnUnit() != null && (source.getTurnUnit() == callSite
-								|| manager.getICFG().getCalleesOfCallAt(callSite).stream()
-										.anyMatch(m -> manager.getICFG().getMethodOf(source.getTurnUnit()) == m))) {
-
+						if (isCallSiteActivatingTaint(callSite, source.getTurnUnit())) {
 							return notifyOutFlowHandlers(callSite, d1, source, null,
 									TaintPropagationHandler.FlowFunctionType.CallToReturnFlowFunction);
 						}

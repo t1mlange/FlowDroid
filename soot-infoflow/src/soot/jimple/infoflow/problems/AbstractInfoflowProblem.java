@@ -145,7 +145,7 @@ public abstract class AbstractInfoflowProblem
 	}
 
 	public boolean isCallSiteActivatingTaint(Unit callSite, Unit activationUnit) {
-		return flowSensitivityManager.isCallSiteActivatingTaint(callSite, activationUnit);
+		return flowSensitivityManager.pathFromCallToUnitExists(callSite, activationUnit);
 	}
 
 	protected Abstraction registerActivationCallSite(Unit callSite, SootMethod callee, Abstraction activationAbs, Abstraction source) {
