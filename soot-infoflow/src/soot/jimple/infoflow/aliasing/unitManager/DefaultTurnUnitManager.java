@@ -12,8 +12,6 @@ import soot.jimple.infoflow.data.Abstraction;
 public class DefaultTurnUnitManager extends TransitiveUnitManager {
     public DefaultTurnUnitManager(InfoflowManager manager) {
         super(manager);
-        if (this.manager.getConfig().getDataFlowDirection() != InfoflowConfiguration.DataFlowDirection.Backwards)
-            throw new RuntimeException("Invalid configuration! This class requires a backward analysis");
     }
 
     @Override

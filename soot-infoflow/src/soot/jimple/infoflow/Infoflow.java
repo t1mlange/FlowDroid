@@ -14,6 +14,7 @@ import soot.jimple.Stmt;
 import soot.jimple.infoflow.InfoflowConfiguration.SolverConfiguration;
 import soot.jimple.infoflow.aliasing.*;
 import soot.jimple.infoflow.aliasing.unitManager.DefaultActivationUnitManager;
+import soot.jimple.infoflow.aliasing.unitManager.IMergeReplay;
 import soot.jimple.infoflow.aliasing.unitManager.MergeReplayActivationUnitManager;
 import soot.jimple.infoflow.aliasing.unitManager.NullFlowSensitivityUnitManager;
 import soot.jimple.infoflow.cfg.BiDirICFGFactory;
@@ -143,21 +144,6 @@ public class Infoflow extends AbstractInfoflow {
 			throw new RuntimeException("Unsupported aliasing algorithm");
 		}
 		return aliasingStrategy;
-	}
-
-	@Override
-	protected IFlowSensitivityUnitManager getFlowSensitivityUnitManager() {
-		if (getConfig().getAliasingAlgorithm() != InfoflowConfiguration.AliasingAlgorithm.FlowSensitive)
-			return new NullFlowSensitivityUnitManager();
-
-		switch (getConfig().getSolverConfiguration().getFlowSensitivityMode()) {
-			case Default:
-				return new DefaultActivationUnitManager(manager);
-			case MergeReplay:
-				return new MergeReplayActivationUnitManager(manager);
-			default:
-				throw new RuntimeException("Unknown flow sensitivity mode");
-		}
 	}
 
 	@Override

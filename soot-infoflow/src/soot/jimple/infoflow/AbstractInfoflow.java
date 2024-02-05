@@ -39,6 +39,7 @@ import soot.jimple.infoflow.InfoflowConfiguration.SolverConfiguration;
 import soot.jimple.infoflow.InfoflowConfiguration.SootIntegrationMode;
 import soot.jimple.infoflow.InfoflowConfiguration.StaticFieldTrackingMode;
 import soot.jimple.infoflow.aliasing.*;
+import soot.jimple.infoflow.aliasing.unitManager.*;
 import soot.jimple.infoflow.cfg.*;
 import soot.jimple.infoflow.codeOptimization.DeadCodeEliminator;
 import soot.jimple.infoflow.codeOptimization.ICodeOptimizer;
@@ -736,7 +737,7 @@ public abstract class AbstractInfoflow implements IInfoflow {
 			// We need to create the right data flow solver
 			IInfoflowSolver forwardSolver = createDataFlowSolver(executor, forwardProblem);
 
-			IFlowSensitivityUnitManager fm = getFlowSensitivityUnitManager();
+			IFlowSensitivityUnitManager fm = getFlowSensitivityUnitManager(config.getDataFlowDirection());
 			forwardProblem.setFlowSensitivityManager(fm);
 
 			// Set the options
@@ -795,11 +796,13 @@ public abstract class AbstractInfoflow implements IInfoflow {
 				additionalSolver.setMemoryManager(memoryManager);
 				memoryWatcher.addSolver((IMemoryBoundedSolver) additionalSolver);
 
+				IFlowSensitivityUnitManager additionalFm = getFlowSensitivityUnitManager(InfoflowConfiguration.DataFlowDirection.Backwards);
 				// Set all handlers to the additional problem
 				additionalProblem.setTaintPropagationHandler(new SecondaryFlowListener());
 				additionalProblem.setTaintWrapper(taintWrapper);
 				additionalNativeCallHandler = new BackwardNativeCallHandler();
 				additionalProblem.setNativeCallHandler(additionalNativeCallHandler);
+				additionalProblem.setFlowSensitivityManager(additionalFm);
 
 				// Initialize the alias analysis
 				IAliasingStrategy revereAliasingStrategy = createBackwardAliasAnalysis(additionalManager, sourcesSinks,
@@ -809,6 +812,7 @@ public abstract class AbstractInfoflow implements IInfoflow {
 							.setMainSolver(additionalSolver);
 
 				additionalAliasSolver = revereAliasingStrategy.getSolver();
+				additionalAliasSolver.getTabulationProblem().setFlowSensitivityManager(additionalFm);
 
 				// Initialize the aliasing infrastructure
 				Aliasing reverseAliasing = createAliasController(revereAliasingStrategy);
@@ -1563,6 +1567,37 @@ public abstract class AbstractInfoflow implements IInfoflow {
 		return solver;
 	}
 
+
+	protected IFlowSensitivityUnitManager getFlowSensitivityUnitManager(InfoflowConfiguration.DataFlowDirection direction) {
+		if (!getConfig().getFlowSensitiveAliasing())
+			return new NullFlowSensitivityUnitManager();
+
+		switch (direction) {
+			case Forwards:
+				switch (getConfig().getSolverConfiguration().getFlowSensitivityMode()) {
+					case Default:
+						return new DefaultActivationUnitManager(manager);
+					case MergeReplay:
+						return new MergeReplayActivationUnitManager(manager);
+					default:
+						throw new RuntimeException("Unknown flow sensitivity mode");
+				}
+			case Backwards:
+				switch (getConfig().getSolverConfiguration().getFlowSensitivityMode()) {
+					case Default:
+						return new DefaultTurnUnitManager(manager);
+					case Legacy:
+						return new LegacyTurnUnitManager(manager);
+		//			case MergeReplay:
+		//				return new MergeReplayActivationUnitManager(manager);
+					default:
+						throw new RuntimeException("Unknown flow sensitivity mode");
+				}
+			default:
+				throw new RuntimeException("Unknown direction!");
+		}
+	}
+
 	/**
 	 * Gets the path shortening mode that shall be applied given a certain path
 	 * reconstruction configuration. This method computes the most aggressive path
@@ -1766,8 +1801,6 @@ public abstract class AbstractInfoflow implements IInfoflow {
 	 */
 	protected abstract IAliasingStrategy createAliasAnalysis(final ISourceSinkManager sourcesSinks, IInfoflowCFG iCfg,
 			InterruptableExecutor executor, IMemoryManager<Abstraction, Unit> memoryManager);
-
-	protected abstract IFlowSensitivityUnitManager getFlowSensitivityUnitManager();
 
 	/**
 	 * Initializes the alias analysis for the backward direction
