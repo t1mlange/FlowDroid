@@ -174,7 +174,11 @@ public class InfoflowConfiguration {
 		 * Symbolize activation units, see Merge-Replay: Efficient IFDS-Based Taint Analysis
 		 * by Consolidating Equivalent Value Flows (ASE '23)
 		 */
-		MergeReplay
+		MergeReplay,
+		/**
+		 * Previous behavior of the backwards-directed analysis.
+		 */
+		Legacy
 	}
 
 	public static enum DataFlowDirection {
