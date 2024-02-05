@@ -17,11 +17,11 @@ public interface IFlowSensitivityUnitManager {
     Abstraction registerCallSite(Unit callSite, SootMethod callee, Abstraction activationAbs, Abstraction prev);
 
     /**
-     *
+     * Checks if path from the call to the unit exists
      *
      * @param callSite
-     * @param activationUnit
+     * @param flowUnit
      * @return true if the taint matches the call site
      */
-    boolean isCallSiteActivatingTaint(Unit callSite, Unit activationUnit);
+    boolean pathFromCallToUnitExists(Unit callSite, Unit flowUnit);
 }

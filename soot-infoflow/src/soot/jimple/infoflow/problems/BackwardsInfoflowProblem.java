@@ -665,6 +665,8 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
 									TaintPropagationHandler.FlowFunctionType.ReturnFlowFunction);
 
 						Set<Abstraction> res = computeTargetsInternal(source, calleeD1, callerD1s);
+						// XXX: better
+						registerActivationCallSite(callSite, callee, null, null);
 						return notifyOutFlowHandlers(exitSite, calleeD1, source, res,
 								TaintPropagationHandler.FlowFunctionType.ReturnFlowFunction);
 					}
@@ -803,8 +805,9 @@ public class BackwardsInfoflowProblem extends AbstractInfoflowProblem {
 						}
 
 						for (Abstraction abs : res) {
-							if (abs != source)
+							if (abs != source) {
 								abs.setCorrespondingCallSite(callStmt);
+							}
 						}
 
 						return res;
