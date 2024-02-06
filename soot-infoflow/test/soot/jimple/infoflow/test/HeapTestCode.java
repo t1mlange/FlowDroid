@@ -1709,42 +1709,4 @@ public class HeapTestCode {
 		i.str = TelephonyManager.getDeviceId();
 		i.leakIt();
 	}
-
-	public void duplicatePropagation1() {
-		Book q = new Book();
-		Book p = q;
-		Book r = new Book();
-		setAndLeak(p, q, r);
-	}
-
-	public void duplicatePropagationAndFP1() {
-		Book q = new Book();
-		Book p = q;
-		Book r = new Book();
-		setAndLeak(p, q, r);
-		// I have fixed the turn around positions some time ago.
-		// The original example from the MergeDroid paper works
-		// on an older version where aliases were injected at
-		// IdentityStmts. We now already detect at the call site
-		// that two parameters aliased. Therefore, this statement
-		// needs to be after the call to produce a false positive.
-		intermediateCallee(q);
-	}
-
-	void intermediateCallee(Book q) {
-		Book p = new Book();
-		Book r = q;
-		setAndLeak(p, q, r);
-	}
-
-	void setAndLeak(Book p, Book q, Book r) {
-		ConnectionManager cm = new ConnectionManager();
-		if (new Random().nextBoolean()) {
-			p.name = TelephonyManager.getDeviceId();
-		} else {
-			p.name = TelephonyManager.getDeviceId();
-			cm.publish(q.name);
-		}
-		cm.publish(r.name);
-	}
 }

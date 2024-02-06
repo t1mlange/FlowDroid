@@ -21,6 +21,10 @@ public class CallSite {
         return callsiteMethods.contains(callSite);
     }
 
+    public boolean addCallsite(Unit callSite) {
+        return callsites.add(callSite);
+    }
+
     public boolean addCallsite(Unit callSite, IInfoflowCFG icfg) {
         if (callsites.add(callSite)) {
             callsiteMethods.add(icfg.getMethodOf(callSite));

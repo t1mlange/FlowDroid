@@ -529,11 +529,11 @@ public class InfoflowProblem extends AbstractInfoflowProblem {
 
 						// Activate taint if necessary
 						Abstraction newSource = source;
-						if (!source.isAbstractionActive())
-							if (callSite != null)
-								if (callSite == source.getActivationUnit()
-										|| isCallSiteActivatingTaint(callSite, source.getActivationUnit()))
-									newSource = source.getActiveCopy();
+//						if (!source.isAbstractionActive())
+//							if (callSite != null)
+//								if (callSite == source.getActivationUnit()
+//										|| isCallSiteActivatingTaint(callSite, source.getActivationUnit()))
+//									newSource = source.getActiveCopy();
 
 						// if abstraction is not active and activeStmt was in
 						// this method, it will not get activated = it can be

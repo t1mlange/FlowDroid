@@ -5,7 +5,6 @@ import soot.Unit;
 import soot.UnitPrinter;
 import soot.jimple.infoflow.collect.ConcurrentHashSet;
 import soot.jimple.infoflow.data.Abstraction;
-import soot.jimple.infoflow.sourcesSinks.manager.BaseSourceSinkManager;
 import soot.jimple.internal.JNopStmt;
 
 import java.util.Objects;
@@ -19,13 +18,13 @@ public class SymbolicActivationUnit extends JNopStmt {
     // Global Activation Unit
     public static final SymbolicActivationUnit GAU = new SymbolicActivationUnit();
 
-    // For each caller, callee, abstractions at most one symbolic activation unit exists
+    // For each (caller, callee, abstraction) at most one symbolic activation unit exists
     private final SootMethod caller;
     private final SootMethod callee;
     private final Abstraction abstraction;
 
     // Concrete activation units that should be replayed for this symbolic unit
-    private final Set<Unit> concreteUnits;
+    private final Set<Unit> units;
 
     private final int hashCode;
 
@@ -33,7 +32,7 @@ public class SymbolicActivationUnit extends JNopStmt {
         caller = null;
         callee = null;
         abstraction = null;
-        concreteUnits = null;
+        units = null;
         hashCode = 0;
     }
 
@@ -41,7 +40,7 @@ public class SymbolicActivationUnit extends JNopStmt {
         this.caller = caller;
         this.callee = callee;
         this.abstraction = abstraction;
-        this.concreteUnits = new ConcurrentHashSet<>();
+        this.units = new ConcurrentHashSet<>();
         this.hashCode = Objects.hash(caller, callee, abstraction);
     }
 
@@ -49,12 +48,12 @@ public class SymbolicActivationUnit extends JNopStmt {
         return this.caller == caller && this.callee == callee;
     }
 
-    public boolean addConcreteUnit(Unit u) {
-        return this.concreteUnits.add(u);
+    public boolean addUnit(Unit u) {
+        return this.units.add(u);
     }
 
-    public Set<Unit> getConcreteUnits() {
-        return this.concreteUnits;
+    public Set<Unit> getUnits() {
+        return this.units;
     }
 
     @Override

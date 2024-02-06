@@ -7,6 +7,7 @@ import soot.jimple.Stmt;
 import soot.jimple.infoflow.InfoflowManager;
 import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.solver.IncomingRecord;
+import soot.jimple.infoflow.solver.cfg.IInfoflowCFG;
 import soot.util.ConcurrentHashMultiMap;
 import soot.util.MultiMap;
 
@@ -18,7 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 public class MergeReplayActivationUnitManager extends DefaultActivationUnitManager implements IMergeReplay {
-    // Keeps track of all symbolic activation units
+    // Keeps track of all symbolic activation units, Symb2Reps in the papere
     private final Map<SymbolicActivationUnit, SymbolicActivationUnit> symbolSet = new ConcurrentHashMap<>();
 
     // Maps already concretized symbolic units to their corresponding call edge. Newly found concrete activation
@@ -29,83 +30,117 @@ public class MergeReplayActivationUnitManager extends DefaultActivationUnitManag
         super(manager);
     }
 
+    private void onActivationUnitAdded(SymbolicActivationUnit sym, Unit activationUnit, SootMethod callee) {
+        // If the symbolic activation unit already has been concretized, we need to reinject
+        // the newly found concrete activation unit there too
+        Collection<Unit> startPointsOf = manager.getICFG().getStartPointsOf(callee);
+        for (IncomingRecord<Unit, Abstraction> inc : symbolicIncoming.get(sym)) { // ln 63
+//            Abstraction d3a = inc.d3.replaceActivationUnit(activationUnit); // ln 64
+//
+//            if (!manager.getMainSolver().addIncoming(callee, d3a, inc.n, inc.d1, inc.d2))
+//                continue;
+//
+//            for (Unit sP : startPointsOf)
+//                manager.getMainSolver().processEdge(new PathEdge<>(d3a, sP, d3a)); // ln 65
+//
+//            manager.getMainSolver().applySummary(callee, d3a, inc.n, inc.d2, inc.d1); // ln 67-68
+        }
+    }
+
     private Abstraction symbolize(Unit callSite, SootMethod callee,
                                   Abstraction exitAbs, Abstraction retSiteAbs) {
-        // ASSERT: backward only
+        // Symbolize only happens backwards
         assert !retSiteAbs.isAbstractionActive();
 
         SootMethod caller = manager.getICFG().getMethodOf(callSite);
-        SymbolicActivationUnit newSym = new SymbolicActivationUnit(caller, callee, exitAbs.getActiveCopy());
+        Unit activationUnit = retSiteAbs.getActivationUnit(); // ln 71
+        Abstraction abs = exitAbs.getActiveCopy(); // ln 72
+        SymbolicActivationUnit newSym = new SymbolicActivationUnit(caller, callee, abs); // ln 73
         // Look up if a symbolic unit already exists for this return edge
-        SymbolicActivationUnit sym = symbolSet.computeIfAbsent(newSym, (v) -> newSym);
-
-        Stmt concreteActivationUnit = (Stmt) retSiteAbs.getActivationUnit();
-        if (sym.addConcreteUnit(concreteActivationUnit)) {
-            // If the symbolic activation unit already has been concretized, we need to reinject
-            // the newly found concrete activation unit there too
-            Collection<Unit> startPointsOf = manager.getICFG().getStartPointsOf(callee);
-            for (IncomingRecord<Unit, Abstraction> inc : symbolicIncoming.get(sym)) {
-                Abstraction d3a = inc.d3.replaceActivationUnit(concreteActivationUnit);
-
-                if (!manager.getMainSolver().addIncoming(callee, d3a, inc.n, inc.d1, inc.d2))
-                    continue;
-
-                for (Unit sP : startPointsOf)
-                    manager.getMainSolver().processEdge(new PathEdge<>(d3a, sP, d3a));
-            }
-        }
-
+        SymbolicActivationUnit sym = symbolSet.computeIfAbsent(newSym, (v) -> newSym); // ln 74-75
+        // no need to reinject concrete's if the activation is already known
+        if (sym.addUnit(activationUnit))
+            onActivationUnitAdded(sym, activationUnit, callee); // ln 76
         // Propagate symbolic unit
-        return retSiteAbs.replaceActivationUnit(sym);
-    }
-
-    @Override
-    public Abstraction useGlobalUnit(Abstraction d3) {
-        if (d3.getActivationUnit() == SymbolicActivationUnit.GAU)
-            return d3;
-        return d3.replaceActivationUnit(SymbolicActivationUnit.GAU);
+        return retSiteAbs.replaceActivationUnit(sym); // ln 77
     }
 
     @Override
     public Set<Abstraction> concretize(Abstraction d1, Unit callSite, Abstraction d2,
                                        SootMethod callee, Abstraction d3, boolean solverId) {
-        if (!solverId) /* == alias */ {
-            return Collections.singleton(useGlobalUnit(d3));
-        } else {
-            // TODO: leave this for the caller?
-            if (d3.isAbstractionActive())
+        if (!solverId) /* == alias solver */ {
+            assert !d3.isAbstractionActive();
+            return Collections.singleton(d3);
+            // line 38b: replace any symbolic activation unit with the global activation unit at return sites
+//            if (d3.getActivationUnit() == SymbolicActivationUnit.GAU)
+//                return Collections.singleton(d3);
+//            return Collections.singleton(d3.deriveSymbolicAbstraction(SymbolicActivationUnit.GAU));
+        } else /* == main solver */ {
+            if (d3.isAbstractionActive()) // ln 79
                 return Collections.singleton(d3);
 
             Unit activationUnit = d3.getActivationUnit();
-            // TODO: shouldn't the concrete unit be symbolized again?
             if (activationUnit == SymbolicActivationUnit.GAU
-                    || !(activationUnit instanceof SymbolicActivationUnit))
+                    || !(activationUnit instanceof SymbolicActivationUnit)) // ln 81
                 return Collections.singleton(d3);
 
             SymbolicActivationUnit sym = (SymbolicActivationUnit) activationUnit;
             SootMethod caller = manager.getICFG().getMethodOf(callSite);
-            if (!sym.matchesContext(caller, callee))
-                return Collections.singleton(d3.replaceActivationUnit(SymbolicActivationUnit.GAU));
+            if (!sym.matchesContext(caller, callee)) // ln 86
+                return Collections.singleton(d3);
+//                return Collections.singleton(d3.deriveSymbolicAbstraction(SymbolicActivationUnit.GAU)); // ln 90
 
-            symbolicIncoming.put(sym, new IncomingRecord<>(callSite, d1, d2, d3));
-            return sym.getConcreteUnits().stream()
-                    .map(au -> d3.replaceActivationUnit((Stmt) au))
-                    .collect(Collectors.toSet());
+            symbolicIncoming.put(sym, new IncomingRecord<>(callSite, d1, d2, d3)); // ln 87
+            return sym.getUnits().stream()
+                    .map(d3::replaceActivationUnit)
+                    .collect(Collectors.toSet()); // ln 88-89
         }
     }
 
-    // TODO: attatchActivationUnit in their artifact seems wrong???
+    @Override
+    public Abstraction attachActivationUnit(Abstraction retAbs, Abstraction callAbs) {
+        return retAbs;
+//        assert !callAbs.isAbstractionActive();
+//
+//        return retAbs.getActivationUnit() == SymbolicActivationUnit.GAU && callAbs != null
+//                ? retAbs.deriveConcreteAbstraction(callAbs) : retAbs;
+    }
 
     @Override
     public Abstraction registerCallSite(Unit callSite, SootMethod callee, Abstraction activationAbs, Abstraction prev) {
-        assert !activationAbs.isAbstractionActive(); // We only register call sites backward????
+        assert !activationAbs.isAbstractionActive(); // We only register call sites backward
 
-        Unit activationUnit = activationAbs.getActivationUnit();
         // The global activation unit abstracts the flows in the backward analysis
-        if (activationUnit == SymbolicActivationUnit.GAU)
+        Unit unit = getFlowUnit(activationAbs);
+        if (unit == null || unit == SymbolicActivationUnit.GAU)
             return activationAbs;
 
-        super.registerCallSite(callSite, callee, activationAbs, prev);
-        return symbolize(callSite, callee, activationAbs, prev);
+        CallSite callSites = unitsToCallSites.computeIfAbsent(unit, (u) -> new CallSite());
+        if (callSites.containsCallSite(callSite)) {
+            Abstraction abs = symbolize(callSite, callee, activationAbs, prev);
+            callSites.addCallsite(abs.getActivationUnit());
+            return abs;
+        }
+
+        if (callSite instanceof SymbolicActivationUnit) {
+            IInfoflowCFG icfg = manager.getICFG();
+            if (!callSites.containsCallSiteMethod(callee))
+                return symbolize(callSite, callee, activationAbs, prev);
+
+            callSites.addCallsite(callSite, icfg);
+            Abstraction abs = symbolize(callSite, callee, activationAbs, prev);
+            callSites.addCallsite(abs.getActivationUnit());
+            return activationAbs;
+        } else {
+            IInfoflowCFG icfg = manager.getICFG();
+            if (!callee.getActiveBody().getUnits().contains(unit)
+                    && !callSites.containsCallSiteMethod(callee))
+                return symbolize(callSite, callee, activationAbs, prev);
+
+            callSites.addCallsite(callSite, icfg);
+            Abstraction abs = symbolize(callSite, callee, activationAbs, prev);
+            callSites.addCallsite(abs.getActivationUnit());
+            return activationAbs;
+        }
     }
 }

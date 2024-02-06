@@ -694,8 +694,8 @@ public class AliasProblem extends AbstractInfoflowProblem {
 											source.deriveNewAbstraction(ap, (Stmt) exitStmt));
 
 									if (abs != null) {
-										abs = registerActivationCallSite(callSite, callee, abs, source);
-										res.add(abs);
+										Abstraction symAbs = registerActivationCallSite(callSite, callee, abs, source);
+										res.add(symAbs);
 
 										// Check whether the call site created an alias by having two equal
 										// arguments, e.g. caller(o, o);. If yes, inject the other parameter

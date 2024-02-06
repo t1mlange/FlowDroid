@@ -32,23 +32,23 @@ public class AbstractIFDSSolver<N, D extends FastSolverLinkedNode<D, N>> {
      * @return data flow fact with a shortened predecessor chain
      */
     protected D shortenPredecessors(D returnD, D incomingD, D calleeD, N currentUnit, N callSite) {
-        switch (shorteningMode) {
-            case AlwaysShorten:
-                // If we don't build a path later, we do not have to keep flows through callees.
-                // But we have to keep the call site so that we do not lose any neighbors, but
-                // skip any abstractions inside the callee. This sets the predecessor of the
-                // returned abstraction to the first abstraction in the callee.
-                if (returnD != calleeD) {
-                    D res = returnD.clone(currentUnit, callSite);
-                    res.setPredecessor(calleeD);
-                    return res;
-                }
-                break;
-            case ShortenIfEqual:
-                if (returnD.equals(incomingD))
-                    return incomingD;
-                break;
-        }
+//        switch (shorteningMode) {
+//            case AlwaysShorten:
+//                // If we don't build a path later, we do not have to keep flows through callees.
+//                // But we have to keep the call site so that we do not lose any neighbors, but
+//                // skip any abstractions inside the callee. This sets the predecessor of the
+//                // returned abstraction to the first abstraction in the callee.
+//                if (returnD != calleeD) {
+//                    D res = returnD.clone(currentUnit, callSite);
+//                    res.setPredecessor(calleeD);
+//                    return res;
+//                }
+//                break;
+//            case ShortenIfEqual:
+//                if (returnD.equals(incomingD))
+//                    return incomingD;
+//                break;
+//        }
 
         return returnD;
     }

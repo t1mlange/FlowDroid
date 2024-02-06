@@ -95,6 +95,16 @@ public class InfoflowSolver extends IFDSSolver<Unit, Abstraction, BiDiInterproce
 	}
 
 	@Override
+	protected Abstraction onReturnFlow(Abstraction d5, Abstraction d4, SootMethod callee, Unit returnSite) {
+		IFlowSensitivityUnitManager fsm = problem.getFlowSensitivityUnitManager();
+		if (fsm instanceof IMergeReplay) {
+			return ((IMergeReplay) fsm).attachActivationUnit(d5, d4);
+		} else {
+			return d5;
+		}
+	}
+
+	@Override
 	protected Set<Abstraction> computeReturnFlowFunction(FlowFunction<Abstraction> retFunction, Abstraction d1,
 			Abstraction d2, Unit callSite, Collection<Abstraction> callerSideDs) {
 		if (retFunction instanceof SolverReturnFlowFunction) {

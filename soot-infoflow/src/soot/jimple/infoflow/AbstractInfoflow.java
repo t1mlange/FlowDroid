@@ -978,7 +978,7 @@ public abstract class AbstractInfoflow implements IInfoflow {
 
 				// Get the result abstractions
 				Set<AbstractionAtSink> res = propagationResults.getResults();
-				propagationResults = null;
+//				propagationResults = null;
 
 				// We need to prune access paths that are entailed by
 				// another one

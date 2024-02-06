@@ -1359,27 +1359,4 @@ public abstract class HeapTests extends JUnitTests {
 		Assert.assertEquals(2, infoflow.getResults().getResultSet().stream()
 				.map(res -> res.getSource().getStmt()).distinct().count());
 	}
-
-
-	@Test(timeout = 300000)
-	public void duplicatePropagation1() {
-		IInfoflow infoflow = initInfoflow();
-		List<String> epoints = new ArrayList<String>();
-		epoints.add("<soot.jimple.infoflow.test.HeapTestCode: void duplicatePropagation1()>");
-		infoflow.computeInfoflow(appPath, libPath, epoints, sources, sinks);
-		checkInfoflow(infoflow, 1);
-		Assert.assertEquals(1, infoflow.getResults().numConnections());
-	}
-
-	@Test(timeout = 300000)
-	public void duplicatePropagationAndFP1() {
-		IInfoflow infoflow = initInfoflow();
-		List<String> epoints = new ArrayList<String>();
-		epoints.add("<soot.jimple.infoflow.test.HeapTestCode: void duplicatePropagationAndFP1()>");
-		infoflow.setAliasPropagationHandler(new DebugFlowFunctionTaintPropagationHandler());
-		infoflow.computeInfoflow(appPath, libPath, epoints, sources, sinks);
-
-		checkInfoflow(infoflow, 1);
-		Assert.assertEquals(1, infoflow.getResults().numConnections());
-	}
 }

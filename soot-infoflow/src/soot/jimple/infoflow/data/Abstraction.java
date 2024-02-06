@@ -164,16 +164,55 @@ public class Abstraction implements Cloneable, FastSolverLinkedNode<Abstraction,
 		return a;
 	}
 
-	public Abstraction replaceActivationUnit(Stmt activationUnit) {
-		assert !this.isAbstractionActive();
-		Abstraction abs = deriveNewAbstractionMutable(accessPath, null);
-		abs.activationUnit = activationUnit;
-		// FlowDroid uses cut-offs, one of which is based on the propagation path length.
-		// We do not count this derivation as the path length to ensure consistent cut-offs
-		// across configurations.
-		abs.propagationPathLength -= 1;
-		return abs;
+//	public Abstraction replaceActivationUnit(Unit activationUnit) {
+//		assert !this.isAbstractionActive();
+//		Abstraction abs = deriveNewAbstractionMutable(accessPath, null);
+//		abs.activationUnit = activationUnit;
+//		// FlowDroid uses cut-offs, one of which is based on the propagation path length.
+//		// We do not count this derivation as the path length to ensure consistent cut-offs
+//		// across configurations.
+//		abs.propagationPathLength -= 1;
+//		return abs;
+//	}
+
+	public Abstraction replaceActivationUnit(Unit activationUnit) {
+		Abstraction res = clone();
+		res.activationUnit = activationUnit;
+		res.predecessor = this.predecessor;
+		res.currentStmt = this.currentStmt;
+		return res;
 	}
+
+	public Abstraction deriveSymbolicAbstraction(Unit activationUnit) {
+		Abstraction res = new Abstraction(this.accessPath, null,
+				this.exceptionThrown, this.isImplicit);
+		res.dependsOnCutAP = this.dependsOnCutAP;
+
+		res.activationUnit = activationUnit;
+		res.postdominators = this.postdominators == null ? null
+				: new ArrayList<UnitContainer>(this.postdominators);
+
+		res.currentStmt = null;
+		res.predecessor = null;
+		res.propagationPathLength = 1;
+		return res;
+	}
+
+	public Abstraction deriveConcreteAbstraction(Abstraction concAbs) {
+		Abstraction res = new Abstraction(this.accessPath, concAbs.sourceContext,
+				this.exceptionThrown, this.isImplicit);
+		res.dependsOnCutAP = this.dependsOnCutAP;
+
+		res.activationUnit = concAbs.activationUnit;
+		res.postdominators = this.postdominators == null ? null
+				: new ArrayList<UnitContainer>(this.postdominators);
+
+		res.currentStmt = null;
+		res.predecessor = concAbs;
+		res.propagationPathLength = this.propagationPathLength + concAbs.propagationPathLength;
+		return res;
+	}
+
 
 	public Abstraction deriveNewAbstraction(AccessPath p, Stmt currentStmt) {
 		return deriveNewAbstraction(p, currentStmt, isImplicit);

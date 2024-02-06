@@ -40,6 +40,7 @@ import heros.ZeroedFlowFunctions;
 import heros.solver.Pair;
 import heros.solver.PathEdge;
 import soot.SootMethod;
+import soot.Unit;
 import soot.jimple.infoflow.collect.MyConcurrentHashMap;
 import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.memory.IMemoryBoundedSolver;
@@ -379,6 +380,10 @@ public class IFDSSolver<N, D extends FastSolverLinkedNode<D, N>, I extends BiDiI
 	protected void onEndSummaryApplied(N n, SootMethod sCalledProc, D d3) {
 	}
 
+	protected D onReturnFlow(D d5, D d4, SootMethod callee, N returnSite) {
+		return d5;
+	}
+
 	protected void applyEndSummaryOnCall(final D d1, final N n, final D d2, Collection<N> returnSiteNs,
 			SootMethod sCalledProcN, D d3) {
 		// line 15.2
@@ -395,7 +400,7 @@ public class IFDSSolver<N, D extends FastSolverLinkedNode<D, N>, I extends BiDiI
 				D d4 = entry.d4;
 
 				// We must acknowledge the incoming abstraction from the other path
-				entry.calleeD1.addNeighbor(d3);
+//				entry.calleeD1.addNeighbor(d3);
 
 				// for each return site
 				for (N retSiteN : returnSiteNs) {
@@ -407,6 +412,8 @@ public class IFDSSolver<N, D extends FastSolverLinkedNode<D, N>, I extends BiDiI
 						for (D d5 : retFlowRes) {
 							if (memoryManager != null)
 								d5 = memoryManager.handleGeneratedMemoryObject(d4, d5);
+
+							d5 = onReturnFlow(d5, d2, sCalledProcN, retSiteN);
 
 							// If we have not changed anything in
 							// the callee, we do not need the facts from
@@ -499,6 +506,8 @@ public class IFDSSolver<N, D extends FastSolverLinkedNode<D, N>, I extends BiDiI
 						if (d5 == null)
 							continue;
 
+						d5 = onReturnFlow(d5, predVal, methodThatNeedsSummary, retSiteC);
+
 						// If we have not changed anything in the callee, we do not need the facts from
 						// there. Even if we change something: If we don't need the concrete path, we
 						// can skip the callee in the predecessor chain
@@ -510,7 +519,7 @@ public class IFDSSolver<N, D extends FastSolverLinkedNode<D, N>, I extends BiDiI
 
 			// Make sure all of the incoming edges are registered with the edge from the new
 			// summary
-			d1.addNeighbor(entry.d3);
+//			d1.addNeighbor(entry.d3);
 		}
 
 		// handling for unbalanced problems where we return out of a method with
@@ -530,8 +539,11 @@ public class IFDSSolver<N, D extends FastSolverLinkedNode<D, N>, I extends BiDiI
 						for (D d5 : targets) {
 							if (memoryManager != null)
 								d5 = memoryManager.handleGeneratedMemoryObject(d2, d5);
-							if (d5 != null)
-								schedulingStrategy.propagateReturnFlow(zeroValue, retSiteC, d5, c, true);
+							if (d5 == null)
+								continue;
+
+							d5 = onReturnFlow(d5, null, methodThatNeedsSummary, retSiteC);
+							schedulingStrategy.propagateReturnFlow(zeroValue, retSiteC, d5, c, true);
 						}
 					}
 				}
@@ -681,7 +693,7 @@ public class IFDSSolver<N, D extends FastSolverLinkedNode<D, N>, I extends BiDiI
 		EndSummary<N, D> newSummary = new EndSummary<>(eP, d2, d1);
 		EndSummary<N, D> existingSummary = summaries.putIfAbsent(newSummary, newSummary);
 		if (existingSummary != null) {
-			existingSummary.calleeD1.addNeighbor(d2);
+//			existingSummary.calleeD1.addNeighbor(d2);
 			return false;
 		}
 		return true;
