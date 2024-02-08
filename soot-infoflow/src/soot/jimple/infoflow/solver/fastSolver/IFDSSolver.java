@@ -400,7 +400,7 @@ public class IFDSSolver<N, D extends FastSolverLinkedNode<D, N>, I extends BiDiI
 				D d4 = entry.d4;
 
 				// We must acknowledge the incoming abstraction from the other path
-//				entry.calleeD1.addNeighbor(d3);
+				entry.calleeD1.addNeighbor(d3);
 
 				// for each return site
 				for (N retSiteN : returnSiteNs) {
@@ -519,7 +519,7 @@ public class IFDSSolver<N, D extends FastSolverLinkedNode<D, N>, I extends BiDiI
 
 			// Make sure all of the incoming edges are registered with the edge from the new
 			// summary
-//			d1.addNeighbor(entry.d3);
+			d1.addNeighbor(entry.d3);
 		}
 
 		// handling for unbalanced problems where we return out of a method with
@@ -693,7 +693,7 @@ public class IFDSSolver<N, D extends FastSolverLinkedNode<D, N>, I extends BiDiI
 		EndSummary<N, D> newSummary = new EndSummary<>(eP, d2, d1);
 		EndSummary<N, D> existingSummary = summaries.putIfAbsent(newSummary, newSummary);
 		if (existingSummary != null) {
-//			existingSummary.calleeD1.addNeighbor(d2);
+			existingSummary.calleeD1.addNeighbor(d2);
 			return false;
 		}
 		return true;

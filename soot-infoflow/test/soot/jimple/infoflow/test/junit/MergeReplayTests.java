@@ -99,13 +99,32 @@ public abstract class MergeReplayTests extends JUnitTests {
 
 	@Test(timeout = 300000)
 	public void neighborProblem() {
-		IInfoflow infoflow = initInfoflow();
-		List<String> epoints = new ArrayList<String>();
-		epoints.add("<soot.jimple.infoflow.test.MergeReplayTestCode: void neighborProblem()>");
-		infoflow.setAliasPropagationHandler(new DebugFlowFunctionTaintPropagationHandler());
-		infoflow.computeInfoflow(appPath, libPath, epoints, sources, sinks);
+		while (true) {
+			IInfoflow infoflow = initInfoflow();
+			List<String> epoints = new ArrayList<String>();
+			epoints.add("<soot.jimple.infoflow.test.MergeReplayTestCode: void neighborProblem()>");
+//			infoflow.setAliasPropagationHandler(new DebugFlowFunctionTaintPropagationHandler());
+			infoflow.computeInfoflow(appPath, libPath, epoints, sources, sinks);
 
-		checkInfoflow(infoflow, 1);
-		Assert.assertEquals(1, infoflow.getResults().numConnections());
+			infoflow.setTaintPropagationHandler(new TaintPropagationHandler() {
+				@Override
+				public void notifyFlowIn(Unit stmt, Abstraction taint, InfoflowManager manager, FlowFunctionType type) {
+					if (stmt.toString().contains("DELAY")) {
+						try {
+							Thread.sleep(5000);
+						} catch (InterruptedException e) {
+							throw new RuntimeException(e);
+						}
+					}
+				}
+
+				@Override
+				public Set<Abstraction> notifyFlowOut(Unit stmt, Abstraction d1, Abstraction incoming, Set<Abstraction> outgoing, InfoflowManager manager, FlowFunctionType type) {
+					return null;
+				}
+			});
+//			checkInfoflow(infoflow, 1);
+			Assert.assertEquals(2, infoflow.getResults().numConnections());
+		}
 	}
 }

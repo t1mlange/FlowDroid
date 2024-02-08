@@ -25,6 +25,7 @@ public class MergeReplayTestCode {
             b.name = TelephonyManager.getDeviceId(); // _f|else gets activated
             String stack9 = f.name; // f.name -> stack9, f.name is kept as identity without clone
             cm.publish(stack9); // stack9 originating from b.name in else is leaked
+            System.out.println("DELAY");
         }
         // f.name from else reaches the neighbor merge with the same instance from which stack9
         // was derived. Activated f.name from if reaches this point as well and gets set as a neighbor
