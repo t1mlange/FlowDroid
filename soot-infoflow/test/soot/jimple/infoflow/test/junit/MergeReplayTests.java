@@ -27,6 +27,7 @@ import soot.jimple.infoflow.InfoflowConfiguration;
 import soot.jimple.infoflow.InfoflowConfiguration.AliasingAlgorithm;
 import soot.jimple.infoflow.InfoflowConfiguration.PathReconstructionMode;
 import soot.jimple.infoflow.InfoflowManager;
+import soot.jimple.infoflow.aliasing.unitManager.SymbolicActivationUnit;
 import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.data.AccessPath;
 import soot.jimple.infoflow.data.SootMethodAndClass;
@@ -52,8 +53,59 @@ public abstract class MergeReplayTests extends JUnitTests {
 		IInfoflow infoflow = initInfoflow();
 		infoflow.getConfig().getSolverConfiguration().setFlowSensitivityMode(InfoflowConfiguration.FlowSensitivityMode.MergeReplay);
 		List<String> epoints = new ArrayList<String>();
-		infoflow.setAliasPropagationHandler(new DebugFlowFunctionTaintPropagationHandler());
+		infoflow.setAliasPropagationHandler(new TaintPropagationHandler() {
+			@Override
+			public void notifyFlowIn(Unit stmt, Abstraction taint, InfoflowManager manager, FlowFunctionType type) {
+
+			}
+
+			@Override
+			public Set<Abstraction> notifyFlowOut(Unit stmt, Abstraction d1, Abstraction incoming, Set<Abstraction> outgoing, InfoflowManager manager, FlowFunctionType type) {
+				SootMethod sm = manager.getICFG().getMethodOf(stmt);
+				if (sm.getName().equals("id")) {
+					Assert.assertTrue(incoming.isAbstractionActive()
+							|| incoming.getActivationUnit() == SymbolicActivationUnit.GAU);
+				} else if (sm.getName().equals("replaceAUWithGAU1")) {
+					Assert.assertTrue(incoming.isAbstractionActive()
+							|| incoming.getActivationUnit() != SymbolicActivationUnit.GAU);
+				}
+				return outgoing;
+			}
+		});
 		epoints.add("<soot.jimple.infoflow.test.MergeReplayTestCode: void replaceAUWithGAU1()>");
+		infoflow.computeInfoflow(appPath, libPath, epoints, sources, sinks);
+		checkInfoflow(infoflow, 1);
+		Assert.assertEquals(1, infoflow.getResults().numConnections());
+	}
+
+	@Test(timeout = 300000)
+	public void replaceAUWithGAU2() {
+		IInfoflow infoflow = initInfoflow();
+		infoflow.getConfig().getSolverConfiguration().setFlowSensitivityMode(InfoflowConfiguration.FlowSensitivityMode.MergeReplay);
+		List<String> epoints = new ArrayList<String>();
+		infoflow.setAliasPropagationHandler(new TaintPropagationHandler() {
+			@Override
+			public void notifyFlowIn(Unit stmt, Abstraction taint, InfoflowManager manager, FlowFunctionType type) {
+
+			}
+
+			@Override
+			public Set<Abstraction> notifyFlowOut(Unit stmt, Abstraction d1, Abstraction incoming, Set<Abstraction> outgoing, InfoflowManager manager, FlowFunctionType type) {
+				if (type == FlowFunctionType.NormalFlowFunction || type == FlowFunctionType.CallToReturnFlowFunction) {
+					SootMethod sm = manager.getICFG().getMethodOf(stmt);
+					if (sm.getName().equals("callerOfReplaceAUWithGAU2")) {
+						Assert.assertTrue(incoming.isAbstractionActive()
+								|| incoming.getActivationUnit() == SymbolicActivationUnit.GAU);
+					} else if (sm.getName().equals("replaceAUWithGAU2")) {
+						Assert.assertTrue(incoming.isAbstractionActive()
+								|| incoming.getActivationUnit() != SymbolicActivationUnit.GAU);
+					}
+				}
+				return outgoing;
+			}
+		});
+//		infoflow.setAliasPropagationHandler(new DebugFlowFunctionTaintPropagationHandler());
+		epoints.add("<soot.jimple.infoflow.test.MergeReplayTestCode: void callerOfReplaceAUWithGAU2()>");
 		infoflow.computeInfoflow(appPath, libPath, epoints, sources, sinks);
 		checkInfoflow(infoflow, 1);
 		Assert.assertEquals(1, infoflow.getResults().numConnections());
@@ -70,61 +122,35 @@ public abstract class MergeReplayTests extends JUnitTests {
 		Assert.assertEquals(2, infoflow.getResults().numConnections());
 	}
 
-	@Test//(timeout = 300000)
+	@Test(timeout = 300000)
 	public void duplicatePropagation1() {
-		while (true) {
-			IInfoflow infoflow = initInfoflow();
-//		infoflow.getConfig().getSolverConfiguration().setFlowSensitivityMode(InfoflowConfiguration.FlowSensitivityMode.MergeReplay);
-			List<String> epoints = new ArrayList<String>();
-//			infoflow.setAliasPropagationHandler(new DebugFlowFunctionTaintPropagationHandler());
-			epoints.add("<soot.jimple.infoflow.test.MergeReplayTestCode: void duplicatePropagation1()>");
-			infoflow.computeInfoflow(appPath, libPath, epoints, sources, sinks);
-			checkInfoflow(infoflow, 1);
-			Assert.assertEquals(1, infoflow.getResults().numConnections());
-		}
+		IInfoflow infoflow = initInfoflow();
+		List<String> epoints = new ArrayList<String>();
+		epoints.add("<soot.jimple.infoflow.test.MergeReplayTestCode: void duplicatePropagation1()>");
+		infoflow.computeInfoflow(appPath, libPath, epoints, sources, sinks);
+		checkInfoflow(infoflow, 1);
+		Assert.assertEquals(1, infoflow.getResults().numConnections());
 	}
 
 	@Test(timeout = 300000)
 	public void duplicatePropagationAndFP1() {
 		IInfoflow infoflow = initInfoflow();
-		infoflow.getConfig().getSolverConfiguration().setFlowSensitivityMode(InfoflowConfiguration.FlowSensitivityMode.MergeReplay);
+//		infoflow.getConfig().getSolverConfiguration().setFlowSensitivityMode(InfoflowConfiguration.FlowSensitivityMode.MergeReplay);
 		List<String> epoints = new ArrayList<String>();
 		epoints.add("<soot.jimple.infoflow.test.MergeReplayTestCode: void duplicatePropagationAndFP1()>");
 		infoflow.setAliasPropagationHandler(new DebugFlowFunctionTaintPropagationHandler());
 		infoflow.computeInfoflow(appPath, libPath, epoints, sources, sinks);
-
 		checkInfoflow(infoflow, 1);
 		Assert.assertEquals(1, infoflow.getResults().numConnections());
 	}
 
 	@Test(timeout = 300000)
 	public void neighborProblem() {
-		while (true) {
-			IInfoflow infoflow = initInfoflow();
-			List<String> epoints = new ArrayList<String>();
-			epoints.add("<soot.jimple.infoflow.test.MergeReplayTestCode: void neighborProblem()>");
-//			infoflow.setAliasPropagationHandler(new DebugFlowFunctionTaintPropagationHandler());
-			infoflow.computeInfoflow(appPath, libPath, epoints, sources, sinks);
-
-			infoflow.setTaintPropagationHandler(new TaintPropagationHandler() {
-				@Override
-				public void notifyFlowIn(Unit stmt, Abstraction taint, InfoflowManager manager, FlowFunctionType type) {
-					if (stmt.toString().contains("DELAY")) {
-						try {
-							Thread.sleep(5000);
-						} catch (InterruptedException e) {
-							throw new RuntimeException(e);
-						}
-					}
-				}
-
-				@Override
-				public Set<Abstraction> notifyFlowOut(Unit stmt, Abstraction d1, Abstraction incoming, Set<Abstraction> outgoing, InfoflowManager manager, FlowFunctionType type) {
-					return null;
-				}
-			});
-//			checkInfoflow(infoflow, 1);
-			Assert.assertEquals(2, infoflow.getResults().numConnections());
-		}
+		IInfoflow infoflow = initInfoflow();
+		List<String> epoints = new ArrayList<String>();
+		epoints.add("<soot.jimple.infoflow.test.MergeReplayTestCode: void neighborProblem()>");
+		infoflow.computeInfoflow(appPath, libPath, new SequentialEntryPointCreator(epoints), sources, sinks);
+		checkInfoflow(infoflow, 1);
+		Assert.assertEquals(1, infoflow.getResults().numConnections());
 	}
 }

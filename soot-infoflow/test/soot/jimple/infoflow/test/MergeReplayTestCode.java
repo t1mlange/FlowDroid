@@ -6,7 +6,7 @@ import soot.jimple.infoflow.test.android.TelephonyManager;
 import java.util.Random;
 
 public class MergeReplayTestCode {
-    class Book {
+    static class Book {
         String name;
 
         void uselessop() {
@@ -25,7 +25,7 @@ public class MergeReplayTestCode {
             b.name = TelephonyManager.getDeviceId(); // _f|else gets activated
             String stack9 = f.name; // f.name -> stack9, f.name is kept as identity without clone
             cm.publish(stack9); // stack9 originating from b.name in else is leaked
-            System.out.println("DELAY");
+//            System.out.println("DELAY");
         }
         // f.name from else reaches the neighbor merge with the same instance from which stack9
         // was derived. Activated f.name from if reaches this point as well and gets set as a neighbor
@@ -46,6 +46,18 @@ public class MergeReplayTestCode {
         id(b);
         b.name = TelephonyManager.getDeviceId();
         cm.publish(b.name);
+    }
+
+    public void callerOfReplaceAUWithGAU2() {
+        ConnectionManager cm = new ConnectionManager();
+        Book b = new Book();
+        cm.publish(b.name);
+        replaceAUWithGAU2(b);
+        cm.publish(b.name);
+    }
+
+    public void replaceAUWithGAU2(Book b) {
+        b.name = TelephonyManager.getDeviceId();
     }
 
     public void duplicatePropagation2() {

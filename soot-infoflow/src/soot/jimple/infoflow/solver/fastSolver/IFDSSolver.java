@@ -13,12 +13,8 @@
  ******************************************************************************/
 package soot.jimple.infoflow.solver.fastSolver;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
@@ -53,6 +49,9 @@ import soot.jimple.infoflow.solver.executors.InterruptableExecutor;
 import soot.jimple.infoflow.solver.executors.SetPoolExecutor;
 import soot.jimple.infoflow.solver.memory.IMemoryManager;
 import soot.jimple.toolkits.ide.icfg.BiDiInterproceduralCFG;
+import soot.tagkit.AttributeValueException;
+import soot.tagkit.Host;
+import soot.tagkit.Tag;
 import soot.util.ConcurrentHashMultiMap;
 
 /**
@@ -363,8 +362,12 @@ public class IFDSSolver<N, D extends FastSolverLinkedNode<D, N>, I extends BiDiI
 				for (D d3 : res) {
 					if (memoryManager != null)
 						d3 = memoryManager.handleGeneratedMemoryObject(d2, d3);
-					if (d3 != null)
+					if (d3 != null) {
+						// See comment in normal flow
+						if (icfg.getPredsOf(returnSiteN).size() > 1)
+							d3 = d3.clone();
 						schedulingStrategy.propagateCallToReturnFlow(d1, returnSiteN, d3, n, false);
+					}
 				}
 			}
 		}
@@ -599,8 +602,16 @@ public class IFDSSolver<N, D extends FastSolverLinkedNode<D, N>, I extends BiDiI
 				for (D d3 : res) {
 					if (memoryManager != null && d2 != d3)
 						d3 = memoryManager.handleGeneratedMemoryObject(d2, d3);
-					if (d3 != null)
+					if (d3 != null) {
+						// We need to split the paths if we have derived a fact here. Otherwise, facts later added as neighbors
+						// will be above the newly created facts even though it happened afterward in the control-flow flow.
+						if (icfg.getPredsOf(m).size() > 1) {
+							D d3old = d3;
+							d3 = d3old.clone();
+							assert d3 != d3old;
+						}
 						schedulingStrategy.propagateNormalFlow(d1, m, d3, null, false);
+					}
 				}
 			}
 		}

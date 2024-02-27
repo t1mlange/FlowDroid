@@ -1644,7 +1644,7 @@ public abstract class AbstractInfoflow implements IInfoflow {
 		else
 			erasureMode = FlowDroidMemoryManager.PathDataErasureMode.EraseAll;
 		IMemoryManager<Abstraction, Unit> memoryManager = memoryManagerFactory.getMemoryManager(false, erasureMode);
-		return memoryManager;
+		return null;
 	}
 
 	/**

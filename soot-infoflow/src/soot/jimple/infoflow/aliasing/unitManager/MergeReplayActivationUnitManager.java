@@ -1,6 +1,7 @@
 package soot.jimple.infoflow.aliasing.unitManager;
 
 import heros.solver.PathEdge;
+import soot.G;
 import soot.SootMethod;
 import soot.Unit;
 import soot.jimple.Stmt;
@@ -35,15 +36,15 @@ public class MergeReplayActivationUnitManager extends DefaultActivationUnitManag
         // the newly found concrete activation unit there too
         Collection<Unit> startPointsOf = manager.getICFG().getStartPointsOf(callee);
         for (IncomingRecord<Unit, Abstraction> inc : symbolicIncoming.get(sym)) { // ln 63
-//            Abstraction d3a = inc.d3.replaceActivationUnit(activationUnit); // ln 64
-//
-//            if (!manager.getMainSolver().addIncoming(callee, d3a, inc.n, inc.d1, inc.d2))
-//                continue;
-//
-//            for (Unit sP : startPointsOf)
-//                manager.getMainSolver().processEdge(new PathEdge<>(d3a, sP, d3a)); // ln 65
-//
-//            manager.getMainSolver().applySummary(callee, d3a, inc.n, inc.d2, inc.d1); // ln 67-68
+            Abstraction d3a = inc.d3.replaceActivationUnit(activationUnit); // ln 64
+
+            if (!manager.getMainSolver().addIncoming(callee, d3a, inc.n, inc.d1, inc.d2))
+                continue;
+
+            for (Unit sP : startPointsOf)
+                manager.getMainSolver().processEdge(new PathEdge<>(d3a, sP, d3a)); // ln 65
+
+            manager.getMainSolver().applySummary(callee, d3a, inc.n, inc.d2, inc.d1); // ln 67-68
         }
     }
 
@@ -70,11 +71,10 @@ public class MergeReplayActivationUnitManager extends DefaultActivationUnitManag
                                        SootMethod callee, Abstraction d3, boolean solverId) {
         if (!solverId) /* == alias solver */ {
             assert !d3.isAbstractionActive();
-            return Collections.singleton(d3);
             // line 38b: replace any symbolic activation unit with the global activation unit at return sites
-//            if (d3.getActivationUnit() == SymbolicActivationUnit.GAU)
-//                return Collections.singleton(d3);
-//            return Collections.singleton(d3.deriveSymbolicAbstraction(SymbolicActivationUnit.GAU));
+            if (d3.getActivationUnit() == SymbolicActivationUnit.GAU)
+                return Collections.singleton(d3);
+            return Collections.singleton(d3.deriveSymbolicAbstraction(SymbolicActivationUnit.GAU));
         } else /* == main solver */ {
             if (d3.isAbstractionActive()) // ln 79
                 return Collections.singleton(d3);
@@ -87,8 +87,7 @@ public class MergeReplayActivationUnitManager extends DefaultActivationUnitManag
             SymbolicActivationUnit sym = (SymbolicActivationUnit) activationUnit;
             SootMethod caller = manager.getICFG().getMethodOf(callSite);
             if (!sym.matchesContext(caller, callee)) // ln 86
-                return Collections.singleton(d3);
-//                return Collections.singleton(d3.deriveSymbolicAbstraction(SymbolicActivationUnit.GAU)); // ln 90
+                return Collections.singleton(d3.deriveSymbolicAbstraction(SymbolicActivationUnit.GAU)); // ln 90
 
             symbolicIncoming.put(sym, new IncomingRecord<>(callSite, d1, d2, d3)); // ln 87
             return sym.getUnits().stream()
@@ -99,11 +98,13 @@ public class MergeReplayActivationUnitManager extends DefaultActivationUnitManag
 
     @Override
     public Abstraction attachActivationUnit(Abstraction retAbs, Abstraction callAbs) {
+        if (!retAbs.isAbstractionActive()) {
+            if (retAbs.getActivationUnit() == SymbolicActivationUnit.GAU && callAbs != null)
+                return retAbs.deriveConcreteAbstraction(callAbs);
+            if (retAbs.getActivationUnit() != SymbolicActivationUnit.GAU)
+                return retAbs.replaceActivationUnit(SymbolicActivationUnit.GAU);
+        }
         return retAbs;
-//        assert !callAbs.isAbstractionActive();
-//
-//        return retAbs.getActivationUnit() == SymbolicActivationUnit.GAU && callAbs != null
-//                ? retAbs.deriveConcreteAbstraction(callAbs) : retAbs;
     }
 
     @Override

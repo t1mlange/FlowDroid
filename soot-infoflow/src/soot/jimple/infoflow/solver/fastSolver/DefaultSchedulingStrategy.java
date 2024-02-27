@@ -3,6 +3,7 @@ package soot.jimple.infoflow.solver.fastSolver;
 import soot.SootMethod;
 import soot.jimple.infoflow.solver.fastSolver.IFDSSolver.ScheduleTarget;
 import soot.jimple.toolkits.ide.icfg.BiDiInterproceduralCFG;
+import soot.tagkit.Host;
 
 /**
  * Default implementations for scheduling strategies
