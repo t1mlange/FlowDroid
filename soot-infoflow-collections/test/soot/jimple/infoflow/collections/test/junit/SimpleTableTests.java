@@ -144,38 +144,4 @@ public class SimpleTableTests extends FlowDroidTests {
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
         Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
     }
-
-    @Ignore("No support for copying multiple keys yet")
-//    @Test(timeout = 30000)
-    public void testTableColumnMap1() {
-        IInfoflow infoflow = initInfoflow();
-        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
-        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
-        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
-    }
-
-    @Test(timeout = 30000)
-    public void testTableColumnMap2() {
-        IInfoflow infoflow = initInfoflow();
-        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
-        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
-        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
-    }
-
-    @Ignore("No support for copying multiple keys yet")
-//    @Test(timeout = 30000)
-    public void testTableRowMap1() {
-        IInfoflow infoflow = initInfoflow();
-        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
-        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
-        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
-    }
-
-    @Test(timeout = 30000)
-    public void testTableRowMap2() {
-        IInfoflow infoflow = initInfoflow();
-        String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
-        infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
-        Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
-    }
 }

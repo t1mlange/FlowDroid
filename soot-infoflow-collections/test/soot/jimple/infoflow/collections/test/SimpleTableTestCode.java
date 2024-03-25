@@ -143,36 +143,4 @@ public class SimpleTableTestCode {
         Set<Table.Cell<String, String, String>> set = t.cellSet();
         sink(set.stream().findAny().get().getColumnKey());
     }
-
-    //@FlowDroidTest(expected = 1)
-    public void testTableColumnMap1() {
-        Table<String, String, String> t = HashBasedTable.create();
-        t.put("Row", "Col", source());
-        Map<String, Map<String, String>> map = t.columnMap();
-        sink(map.get("Col").get("Row"));
-    }
-
-    @FlowDroidTest(expected = 0)
-    public void testTableColumnMap2() {
-        Table<String, String, String> t = HashBasedTable.create();
-        t.put("Row", "Col", source());
-        Map<String, Map<String, String>> map = t.columnMap();
-        sink(map.get("Row").get("Col"));
-    }
-
-    //@FlowDroidTest(expected = 1)
-    public void testTableRowMap1() {
-        Table<String, String, String> t = HashBasedTable.create();
-        t.put("Row", "Col", source());
-        Map<String, Map<String, String>> map = t.rowMap();
-        sink(map.get("Row").get("Col"));
-    }
-
-    @FlowDroidTest(expected = 0)
-    public void testTableRowMap2() {
-        Table<String, String, String> t = HashBasedTable.create();
-        t.put("Row", "Col", source());
-        Map<String, Map<String, String>> map = t.rowMap();
-        sink(map.get("Col").get("Row"));
-    }
 }

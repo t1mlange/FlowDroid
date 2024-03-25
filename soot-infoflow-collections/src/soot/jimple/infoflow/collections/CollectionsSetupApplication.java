@@ -51,16 +51,6 @@ public class CollectionsSetupApplication extends SetupApplication {
         protected IPropagationRuleManagerFactory initializeRuleManagerFactory() {
             return new CollectionRulePropagationManagerFactory();
         }
-
-//        @Override
-//        protected IInfoflowSolver createDataFlowSolver(InterruptableExecutor executor,
-//                                                       AbstractInfoflowProblem problem,
-//                                                       InfoflowConfiguration.SolverConfiguration solverConfig) {
-//            WideningCollectionInfoflowSolver solver = new WideningCollectionInfoflowSolver(problem, executor);
-//            solver.setWideningStrategy(new WideningOnRevisitStrategy(manager, Collections.singleton("void add(int,java.lang.Object)")));
-//            solverPeerGroup.addSolver(solver);
-//            return solver;
-//        }
     }
 
     private void commonInit() {

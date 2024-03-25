@@ -5,22 +5,31 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 import heros.FlowFunction;
+import heros.SynchronizedBy;
 import heros.solver.PathEdge;
 import soot.SootMethod;
 import soot.Unit;
+import soot.jimple.infoflow.collections.strategies.widening.WideningStrategy;
 import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.problems.AbstractInfoflowProblem;
 import soot.jimple.infoflow.solver.executors.InterruptableExecutor;
+import soot.jimple.infoflow.solver.fastSolver.InfoflowSolver;
 
 /**
  * Infoflow Solver that supports widening.
  *
  * @author Tim Lange
  */
-public class WideningCollectionInfoflowSolver extends CollectionInfoflowSolver {
+public class WideningCollectionInfoflowSolver extends InfoflowSolver {
+    @SynchronizedBy("Thread-safe class")
+    protected WideningStrategy<Unit, Abstraction> widening;
 
     public WideningCollectionInfoflowSolver(AbstractInfoflowProblem problem, InterruptableExecutor executor) {
         super(problem, executor);
+    }
+
+    public void setWideningStrategy(WideningStrategy<Unit, Abstraction> widening) {
+        this.widening = widening;
     }
 
     @Override

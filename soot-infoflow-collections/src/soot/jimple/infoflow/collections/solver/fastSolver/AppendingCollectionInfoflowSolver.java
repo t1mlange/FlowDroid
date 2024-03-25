@@ -18,6 +18,7 @@ import soot.jimple.infoflow.problems.AbstractInfoflowProblem;
 import soot.jimple.infoflow.solver.EndSummary;
 import soot.jimple.infoflow.solver.IncomingRecord;
 import soot.jimple.infoflow.solver.executors.InterruptableExecutor;
+import soot.jimple.infoflow.solver.fastSolver.InfoflowSolver;
 
 /**
  * Infoflow Solver that supports various optimizations for precisely tracking collection keys/indices
@@ -28,7 +29,7 @@ import soot.jimple.infoflow.solver.executors.InterruptableExecutor;
  *
  * @author Tim Lange
  */
-public class AppendingCollectionInfoflowSolver extends CollectionInfoflowSolver {
+public class AppendingCollectionInfoflowSolver extends InfoflowSolver {
     private AppendingStrategy<Unit, Abstraction> appending;
 
     public void setAppendingStrategy(AppendingStrategy<Unit, Abstraction> appending) {
@@ -155,12 +156,6 @@ public class AppendingCollectionInfoflowSolver extends CollectionInfoflowSolver 
                     if (memoryManager != null)
                         d3 = memoryManager.handleGeneratedMemoryObject(d2, d3);
                     if (d3 != null) {
-                        // Add result to check for widening
-                        if (widening != null && d2 != d3) {
-                            // Widen if needed
-                            d3 = widening.widen(d2, d3, n);
-                        }
-
                         schedulingStrategy.propagateCallToReturnFlow(d1, returnSiteN, d3, n, true);
                     }
                 }
