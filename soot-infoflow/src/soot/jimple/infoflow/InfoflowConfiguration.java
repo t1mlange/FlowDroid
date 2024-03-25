@@ -997,7 +997,7 @@ public class InfoflowConfiguration {
 	public static class SolverConfiguration {
 		private DataFlowSolver dataFlowSolver = DataFlowSolver.ContextFlowSensitive;
 		private SparsePropagationStrategy sparsePropagationStrategy = SparsePropagationStrategy.Precise;
-		private int maxJoinPointAbstractions = 100;
+		private int maxJoinPointAbstractions = 10;
 		private int maxCalleesPerCallSite = 75;
 		private int maxAbstractionPathLength = 100;
 		private int sleepTime = 1;

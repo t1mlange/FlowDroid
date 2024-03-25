@@ -98,11 +98,7 @@ public class ContextSensitivePathBuilder extends ConcurrentAbstractionPathBuilde
 					// Process the predecessor
 					processAndQueue(pred, scap);
 
-					int n = pred.getNeighborCount();
-					// Process the predecessor's neighbors
-					// only if it has neighbors (n > 0)
-					// and the neighbors are not cut off (n < maxJoinPoints)
-					if (n > 0 && (maxJoinPoints < 0 || n < maxJoinPoints)) {
+					if (pred.getNeighbors() != null) {
 						for (Abstraction neighbor : pred.getNeighbors()) {
 							processAndQueue(neighbor, scap);
 						}

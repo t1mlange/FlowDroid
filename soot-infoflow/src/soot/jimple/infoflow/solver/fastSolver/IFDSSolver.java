@@ -636,13 +636,14 @@ public class IFDSSolver<N, D extends FastSolverLinkedNode<D, N>, I extends BiDiI
 		if (existingVal != null) {
 			if (existingVal != targetVal) {
 				// Check whether we need to retain this abstraction
-//				boolean isEssential;
-//				if (memoryManager == null)
-//					isEssential = relatedCallSite != null && icfg.isCallStmt(relatedCallSite);
-//				else
-//					isEssential = memoryManager.isEssentialJoinPoint(targetVal, relatedCallSite);
+				boolean isEssential;
+				if (memoryManager == null)
+					isEssential = relatedCallSite != null && icfg.isCallStmt(relatedCallSite);
+				else
+					isEssential = memoryManager.isEssentialJoinPoint(targetVal, relatedCallSite);
 
-				if (maxJoinPointAbstractions < 0 || existingVal.getNeighborCount() < maxJoinPointAbstractions) {
+				if (maxJoinPointAbstractions < 0 || existingVal.getNeighborCount() < maxJoinPointAbstractions
+						|| isEssential) {
 					existingVal.addNeighbor(targetVal);
 				}
 			}
