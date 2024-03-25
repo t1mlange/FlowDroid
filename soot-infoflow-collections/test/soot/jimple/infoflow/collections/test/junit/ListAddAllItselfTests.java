@@ -16,7 +16,7 @@ import soot.jimple.infoflow.collections.context.IntervalContext;
 import soot.jimple.infoflow.collections.context.UnknownContext;
 import soot.jimple.infoflow.collections.parser.CollectionSummaryParser;
 import soot.jimple.infoflow.collections.strategies.containers.TestConstantStrategy;
-import soot.jimple.infoflow.data.ContextDefinition;
+import soot.jimple.infoflow.data.ContainerContext;
 import soot.jimple.infoflow.taintWrappers.ITaintPropagationWrapper;
 import soot.jimple.infoflow.util.DebugFlowFunctionTaintPropagationHandler;
 
@@ -33,7 +33,7 @@ public class ListAddAllItselfTests extends FlowDroidTests {
                     super.initialize(manager);
                     this.containerStrategy = new TestConstantStrategy(manager) {
                         @Override
-                        public ContextDefinition getNextPosition(Value value, Stmt stmt) {
+                        public ContainerContext getNextPosition(Value value, Stmt stmt) {
                             if (stmt.toString().contains("addAll("))
                                 return new IntervalContext(3);
 

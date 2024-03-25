@@ -1,7 +1,7 @@
 package soot.jimple.infoflow.collections.context;
 
 import soot.jimple.infoflow.collections.util.Tristate;
-import soot.jimple.infoflow.data.ContextDefinition;
+import soot.jimple.infoflow.data.ContainerContext;
 
 import java.util.Objects;
 
@@ -42,7 +42,7 @@ public class IntervalContext implements PositionBasedContext<IntervalContext> {
 	}
 
 	@Override
-	public boolean entails(ContextDefinition obj) {
+	public boolean entails(ContainerContext obj) {
 		if (!(obj instanceof IntervalContext))
 			return false;
 		IntervalContext other = (IntervalContext) obj;

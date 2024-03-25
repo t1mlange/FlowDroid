@@ -4,7 +4,7 @@ import soot.Unit;
 import soot.Value;
 import soot.jimple.Stmt;
 import soot.jimple.infoflow.collections.util.Tristate;
-import soot.jimple.infoflow.data.ContextDefinition;
+import soot.jimple.infoflow.data.ContainerContext;
 
 /**
  * Strategy for resolving keys/indices and reasoning about their relation
@@ -19,7 +19,7 @@ public interface IContainerStrategy {
      * @param stmtKey key from the statement
      * @return true if args fully intersects, maybe on part match and false on definitely no match
      */
-    Tristate intersect(ContextDefinition apKey, ContextDefinition stmtKey);
+    Tristate intersect(ContainerContext apKey, ContainerContext stmtKey);
 
     /**
      * Return the union of the given contexts
@@ -28,7 +28,7 @@ public interface IContainerStrategy {
      * @param ctxt2 key from the statement
      * @return new context definition
      */
-    ContextDefinition[] append(ContextDefinition[] ctxt1, ContextDefinition[] ctxt2);
+    ContainerContext[] append(ContainerContext[] ctxt1, ContainerContext[] ctxt2);
 
     /**
      * Retrieves a context for a given key
@@ -37,7 +37,7 @@ public interface IContainerStrategy {
      * @param stmt statement containing key
      * @return new context definition
      */
-    ContextDefinition getKeyContext(Value key, Stmt stmt);
+    ContainerContext getKeyContext(Value key, Stmt stmt);
 
     /**
      * Retrieves a context for a given index
@@ -46,7 +46,7 @@ public interface IContainerStrategy {
      * @param stmt  statement containing index
      * @return new context definition
      */
-    ContextDefinition getIndexContext(Value index, Stmt stmt);
+    ContainerContext getIndexContext(Value index, Stmt stmt);
 
     /**
      * Retrieves a context given an implicit key after the given statement
@@ -56,7 +56,7 @@ public interface IContainerStrategy {
      * @param stmt statement that uses value
      * @return new context definition
      */
-    ContextDefinition getNextPosition(Value lst, Stmt stmt);
+    ContainerContext getNextPosition(Value lst, Stmt stmt);
 
     /**
      * Retrieves a context given an implicit key before the given statement
@@ -66,7 +66,7 @@ public interface IContainerStrategy {
      * @param stmt statement that uses value
      * @return new context definition
      */
-    ContextDefinition getFirstPosition(Value lst, Stmt stmt);
+    ContainerContext getFirstPosition(Value lst, Stmt stmt);
 
     /**
      * Retrieves a context given an implicit key before the given statement
@@ -76,7 +76,7 @@ public interface IContainerStrategy {
      * @param stmt statement that uses value
      * @return new context definition
      */
-    ContextDefinition getLastPosition(Value lst, Stmt stmt);
+    ContainerContext getLastPosition(Value lst, Stmt stmt);
 
     /**
      * Returns whether ctxt1 is less than ctxt2
@@ -85,7 +85,7 @@ public interface IContainerStrategy {
      * @param ctxt2 second context
      * @return true ctxt1 is less than ctxt2
      */
-    Tristate lessThanEqual(ContextDefinition ctxt1, ContextDefinition ctxt2);
+    Tristate lessThanEqual(ContainerContext ctxt1, ContainerContext ctxt2);
 
     /**
      * Shifts the ctxt to the right
@@ -94,7 +94,7 @@ public interface IContainerStrategy {
      * @param n
      * @return new context definition
      */
-    ContextDefinition shift(ContextDefinition ctxt, int n, boolean exact);
+    ContainerContext shift(ContainerContext ctxt, int n, boolean exact);
 
     /**
      * Returns whether the context is still useful or not
@@ -102,7 +102,7 @@ public interface IContainerStrategy {
      * @param ctxts contexts
      * @return true if context contains no useful information and thus, the collection should be smashed
      */
-    boolean shouldSmash(ContextDefinition[] ctxts);
+    boolean shouldSmash(ContainerContext[] ctxts);
 
     /**
      * Returns whether the given value is used in a read-only fashion

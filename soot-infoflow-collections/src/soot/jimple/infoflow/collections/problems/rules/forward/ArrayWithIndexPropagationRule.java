@@ -12,7 +12,7 @@ import soot.jimple.infoflow.collections.strategies.containers.IContainerStrategy
 import soot.jimple.infoflow.collections.util.Tristate;
 import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.data.AccessPath;
-import soot.jimple.infoflow.data.ContextDefinition;
+import soot.jimple.infoflow.data.ContainerContext;
 
 import soot.jimple.infoflow.problems.TaintPropagationResults;
 import soot.jimple.infoflow.problems.rules.IArrayContextProvider;
@@ -136,19 +136,19 @@ public class ArrayWithIndexPropagationRule extends ArrayPropagationRule implemen
     }
 
     private Tristate matchesIndex(Abstraction incoming, Value index, Stmt stmt) {
-        ContextDefinition[] apCtxt = incoming.getAccessPath().getBaseContext();
+        ContainerContext[] apCtxt = incoming.getAccessPath().getBaseContext();
         if (apCtxt == null)
             return Tristate.MAYBE();
 
         IContainerStrategy strategy = ((ICollectionsSupport) manager.getTaintWrapper()).getContainerStrategy();
-        ContextDefinition indexCtxt = strategy.getIndexContext(index, stmt);
+        ContainerContext indexCtxt = strategy.getIndexContext(index, stmt);
         return strategy.intersect(apCtxt[0], indexCtxt);
     }
 
     @Override
-    public ContextDefinition[] getContextForArrayRef(ArrayRef arrayRef, Stmt stmt) {
+    public ContainerContext[] getContextForArrayRef(ArrayRef arrayRef, Stmt stmt) {
         IContainerStrategy strategy = ((ICollectionsSupport) manager.getTaintWrapper()).getContainerStrategy();
-        ContextDefinition ctxt = strategy.getIndexContext(arrayRef.getIndex(), stmt);
-        return ctxt.containsInformation() ? new ContextDefinition[] { ctxt } : null;
+        ContainerContext ctxt = strategy.getIndexContext(arrayRef.getIndex(), stmt);
+        return ctxt.containsInformation() ? new ContainerContext[] { ctxt } : null;
     }
 }

@@ -16,7 +16,7 @@ public class AccessPathFragment {
 
 	private final SootField field;
 	private final Type fieldType;
-	private final ContextDefinition[] context;
+	private final ContainerContext[] context;
 
 	/**
 	 * Creates a new {@link AccessPathFragment} without a context and using the fields type
@@ -44,7 +44,7 @@ public class AccessPathFragment {
 	 * @param fieldType The propagated type of the field that is dereferenced
 	 * @param context   The context under which the access path is tainted
 	 */
-	public AccessPathFragment(SootField field, Type fieldType, ContextDefinition[] context) {
+	public AccessPathFragment(SootField field, Type fieldType, ContainerContext[] context) {
 		this.field = field;
 		this.fieldType = fieldType == null ? field.getType() : fieldType;
 		this.context = context;
@@ -77,7 +77,7 @@ public class AccessPathFragment {
 	 * 
 	 * @return The context in which the access path is tainted
 	 */
-	public ContextDefinition[] getContext() {
+	public ContainerContext[] getContext() {
 		return context;
 	}
 
@@ -90,7 +90,7 @@ public class AccessPathFragment {
 		if (hasContext()) {
 			StringBuilder sb = new StringBuilder(field.toString());
 			sb.append("@[");
-			for (ContextDefinition c : context) {
+			for (ContainerContext c : context) {
 				sb.append(c).append(",");
 			}
 			sb.append("]");
@@ -116,7 +116,7 @@ public class AccessPathFragment {
 	 * @param fieldTypes The types of the fields in the sequence of dereferences
 	 * @return The sequence of access path fragments
 	 */
-	public static AccessPathFragment[] createFragmentArray(SootField[] fields, Type[] fieldTypes, ContextDefinition[][] contexts) {
+	public static AccessPathFragment[] createFragmentArray(SootField[] fields, Type[] fieldTypes, ContainerContext[][] contexts) {
 		if (fields == null || fields.length == 0)
 			return null;
 		AccessPathFragment[] fragments = new AccessPathFragment[fields.length];
@@ -172,7 +172,7 @@ public class AccessPathFragment {
 		return new AccessPathFragment(field, newType, context);
 	}
 
-	public AccessPathFragment copyWithNewContext(ContextDefinition[] newContext) {
+	public AccessPathFragment copyWithNewContext(ContainerContext[] newContext) {
 		return new AccessPathFragment(field, fieldType, newContext);
 	}
 }

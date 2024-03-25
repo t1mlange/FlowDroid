@@ -52,7 +52,7 @@ import soot.jimple.infoflow.cfg.FlowDroidSourceStatement;
 import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.data.AccessPath;
 import soot.jimple.infoflow.data.AccessPath.ArrayTaintType;
-import soot.jimple.infoflow.data.ContextDefinition;
+import soot.jimple.infoflow.data.ContainerContext;
 import soot.jimple.infoflow.handlers.TaintPropagationHandler.FlowFunctionType;
 import soot.jimple.infoflow.problems.rules.IPropagationRuleManagerFactory;
 import soot.jimple.infoflow.solver.functions.SolverCallFlowFunction;
@@ -148,7 +148,7 @@ public class InfoflowProblem extends AbstractInfoflowProblem {
 				// Do we taint the contents of an array? If we do not
 				// differentiate, we do not set any special type.
 				ArrayTaintType arrayTaintType = source.getAccessPath().getArrayTaintType();
-				ContextDefinition[] baseCtxt = null;
+				ContainerContext[] baseCtxt = null;
 				if (leftValue instanceof ArrayRef && manager.getConfig().getEnableArraySizeTainting()) {
 					arrayTaintType = ArrayTaintType.Contents;
 					baseCtxt = propagationRules.getArrayContextProvider().getContextForArrayRef((ArrayRef) leftValue,

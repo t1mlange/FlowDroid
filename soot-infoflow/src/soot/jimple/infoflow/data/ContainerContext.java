@@ -7,7 +7,7 @@ package soot.jimple.infoflow.data;
  * @author Steven Arzt
  *
  */
-public interface ContextDefinition {
+public interface ContainerContext {
     /**
      * Returns whether the context definition
      *
@@ -30,7 +30,7 @@ public interface ContextDefinition {
      * @param other other context definition
      * @return true if this entails other
      */
-    boolean entails(ContextDefinition other);
+    boolean entails(ContainerContext other);
 
     // There are no restrictions to what a context could be. We expect the context factory to be tightly coupled with
     // the users of the contexts.

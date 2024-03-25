@@ -142,9 +142,9 @@ public class AccessPathFactory {
 				arrayTaintType, canHaveImmutableAliases);
 	}
 
-	public AccessPath createAccessPath(Value val, Type valType, ContextDefinition[] ctxt, AccessPathFragment[] appendingFragments,
-			boolean taintSubFields, boolean cutFirstField, boolean reduceBases, ArrayTaintType arrayTaintType,
-			boolean canHaveImmutableAliases) {
+	public AccessPath createAccessPath(Value val, Type valType, ContainerContext[] ctxt, AccessPathFragment[] appendingFragments,
+                                       boolean taintSubFields, boolean cutFirstField, boolean reduceBases, ArrayTaintType arrayTaintType,
+                                       boolean canHaveImmutableAliases) {
 		// Make sure that the base object is valid
 		if (val != null && !AccessPath.canContainValue(val)) {
 			logger.error("Access paths cannot be rooted in values of type {}", val.getClass().getName());
@@ -343,7 +343,7 @@ public class AccessPathFactory {
 			int ei = val instanceof StaticFieldRef ? 1 : 0;
 			while (ei < fragments.length) {
 				final Type eiType = ei == 0 ? baseType : fragments[ei - 1].getFieldType();
-				final ContextDefinition[] eiContext = ei == 0 ? null : fragments[ei - 1].getContext();
+				final ContainerContext[] eiContext = ei == 0 ? null : fragments[ei - 1].getContext();
 				int ej = ei;
 				while (ej < fragments.length) {
 					AccessPathFragment fj = fragments[ej];
@@ -515,7 +515,7 @@ public class AccessPathFactory {
 	 *         parameter
 	 */
 	public AccessPath copyWithNewValue(AccessPath original, Value val, Type newType, boolean cutFirstField,
-									   boolean reduceBases, ArrayTaintType arrayTaintType, ContextDefinition[] baseCtxt) {
+									   boolean reduceBases, ArrayTaintType arrayTaintType, ContainerContext[] baseCtxt) {
 		// If this copy would not add any new information, we can safely use the
 		// old object
 		if (original.getPlainValue() != null && original.getPlainValue().equals(val)

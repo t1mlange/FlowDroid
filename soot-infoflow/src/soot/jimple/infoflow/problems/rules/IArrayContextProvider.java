@@ -2,7 +2,7 @@ package soot.jimple.infoflow.problems.rules;
 
 import soot.jimple.ArrayRef;
 import soot.jimple.Stmt;
-import soot.jimple.infoflow.data.ContextDefinition;
+import soot.jimple.infoflow.data.ContainerContext;
 
 public interface IArrayContextProvider {
     /**
@@ -12,5 +12,5 @@ public interface IArrayContextProvider {
      * @param stmt
      * @return context definition
      */
-    ContextDefinition[] getContextForArrayRef(ArrayRef arrayRef, Stmt stmt);
+    ContainerContext[] getContextForArrayRef(ArrayRef arrayRef, Stmt stmt);
 }

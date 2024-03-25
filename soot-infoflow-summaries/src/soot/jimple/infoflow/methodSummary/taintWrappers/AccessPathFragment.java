@@ -4,12 +4,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import soot.Context;
-import soot.Scene;
 import soot.SootField;
 import soot.Type;
 import soot.jimple.infoflow.data.AccessPath;
-import soot.jimple.infoflow.data.ContextDefinition;
+import soot.jimple.infoflow.data.ContainerContext;
 
 /**
  * A portion of an access path
@@ -21,7 +19,7 @@ public class AccessPathFragment {
 
 	private final String[] fields;
 	private final String[] fieldTypes;
-	private final ContextDefinition[][] contexts;
+	private final ContainerContext[][] contexts;
 
 	/**
 	 * Creates a new instance of the {@link AccessPathFragment} class
@@ -30,7 +28,7 @@ public class AccessPathFragment {
 	 * @param fieldTypes The types of the given fields
 	 */
 	public AccessPathFragment(String[] fields, String[] fieldTypes) {
-		this(fields, fieldTypes, new ContextDefinition[fields == null ? 0 : fields.length][]);
+		this(fields, fieldTypes, new ContainerContext[fields == null ? 0 : fields.length][]);
 	}
 
 	/**
@@ -40,7 +38,7 @@ public class AccessPathFragment {
 	 * @param fieldTypes The types of the given fields
 	 * @param contexts   The contexts of the given fields
 	 */
-	public AccessPathFragment(String[] fields, String[] fieldTypes, ContextDefinition[][] contexts) {
+	public AccessPathFragment(String[] fields, String[] fieldTypes, ContainerContext[][] contexts) {
 		this.fields = fields;
 		this.fieldTypes = fieldTypes == null ? fieldsToTypes(fields) : fieldTypes;
 		this.contexts = contexts;
@@ -58,7 +56,7 @@ public class AccessPathFragment {
 	 * @param fields     The fields in this fragment of an access path
 	 * @param fieldTypes The types of the given fields
 	 */
-	public AccessPathFragment(SootField[] fields, Type[] fieldTypes, ContextDefinition[][] contexts) {
+	public AccessPathFragment(SootField[] fields, Type[] fieldTypes, ContainerContext[][] contexts) {
 		this(fieldArrayToStringArray(fields), typeArrayToStringArray(fieldTypes), contexts);
 	}
 
@@ -83,10 +81,10 @@ public class AccessPathFragment {
 	 * @param fields     The fields in this fragment of an access path
 	 * @param fieldTypes The types of the given fields
 	 */
-	public AccessPathFragment(List<String> fields, List<String> fieldTypes, List<ContextDefinition[]> contexts) {
+	public AccessPathFragment(List<String> fields, List<String> fieldTypes, List<ContainerContext[]> contexts) {
 		this.fields = fields == null ? null : fields.toArray(new String[fields.size()]);
 		this.fieldTypes = fieldTypes == null ? null : fieldTypes.toArray(new String[fieldTypes.size()]);
-		this.contexts = contexts == null ? null : contexts.toArray(new ContextDefinition[0][0]);
+		this.contexts = contexts == null ? null : contexts.toArray(new ContainerContext[0][0]);
 	}
 
 	/**
@@ -158,7 +156,7 @@ public class AccessPathFragment {
 		return fieldTypes;
 	}
 
-	public ContextDefinition[][] getContexts() {
+	public ContainerContext[][] getContexts() {
 		return contexts;
 	}
 
@@ -168,7 +166,7 @@ public class AccessPathFragment {
 	 * @param idx The field index
 	 * @return The name of the field at the given index
 	 */
-	public ContextDefinition[] getContext(int idx) {
+	public ContainerContext[] getContext(int idx) {
 		if (contexts == null || idx < 0 || idx >= contexts.length)
 			return null;
 		return contexts[idx];
@@ -218,7 +216,7 @@ public class AccessPathFragment {
 		return fieldTypes[0];
 	}
 
-	public ContextDefinition[] getFirstFieldContext() {
+	public ContainerContext[] getFirstFieldContext() {
 		if (contexts == null || contexts.length == 0)
 			return null;
 		return contexts[0];
@@ -253,7 +251,7 @@ public class AccessPathFragment {
 
 		String[] toAppendFields = toAppend.getFields();
 		String[] toAppendFieldTypes = toAppend.getFieldTypes();
-		ContextDefinition[][] toAppendContexts = toAppend.getContexts();
+		ContainerContext[][] toAppendContexts = toAppend.getContexts();
 
 		String[] appendedFields = new String[fields.length + toAppendFields.length];
 		System.arraycopy(fields, 0, appendedFields, 0, fields.length);
@@ -263,7 +261,7 @@ public class AccessPathFragment {
 		System.arraycopy(fieldTypes, 0, appendedTypes, 0, fieldTypes.length);
 		System.arraycopy(toAppendFieldTypes, 0, appendedTypes, fieldTypes.length, toAppendFieldTypes.length);
 
-		ContextDefinition[][] appendedContexts = new ContextDefinition[contexts.length + toAppendContexts.length][];
+		ContainerContext[][] appendedContexts = new ContainerContext[contexts.length + toAppendContexts.length][];
 		System.arraycopy(contexts, 0, appendedContexts, 0, contexts.length);
 		System.arraycopy(toAppendContexts, 0, appendedContexts, contexts.length, toAppendContexts.length);
 
@@ -310,7 +308,7 @@ public class AccessPathFragment {
 
 		String[] newFields = new String[length];
 		String[] newFieldTypes = new String[length];
-		ContextDefinition[][] newContexts = new ContextDefinition[length][];
+		ContainerContext[][] newContexts = new ContainerContext[length][];
 
 		System.arraycopy(fields, 0, newFields, 0, length);
 		System.arraycopy(fieldTypes, 0, newFieldTypes, 0, length);
@@ -376,8 +374,8 @@ public class AccessPathFragment {
 		return accessPath.append(suffix);
 	}
 
-	public AccessPathFragment addContext(ContextDefinition[] ctxt) {
-		ContextDefinition[][] contexts = new ContextDefinition[fields.length][];;
+	public AccessPathFragment addContext(ContainerContext[] ctxt) {
+		ContainerContext[][] contexts = new ContainerContext[fields.length][];;
 		System.arraycopy(this.contexts, 1, contexts, 1, this.contexts.length - 1);
 		contexts[0] = ctxt;
 		return new AccessPathFragment(fields, fieldTypes, contexts);

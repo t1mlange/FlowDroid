@@ -2,16 +2,10 @@ package soot.jimple.infoflow.collections.strategies.widening;
 
 import java.util.*;
 
-import com.google.common.annotations.VisibleForTesting;
-import soot.SootMethod;
 import soot.Unit;
 import soot.jimple.Stmt;
 import soot.jimple.infoflow.InfoflowManager;
-import soot.jimple.infoflow.collections.context.PositionBasedContext;
-import soot.jimple.infoflow.collections.taintWrappers.ICollectionsSupport;
 import soot.jimple.infoflow.data.Abstraction;
-import soot.jimple.infoflow.data.AccessPathFragment;
-import soot.jimple.infoflow.data.ContextDefinition;
 import soot.util.ConcurrentHashMultiMap;
 import soot.util.IdentityHashSet;
 

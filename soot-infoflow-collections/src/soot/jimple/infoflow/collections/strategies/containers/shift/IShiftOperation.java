@@ -1,7 +1,7 @@
 package soot.jimple.infoflow.collections.strategies.containers.shift;
 
-import soot.jimple.infoflow.data.ContextDefinition;
+import soot.jimple.infoflow.data.ContainerContext;
 
 public interface IShiftOperation {
-    ContextDefinition shift(ContextDefinition ctxt, int n, boolean exact);
+    ContainerContext shift(ContainerContext ctxt, int n, boolean exact);
 }

@@ -1,7 +1,7 @@
 package soot.jimple.infoflow.collections.context;
 
 import soot.jimple.infoflow.collections.util.Tristate;
-import soot.jimple.infoflow.data.ContextDefinition;
+import soot.jimple.infoflow.data.ContainerContext;
 
 /**
  * Interface for all position-based contexts.
@@ -9,7 +9,7 @@ import soot.jimple.infoflow.data.ContextDefinition;
  *
  * @param <T> concrete position-based context type
  */
-public interface PositionBasedContext<T extends PositionBasedContext<?>> extends ContextDefinition {
+public interface PositionBasedContext<T extends PositionBasedContext<?>> extends ContainerContext {
     /**
      * Check whether this and other intersects
      *

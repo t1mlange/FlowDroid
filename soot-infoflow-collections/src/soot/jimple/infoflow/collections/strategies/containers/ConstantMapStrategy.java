@@ -8,7 +8,7 @@ import soot.jimple.infoflow.collections.analyses.ReadOnlyListViewAnalysis;
 import soot.jimple.infoflow.collections.context.KeySetContext;
 import soot.jimple.infoflow.collections.context.UnknownContext;
 import soot.jimple.infoflow.collections.util.Tristate;
-import soot.jimple.infoflow.data.ContextDefinition;
+import soot.jimple.infoflow.data.ContainerContext;
 
 import java.util.*;
 
@@ -46,7 +46,7 @@ public class ConstantMapStrategy implements IContainerStrategy {
     }
 
     @Override
-    public Tristate intersect(ContextDefinition apKey, ContextDefinition stmtKey) {
+    public Tristate intersect(ContainerContext apKey, ContainerContext stmtKey) {
         if (apKey == UnknownContext.v() || stmtKey == UnknownContext.v())
             return Tristate.MAYBE();
 
@@ -57,14 +57,14 @@ public class ConstantMapStrategy implements IContainerStrategy {
     }
 
     @Override
-    public ContextDefinition[] append(ContextDefinition[] ctxt1, ContextDefinition[] ctxt2) {
+    public ContainerContext[] append(ContainerContext[] ctxt1, ContainerContext[] ctxt2) {
         // putAll in maps can be easily modelled as a copy operation
         // append is only needed for lists and derivatives
         return null;
     }
 
     @Override
-    public ContextDefinition getKeyContext(Value value, Stmt stmt) {
+    public ContainerContext getKeyContext(Value value, Stmt stmt) {
         if (value instanceof Constant) {
             resolvedKeys++;
             return new KeySetContext<>((Constant) value);
@@ -103,38 +103,38 @@ public class ConstantMapStrategy implements IContainerStrategy {
     }
 
     @Override
-    public ContextDefinition getIndexContext(Value value, Stmt stmt) {
+    public ContainerContext getIndexContext(Value value, Stmt stmt) {
         return UnknownContext.v();
     }
 
     @Override
-    public ContextDefinition getNextPosition(Value value, Stmt stmt) {
+    public ContainerContext getNextPosition(Value value, Stmt stmt) {
         return UnknownContext.v();
     }
 
     @Override
-    public ContextDefinition getFirstPosition(Value value, Stmt stmt) {
+    public ContainerContext getFirstPosition(Value value, Stmt stmt) {
         return UnknownContext.v();
     }
 
     @Override
-    public ContextDefinition getLastPosition(Value value, Stmt stmt) {
+    public ContainerContext getLastPosition(Value value, Stmt stmt) {
         return UnknownContext.v();
     }
 
     @Override
-    public Tristate lessThanEqual(ContextDefinition ctxt1, ContextDefinition ctxt2) {
+    public Tristate lessThanEqual(ContainerContext ctxt1, ContainerContext ctxt2) {
         return Tristate.MAYBE();
     }
 
     @Override
-    public ContextDefinition shift(ContextDefinition ctxt, int n, boolean exact) {
+    public ContainerContext shift(ContainerContext ctxt, int n, boolean exact) {
         return UnknownContext.v();
     }
 
     @Override
-    public boolean shouldSmash(ContextDefinition[] ctxts) {
-        for (ContextDefinition ctxt : ctxts) {
+    public boolean shouldSmash(ContainerContext[] ctxts) {
+        for (ContainerContext ctxt : ctxts) {
             if (ctxt.containsInformation())
                 return false;
         }

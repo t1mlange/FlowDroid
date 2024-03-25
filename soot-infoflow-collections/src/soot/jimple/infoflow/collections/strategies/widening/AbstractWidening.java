@@ -6,7 +6,7 @@ import soot.jimple.infoflow.collections.context.PositionBasedContext;
 import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.data.AccessPath;
 import soot.jimple.infoflow.data.AccessPathFragment;
-import soot.jimple.infoflow.data.ContextDefinition;
+import soot.jimple.infoflow.data.ContainerContext;
 
 public abstract class AbstractWidening implements WideningStrategy<Unit, Abstraction> {
     protected final InfoflowManager manager;
@@ -23,8 +23,8 @@ public abstract class AbstractWidening implements WideningStrategy<Unit, Abstrac
         AccessPathFragment[] d2f = d3.getAccessPath().getFragments();
         AccessPathFragment[] d3f = d3.getAccessPath().getFragments();
         for (int i = 0; i < n; i++) {
-            ContextDefinition[] d2c = d2f[i].getContext();
-            ContextDefinition[] d3c = d3f[i].getContext();
+            ContainerContext[] d2c = d2f[i].getContext();
+            ContainerContext[] d3c = d3f[i].getContext();
             if (d2c == null || d3c == null)
                 continue;
 

@@ -33,7 +33,7 @@ public class AccessPath implements Cloneable {
 
 	private final Local value;
 	private final Type baseType;
-	private final ContextDefinition[] baseContext;
+	private final ContainerContext[] baseContext;
 
 	private final AccessPathFragment[] fragments;
 
@@ -76,8 +76,8 @@ public class AccessPath implements Cloneable {
 		this(val, valType, null, fragments, taintSubFields, isCutOffApproximation, arrayTaintType, canHaveImmutableAliases);
 	}
 
-	AccessPath(Local val, Type valType, ContextDefinition[] ctxt, AccessPathFragment[] fragments, boolean taintSubFields,
-			   boolean isCutOffApproximation, ArrayTaintType arrayTaintType, boolean canHaveImmutableAliases) {
+	AccessPath(Local val, Type valType, ContainerContext[] ctxt, AccessPathFragment[] fragments, boolean taintSubFields,
+               boolean isCutOffApproximation, ArrayTaintType arrayTaintType, boolean canHaveImmutableAliases) {
 		this.value = val;
 		this.baseType = valType;
 		this.baseContext = ctxt;
@@ -449,8 +449,8 @@ public class AccessPath implements Cloneable {
 					if (!a2.fragments[i].hasContext())
 						return false;
 
-					ContextDefinition[] ctxt1 = this.fragments[i].getContext();
-					ContextDefinition[] ctxt2 = a2.fragments[i].getContext();
+					ContainerContext[] ctxt1 = this.fragments[i].getContext();
+					ContainerContext[] ctxt2 = a2.fragments[i].getContext();
 					for (int j = 0; j < ctxt1.length; j++) {
 						if (!ctxt1[j].entails(ctxt2[j]))
 							return false;
@@ -496,7 +496,7 @@ public class AccessPath implements Cloneable {
 	 *
 	 * @return The type of the base value
 	 */
-	public ContextDefinition[] getBaseContext() {
+	public ContainerContext[] getBaseContext() {
 		return this.baseContext;
 	}
 

@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 
 import soot.jimple.infoflow.collections.util.ImmutableArraySet;
 import soot.jimple.infoflow.collections.util.Tristate;
-import soot.jimple.infoflow.data.ContextDefinition;
+import soot.jimple.infoflow.data.ContainerContext;
 
 /**
  * Representation of map keys using a set possible keys
@@ -55,7 +55,7 @@ public class KeySetContext<C> implements ValueBasedContext<KeySetContext<?>> {
 		return Tristate.fromBoolean(any && all);
 	}
 
-	public boolean entails(ContextDefinition other) {
+	public boolean entails(ContainerContext other) {
 		if (!(other instanceof KeySetContext))
 			return false;
 

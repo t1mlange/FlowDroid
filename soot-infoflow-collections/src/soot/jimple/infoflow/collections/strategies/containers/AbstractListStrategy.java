@@ -1,22 +1,16 @@
 package soot.jimple.infoflow.collections.strategies.containers;
 
-import java.util.concurrent.ConcurrentHashMap;
-
-import soot.Local;
-import soot.SootMethod;
 import soot.Value;
 import soot.jimple.IntConstant;
 import soot.jimple.Stmt;
 import soot.jimple.infoflow.InfoflowManager;
-import soot.jimple.infoflow.collections.analyses.ListSizeAnalysis;
 import soot.jimple.infoflow.collections.context.IntervalContext;
 import soot.jimple.infoflow.collections.context.KeySetContext;
 import soot.jimple.infoflow.collections.context.UnknownContext;
 import soot.jimple.infoflow.collections.strategies.containers.shift.IShiftOperation;
 import soot.jimple.infoflow.collections.strategies.containers.shift.MinMaxShift;
-import soot.jimple.infoflow.collections.strategies.containers.shift.PreciseShift;
 import soot.jimple.infoflow.collections.util.Tristate;
-import soot.jimple.infoflow.data.ContextDefinition;
+import soot.jimple.infoflow.data.ContainerContext;
 
 /**
  * Strategy that is the base for container strategies with list support
@@ -49,7 +43,7 @@ public abstract class AbstractListStrategy extends ConstantMapStrategy {
     }
 
     @Override
-    public Tristate intersect(ContextDefinition apKey, ContextDefinition stmtKey) {
+    public Tristate intersect(ContainerContext apKey, ContainerContext stmtKey) {
         if (apKey == UnknownContext.v() || stmtKey == UnknownContext.v())
             return Tristate.MAYBE();
 
@@ -62,7 +56,7 @@ public abstract class AbstractListStrategy extends ConstantMapStrategy {
     }
 
     @Override
-    public ContextDefinition getIndexContext(Value value, Stmt stmt) {
+    public ContainerContext getIndexContext(Value value, Stmt stmt) {
         if (value instanceof IntConstant) {
             resolvedIndices++;
             return new IntervalContext(((IntConstant) value).value);
@@ -73,19 +67,19 @@ public abstract class AbstractListStrategy extends ConstantMapStrategy {
     }
 
     @Override
-    public abstract ContextDefinition getNextPosition(Value value, Stmt stmt);
+    public abstract ContainerContext getNextPosition(Value value, Stmt stmt);
 
     @Override
-    public ContextDefinition getFirstPosition(Value value, Stmt stmt) {
+    public ContainerContext getFirstPosition(Value value, Stmt stmt) {
         resolvedIndices++;
         return new IntervalContext(0);
     }
 
     @Override
-    public abstract ContextDefinition getLastPosition(Value value, Stmt stmt);
+    public abstract ContainerContext getLastPosition(Value value, Stmt stmt);
 
     @Override
-    public Tristate lessThanEqual(ContextDefinition ctxt1, ContextDefinition ctxt2) {
+    public Tristate lessThanEqual(ContainerContext ctxt1, ContainerContext ctxt2) {
         if (ctxt1 == UnknownContext.v() || ctxt2 == UnknownContext.v())
             return Tristate.MAYBE();
 
@@ -96,18 +90,18 @@ public abstract class AbstractListStrategy extends ConstantMapStrategy {
     }
 
     @Override
-    public ContextDefinition shift(ContextDefinition ctxt, int n, boolean exact) {
+    public ContainerContext shift(ContainerContext ctxt, int n, boolean exact) {
         return shiftOp.shift(ctxt, n, exact);
     }
 
     @Override
-    public ContextDefinition[] append(ContextDefinition[] ctxt1, ContextDefinition[] ctxt2) {
+    public ContainerContext[] append(ContainerContext[] ctxt1, ContainerContext[] ctxt2) {
         // Shifting only occurs on lists
         if (ctxt1 == null || ctxt2 == null
                 || ctxt1.length != ctxt2.length || ctxt1.length != 1 || !(ctxt1[0] instanceof IntervalContext))
             return null;
 
-        ContextDefinition[] newCtxt = new ContextDefinition[1];
+        ContainerContext[] newCtxt = new ContainerContext[1];
         newCtxt[0] = ((IntervalContext) ctxt1[0]).exactShift((IntervalContext) ctxt2[0]);
         return newCtxt;
     }

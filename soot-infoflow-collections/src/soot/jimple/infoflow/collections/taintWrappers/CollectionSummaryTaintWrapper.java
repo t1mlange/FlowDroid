@@ -10,7 +10,7 @@ import soot.jimple.infoflow.collections.util.NonNullHashSet;
 import soot.jimple.infoflow.collections.util.Tristate;
 import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.data.AccessPath;
-import soot.jimple.infoflow.data.ContextDefinition;
+import soot.jimple.infoflow.data.ContainerContext;
 import soot.jimple.infoflow.methodSummary.data.provider.IMethodSummaryProvider;
 import soot.jimple.infoflow.methodSummary.data.sourceSink.AbstractFlowSinkSource;
 import soot.jimple.infoflow.methodSummary.data.sourceSink.ConstraintType;
@@ -214,9 +214,9 @@ public class CollectionSummaryTaintWrapper extends SummaryTaintWrapper implement
                         continue;
                     }
 
-                    ContextDefinition[] ctxt = new ContextDefinition[f.getContext().length];
+                    ContainerContext[] ctxt = new ContainerContext[f.getContext().length];
                     for (int i = 0; i < ctxt.length; i++) {
-                        ContextDefinition c = f.getContext()[i];
+                        ContainerContext c = f.getContext()[i];
                         if (c == null || !c.containsInformation())
                             continue;
                         ctxt[i] = containerStrategy.shift(c, 1, found.isTrue());
@@ -235,9 +235,9 @@ public class CollectionSummaryTaintWrapper extends SummaryTaintWrapper implement
                         continue;
                     }
 
-                    ContextDefinition[] ctxt = new ContextDefinition[f.getContext().length];
+                    ContainerContext[] ctxt = new ContainerContext[f.getContext().length];
                     for (int i = 0; i < ctxt.length; i++) {
-                        ContextDefinition c = f.getContext()[i];
+                        ContainerContext c = f.getContext()[i];
                         if (c == null || !c.containsInformation())
                             continue;
                         ctxt[i] = containerStrategy.shift(c, -1, found.isTrue());
@@ -534,10 +534,10 @@ public class CollectionSummaryTaintWrapper extends SummaryTaintWrapper implement
         throw new RuntimeException("Do not use");
     }
 
-    protected ContextDefinition[] concretizeFlowConstraints(FlowConstraint[] constraints, Stmt stmt, ContextDefinition[] taintCtxt) {
+    protected ContainerContext[] concretizeFlowConstraints(FlowConstraint[] constraints, Stmt stmt, ContainerContext[] taintCtxt) {
         assert stmt.containsInvokeExpr();
         InvokeExpr ie = stmt.getInvokeExpr();
-        ContextDefinition[] ctxt = new ContextDefinition[constraints.length];
+        ContainerContext[] ctxt = new ContainerContext[constraints.length];
         for (int i = 0; i < constraints.length; i++) {
             FlowConstraint c = constraints[i];
             switch (c.getType()) {
@@ -580,11 +580,11 @@ public class CollectionSummaryTaintWrapper extends SummaryTaintWrapper implement
         // If no constrains apply to the flow source, we can unconditionally use it
         if (!flowSource.isConstrained())
             return Tristate.TRUE();
-        ContextDefinition[] taintContext = taint.getAccessPath().getFirstFieldContext();
+        ContainerContext[] taintContext = taint.getAccessPath().getFirstFieldContext();
         if (taintContext == null)
             return Tristate.TRUE();
 
-        ContextDefinition[] stmtCtxt = concretizeFlowConstraints(flow.getConstraints(), stmt, taintContext);
+        ContainerContext[] stmtCtxt = concretizeFlowConstraints(flow.getConstraints(), stmt, taintContext);
         assert stmtCtxt.length == taintContext.length;
         Tristate state = Tristate.TRUE();
         for (int i = 0; i < stmtCtxt.length; i++) {
@@ -596,11 +596,11 @@ public class CollectionSummaryTaintWrapper extends SummaryTaintWrapper implement
 
     protected Tristate matchShiftLeft(final AbstractFlowSinkSource flowSource, final AbstractMethodSummary flow,
                                           final Taint taint, final Stmt stmt) {
-        ContextDefinition[] taintContext = taint.getAccessPath().getFirstFieldContext();
+        ContainerContext[] taintContext = taint.getAccessPath().getFirstFieldContext();
         if (taintContext == null)
             return Tristate.FALSE();
 
-        ContextDefinition[] stmtCtxt = concretizeFlowConstraints(flow.getConstraints(), stmt, taintContext);
+        ContainerContext[] stmtCtxt = concretizeFlowConstraints(flow.getConstraints(), stmt, taintContext);
         assert stmtCtxt.length == taintContext.length;
         Tristate state = Tristate.TRUE();
         for (int i = 0; i < stmtCtxt.length; i++) {
@@ -613,11 +613,11 @@ public class CollectionSummaryTaintWrapper extends SummaryTaintWrapper implement
     protected Tristate matchShiftRight(final AbstractFlowSinkSource flowSource, final AbstractMethodSummary flow,
                                       final Taint taint, final Stmt stmt) {
         // If no constrains apply to the flow source, we can unconditionally use it
-        ContextDefinition[] taintContext = taint.getAccessPath().getFirstFieldContext();
+        ContainerContext[] taintContext = taint.getAccessPath().getFirstFieldContext();
         if (taintContext == null)
             return Tristate.FALSE();
 
-        ContextDefinition[] stmtCtxt = concretizeFlowConstraints(flow.getConstraints(), stmt, taintContext);
+        ContainerContext[] stmtCtxt = concretizeFlowConstraints(flow.getConstraints(), stmt, taintContext);
         assert stmtCtxt.length == taintContext.length;
         Tristate state = Tristate.TRUE();
         for (int i = 0; i < stmtCtxt.length; i++) {
@@ -677,7 +677,7 @@ public class CollectionSummaryTaintWrapper extends SummaryTaintWrapper implement
         return f.match(flowSource, flow, taint, stmt);
     }
 
-    protected ContextDefinition[][] safeGetContexts(AccessPathFragment accessPath) {
+    protected ContainerContext[][] safeGetContexts(AccessPathFragment accessPath) {
         if (accessPath == null || accessPath.isEmpty())
             return null;
         return accessPath.getContexts();
@@ -805,43 +805,43 @@ public class CollectionSummaryTaintWrapper extends SummaryTaintWrapper implement
             }
         }
 
-        ContextDefinition[] baseCtxt = null;
+        ContainerContext[] baseCtxt = null;
 
         if (flow.sink().isConstrained()) {
-            ContextDefinition[] ctxt = concretizeFlowConstraints(flow.getConstraints(), stmt, taint.hasAccessPath() ? taint.getAccessPath().getFirstFieldContext() : null);
+            ContainerContext[] ctxt = concretizeFlowConstraints(flow.getConstraints(), stmt, taint.hasAccessPath() ? taint.getAccessPath().getFirstFieldContext() : null);
             if (appendedFields != null && ctxt != null && !containerStrategy.shouldSmash(ctxt))
                 appendedFields = appendedFields.addContext(ctxt);
         } else if (flow.sink().append() && !appendInfiniteAscendingChain(flow, stmt)) {
-            ContextDefinition[] stmtCtxt = concretizeFlowConstraints(flow.getConstraints(), stmt, null);
-            ContextDefinition[] taintCtxt = taint.getAccessPath().getFirstFieldContext();
-            ContextDefinition[] ctxt = containerStrategy.append(stmtCtxt, taintCtxt);
+            ContainerContext[] stmtCtxt = concretizeFlowConstraints(flow.getConstraints(), stmt, null);
+            ContainerContext[] taintCtxt = taint.getAccessPath().getFirstFieldContext();
+            ContainerContext[] ctxt = containerStrategy.append(stmtCtxt, taintCtxt);
             if (ctxt != null && !containerStrategy.shouldSmash(ctxt) && appendedFields != null)
                 appendedFields = appendedFields.addContext(ctxt);
         } else if (flow.sink().shiftLeft() && !inversePropagator) {
-            ContextDefinition[] taintCtxt = taint.getAccessPath().getFirstFieldContext();
+            ContainerContext[] taintCtxt = taint.getAccessPath().getFirstFieldContext();
             if (taintCtxt != null) {
                 Tristate lte = flowShiftLeft(flowSource, flow, taint, stmt);
                 if (!lte.isFalse()) {
-                    ContextDefinition newCtxt = containerStrategy.shift(taintCtxt[0], -1, lte.isTrue());
+                    ContainerContext newCtxt = containerStrategy.shift(taintCtxt[0], -1, lte.isTrue());
                     if (newCtxt != null && appendedFields != null) {
-                        appendedFields = appendedFields.addContext(newCtxt.containsInformation() ? new ContextDefinition[]{newCtxt} : null);
+                        appendedFields = appendedFields.addContext(newCtxt.containsInformation() ? new ContainerContext[]{newCtxt} : null);
                     }
                 }
             }
         } else if (flow.sink().shiftRight() && !inversePropagator) {
-            ContextDefinition[] taintCtxt = taint.getAccessPath().getFirstFieldContext();
+            ContainerContext[] taintCtxt = taint.getAccessPath().getFirstFieldContext();
             if (taintCtxt != null) {
                 Tristate lte = flowShiftRight(flowSource, flow, taint, stmt);
                 if (!lte.isFalse()) {
-                    ContextDefinition newCtxt = containerStrategy.shift(taintCtxt[0], 1, lte.isTrue());
+                    ContainerContext newCtxt = containerStrategy.shift(taintCtxt[0], 1, lte.isTrue());
                     if (newCtxt != null && appendedFields != null) {
-                        appendedFields = appendedFields.addContext(newCtxt.containsInformation() ? new ContextDefinition[]{newCtxt} : null);
+                        appendedFields = appendedFields.addContext(newCtxt.containsInformation() ? new ContainerContext[]{newCtxt} : null);
                     }
                 }
             }
         } else if (flow.sink().keepConstraint()
                     || (flow.sink().keepOnRO() && containerStrategy.isReadOnly(stmt))) {
-            ContextDefinition[] ctxt;
+            ContainerContext[] ctxt;
             if (lastCommonAPIdx == 0)
                 ctxt = taint.getBaseContext();
             else
@@ -863,13 +863,13 @@ public class CollectionSummaryTaintWrapper extends SummaryTaintWrapper implement
                 taintSubFields || taint.taintSubFields(), gap);
     }
 
-    private ContextDefinition[] filterContexts(ContextDefinition[] ctxt, FlowConstraint[] constraints) {
+    private ContainerContext[] filterContexts(ContainerContext[] ctxt, FlowConstraint[] constraints) {
         // If the current method does not use constraints,
         // we keep the full context.
         if (constraints.length == 0)
             return ctxt;
 
-        ContextDefinition[] newCtxt = new ContextDefinition[ctxt.length];
+        ContainerContext[] newCtxt = new ContainerContext[ctxt.length];
         int i = 0;
         for (int k = 0; k < constraints.length; k++) {
             FlowConstraint constraint = constraints[k];

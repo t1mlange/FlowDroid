@@ -41,7 +41,7 @@ import soot.jimple.infoflow.InfoflowManager;
 import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.data.AccessPath;
 import soot.jimple.infoflow.data.AccessPath.ArrayTaintType;
-import soot.jimple.infoflow.data.ContextDefinition;
+import soot.jimple.infoflow.data.ContainerContext;
 import soot.jimple.infoflow.data.SootMethodAndClass;
 import soot.jimple.infoflow.handlers.PreAnalysisHandler;
 import soot.jimple.infoflow.methodSummary.data.provider.IMethodSummaryProvider;
@@ -431,9 +431,9 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 		// Convert the taints to Soot objects
 		SootField[] fields = safeGetFields(t.getAccessPath());
 		Type[] types = safeGetTypes(t.getAccessPath(), fields);
-		ContextDefinition[][] contexts = safeGetContexts(t.getAccessPath());
+		ContainerContext[][] contexts = safeGetContexts(t.getAccessPath());
 		Type baseType = TypeUtils.getTypeFromString(t.getBaseType());
-		ContextDefinition[] baseContext = t.getBaseContext();
+		ContainerContext[] baseContext = t.getBaseContext();
 		soot.jimple.infoflow.data.AccessPathFragment fragments[] = soot.jimple.infoflow.data.AccessPathFragment
 				.createFragmentArray(fields, types, contexts);
 
@@ -514,8 +514,8 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 		SootField[] fields = safeGetFields(t.getAccessPath());
 		Type[] types = safeGetTypes(t.getAccessPath(), fields);
 		Type baseType = TypeUtils.getTypeFromString(t.getBaseType());
-		ContextDefinition[] baseContext = t.getBaseContext();
-		ContextDefinition[][] contexts = safeGetContexts(t.getAccessPath());
+		ContainerContext[] baseContext = t.getBaseContext();
+		ContainerContext[][] contexts = safeGetContexts(t.getAccessPath());
 		soot.jimple.infoflow.data.AccessPathFragment fragments[] = soot.jimple.infoflow.data.AccessPathFragment
 				.createFragmentArray(fields, types, contexts);
 
@@ -1420,7 +1420,7 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 		return types;
 	}
 
-	protected ContextDefinition[][] safeGetContexts(AccessPathFragment accessPath) {
+	protected ContainerContext[][] safeGetContexts(AccessPathFragment accessPath) {
 		if (accessPath == null || accessPath.isEmpty())
 			return null;
 		return accessPath.getContexts();
@@ -1629,7 +1629,7 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 		System.arraycopy(oldFields, flowSource.getAccessPathLength(), fields, 0, fieldCnt);
 		System.arraycopy(oldFieldTypes, flowSource.getAccessPathLength(), fieldTypes, 0, fieldCnt);
 
-		ContextDefinition[][] contexts = new ContextDefinition[fieldCnt][];
+		ContainerContext[][] contexts = new ContainerContext[fieldCnt][];
 		System.arraycopy(taintedAP.getContexts(), flowSource.getAccessPathLength(), contexts, 0, fieldCnt);
 		return new AccessPathFragment(fields, fieldTypes, contexts);
 	}

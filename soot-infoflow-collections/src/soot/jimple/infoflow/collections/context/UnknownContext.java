@@ -1,13 +1,13 @@
 package soot.jimple.infoflow.collections.context;
 
-import soot.jimple.infoflow.data.ContextDefinition;
+import soot.jimple.infoflow.data.ContainerContext;
 
 /**
  * Representing an unknown context (e.g. non-constant key) using a singleton
  *
  * @author Tim Lange
  */
-public class UnknownContext implements ContextDefinition {
+public class UnknownContext implements ContainerContext {
     private static final UnknownContext INSTANCE = new UnknownContext();
 
     public static UnknownContext v() {
@@ -32,7 +32,7 @@ public class UnknownContext implements ContextDefinition {
     }
 
     @Override
-    public boolean entails(ContextDefinition other) {
+    public boolean entails(ContainerContext other) {
         // The unknown context entails all other contexts
         return true;
     }
