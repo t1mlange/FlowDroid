@@ -2,6 +2,7 @@ package soot.jimple.infoflow.collections.strategies.widening;
 
 import java.util.*;
 
+import com.google.common.annotations.VisibleForTesting;
 import soot.SootMethod;
 import soot.Unit;
 import soot.jimple.Stmt;
@@ -15,10 +16,11 @@ import soot.util.ConcurrentHashMultiMap;
 import soot.util.IdentityHashSet;
 
 /**
- * Widens each fact that revisits a statement
+ * Widens each fact that revisits a statement. DO NOT USE IN PRODUCTION, this is mainly available for testing.
  *
  * @author Tim Lange
  */
+@Deprecated
 public class WideningOnRevisitStrategy extends AbstractWidening {
 	// Cache of abstractions seen at a shift statement
 	private final ConcurrentHashMultiMap<Unit, Abstraction> seenAbstractions;

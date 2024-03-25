@@ -22,7 +22,6 @@ import soot.SootClass;
 import soot.SootMethod;
 import soot.Type;
 import soot.jimple.infoflow.InfoflowManager;
-import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.data.AccessPath;
 
 /**

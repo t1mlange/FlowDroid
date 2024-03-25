@@ -114,6 +114,7 @@ public class DefaultSchedulingStrategy<N, D extends FastSolverLinkedNode<D, N>, 
 				boolean isUnbalancedReturn) {
 			solver.propagate(sourceVal, target, targetVal, relatedCallSite, isUnbalancedReturn, ScheduleTarget.LOCAL);
 		}
+
 		@Override
 		public void propagateCallFlow(D sourceVal, N target, D targetVal, N relatedCallSite,
 				boolean isUnbalancedReturn) {

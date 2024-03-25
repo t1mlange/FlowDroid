@@ -28,7 +28,6 @@ import soot.jimple.infoflow.*;
 import soot.jimple.infoflow.config.ConfigForTest;
 import soot.jimple.infoflow.results.InfoflowResults;
 import soot.jimple.infoflow.taintWrappers.EasyTaintWrapper;
-import soot.jimple.infoflow.util.DebugFlowFunctionTaintPropagationHandler;
 
 /**
  * abstract super class of all test cases which handles initialization, keeps

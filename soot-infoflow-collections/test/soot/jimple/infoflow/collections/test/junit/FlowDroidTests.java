@@ -21,7 +21,6 @@ import soot.jimple.infoflow.collections.CollectionsSetupApplication;
 import soot.jimple.infoflow.collections.strategies.containers.shift.PreciseShift;
 import soot.jimple.infoflow.collections.taintWrappers.CollectionSummaryTaintWrapper;
 import soot.jimple.infoflow.collections.parser.CollectionSummaryParser;
-import soot.jimple.infoflow.collections.solver.fastSolver.AppendingCollectionInfoflowSolver;
 import soot.jimple.infoflow.collections.strategies.containers.TestConstantStrategy;
 import soot.jimple.infoflow.collections.taintWrappers.PrioritizingMethodSummaryProvider;
 import soot.jimple.infoflow.methodSummary.data.provider.EagerSummaryProvider;
@@ -109,12 +108,6 @@ public abstract class FlowDroidTests {
 		}
 
 		throw new RuntimeException("Could not get expected results for method!");
-	}
-
-	public static IInfoflowSolver getSolver(InterruptableExecutor executor,
-											AbstractInfoflowProblem problem,
-											InfoflowConfiguration.SolverConfiguration solverConfig) {
-		return new AppendingCollectionInfoflowSolver(problem, executor);
 	}
 
 	protected ITaintPropagationWrapper getTaintWrapper() {

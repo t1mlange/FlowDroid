@@ -4,7 +4,6 @@ import soot.Unit;
 import soot.jimple.infoflow.InfoflowManager;
 import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.handlers.TaintPropagationHandler;
-import soot.jimple.infoflow.collections.solver.fastSolver.WideningCollectionInfoflowSolver;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -14,8 +13,6 @@ import java.util.function.Supplier;
 /**
  * Widening through a taint propagation handler. Because of the nature, a full set copy is needed whenever
  * one fact is widened as well as this is called on every edge instead of only when needed.
- * {@link WideningCollectionInfoflowSolver} is able to widen more efficient, yet if widening is only needed for
- * some test cases, it is sufficient to use this class.
  *
  * @author Tim Lange
  */

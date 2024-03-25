@@ -16,7 +16,6 @@ import java.util.List;
 import org.junit.Test;
 
 import soot.jimple.infoflow.IInfoflow;
-import soot.jimple.infoflow.util.DebugFlowFunctionTaintPropagationHandler;
 
 /**
  * test taint propagation in vectors
@@ -44,7 +43,6 @@ public abstract class VectorTests extends JUnitTests {
 	@Test(timeout = 300000)
 	public void vIteratorPos0Test() {
 		IInfoflow infoflow = initInfoflow();
-		infoflow.setTaintPropagationHandler(new DebugFlowFunctionTaintPropagationHandler());
 		List<String> epoints = new ArrayList<String>();
 		epoints.add("<soot.jimple.infoflow.test.VectorTestCode: void iteratorPos0Test()>");
 		infoflow.computeInfoflow(appPath, libPath, epoints, sources, sinks);

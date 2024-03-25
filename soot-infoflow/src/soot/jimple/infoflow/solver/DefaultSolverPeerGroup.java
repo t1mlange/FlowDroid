@@ -37,13 +37,13 @@ public class DefaultSolverPeerGroup implements ISolverPeerGroup {
 	}
 
 	@Override
-	public boolean addIncoming(SootMethod m, Unit n, Abstraction d3a, Abstraction d1, Abstraction d2, Abstraction d3) {
+	public boolean addIncoming(SootMethod m, Abstraction d3, Unit n, Abstraction d1, Abstraction d2) {
 		IncomingRecord<Unit, Abstraction> newRecord = new IncomingRecord<>(n, d1, d2, d3);
-		IncomingRecord<Unit, Abstraction> rec = incoming.putIfAbsent(new Pair<>(m, d3a), newRecord);
+		IncomingRecord<Unit, Abstraction> rec = incoming.putIfAbsent(new Pair<>(m, d3), newRecord);
 
 		if (rec == null)
 			for (IInfoflowSolver solver : solvers)
-				solver.applySummary(m, d3a, n, d2, d1, d3);
+				solver.applySummary(m, d3, n, d2, d1);
 
 		// The solver peer group already applies the summary for all solvers.
 		// Thus, no need to call the same method again in the IFDS solver.

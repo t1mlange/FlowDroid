@@ -25,7 +25,6 @@ import soot.jimple.infoflow.InfoflowConfiguration.ImplicitFlowMode;
 import soot.jimple.infoflow.InfoflowConfiguration.StaticFieldTrackingMode;
 import soot.jimple.infoflow.config.IInfoflowConfig;
 import soot.jimple.infoflow.taintWrappers.EasyTaintWrapper;
-import soot.jimple.infoflow.util.DebugFlowFunctionTaintPropagationHandler;
 import soot.options.Options;
 
 /**
@@ -453,7 +452,6 @@ public abstract class ImplicitFlowTests extends JUnitTests {
 		});
 
 		List<String> epoints = new ArrayList<String>();
-		infoflow.setTaintPropagationHandler(new DebugFlowFunctionTaintPropagationHandler());
 		epoints.add("<soot.jimple.infoflow.test.ImplicitFlowTestCode: void implicitFlowTaintWrapperTest()>");
 		infoflow.computeInfoflow(appPath, libPath, epoints, sources, sinks);
 		checkInfoflow(infoflow, 1);
