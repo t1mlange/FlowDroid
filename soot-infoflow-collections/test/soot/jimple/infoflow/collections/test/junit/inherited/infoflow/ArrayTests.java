@@ -13,7 +13,6 @@ import soot.jimple.infoflow.collections.CollectionInfoflow;
 import soot.jimple.infoflow.collections.taintWrappers.CollectionSummaryTaintWrapper;
 import soot.jimple.infoflow.collections.parser.CollectionSummaryParser;
 import soot.jimple.infoflow.collections.strategies.containers.TestConstantStrategy;
-import soot.jimple.infoflow.util.DebugFlowFunctionTaintPropagationHandler;
 
 public class ArrayTests extends soot.jimple.infoflow.test.junit.ArrayTests {
     @Override
@@ -27,7 +26,6 @@ public class ArrayTests extends soot.jimple.infoflow.test.junit.ArrayTests {
             throw new RuntimeException();
         }
 
-        result.setTaintPropagationHandler(new DebugFlowFunctionTaintPropagationHandler());
         return result;
     }
 

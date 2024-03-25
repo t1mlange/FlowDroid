@@ -18,7 +18,6 @@ import soot.jimple.infoflow.collections.parser.CollectionSummaryParser;
 import soot.jimple.infoflow.collections.strategies.containers.TestConstantStrategy;
 import soot.jimple.infoflow.data.ContainerContext;
 import soot.jimple.infoflow.taintWrappers.ITaintPropagationWrapper;
-import soot.jimple.infoflow.util.DebugFlowFunctionTaintPropagationHandler;
 
 public class ListAddAllItselfTests extends FlowDroidTests {
 
@@ -62,7 +61,6 @@ public class ListAddAllItselfTests extends FlowDroidTests {
     @Test(timeout = 30000)
     public void testListAllAllItselfFiniteLoop1() {
         IInfoflow infoflow = initInfoflow();
-        infoflow.setTaintPropagationHandler(new DebugFlowFunctionTaintPropagationHandler());
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
         Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());

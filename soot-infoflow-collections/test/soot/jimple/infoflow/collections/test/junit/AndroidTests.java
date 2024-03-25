@@ -1,7 +1,6 @@
 package soot.jimple.infoflow.collections.test.junit;
 
 import java.io.IOException;
-import java.util.ArrayList;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -12,10 +11,8 @@ import soot.jimple.Constant;
 import soot.jimple.Stmt;
 import soot.jimple.infoflow.InfoflowConfiguration;
 import soot.jimple.infoflow.android.SetupApplication;
-import soot.jimple.infoflow.android.data.parsers.PermissionMethodParser;
 import soot.jimple.infoflow.results.DataFlowResult;
 import soot.jimple.infoflow.results.InfoflowResults;
-import soot.jimple.infoflow.util.DebugFlowFunctionTaintPropagationHandler;
 
 public class AndroidTests extends FlowDroidTests {
     @Override

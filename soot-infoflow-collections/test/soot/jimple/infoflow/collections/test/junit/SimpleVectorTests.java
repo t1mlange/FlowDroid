@@ -7,7 +7,6 @@ import org.junit.Test;
 
 import soot.jimple.infoflow.IInfoflow;
 import soot.jimple.infoflow.InfoflowConfiguration;
-import soot.jimple.infoflow.util.DebugFlowFunctionTaintPropagationHandler;
 
 public class SimpleVectorTests extends FlowDroidTests {
     @Override
@@ -53,7 +52,6 @@ public class SimpleVectorTests extends FlowDroidTests {
     public void testVectorInsertElementAt2() {
         IInfoflow infoflow = initInfoflow();
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
-        infoflow.setTaintPropagationHandler(new DebugFlowFunctionTaintPropagationHandler());
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
         Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());
     }
@@ -85,7 +83,6 @@ public class SimpleVectorTests extends FlowDroidTests {
     @Test
     public void testVectorSetElementAt1() {
         IInfoflow infoflow = initInfoflow();
-        infoflow.setTaintPropagationHandler(new DebugFlowFunctionTaintPropagationHandler());
         String epoint = "<" + testCodeClass + ": void " + getCurrentMethod() + "()>";
         infoflow.computeInfoflow(appPath, libPath, Collections.singleton(epoint), sources, sinks);
         Assert.assertEquals(getExpectedResultsForMethod(epoint), infoflow.getResults().size());

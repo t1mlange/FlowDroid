@@ -27,7 +27,6 @@ import soot.jimple.infoflow.methodSummary.data.provider.EagerSummaryProvider;
 import soot.jimple.infoflow.methodSummary.taintWrappers.TaintWrapperFactory;
 import soot.jimple.infoflow.results.InfoflowResults;
 import soot.jimple.infoflow.taintWrappers.ITaintPropagationWrapper;
-import soot.jimple.infoflow.util.DebugFlowFunctionTaintPropagationHandler;
 import soot.options.Options;
 
 public abstract class SummaryTaintWrapperTests {
