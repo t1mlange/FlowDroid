@@ -2030,6 +2030,11 @@ public class SetupApplication implements ITaintWrapperDataFlowAnalysis {
 		this.usageContextProvider = usageContextProvider;
 	}
 
+	/**
+	 * Some apps, especially malware, use namespaces like "com.google.myapp", which are also namespaces of system
+	 * packages. To distinguish bad namespaces from actual system packages, we tag user classes that also match
+	 * system packages as with {@link FlowDroidUserClass}.
+	*/
 	protected void tagUserCodeClasses() {
 		if (!SystemClassHandler.v().isClassInSystemPackage(manifest.getPackageName() + ".someClass"))
 			return;

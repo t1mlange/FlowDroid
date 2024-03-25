@@ -49,7 +49,7 @@ public abstract class XMLSummaryProvider extends AbstractMethodSummaryProvider {
 
 	protected final static String FILE_META_DATA = "SummaryMetaData.xml";
 
-	protected SummaryReader summaryReader;
+	protected final SummaryReader summaryReader;
 	protected MetaDataReader metaDataReader = new MetaDataReader();
 
 	protected ClassSummaries summaries = createClassSummaries();

@@ -33,7 +33,7 @@ public class CollectionSummaryParser extends XMLSummaryProvider {
      * @throws IOException
      */
     public CollectionSummaryParser(String folderInJar, Class<?> parentClass) throws URISyntaxException, IOException {
-        summaryReader = new StubDroidParser();
+        super(new StubDroidParser());
         loadSummariesFromJAR(folderInJar, parentClass, p -> loadClass(p));
     }
 
@@ -52,7 +52,7 @@ public class CollectionSummaryParser extends XMLSummaryProvider {
      * @param files The files to load
      */
     public CollectionSummaryParser(List<File> files) {
-        summaryReader = new StubDroidParser();
+        super(new StubDroidParser());
         loadSummariesFromFiles(files, f -> loadClass(f));
     }
 
