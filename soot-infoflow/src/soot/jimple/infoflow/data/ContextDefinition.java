@@ -25,9 +25,10 @@ public interface ContextDefinition {
     boolean isImprecise();
 
     /**
+     * Returns whether this entails other.
      *
-     * @param other
-     * @return
+     * @param other other context definition
+     * @return true if this entails other
      */
     boolean entails(ContextDefinition other);
 
