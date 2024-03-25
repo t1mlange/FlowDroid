@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Map;
 
 import static soot.jimple.infoflow.methodSummary.xml.XMLConstants.*;
-import static soot.jimple.infoflow.methodSummary.xml.XMLConstants.VALUE_TRUE;
 
 public class StubDroidParser extends SummaryReader {
 
@@ -573,7 +572,7 @@ public class StubDroidParser extends SummaryReader {
     }
 
     private int parameterIdx(Map<String, String> attributes) {
-        String strIdx = attributes.get(ATTRIBUTE_PARAMTER_INDEX);
+        String strIdx = attributes.get(ATTRIBUTE_PARAMETER_INDEX);
         if (strIdx == null || strIdx.isEmpty())
             throw new RuntimeException("Parameter index not specified");
         return Integer.parseInt(strIdx);
