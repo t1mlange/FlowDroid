@@ -575,6 +575,8 @@ public class StubDroidParser extends SummaryReader {
         String strIdx = attributes.get(ATTRIBUTE_PARAMETER_INDEX);
         if (strIdx == null || strIdx.isEmpty())
             throw new RuntimeException("Parameter index not specified");
+        if (strIdx.equals("*"))
+            return FlowSource.ANY_PARAMETER;
         return Integer.parseInt(strIdx);
     }
 

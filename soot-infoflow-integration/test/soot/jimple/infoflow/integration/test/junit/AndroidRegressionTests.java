@@ -26,7 +26,6 @@ import soot.jimple.infoflow.methodSummary.taintWrappers.TaintWrapperFactory;
 import soot.jimple.infoflow.results.DataFlowResult;
 import soot.jimple.infoflow.results.InfoflowResults;
 import soot.jimple.infoflow.taintWrappers.ITaintPropagationWrapper;
-import soot.jimple.infoflow.util.DebugFlowFunctionTaintPropagationHandler;
 import soot.jimple.toolkits.ide.icfg.BiDiInterproceduralCFG;
 import soot.jimple.toolkits.ide.icfg.JimpleBasedInterproceduralCFG;
 import soot.toolkits.graph.BriefUnitGraph;
@@ -182,7 +181,6 @@ public class AndroidRegressionTests extends BaseJUnitTests {
     @Test
     public void testThreadRunnable() throws XmlPullParserException, IOException {
         SetupApplication app = initApplication("testAPKs/ThreadRunnable.apk");
-        app.setTaintPropagationHandler(new DebugFlowFunctionTaintPropagationHandler());
         // TODO: add support for parameter mismatch/virtualedges.xml
         Assume.assumeTrue("There is no mechanism to fixup access paths at return edges",
                 app.getConfig().getDataFlowDirection() == InfoflowConfiguration.DataFlowDirection.Forwards);

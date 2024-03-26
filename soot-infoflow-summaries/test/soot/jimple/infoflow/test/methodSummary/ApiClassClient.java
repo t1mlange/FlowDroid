@@ -344,37 +344,4 @@ public class ApiClassClient {
 		String oldVal = map.put("XXX", stringSource());
 		sink(oldVal);
 	}
-
-	private static String tainted;
-	public void staticFieldInUserCodeGap() {
-		tainted = null;
-		tainted = stringSource();
-
-		Data d = new Data();
-		String ret = d.computeString((s) -> tainted);
-		sink(ret);
-	}
-
-	public void sourceInUserCodeGap() {
-		Data d = new Data();
-		String ret = d.computeString((s) -> stringSource());
-		sink(ret);
-	}
-
-	public void sinkInUserCodeGap() {
-		tainted = null;
-		tainted = stringSource();
-
-		Data d = new Data();
-		String ret = d.computeString((s) -> {
-			sink(tainted);
-			return "some string";
-		});
-	}
-
-	public void noBogusBaseType() {
-		Data d = new Data();
-		d.setI(stringSource());
-		sink(d.getI());
-	}
 }

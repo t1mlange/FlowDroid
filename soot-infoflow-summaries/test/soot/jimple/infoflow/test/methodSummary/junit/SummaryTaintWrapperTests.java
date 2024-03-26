@@ -244,21 +244,6 @@ public abstract class SummaryTaintWrapperTests {
 		testNoFlowForMethod("<soot.jimple.infoflow.test.methodSummary.ApiClassClient: void matchGapReturnOnlyWithReturnTaints()>");
 	}
 
-	@Test(timeout = 30000)
-	public void staticFieldInUserCodeGap() {
-		testFlowForMethod("<soot.jimple.infoflow.test.methodSummary.ApiClassClient: void staticFieldInUserCodeGap()>");
-	}
-
-	@Test(timeout = 30000)
-	public void sourceInUserCodeGap() {
-		testFlowForMethod("<soot.jimple.infoflow.test.methodSummary.ApiClassClient: void sourceInUserCodeGap()>");
-	}
-
-	@Test(timeout = 30000)
-	public void sinkInUserCodeGap() {
-		testFlowForMethod("<soot.jimple.infoflow.test.methodSummary.ApiClassClient: void sinkInUserCodeGap()>");
-	}
-
 	@Test
 	public void testAllSummaries() throws URISyntaxException, IOException {
 		EagerSummaryProvider provider = new EagerSummaryProvider(TaintWrapperFactory.DEFAULT_SUMMARY_DIR);

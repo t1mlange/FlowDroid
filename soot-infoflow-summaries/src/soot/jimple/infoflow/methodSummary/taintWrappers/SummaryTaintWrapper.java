@@ -1,11 +1,6 @@
 package soot.jimple.infoflow.methodSummary.taintWrappers;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -122,7 +117,8 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 							: getFlowSummariesForGap(parentGap);
 
 					// Create the new propagator, one for every taint
-					Set<AccessPathPropagator> workSet = new HashSet<>();					for (Taint returnTaint : returnTaints) {
+					Set<AccessPathPropagator> workSet = new HashSet<>();
+					for (Taint returnTaint : returnTaints) {
 						AccessPathPropagator newPropagator = new AccessPathPropagator(returnTaint, parentGap, parent,
 								propagator.getParent() == null ? null : propagator.getParent().getStmt(),
 								propagator.getParent() == null ? null : propagator.getParent().getD1(),
@@ -834,9 +830,8 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 		Set<AccessPath> aps = createAccessPathInMethod(propagator.getTaint(), implementor);
 		if (aps.isEmpty())
 			return null;
-		Set<Abstraction> absSet = new HashSet<>();
-		aps.forEach(ap -> absSet.add(incoming.deriveNewAbstraction(ap, stmt)));
-		absSet.remove(null);
+		Set<Abstraction> absSet = aps.stream().map(ap -> incoming.deriveNewAbstraction(ap, stmt))
+				.filter(Objects::nonNull).collect(Collectors.toSet());
 
 		// We need to pop the last gap element off the stack
 		AccessPathPropagator parent = safePopParent(propagator);
