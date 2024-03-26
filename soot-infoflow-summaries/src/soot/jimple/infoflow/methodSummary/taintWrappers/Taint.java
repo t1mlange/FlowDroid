@@ -49,12 +49,4 @@ public class Taint extends FlowSink implements Cloneable {
 	public Taint clone() {
 		return new Taint(type, parameterIdx, baseType, baseCtxt, accessPath, taintSubFields, gap);
 	}
-
-	@Override
-	public String toString() {
-		if (isStaticField())
-				return "STATIC FIELD" + AccessPathFragment.toString(accessPath);
-
-		return super.toString();
-	}
 }

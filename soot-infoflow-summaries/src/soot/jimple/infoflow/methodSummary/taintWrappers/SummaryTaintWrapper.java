@@ -137,16 +137,9 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 					Set<AccessPath> resultAPs = applyFlowsIterative(flowsInTarget, new ArrayList<>(workSet),
 							reverseFlows, rootPropagator.getStmt(), d2);
 
-					// Collect all static access paths that are kept anyways
-					Set<AccessPath> allAps = returnTaints.stream()
-                            .filter(AbstractFlowSinkSource::isStaticField)
-                            .map(t -> createAccessPathFromTaint(t, rootPropagator.getStmt(), reverseFlows))
-							.collect(Collectors.toSet());
-					if (resultAPs != null)
-						allAps.addAll(resultAPs);
 					// Propagate the access paths
-					if (!allAps.isEmpty()) {
-						for (AccessPath ap : allAps) {
+					if (resultAPs != null && !resultAPs.isEmpty()) {
+						for (AccessPath ap : resultAPs) {
 							Abstraction newAbs = rootPropagator.getD2().deriveNewAbstraction(ap,
 									rootPropagator.getStmt());
 							for (Unit succUnit : manager.getICFG().getSuccsOf(rootPropagator.getStmt()))
@@ -320,15 +313,6 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 														 ByReferenceBoolean killIncomingSource) {
 		Value base = getMethodBase(stmt);
 		Set<Taint> newTaints = null;
-
-		if (ap.isStaticFieldRef()) {
-			if (newTaints == null)
-				newTaints = new HashSet<>();
-
-			newTaints.add(new Taint(SourceSinkType.StaticField, -1,
-					null, new AccessPathFragment(ap), ap.getTaintSubFields()));
-		}
-
 		// Check whether the base object or some field in it is tainted
 		if ((ap.isLocal() || ap.isInstanceFieldRef()) && base != null && base == ap.getPlainValue()) {
 			if (newTaints == null)
@@ -408,14 +392,6 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 						new AccessPathFragment(ap), ap.getTaintSubFields(), gap));
 			}
 		}
-
-		if (ap.isStaticFieldRef()) {
-			if (res == null)
-				res = new HashSet<>();
-			res.add(new Taint(SourceSinkType.StaticField, -1, null, null,
-					new AccessPathFragment(ap), ap.getTaintSubFields(), gap));
-		}
-
 		return res;
 	}
 
@@ -492,11 +468,6 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 			}
 		}
 
-		if (t.isStaticField()) {
-			return manager.getAccessPathFactory().createAccessPath(null, null, null, fragments, true,
-					false, true, ArrayTaintType.ContentsAndLength, false);
-		}
-
 		throw new RuntimeException("Could not convert taint to access path: " + t + " at " + stmt);
 	}
 
@@ -548,13 +519,6 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 					false, true, ArrayTaintType.ContentsAndLength, false);
 			return ap == null ? Collections.emptySet() : Collections.singleton(ap);
 		}
-
-		if (t.isStaticField()) {
-			AccessPath ap = manager.getAccessPathFactory().createAccessPath(null, null, baseContext, fragments, true,
-					false, true, ArrayTaintType.ContentsAndLength, false);
-			return ap == null ? Collections.emptySet() : Collections.singleton(ap);
-		}
-
 		throw new RuntimeException("Failed to convert taint " + t);
 	}
 
@@ -1129,7 +1093,6 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 		// Make sure that the base type of the incoming taint and the one of
 		// the summary are compatible
 		boolean typesCompatible = flowSource.getBaseType() == null
-				|| taint.isStaticField()
 				|| isCastCompatible(TypeUtils.getTypeFromString(taint.getBaseType()),
 						TypeUtils.getTypeFromString(flowSource.getBaseType()));
 		if (!typesCompatible)
@@ -1160,7 +1123,7 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 			taintGap = propagator.getGap();
 		}
 
-		boolean addTaint = taint.isStaticField() || flowMatchesTaint(flowSource, taint);
+		boolean addTaint = flowMatchesTaint(flowSource, taint);
 
 		// If we didn't find a match, there's little we can do
 		if (!addTaint)
@@ -1451,9 +1414,6 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper {
 	 *         to the given source taint
 	 */
 	protected Taint addSinkTaint(MethodFlow flow, Taint taint, GapDefinition gap) {
-		if (taint.isStaticField())
-			return taint;
-
 		final AbstractFlowSinkSource flowSource = flow.source();
 		final AbstractFlowSinkSource flowSink = flow.sink();
 		final boolean taintSubFields = flow.sink().taintSubFields();

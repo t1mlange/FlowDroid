@@ -95,10 +95,6 @@ public abstract class AbstractFlowSinkSource {
 		return type == SourceSinkType.Custom;
 	}
 
-	public boolean isStaticField() {
-		return type == SourceSinkType.StaticField;
-	}
-
 	public int getParameterIndex() {
 		return parameterIdx;
 	}

@@ -60,8 +60,9 @@ public class WrapperPropagationRule extends AbstractTaintPropagationRule {
 
 		// Do not check taints that are not mentioned anywhere in the call
 		final Aliasing aliasing = getAliasing();
-		boolean found = source.getAccessPath().isStaticFieldRef() || source.getAccessPath().isEmpty();
-		if (aliasing != null && !found && !source.getAccessPath().isEmpty()) {
+		if (aliasing != null && !source.getAccessPath().isStaticFieldRef() && !source.getAccessPath().isEmpty()) {
+			boolean found = false;
+
 			// The base object must be tainted
 			if (iStmt.getInvokeExpr() instanceof InstanceInvokeExpr) {
 				InstanceInvokeExpr iiExpr = (InstanceInvokeExpr) iStmt.getInvokeExpr();
@@ -76,11 +77,11 @@ public class WrapperPropagationRule extends AbstractTaintPropagationRule {
 						found = true;
 						break;
 					}
-		}
 
-		// If nothing is tainted, we don't have any taints to propagate
-		if (!found)
-			return null;
+			// If nothing is tainted, we don't have any taints to propagate
+			if (!found)
+				return null;
+		}
 
 		// Do not apply the taint wrapper to statements that are sources on their own
 		if (!getManager().getConfig().getInspectSources()) {

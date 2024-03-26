@@ -13,11 +13,6 @@ public enum SourceSinkType {
 	Field,
 
 	/**
-	 * The flow is a static field
-	 */
-	StaticField,
-	
-	/**
 	 * The flow starts or ends at a field of a parameter of the current method
 	 */
 	Parameter,
