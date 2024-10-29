@@ -107,7 +107,7 @@
 		<method id="java.util.Map toMultimap()">
 			<flows>
 				<flow isAlias="false" typeChecking="false">
-					<from sourceSinkType="Return"
+					<from sourceSinkType="Field"
 						AccessPath="[okhttp3.Headers: java.lang.String[] keys]"
 						AccessPathTypes="[java.lang.String[]]" />
 					<to sourceSinkType="Return"
@@ -115,7 +115,7 @@
 						AccessPathTypes="[java.lang.Object[]]" />
 				</flow>
 				<flow isAlias="false" typeChecking="false">
-					<from sourceSinkType="Return"
+					<from sourceSinkType="Field"
 						AccessPath="[okhttp3.Headers: java.lang.String[] values]"
 						AccessPathTypes="[java.lang.String[]]" />
 					<to sourceSinkType="Return"
