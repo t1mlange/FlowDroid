@@ -13,8 +13,6 @@ import soot.jimple.infoflow.methodSummary.taintWrappers.AccessPathFragment;
  */
 public class FlowSource extends AbstractFlowSinkSource implements Cloneable {
 
-	public static final int ANY_PARAMETER = -2;
-
 	public FlowSource(SourceSinkType type, String baseType, ConstraintType isConstrained) {
 		super(type, -1, baseType, null, null, false, isConstrained);
 	}
@@ -110,16 +108,6 @@ public class FlowSource extends AbstractFlowSinkSource implements Cloneable {
 	@Override
 	protected Object clone() throws CloneNotSupportedException {
 		return new FlowSource(type, parameterIdx, baseType, accessPath, gap, userData, matchStrict, isConstrained);
-	}
-
-	/**
-	 * Gets whether this flow source matches any parameter
-	 * 
-	 * @return True if this flow source matches any parameter, false if it not
-	 *         related to parameters or if it matches a specific parameter
-	 */
-	public boolean isAnyParameter() {
-		return isParameter() && parameterIdx == ANY_PARAMETER;
 	}
 
 }

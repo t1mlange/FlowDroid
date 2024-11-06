@@ -20,6 +20,8 @@ import soot.jimple.infoflow.methodSummary.xml.XMLConstants;
  */
 public abstract class AbstractFlowSinkSource {
 
+	public static final int ANY_PARAMETER = -2;
+
 	protected final SourceSinkType type;
 	protected final int parameterIdx;
 	protected final String baseType;
@@ -330,6 +332,16 @@ public abstract class AbstractFlowSinkSource {
 			}
 		}
 		return null;
+	}
+
+	/**
+	 * Gets whether this flow source or sink matches any parameter
+	 * 
+	 * @return True if this flow source or sink matches any parameter, false if it
+	 *         not related to parameters or if it matches a specific parameter
+	 */
+	public boolean isAnyParameter() {
+		return isParameter() && parameterIdx == ANY_PARAMETER;
 	}
 
 }
