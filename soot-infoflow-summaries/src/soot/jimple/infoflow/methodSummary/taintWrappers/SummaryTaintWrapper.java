@@ -1646,7 +1646,10 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper, ICollection
 
 		int lastCommonAPIdx = Math.min(flowSource.getAccessPathLength(), taint.getAccessPathLength());
 
-		Type sinkType = TypeUtils.getTypeFromString(getAssignmentType(flowSink, flow.methodSig()));
+		// For a dynamic invoke expression, the return value of the callee is a
+		// callSite, which isn't helpful
+		Type sinkType = stmt.getInvokeExpr() instanceof DynamicInvokeExpr ? null
+				: TypeUtils.getTypeFromString(getAssignmentType(flowSink, flow.methodSig()));
 		Type taintType = TypeUtils.getTypeFromString(getAssignmentType(taint, lastCommonAPIdx - 1));
 
 		// For type checking, we need types
