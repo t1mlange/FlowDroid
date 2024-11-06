@@ -1648,7 +1648,7 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper, ICollection
 
 		// For a dynamic invoke expression, the return value of the callee is a
 		// callSite, which isn't helpful
-		Type sinkType = stmt.getInvokeExpr() instanceof DynamicInvokeExpr ? null
+		Type sinkType = stmt != null && stmt.getInvokeExpr() instanceof DynamicInvokeExpr ? null
 				: TypeUtils.getTypeFromString(getAssignmentType(flowSink, flow.methodSig()));
 		Type taintType = TypeUtils.getTypeFromString(getAssignmentType(taint, lastCommonAPIdx - 1));
 
