@@ -19,6 +19,7 @@ import soot.jimple.infoflow.methodSummary.xml.XMLConstants;
  * flow.
  */
 public abstract class AbstractFlowSinkSource {
+
 	protected final SourceSinkType type;
 	protected final int parameterIdx;
 	protected final String baseType;
@@ -28,24 +29,23 @@ public abstract class AbstractFlowSinkSource {
 	protected final boolean matchStrict;
 	protected ConstraintType isConstrained;
 
-
 	public AbstractFlowSinkSource(SourceSinkType type, int parameterIdx, String baseType, AccessPathFragment accessPath,
-								  boolean matchStrict, ConstraintType isConstrained) {
+			boolean matchStrict, ConstraintType isConstrained) {
 		this(type, parameterIdx, baseType, accessPath, null, matchStrict, isConstrained);
 	}
 
 	public AbstractFlowSinkSource(SourceSinkType type, String baseType, AccessPathFragment accessPath,
-								  GapDefinition gap, boolean matchStrict, ConstraintType isConstrained) {
+			GapDefinition gap, boolean matchStrict, ConstraintType isConstrained) {
 		this(type, -1, baseType, accessPath, gap, matchStrict, isConstrained);
 	}
 
 	public AbstractFlowSinkSource(SourceSinkType type, int parameterIdx, String baseType, AccessPathFragment accessPath,
-								  GapDefinition gap, boolean matchStrict, ConstraintType isConstrained) {
+			GapDefinition gap, boolean matchStrict, ConstraintType isConstrained) {
 		this(type, parameterIdx, baseType, accessPath, gap, null, matchStrict, isConstrained);
 	}
 
 	public AbstractFlowSinkSource(SourceSinkType type, int parameterIdx, String baseType, AccessPathFragment accessPath,
-								  GapDefinition gap, Object userData, boolean matchStrict, ConstraintType isConstrained) {
+			GapDefinition gap, Object userData, boolean matchStrict, ConstraintType isConstrained) {
 		this.type = type;
 		this.parameterIdx = parameterIdx;
 		this.baseType = baseType;
@@ -55,7 +55,6 @@ public abstract class AbstractFlowSinkSource {
 		this.matchStrict = matchStrict;
 		this.isConstrained = isConstrained;
 	}
-
 
 	/**
 	 * Checks whether the current source or sink is coarser than the given one,
@@ -186,7 +185,9 @@ public abstract class AbstractFlowSinkSource {
 		return isConstrained == ConstraintType.READONLY;
 	}
 
-	public boolean append() { return isConstrained == ConstraintType.APPEND; }
+	public boolean append() {
+		return isConstrained == ConstraintType.APPEND;
+	}
 
 	public ConstraintType getConstraintType() {
 		return isConstrained;

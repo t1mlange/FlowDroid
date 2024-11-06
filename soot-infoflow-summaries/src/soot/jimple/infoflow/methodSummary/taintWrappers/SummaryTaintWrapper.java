@@ -1636,8 +1636,8 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper, ICollection
 	 */
 	protected Taint addSinkTaint(MethodFlow flow, Taint taint, GapDefinition gap, Stmt stmt,
 			boolean inversePropagator) {
-		final AbstractFlowSinkSource flowSource = flow.source();
-		final AbstractFlowSinkSource flowSink = flow.sink();
+		final FlowSource flowSource = flow.source();
+		final FlowSink flowSink = flow.sink();
 		final boolean taintSubFields = flow.sink().taintSubFields();
 		final Boolean checkTypes = flow.getTypeChecking();
 
@@ -2549,21 +2549,21 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper, ICollection
 				final Stmt stmt);
 	}
 
-	protected Tristate flowShiftLeft(final AbstractFlowSinkSource flowSource, final AbstractMethodSummary flow,
-			final Taint taint, final Stmt stmt) {
+	protected Tristate flowShiftLeft(final FlowSource flowSource, final AbstractMethodSummary flow, final Taint taint,
+			final Stmt stmt) {
 		return flowMatchesTaintInternal(flowSource, flow, taint, stmt, this::matchShiftLeft);
 	}
 
-	protected Tristate flowShiftRight(final AbstractFlowSinkSource flowSource, final AbstractMethodSummary flow,
-			final Taint taint, final Stmt stmt) {
+	protected Tristate flowShiftRight(final FlowSource flowSource, final AbstractMethodSummary flow, final Taint taint,
+			final Stmt stmt) {
 		return flowMatchesTaintInternal(flowSource, flow, taint, stmt, this::matchShiftRight);
 	}
 
-	protected Tristate flowMatchesTaintInternal(final AbstractFlowSinkSource flowSource,
-			final AbstractMethodSummary flow, final Taint taint, final Stmt stmt, MatchFunction f) {
+	protected Tristate flowMatchesTaintInternal(final FlowSource flowSource, final AbstractMethodSummary flow,
+			final Taint taint, final Stmt stmt, MatchFunction f) {
 		// Matches parameter
 		boolean match = flowSource.isParameter() && taint.isParameter()
-				&& taint.getParameterIndex() == flowSource.getParameterIndex();
+				&& (taint.getParameterIndex() == flowSource.getParameterIndex() || flowSource.isAnyParameter());
 		// Flows from a field can either be applied to the same field or the base object
 		// in total
 		match = match || flowSource.isField() && (taint.isGapBaseObject() || taint.isField());

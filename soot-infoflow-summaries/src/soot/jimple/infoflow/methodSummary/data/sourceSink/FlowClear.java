@@ -12,7 +12,7 @@ import soot.jimple.infoflow.methodSummary.taintWrappers.AccessPathFragment;
  * @author Steven Arzt
  *
  */
-public class FlowClear extends AbstractFlowSinkSource implements Cloneable {
+public class FlowClear extends FlowSource implements Cloneable {
 
 	public FlowClear(SourceSinkType type, String baseType, ConstraintType isConstrained) {
 		super(type, -1, baseType, null, null, false, isConstrained);
@@ -22,21 +22,18 @@ public class FlowClear extends AbstractFlowSinkSource implements Cloneable {
 		super(type, -1, baseType, null, null, gap, false, isConstrained);
 	}
 
-	public FlowClear(SourceSinkType type, String baseType, AccessPathFragment accessPath, ConstraintType isConstrained) {
-		super(type, -1, baseType, accessPath, false, isConstrained);
-	}
-
-	public FlowClear(SourceSinkType type, String baseType, AccessPathFragment accessPath, GapDefinition gap, ConstraintType isConstrained) {
+	public FlowClear(SourceSinkType type, String baseType, AccessPathFragment accessPath, GapDefinition gap,
+			ConstraintType isConstrained) {
 		super(type, -1, baseType, accessPath, gap, false, isConstrained);
 	}
 
 	public FlowClear(SourceSinkType type, int parameterIdx, String baseType, AccessPathFragment accessPath,
-					 GapDefinition gap, ConstraintType isConstrained) {
+			GapDefinition gap, ConstraintType isConstrained) {
 		super(type, parameterIdx, baseType, accessPath, gap, false, isConstrained);
 	}
 
 	public FlowClear(SourceSinkType type, int parameterIdx, String baseType, AccessPathFragment accessPath,
-					 GapDefinition gap, Object userData, ConstraintType isConstrained) {
+			GapDefinition gap, Object userData, ConstraintType isConstrained) {
 		super(type, parameterIdx, baseType, accessPath, gap, userData, false, isConstrained);
 	}
 
