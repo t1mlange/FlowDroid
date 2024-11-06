@@ -594,8 +594,9 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper, ICollection
 				return null;
 
 			DefinitionStmt defStmt = (DefinitionStmt) stmt;
-			return Collections.singleton(apFactory.createAccessPath(defStmt.getLeftOp(), baseType, baseContext,
-					fragments, t.taintSubFields(), false, true, ArrayTaintType.ContentsAndLength, false));
+			AccessPath ap = apFactory.createAccessPath(defStmt.getLeftOp(), baseType, baseContext, fragments,
+					t.taintSubFields(), false, true, ArrayTaintType.ContentsAndLength, false);
+			return ap == null ? null : Collections.singleton(ap);
 		}
 
 		// In some special cases we want to taint all parameters
@@ -638,8 +639,9 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper, ICollection
 			if (manager.getTypeUtils().getMorePreciseType(baseType, paramVal.getType()) == null)
 				baseType = null;
 
-			return Collections.singleton(apFactory.createAccessPath(paramVal, baseType, fragments, t.taintSubFields(),
-					false, true, ArrayTaintType.ContentsAndLength));
+			AccessPath ap = apFactory.createAccessPath(paramVal, baseType, fragments, t.taintSubFields(), false, true,
+					ArrayTaintType.ContentsAndLength);
+			return ap == null ? null : Collections.singleton(ap);
 		}
 
 		// If the taint is on the base value, we need to taint the base local
@@ -647,17 +649,18 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper, ICollection
 			final InvokeExpr iexpr = stmt.getInvokeExpr();
 			if (iexpr instanceof InstanceInvokeExpr) {
 				InstanceInvokeExpr iiexpr = (InstanceInvokeExpr) iexpr;
-				return Collections.singleton(apFactory.createAccessPath(iiexpr.getBase(), baseType, baseContext,
-						fragments, t.taintSubFields(), false, true, ArrayTaintType.ContentsAndLength, false));
+				AccessPath ap = apFactory.createAccessPath(iiexpr.getBase(), baseType, baseContext, fragments,
+						t.taintSubFields(), false, true, ArrayTaintType.ContentsAndLength, false);
+				return ap == null ? null : Collections.singleton(ap);
 			} else if (iexpr instanceof StaticInvokeExpr) {
 				// For a static invocation, we apply field taints to the return value
 				StaticInvokeExpr siexpr = (StaticInvokeExpr) iexpr;
 				if (!(siexpr.getMethodRef().getReturnType() instanceof VoidType)) {
 					if (stmt instanceof DefinitionStmt) {
 						DefinitionStmt defStmt = (DefinitionStmt) stmt;
-						return Collections.singleton(
-								apFactory.createAccessPath(defStmt.getLeftOp(), baseType, baseContext, fragments,
-										t.taintSubFields(), false, true, ArrayTaintType.ContentsAndLength, false));
+						AccessPath ap = apFactory.createAccessPath(defStmt.getLeftOp(), baseType, baseContext,
+								fragments, t.taintSubFields(), false, true, ArrayTaintType.ContentsAndLength, false);
+						return ap == null ? null : Collections.singleton(ap);
 					} else
 						return null;
 				}
