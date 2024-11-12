@@ -1,6 +1,12 @@
 package soot.jimple.infoflow.data;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
+
+import soot.Type;
+import soot.jimple.infoflow.typing.TypeUtils;
+import soot.util.backend.ASMBackendUtils;
 
 /**
  * Abstract class for all MethodAndClass containers.
@@ -39,6 +45,18 @@ public abstract class AbstractMethodAndClass {
 
 	public List<String> getParameters() {
 		return this.parameters;
+	}
+
+	/**
+	 * Gets the Soot types referenced in the formal parameters in this method
+	 * signature. Note that this method may create references to classes (via
+	 * <code>RefType</code>) that are not actually part of the scene.
+	 * 
+	 * @return The types used as formal parameters in this method signature
+	 */
+	public List<Type> getParameterTypes() {
+		return parameters == null ? Collections.emptyList()
+				: parameters.stream().map(t -> TypeUtils.getTypeFromString(t, true)).collect(Collectors.toList());
 	}
 
 	/**
@@ -101,4 +119,20 @@ public abstract class AbstractMethodAndClass {
 
 		return this.signature;
 	}
+
+	/**
+	 * Retrieves the signature of this method in a syntax that can be understood by
+	 * Argus-SAF / Amandroid
+	 * 
+	 * @return The method signature in the format of Argus-SAF
+	 */
+	public String toArgusSafSignature() {
+		StringBuilder sb = new StringBuilder("L");
+		sb.append(ASMBackendUtils.slashify(className));
+		sb.append(";.");
+		sb.append(methodName);
+		sb.append(ASMBackendUtils.toTypeDesc(getParameterTypes(), TypeUtils.getTypeFromString(returnType, true)));
+		return sb.toString();
+	}
+
 }

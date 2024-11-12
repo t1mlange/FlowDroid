@@ -21,6 +21,7 @@ import soot.ShortType;
 import soot.SootClass;
 import soot.SootMethod;
 import soot.Type;
+import soot.VoidType;
 import soot.jimple.infoflow.InfoflowManager;
 import soot.jimple.infoflow.data.AccessPath;
 
@@ -255,6 +256,18 @@ public class TypeUtils {
 	 * @return The Soot Type corresponding to the given string
 	 */
 	public static Type getTypeFromString(String type) {
+		return getTypeFromString(type, false);
+	}
+
+	/**
+	 * Creates a Soot Type from the given string
+	 * 
+	 * @param type  A string representing a Soot type
+	 * @param force True to create a type even if the respective class is not part
+	 *              of the scene
+	 * @return The Soot Type corresponding to the given string
+	 */
+	public static Type getTypeFromString(String type, boolean force) {
 		if (type == null || type.isEmpty())
 			return null;
 
@@ -283,10 +296,12 @@ public class TypeUtils {
 			t = ShortType.v();
 		else if (type.equals("byte"))
 			t = ByteType.v();
+		else if (type.equals("void"))
+			t = VoidType.v();
 		else {
 			// Do not create types for stuff that isn't loaded in the current
 			// scene, i.e., does not appear in the program under analysis
-			if (Scene.v().containsClass(type))
+			if (force || Scene.v().containsClass(type))
 				t = RefType.v(type);
 			else
 				return null;
