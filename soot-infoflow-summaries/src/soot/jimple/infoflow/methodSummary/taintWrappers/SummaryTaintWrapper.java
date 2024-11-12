@@ -52,6 +52,7 @@ import soot.jimple.infoflow.collections.strategies.containers.IContainerStrategy
 import soot.jimple.infoflow.collections.strategies.containers.IContainerStrategyFactory;
 import soot.jimple.infoflow.collections.util.NonNullHashSet;
 import soot.jimple.infoflow.collections.util.Tristate;
+import soot.jimple.infoflow.config.PreciseCollectionStrategy;
 import soot.jimple.infoflow.data.Abstraction;
 import soot.jimple.infoflow.data.AccessPath;
 import soot.jimple.infoflow.data.AccessPath.ArrayTaintType;
@@ -1052,6 +1053,13 @@ public class SummaryTaintWrapper implements IReversibleTaintWrapper, ICollection
 
 		// If the flow manipulates a constraint, the outcome may be questionable
 		if (flow.sink().getConstraintType().isAction())
+			return null;
+
+		// If we do not handle constraints, but the flow has constraints, we must switch
+		// back to the old strategy of not handling aliases in collections to avoid
+		// over-tainting
+		if (flow.sink().isConstrained()
+				&& manager.getConfig().getPreciseCollectionStrategy() == PreciseCollectionStrategy.NONE)
 			return null;
 
 		// Reverse the flow if necessary

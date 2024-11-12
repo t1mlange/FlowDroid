@@ -131,6 +131,7 @@ public abstract class AbstractMethodAndClass {
 		sb.append(ASMBackendUtils.slashify(className));
 		sb.append(";.");
 		sb.append(methodName);
+		sb.append(":");
 		sb.append(ASMBackendUtils.toTypeDesc(getParameterTypes(), TypeUtils.getTypeFromString(returnType, true)));
 		return sb.toString();
 	}
