@@ -13,6 +13,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import soot.jimple.infoflow.test.android.ConnectionManager;
+import soot.jimple.infoflow.test.android.TelephonyManager;
+
 public class ApiClassClient {
 	public Object source() {
 		return "99";
@@ -579,6 +582,19 @@ public class ApiClassClient {
 	public void stringConcatTest() {
 		String s = "World " + source() + " Hello";
 		sink(s);
+	}
+
+	public void listIrrelevantItemTest() {
+		String secret = TelephonyManager.getDeviceId();
+
+		List<Object> lvar = new ArrayList<>();
+		Boolean bvar = true;
+
+		lvar.add(secret); // Adds tainted data to the list
+		lvar.add(bvar);
+
+		ConnectionManager cm = new ConnectionManager();
+		cm.publish(bvar);
 	}
 
 }

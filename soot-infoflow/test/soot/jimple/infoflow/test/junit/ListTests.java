@@ -195,4 +195,13 @@ public abstract class ListTests extends JUnitTests {
 		negativeCheckInfoflow(infoflow);
 	}
 
+	@Test(timeout = 300000)
+	public void listIrrelevantItemTest() {
+		IInfoflow infoflow = initInfoflow();
+		List<String> epoints = new ArrayList<String>();
+		epoints.add("<soot.jimple.infoflow.test.ListTestCode: void listIrrelevantItemTest()>");
+		infoflow.computeInfoflow(appPath, libPath, epoints, sources, sinks);
+		negativeCheckInfoflow(infoflow);
+	}
+
 }

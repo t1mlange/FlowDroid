@@ -336,6 +336,11 @@ public abstract class SummaryTaintWrapperTests extends BaseSummaryTaintWrapperTe
 				config -> config.setPatchInvokeDynamicInstructions(false));
 	}
 
+	@Test(timeout = 30000)
+	public void listIrrelevantItemTest() {
+		testFlowForMethod("<soot.jimple.infoflow.test.methodSummary.ApiClassClient: void listIrrelevantItemTest()>", 1);
+	}
+
 	@Test
 	public void testAllSummaries() throws URISyntaxException, IOException {
 		EagerSummaryProvider provider = new EagerSummaryProvider(TaintWrapperFactory.DEFAULT_SUMMARY_DIR);

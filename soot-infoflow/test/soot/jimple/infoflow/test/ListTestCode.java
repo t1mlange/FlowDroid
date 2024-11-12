@@ -265,4 +265,17 @@ public class ListTestCode {
 		cm.publish(b);
 	}
 
+	public void listIrrelevantItemTest() {
+		String secret = TelephonyManager.getDeviceId();
+
+		List<Object> lvar = new ArrayList<>();
+		Boolean bvar = true;
+
+		lvar.add(secret); // Adds tainted data to the list
+		lvar.add(bvar);
+
+		ConnectionManager cm = new ConnectionManager();
+		cm.publish(bvar);
+	}
+
 }
