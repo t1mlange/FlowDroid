@@ -32,6 +32,8 @@ import soot.toolkits.scalar.UnitValueBoxPair;
  * @author Tim Lange
  */
 public final class ReadOnlyListViewAnalysis {
+	private static final int MAX_DEPTH = 12;
+
 	private final LoadingCache<UnitGraph, SimpleLocalUses> graphToUses = IDESolver.DEFAULT_CACHE_BUILDER
 			.build(new CacheLoader<UnitGraph, SimpleLocalUses>() {
 				@Override
@@ -117,7 +119,9 @@ public final class ReadOnlyListViewAnalysis {
 			return true;
 
 		UnitGraph ug = (UnitGraph) icfg.getOrCreateUnitGraph(icfg.getMethodOf(unit));
-		return isReadOnlyIteratorInternal(graphToUses.getUnchecked(ug), (AssignStmt) unit);
+		Set<Unit> seen = new HashSet<>();
+		seen.add(unit);
+		return isReadOnlyIteratorInternal(graphToUses.getUnchecked(ug), (AssignStmt) unit, seen, 0);
 	}
 
 	private boolean isSupportedClass(Type type) {
@@ -129,7 +133,10 @@ public final class ReadOnlyListViewAnalysis {
 		return false;
 	}
 
-	private boolean isReadOnlyIteratorInternal(SimpleLocalUses du, AssignStmt assign) {
+	private boolean isReadOnlyIteratorInternal(SimpleLocalUses du, AssignStmt assign, Set<Unit> seen, int depth) {
+		if (depth > MAX_DEPTH)
+			// Assume the worst
+			return false;
 		for (UnitValueBoxPair uv : du.getUsesOf(assign)) {
 			Stmt stmt = (Stmt) uv.getUnit();
 			Value use = uv.getValueBox().getValue();
@@ -169,7 +176,7 @@ public final class ReadOnlyListViewAnalysis {
 
 				// All e = it.next() will be caught by the previous case s.t.
 				// here we should only see assignments or casts
-				if (!isReadOnlyIteratorInternal(du, (AssignStmt) stmt))
+				if (seen.add(stmt) && !isReadOnlyIteratorInternal(du, (AssignStmt) stmt, seen, depth + 1))
 					return false;
 			}
 		}
