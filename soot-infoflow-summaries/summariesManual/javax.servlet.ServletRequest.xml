@@ -15,7 +15,7 @@
 			</flows>
 			<clears>
 				<clear sourceSinkType="Field"
-					   AccessPath="[[javax.servlet.ServletRequest: java.lang.Object[] attributes]"
+					   AccessPath="[javax.servlet.ServletRequest: java.lang.Object[] attributes]"
 					   AccessPathTypes="[java.lang.Object[]]"
 					   constrained="true" />
 			</clears>
