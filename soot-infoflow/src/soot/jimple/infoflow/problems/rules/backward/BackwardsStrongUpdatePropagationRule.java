@@ -73,6 +73,7 @@ public class BackwardsStrongUpdatePropagationRule extends AbstractTaintPropagati
 		boolean addRightValue = false;
 		boolean cutFirstField = false;
 		Type type = null;
+		boolean strongUpdate = true;
 		if (source.getAccessPath().isInstanceFieldRef()) {
 			// Data Propagation: x.f = y && x.f tainted --> y propagated
 			if (leftOp instanceof InstanceFieldRef) {
@@ -113,13 +114,16 @@ public class BackwardsStrongUpdatePropagationRule extends AbstractTaintPropagati
 					addRightValue = true;
 					type = ((ArrayType) ((ArrayRef) leftOp).getBase().getType()).getElementType();
 				}
-			} else if (aliasing.mustAlias((Local) leftOp, source.getAccessPath().getPlainValue(), stmt)) {
-				addRightValue = true;
+			} else if (leftOp instanceof Local) {
+				if (aliasing.mustAlias((Local) leftOp, source.getAccessPath().getPlainValue(), stmt)) {
+					addRightValue = true;
+					strongUpdate = leftOp == source.getAccessPath().getPlainValue();
+				}
 			}
 		}
 
 		if (addRightValue) {
-			killSource.value = !(leftOp instanceof ArrayRef);
+			killSource.value = !(leftOp instanceof ArrayRef) && strongUpdate;
 
 			Value rightOp = assignStmt.getRightOp();
 			if (rightOp instanceof Constant || rightOp instanceof AnyNewExpr)
