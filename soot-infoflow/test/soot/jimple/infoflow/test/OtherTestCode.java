@@ -706,4 +706,17 @@ public class OtherTestCode {
 		// where the neighbors only differ in their corresponding call site
 		cm.publish(i);
 	}
+
+	public void skipOverConstructorTest1() {
+		MyClass myVar = new MyClass();
+		myVar.myString = TelephonyManager.getDeviceId();
+		MyClass mySecondVar = new MyClass();
+		ConnectionManager cm = new ConnectionManager();
+		cm.publish(myVar.myString);
+	}
+
+	class MyClass {
+		String myString;
+	}
+
 }
