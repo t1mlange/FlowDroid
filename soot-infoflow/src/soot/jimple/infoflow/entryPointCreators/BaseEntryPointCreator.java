@@ -78,7 +78,13 @@ public abstract class BaseEntryPointCreator implements IEntryPointCreator {
 	private List<String> substituteClasses;
 	private boolean allowSelfReferences = false;
 	private boolean ignoreSystemClassParams = true;
-	private boolean allowNonPublicConstructors = false;
+
+	/**
+	 * Specifies whether calls to private constructors shall be generated if no
+	 * public constructors are available. Apparently, Android accepts private
+	 * constructors for lifecycle components.
+	 */
+	private boolean allowNonPublicConstructors = true;
 
 	private final Set<SootMethod> failedMethods = new HashSet<>();
 
@@ -588,10 +594,8 @@ public abstract class BaseEntryPointCreator implements IEntryPointCreator {
 		if (createdClass.isInterface() || createdClass.isAbstract()) {
 			return generateSubstitutedClassConstructor(createdClass, constructionStack, parentClasses);
 		} else {
-			// Find a constructor we can invoke. We do this first as we don't
-			// want
-			// to change anything in our method body if we cannot create a class
-			// instance anyway.
+			// Find a constructor we can invoke. We do this first as we don't want to change
+			// anything in our method body if we cannot create a class instance anyway.
 			List<SootMethod> constructors = new ArrayList<>();
 			for (SootMethod currentMethod : createdClass.getMethods()) {
 				if (!currentMethod.isConstructor())
