@@ -83,7 +83,7 @@ public class StrongUpdatePropagationRule extends AbstractTaintPropagationRule {
 			// x = y && x.f tainted -> no taint propagated. This must only check the precise
 			// variable which gets replaced, but not any potential strong aliases
 			else if (lhs instanceof Local) {
-				if (aliasing.mustAlias((Local) lhs, source.getAccessPath().getPlainValue(), stmt)) {
+				if (lhs == source.getAccessPath().getPlainValue()) {
 					killAll.value = true;
 					return null;
 				}
