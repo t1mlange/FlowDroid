@@ -23,6 +23,8 @@ import java.util.List;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import soot.jimple.infoflow.AbstractInfoflow;
 import soot.jimple.infoflow.BackwardsInfoflow;
@@ -40,6 +42,8 @@ import soot.jimple.infoflow.test.base.AbstractJUnitTests;
  *
  */
 public abstract class JUnitTests extends AbstractJUnitTests {
+
+	protected static final Logger logger = LoggerFactory.getLogger(JUnitTests.class);
 
 	protected static String appPath, libPath;
 
@@ -206,12 +210,19 @@ public abstract class JUnitTests extends AbstractJUnitTests {
 	 * @throws IOException
 	 */
 	public static File getInfoflowRoot(Class<?> referenceClass) throws IOException {
-		File f = new File(referenceClass.getProtectionDomain().getCodeSource().getLocation().getPath());
+		File classFile = new File(referenceClass.getProtectionDomain().getCodeSource().getLocation().getPath());
+		File f = classFile;
 		if (f.exists()) {
 			while (!f.getName().equals("soot-infoflow") && f.getParentFile() != null)
 				f = f.getParentFile();
-			return f;
-		}
+
+			// The project root must exist and must not be the file system root
+			if (f.exists() && f.getParentFile() != null)
+				return f;
+
+			logger.warn("Finding project root from class file {} failed", classFile);
+		} else
+			logger.warn("Class file {} does not exist", classFile);
 		return getInfoflowRoot();
 	}
 
