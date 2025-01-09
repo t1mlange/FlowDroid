@@ -68,7 +68,7 @@ public abstract class FlowDroidTests {
 	}
 
 	public static void commonSetup() throws IOException {
-		File rootDir = getIntegrationRoot();
+		File rootDir = getIntegrationRoot(FlowDroidTests.class);
 		File testSrc = new File(new File(rootDir, "build"), "testclasses");
 		if (!testSrc.exists()) {
 			Assert.fail("Test aborted - none of the test sources are available");
@@ -189,6 +189,24 @@ public abstract class FlowDroidTests {
 			}
 		}
 		return false;
+	}
+
+	/**
+	 * Gets the root of the current project from a reference class located in that
+	 * project
+	 * 
+	 * @param referenceClass The reference class
+	 * @return The root folder of the project
+	 * @throws IOException
+	 */
+	public static File getIntegrationRoot(Class<?> referenceClass) throws IOException {
+		File f = new File(referenceClass.getProtectionDomain().getCodeSource().getLocation().getPath());
+		if (f.exists()) {
+			while (!f.getName().equals("soot-infoflow-integration") && f.getParentFile() != null)
+				f = f.getParentFile();
+			return f;
+		}
+		return getIntegrationRoot();
 	}
 
 	/**

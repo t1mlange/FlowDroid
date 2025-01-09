@@ -62,7 +62,7 @@ public abstract class JUnitTests extends AbstractJUnitTests {
 
 	@BeforeClass
 	public static void setUp() throws IOException {
-		File f = getInfoflowRoot();
+		File f = getInfoflowRoot(JUnitTests.class);
 		StringBuilder appPathBuilder = new StringBuilder();
 		addTestPathes(f, appPathBuilder);
 
@@ -195,6 +195,24 @@ public abstract class JUnitTests extends AbstractJUnitTests {
 	 */
 	protected void onlyForwards(IInfoflow infoflow, String message) {
 		Assume.assumeTrue("Test is only applicable on forwards analysis: " + message, infoflow instanceof Infoflow);
+	}
+
+	/**
+	 * Gets the root of the current project from a reference class located in that
+	 * project
+	 * 
+	 * @param referenceClass The reference class
+	 * @return The root folder of the project
+	 * @throws IOException
+	 */
+	public static File getInfoflowRoot(Class<?> referenceClass) throws IOException {
+		File f = new File(referenceClass.getProtectionDomain().getCodeSource().getLocation().getPath());
+		if (f.exists()) {
+			while (!f.getName().equals("soot-infoflow") && f.getParentFile() != null)
+				f = f.getParentFile();
+			return f;
+		}
+		return getInfoflowRoot();
 	}
 
 	/**
