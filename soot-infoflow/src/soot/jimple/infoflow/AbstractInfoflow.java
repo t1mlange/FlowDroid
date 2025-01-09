@@ -15,6 +15,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -95,6 +96,7 @@ import soot.jimple.infoflow.handlers.SequentialTaintPropagationHandler;
 import soot.jimple.infoflow.handlers.TaintPropagationHandler;
 import soot.jimple.infoflow.ipc.DefaultIPCManager;
 import soot.jimple.infoflow.ipc.IIPCManager;
+import soot.jimple.infoflow.memory.AbstractSolverWatcher;
 import soot.jimple.infoflow.memory.FlowDroidMemoryWatcher;
 import soot.jimple.infoflow.memory.FlowDroidTimeoutWatcher;
 import soot.jimple.infoflow.memory.IMemoryBoundedSolver;
@@ -149,6 +151,8 @@ import soot.jimple.infoflow.util.SystemClassHandler;
 import soot.jimple.toolkits.callgraph.ReachableMethods;
 import soot.jimple.toolkits.pointer.DumbPointerAnalysis;
 import soot.options.Options;
+import soot.util.HashMultiMap;
+import soot.util.MultiMap;
 import soot.util.NumberedString;
 
 /**
@@ -202,6 +206,7 @@ public abstract class AbstractInfoflow implements IInfoflow {
 	protected IUsageContextProvider usageContextProvider = null;
 
 	protected FlowDroidMemoryWatcher memoryWatcher = null;
+	protected MultiMap<AnalysisPhase, AbstractSolverWatcher> customWatchers = new HashMultiMap<>();
 
 	/**
 	 * Creates a new instance of the abstract info flow problem
@@ -1006,7 +1011,7 @@ public abstract class AbstractInfoflow implements IInfoflow {
 			AbstractInfoflowProblem forwardProblem = createInfoflowProblem(zeroValue);
 
 			// We need to create the right data flow solver
-			IInfoflowSolver forwardSolver = createDataFlowSolver(executor, forwardProblem);
+			final IInfoflowSolver forwardSolver = createDataFlowSolver(executor, forwardProblem);
 
 			// Set the options
 			manager.setMainSolver(forwardSolver);
@@ -1074,16 +1079,16 @@ public abstract class AbstractInfoflow implements IInfoflow {
 				additionalProblem.setNativeCallHandler(additionalNativeCallHandler);
 
 				// Initialize the alias analysis
-				IAliasingStrategy revereAliasingStrategy = createBackwardAliasAnalysis(additionalManager, sourcesSinks,
+				IAliasingStrategy reverseAliasingStrategy = createBackwardAliasAnalysis(additionalManager, sourcesSinks,
 						iCfg, executor, memoryManager);
-				if (revereAliasingStrategy.getSolver() != null)
-					revereAliasingStrategy.getSolver().getTabulationProblem().getManager()
+				if (reverseAliasingStrategy.getSolver() != null)
+					reverseAliasingStrategy.getSolver().getTabulationProblem().getManager()
 							.setMainSolver(additionalSolver);
 
-				additionalAliasSolver = revereAliasingStrategy.getSolver();
+				additionalAliasSolver = reverseAliasingStrategy.getSolver();
 
 				// Initialize the aliasing infrastructure
-				Aliasing reverseAliasing = createAliasController(revereAliasingStrategy);
+				Aliasing reverseAliasing = createAliasController(reverseAliasingStrategy);
 				if (dummyMainMethod != null)
 					reverseAliasing.excludeMethodFromMustAlias(dummyMainMethod);
 				additionalManager.setAliasing(reverseAliasing);
@@ -1105,7 +1110,6 @@ public abstract class AbstractInfoflow implements IInfoflow {
 
 			// Start a thread for enforcing the timeout
 			FlowDroidTimeoutWatcher timeoutWatcher = null;
-			FlowDroidTimeoutWatcher pathTimeoutWatcher = null;
 			if (config.getDataFlowTimeout() > 0) {
 				timeoutWatcher = new FlowDroidTimeoutWatcher(config.getDataFlowTimeout(), results);
 				timeoutWatcher.addSolver((IMemoryBoundedSolver) forwardSolver);
@@ -1130,41 +1134,9 @@ public abstract class AbstractInfoflow implements IInfoflow {
 					logger.warn("Running with limited join point abstractions can break context-"
 							+ "sensitive path builders");
 
-				// We have to look through the complete program to find
-				// sources which are then taken as seeds.
-				int sinkCount = 0;
-				logger.info("Looking for sources and sinks...");
-
-				for (SootMethod sm : getMethodsForSeeds(iCfg))
-					sinkCount += scanMethodForSourcesSinks(sourcesSinks, forwardProblem, sm);
-
-				// We optionally also allow additional seeds to be specified
-				if (additionalSeeds != null)
-					for (String meth : additionalSeeds) {
-						SootMethod m = Scene.v().getMethod(meth);
-						if (!m.hasActiveBody()) {
-							logger.warn("Seed method {} has no active body", m);
-							continue;
-						}
-						forwardProblem.addInitialSeeds(m.getActiveBody().getUnits().getFirst(),
-								Collections.singleton(forwardProblem.zeroValue()));
-					}
-
-				// Report on the sources and sinks we have found
-				if (!forwardProblem.hasInitialSeeds()) {
-					logger.error("No sources found, aborting analysis");
+				// Identify the sources and sinks for the data flow analysis
+				if (!findSourcesAndSinks(sourcesSinks, forwardProblem, additionalSeeds, iCfg, performanceData))
 					continue;
-				}
-				if (sinkCount == 0) {
-					logger.error("No sinks found, aborting analysis");
-					continue;
-				}
-				logger.info("Source lookup done, found {} sources and {} sinks.",
-						forwardProblem.getInitialSeeds().size(), sinkCount);
-
-				// Update the performance statistics
-				performanceData.setSourceCount(forwardProblem.getInitialSeeds().size());
-				performanceData.setSinkCount(sinkCount);
 
 				// Initialize the taint wrapper if we have one
 				if (taintWrapper != null)
@@ -1187,63 +1159,15 @@ public abstract class AbstractInfoflow implements IInfoflow {
 
 				// Create the path builder
 				final IAbstractionPathBuilder builder = createPathBuilder(resultExecutor);
-				// final IAbstractionPathBuilder builder = new
-				// DebuggingPathBuilder(pathBuilderFactory, manager);
 
 				// If we want incremental result reporting, we have to
 				// initialize it before we start the taint tracking
 				if (config.getIncrementalResultReporting())
 					initializeIncrementalResultReporting(propagationResults, builder);
 
-				// Initialize the performance data
-				if (performanceData.getTaintPropagationSeconds() < 0)
-					performanceData.setTaintPropagationSeconds(0);
-				long beforeTaintPropagation = System.nanoTime();
-
-				onBeforeTaintPropagation(forwardSolver, backwardSolver);
-				forwardSolver.solve();
-
-				// Not really nice, but sometimes Heros returns before all
-				// executor tasks are actually done. This way, we give it a
-				// chance to terminate gracefully before moving on.
-				int terminateTries = 0;
-				while (terminateTries < 10) {
-					if (executor.getActiveCount() != 0 || !executor.isTerminated()) {
-						terminateTries++;
-						try {
-							Thread.sleep(500);
-						} catch (InterruptedException e) {
-							logger.error("Could not wait for executor termination", e);
-						}
-					} else
-						break;
-				}
-				if (executor.getActiveCount() != 0 || !executor.isTerminated())
-					logger.error("Executor did not terminate gracefully");
-				if (executor.getException() != null) {
-					throw new RuntimeException("An exception has occurred in an executor", executor.getException());
-				}
-
-				// Update performance statistics
-				performanceData.updateMaxMemoryConsumption(getUsedMemory());
-				int taintPropagationSeconds = (int) Math.round((System.nanoTime() - beforeTaintPropagation) / 1E9);
-				performanceData.addTaintPropagationSeconds(taintPropagationSeconds);
-				performanceData.addEdgePropagationCount(forwardSolver.getPropagationCount());
-				performanceData.setInfoflowPropagationCount(forwardSolver.getPropagationCount());
-				if (backwardSolver != null) {
-					performanceData.setAliasPropagationCount(backwardSolver.getPropagationCount());
-					performanceData.addEdgePropagationCount(backwardSolver.getPropagationCount());
-				}
-
-				// Print taint wrapper statistics
-				if (taintWrapper != null) {
-					logger.info("Taint wrapper hits: " + taintWrapper.getWrapperHits());
-					logger.info("Taint wrapper misses: " + taintWrapper.getWrapperMisses());
-				}
-
-				// Give derived classes a chance to do whatever they need before we remove stuff
-				// from memory
-				onTaintPropagationCompleted(forwardSolver, backwardSolver, additionalSolver, additionalAliasSolver);
+				// Solve the main IFDS problem
+				solveIFDSProblem(performanceData, forwardSolver, backwardSolver, additionalSolver,
+						additionalAliasSolver, executor);
 
 				// Get the result abstractions
 				Set<AbstractionAtSink> res = propagationResults.getResults();
@@ -1266,26 +1190,6 @@ public abstract class AbstractInfoflow implements IInfoflow {
 					nativeCallHandler.shutdown();
 				if (additionalNativeCallHandler != null)
 					additionalNativeCallHandler.shutdown();
-
-				if (config.getAdditionalFlowsEnabled()) {
-					logger.info(
-							"IFDS problem with {} forward, {} backward, {} additional backward and {} additional"
-									+ " forward edges, solved in {} seconds, processing {} results...",
-							forwardSolver.getPropagationCount(),
-							aliasingStrategy.getSolver() == null ? 0
-									: aliasingStrategy.getSolver().getPropagationCount(),
-							additionalSolver == null ? 0 : additionalSolver.getPropagationCount(),
-							additionalAliasSolver == null ? 0 : additionalAliasSolver.getPropagationCount(),
-							taintPropagationSeconds, res == null ? 0 : res.size());
-				} else {
-					logger.info(
-							"IFDS problem with {} forward and {} backward edges solved in {} seconds, "
-									+ "processing {} results...",
-							forwardSolver.getPropagationCount(),
-							aliasingStrategy.getSolver() == null ? 0
-									: aliasingStrategy.getSolver().getPropagationCount(),
-							taintPropagationSeconds, res == null ? 0 : res.size());
-				}
 
 				// Update the statistics
 				{
@@ -1310,7 +1214,6 @@ public abstract class AbstractInfoflow implements IInfoflow {
 					timeoutWatcher.stop();
 				memoryWatcher.removeSolver((IMemoryBoundedSolver) forwardSolver);
 				forwardSolver.cleanup();
-				forwardSolver = null;
 				forwardProblem = null;
 
 				solverPeerGroup = null;
@@ -1354,68 +1257,8 @@ public abstract class AbstractInfoflow implements IInfoflow {
 				performanceData.updateMaxMemoryConsumption(getUsedMemory());
 				logger.info(String.format("Memory consumption after cleanup: %d MB", getUsedMemory()));
 
-				// Apply the timeout to path reconstruction
-				if (config.getPathConfiguration().getPathReconstructionTimeout() > 0) {
-					pathTimeoutWatcher = new FlowDroidTimeoutWatcher(
-							config.getPathConfiguration().getPathReconstructionTimeout(), results);
-					pathTimeoutWatcher.addSolver(builder);
-					pathTimeoutWatcher.start();
-				}
-				beforePathReconstruction = System.nanoTime();
-
-				// Do the normal result computation in the end unless we
-				// have used incremental path building
-				if (config.getIncrementalResultReporting()) {
-					// After the last intermediate result has been computed,
-					// we need to re-process those abstractions that
-					// received new neighbors in the meantime
-					builder.runIncrementalPathComputation();
-
-					try {
-						resultExecutor.awaitCompletion();
-					} catch (InterruptedException e) {
-						logger.error("Could not wait for executor termination", e);
-					}
-				} else {
-					memoryWatcher.addSolver(builder);
-					builder.computeTaintPaths(res);
-					res = null;
-
-					// Wait for the path builders to terminate
-					try {
-						// The path reconstruction should stop on time anyway. In case it doesn't, we
-						// make sure that we don't get stuck.
-						long pathTimeout = config.getPathConfiguration().getPathReconstructionTimeout();
-						if (pathTimeout > 0)
-							resultExecutor.awaitCompletion(pathTimeout + 20, TimeUnit.SECONDS);
-						else
-							resultExecutor.awaitCompletion();
-					} catch (InterruptedException e) {
-						logger.error("Could not wait for executor termination", e);
-					}
-
-					// Update the statistics
-					{
-						ISolverTerminationReason reason = builder.getTerminationReason();
-						if (reason != null) {
-							if (reason instanceof OutOfMemoryReason)
-								results.setTerminationState(results.getTerminationState()
-										| InfoflowResults.TERMINATION_PATH_RECONSTRUCTION_OOM);
-							else if (reason instanceof TimeoutReason)
-								results.setTerminationState(results.getTerminationState()
-										| InfoflowResults.TERMINATION_PATH_RECONSTRUCTION_TIMEOUT);
-						}
-					}
-
-					// Get the results once the path builder is done
-					this.results.addAll(builder.getResults());
-				}
-				resultExecutor.shutdown();
-
-				// If the path builder was aborted, we warn the user
-				if (builder.isKilled())
-					logger.warn("Path reconstruction aborted. The reported results may be incomplete. "
-							+ "You might want to try again with sequential path processing enabled.");
+				// Reconstruct the paths from source to sink
+				reconstructPaths(builder, resultExecutor, res);
 			} finally {
 				// Terminate the executor
 				if (resultExecutor != null)
@@ -1424,8 +1267,6 @@ public abstract class AbstractInfoflow implements IInfoflow {
 				// Make sure to stop the watcher thread
 				if (timeoutWatcher != null)
 					timeoutWatcher.stop();
-				if (pathTimeoutWatcher != null)
-					pathTimeoutWatcher.stop();
 
 				if (aliasingStrategy != null) {
 					IInfoflowSolver solver = aliasingStrategy.getSolver();
@@ -1441,8 +1282,8 @@ public abstract class AbstractInfoflow implements IInfoflow {
 
 				// Get rid of all the stuff that's still floating around in
 				// memory
+				forwardSolver.cleanup();
 				forwardProblem = null;
-				forwardSolver = null;
 				if (manager != null)
 					manager.cleanup();
 				manager = null;
@@ -1485,6 +1326,270 @@ public abstract class AbstractInfoflow implements IInfoflow {
 				}
 			}
 		}
+	}
+
+	/**
+	 * Reconstruct the data flow paths from source to sink based on the IFDS results
+	 * 
+	 * @param builder     The path builder to use for reconstructing the connections
+	 *                    between sources and sinks
+	 * @param executor    The executor in which to run the path reconstruction
+	 * @param ifdsResults The taint abstractions that have arrived at a sink
+	 *                    statement
+	 */
+	protected void reconstructPaths(IAbstractionPathBuilder builder, InterruptableExecutor executor,
+			Set<AbstractionAtSink> ifdsResults) {
+		FlowDroidTimeoutWatcher pathTimeoutWatcher = null;
+
+		try {
+			// Apply the timeout to path reconstruction
+			if (config.getPathConfiguration().getPathReconstructionTimeout() > 0) {
+				pathTimeoutWatcher = new FlowDroidTimeoutWatcher(
+						config.getPathConfiguration().getPathReconstructionTimeout(), results);
+				pathTimeoutWatcher.addSolver(builder);
+				pathTimeoutWatcher.start();
+			}
+
+			// Do the normal result computation in the end unless we
+			// have used incremental path building
+			if (config.getIncrementalResultReporting()) {
+				// After the last intermediate result has been computed,
+				// we need to re-process those abstractions that
+				// received new neighbors in the meantime
+				runWithWatcher(AnalysisPhase.PATH_RECONSTRUCTION, () -> {
+					builder.runIncrementalPathComputation();
+					return null;
+				}, builder);
+
+				try {
+					executor.awaitCompletion();
+				} catch (InterruptedException e) {
+					logger.error("Could not wait for executor termination", e);
+				}
+			} else {
+				memoryWatcher.addSolver(builder);
+				runWithWatcher(AnalysisPhase.PATH_RECONSTRUCTION, () -> {
+					builder.computeTaintPaths(ifdsResults);
+					return null;
+				}, builder);
+
+				// Wait for the path builders to terminate
+				try {
+					// The path reconstruction should stop on time anyway. In case it doesn't, we
+					// make sure that we don't get stuck.
+					long pathTimeout = config.getPathConfiguration().getPathReconstructionTimeout();
+					if (pathTimeout > 0)
+						executor.awaitCompletion(pathTimeout + 20, TimeUnit.SECONDS);
+					else
+						executor.awaitCompletion();
+				} catch (InterruptedException e) {
+					logger.error("Could not wait for executor termination", e);
+				}
+
+				// Update the statistics
+				{
+					ISolverTerminationReason reason = builder.getTerminationReason();
+					if (reason != null) {
+						if (reason instanceof OutOfMemoryReason)
+							results.setTerminationState(results.getTerminationState()
+									| InfoflowResults.TERMINATION_PATH_RECONSTRUCTION_OOM);
+						else if (reason instanceof TimeoutReason)
+							results.setTerminationState(results.getTerminationState()
+									| InfoflowResults.TERMINATION_PATH_RECONSTRUCTION_TIMEOUT);
+					}
+				}
+
+				// Get the results once the path builder is done
+				this.results.addAll(builder.getResults());
+			}
+			executor.shutdown();
+
+			// If the path builder was aborted, we warn the user
+			if (builder.isKilled())
+				logger.warn("Path reconstruction aborted. The reported results may be incomplete. "
+						+ "You might want to try again with sequential path processing enabled.");
+		} finally {
+			// Make sure to stop the watcher thread
+			if (pathTimeoutWatcher != null)
+				pathTimeoutWatcher.stop();
+		}
+	}
+
+	/**
+	 * Sovles the IFDS problem
+	 * 
+	 * @param performanceData       The object that receives the performance data
+	 * @param forwardSolver         The main IFDS solver for the data flow problem
+	 * @param backwardSolver        The IFDS solver for the alias problem
+	 * @param additionalSolver      An optional additional solver for the reverse
+	 *                              direction, e.g., backwards
+	 * @param additionalAliasSolver The optional alias solver for the additional
+	 *                              solver
+	 * @param executor              The executor in which to run the IFDS solvers
+	 */
+	private void solveIFDSProblem(InfoflowPerformanceData performanceData, IInfoflowSolver forwardSolver,
+			IInfoflowSolver backwardSolver, IInfoflowSolver additionalSolver, IInfoflowSolver additionalAliasSolver,
+			InterruptableExecutor executor) {
+		// Initialize the performance data
+		if (performanceData.getTaintPropagationSeconds() < 0)
+			performanceData.setTaintPropagationSeconds(0);
+		long beforeTaintPropagation = System.nanoTime();
+
+		// Solve the main IFDS problem
+		runWithWatcher(AnalysisPhase.TAINT_PROPAGATION, () -> {
+			onBeforeTaintPropagation(forwardSolver, backwardSolver);
+			forwardSolver.solve();
+			return null;
+		}, forwardSolver, backwardSolver);
+
+		// Not really nice, but sometimes Heros returns before all
+		// executor tasks are actually done. This way, we give it a
+		// chance to terminate gracefully before moving on.
+		int terminateTries = 0;
+		while (terminateTries < 10) {
+			if (executor.getActiveCount() != 0 || !executor.isTerminated()) {
+				terminateTries++;
+				try {
+					Thread.sleep(500);
+				} catch (InterruptedException e) {
+					logger.error("Could not wait for executor termination", e);
+				}
+			} else
+				break;
+		}
+		if (executor.getActiveCount() != 0 || !executor.isTerminated())
+			logger.error("Executor did not terminate gracefully");
+		if (executor.getException() != null) {
+			throw new RuntimeException("An exception has occurred in an executor", executor.getException());
+		}
+
+		// Update performance statistics
+		performanceData.updateMaxMemoryConsumption(getUsedMemory());
+		int taintPropagationSeconds = (int) Math.round((System.nanoTime() - beforeTaintPropagation) / 1E9);
+		performanceData.addTaintPropagationSeconds(taintPropagationSeconds);
+		performanceData.addEdgePropagationCount(forwardSolver.getPropagationCount());
+		performanceData.setInfoflowPropagationCount(forwardSolver.getPropagationCount());
+		if (backwardSolver != null) {
+			performanceData.setAliasPropagationCount(backwardSolver.getPropagationCount());
+			performanceData.addEdgePropagationCount(backwardSolver.getPropagationCount());
+		}
+
+		// Print taint wrapper statistics
+		if (taintWrapper != null) {
+			logger.info("Taint wrapper hits: " + taintWrapper.getWrapperHits());
+			logger.info("Taint wrapper misses: " + taintWrapper.getWrapperMisses());
+		}
+
+		// Give derived classes a chance to do whatever they need before we remove stuff
+		// from memory
+		onTaintPropagationCompleted(forwardSolver, backwardSolver, additionalSolver, additionalAliasSolver);
+
+		// Report the results of the IFDS analysis
+		TaintPropagationResults propagationResults = forwardSolver.getTabulationProblem().getResults();
+		Set<AbstractionAtSink> res = propagationResults.getResults();
+		if (config.getAdditionalFlowsEnabled()) {
+			logger.info(
+					"IFDS problem with {} forward, {} backward, {} additional backward and {} additional"
+							+ " forward edges, solved in {} seconds, processing {} results...",
+					forwardSolver.getPropagationCount(),
+					backwardSolver == null ? 0 : backwardSolver.getPropagationCount(),
+					additionalSolver == null ? 0 : additionalSolver.getPropagationCount(),
+					additionalAliasSolver == null ? 0 : additionalAliasSolver.getPropagationCount(),
+					taintPropagationSeconds, res == null ? 0 : res.size());
+		} else {
+			logger.info(
+					"IFDS problem with {} forward and {} backward edges solved in {} seconds, "
+							+ "processing {} results...",
+					forwardSolver.getPropagationCount(),
+					backwardSolver == null ? 0 : backwardSolver.getPropagationCount(), taintPropagationSeconds,
+					res == null ? 0 : res.size());
+		}
+	}
+
+	/**
+	 * Runs the given task in the context of the given watcher
+	 * 
+	 * @param <T>     The type of status object to return
+	 * @param phase   The analysis phase
+	 * @param task    The task to run with the watcher enabled
+	 * @param solvers The solvers that need to be watched
+	 * @return The return value of the task that was passed as a parameter
+	 */
+	protected <T> T runWithWatcher(AnalysisPhase phase, Supplier<T> task, IMemoryBoundedSolver... solvers) {
+		final Set<AbstractSolverWatcher> watchers = customWatchers.get(phase);
+
+		// Make sure that all solvers are registered with all watchers
+		watchers.stream().forEach(s -> s.addSolvers(solvers));
+
+		// Start the watchers
+		watchers.stream().forEach(s -> s.start());
+
+		// Run the task
+		T t = task.get();
+
+		// Notify the watchers to stop watching. We also clear the solvers to avoid
+		// keeping unnecessary objects in memory. Note that we re-register the solvers
+		// in next round anyway.
+		watchers.stream().forEach(s -> {
+			s.stop();
+			s.clearSolvers();
+		});
+
+		return t;
+	}
+
+	/**
+	 * Initializes the main data flow problem with the sources and sinks, i.e., the
+	 * initial seeds for the IFDS analysis
+	 * 
+	 * @param sourcesSinks    The {@link ISourceSinkManager} implementation for
+	 *                        identifying sources and sinks
+	 * @param problem         The main IFDS problem
+	 * @param additionalSeeds Additional seeds that shall be used, i.e., other
+	 *                        methods from which the data flow analysis shall start
+	 *                        as well
+	 * @param iCfg            The interprocedural control flow graph
+	 * @param performanceData The object that receives performance data
+	 * @return True if at least one valid source and one valid sink has been found,
+	 *         false otherwise
+	 */
+	protected boolean findSourcesAndSinks(final ISourceSinkManager sourcesSinks, AbstractInfoflowProblem problem,
+			final Set<String> additionalSeeds, IInfoflowCFG iCfg, InfoflowPerformanceData performanceData) {
+		// We have to look through the complete program to find
+		// sources which are then taken as seeds.
+		int sinkCount = 0;
+		logger.info("Looking for sources and sinks...");
+
+		for (SootMethod sm : getMethodsForSeeds(iCfg))
+			sinkCount += scanMethodForSourcesSinks(sourcesSinks, problem, sm);
+
+		// We optionally also allow additional seeds to be specified
+		if (additionalSeeds != null)
+			for (String meth : additionalSeeds) {
+				SootMethod m = Scene.v().getMethod(meth);
+				if (!m.hasActiveBody()) {
+					logger.warn("Seed method {} has no active body", m);
+					continue;
+				}
+				problem.addInitialSeeds(m.getActiveBody().getUnits().getFirst(),
+						Collections.singleton(problem.zeroValue()));
+			}
+
+		// Report on the sources and sinks we have found
+		if (!problem.hasInitialSeeds()) {
+			logger.error("No sources found, aborting analysis");
+			return false;
+		}
+		if (sinkCount == 0) {
+			logger.error("No sinks found, aborting analysis");
+			return false;
+		}
+		logger.info("Source lookup done, found {} sources and {} sinks.", problem.getInitialSeeds().size(), sinkCount);
+
+		// Update the performance statistics
+		performanceData.setSourceCount(problem.getInitialSeeds().size());
+		performanceData.setSinkCount(sinkCount);
+		return true;
 	}
 
 	protected Thread createNewThread(Runnable r) {
@@ -2328,4 +2433,10 @@ public abstract class AbstractInfoflow implements IInfoflow {
 	public void setUsageContextProvider(IUsageContextProvider usageContextProvider) {
 		this.usageContextProvider = usageContextProvider;
 	}
+
+	@Override
+	public void addSolverWatcher(AbstractSolverWatcher watcher, AnalysisPhase analysisPhase) {
+		this.customWatchers.put(analysisPhase, watcher);
+	}
+
 }

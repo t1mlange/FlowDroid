@@ -6,10 +6,11 @@ import heros.solver.PathEdge;
 import soot.SootMethod;
 import soot.Unit;
 import soot.jimple.infoflow.data.Abstraction;
+import soot.jimple.infoflow.memory.IMemoryBoundedSolver;
 import soot.jimple.infoflow.problems.AbstractInfoflowProblem;
 import soot.jimple.infoflow.solver.memory.IMemoryManager;
 
-public interface IInfoflowSolver {
+public interface IInfoflowSolver extends IMemoryBoundedSolver {
 
 	/**
 	 * Schedules the given edge for processing in the solver
@@ -34,25 +35,24 @@ public interface IInfoflowSolver {
 	 * Injects the given calling context into the incoming set
 	 *
 	 * @param callee   method
-	 * @param d3 	   calling context
+	 * @param d3       calling context
 	 * @param callSite call site
-	 * @param d2 	   incoming abstraction at the call site
-	 * @param d1	   calling context at the call site
+	 * @param d2       incoming abstraction at the call site
+	 * @param d1       calling context at the call site
 	 */
 	public void injectContext(IInfoflowSolver otherSolver, SootMethod callee, Abstraction d3, Unit callSite,
-							  Abstraction d2, Abstraction d1);
+			Abstraction d2, Abstraction d1);
 
 	/**
 	 * Calls applyEndSummaryOnCall in the current solver
 	 *
 	 * @param callee   method
-	 * @param d3	   calling context
+	 * @param d3       calling context
 	 * @param callSite call site
 	 * @param d2       incoming abstraction at the call site
 	 * @param d1       calling context at the call site
 	 */
-	public void applySummary(SootMethod callee, Abstraction d3, Unit callSite,
-							 Abstraction d2, Abstraction d1);
+	public void applySummary(SootMethod callee, Abstraction d3, Unit callSite, Abstraction d2, Abstraction d1);
 
 	/**
 	 * Cleans up some unused memory. Results will still be available afterwards, but

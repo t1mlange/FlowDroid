@@ -40,6 +40,7 @@ import soot.SootMethod;
 import soot.Unit;
 import soot.jimple.Stmt;
 import soot.jimple.infoflow.AbstractInfoflow;
+import soot.jimple.infoflow.AnalysisPhase;
 import soot.jimple.infoflow.BackwardsInfoflow;
 import soot.jimple.infoflow.IInfoflow;
 import soot.jimple.infoflow.Infoflow;
@@ -93,6 +94,7 @@ import soot.jimple.infoflow.handlers.PreAnalysisHandler;
 import soot.jimple.infoflow.handlers.ResultsAvailableHandler;
 import soot.jimple.infoflow.handlers.TaintPropagationHandler;
 import soot.jimple.infoflow.ipc.IIPCManager;
+import soot.jimple.infoflow.memory.AbstractSolverWatcher;
 import soot.jimple.infoflow.memory.FlowDroidMemoryWatcher;
 import soot.jimple.infoflow.memory.FlowDroidTimeoutWatcher;
 import soot.jimple.infoflow.memory.IMemoryBoundedSolver;
@@ -156,6 +158,7 @@ public class SetupApplication implements ITaintWrapperDataFlowAnalysis {
 	protected Set<ResultsAvailableHandler> resultsAvailableHandlers = new HashSet<>();
 	protected TaintPropagationHandler taintPropagationHandler = null;
 	protected TaintPropagationHandler aliasPropagationHandler = null;
+	protected MultiMap<AnalysisPhase, AbstractSolverWatcher> customWatchers = new HashMultiMap<>();
 
 	protected IUsageContextProvider usageContextProvider = null;
 
@@ -1772,6 +1775,7 @@ public class SetupApplication implements ITaintWrapperDataFlowAnalysis {
 		info.setTaintPropagationHandler(taintPropagationHandler);
 		info.setAliasPropagationHandler(aliasPropagationHandler);
 		info.setUsageContextProvider(usageContextProvider);
+		info.addSolverWatchers(customWatchers);
 
 		// We use a specialized memory manager that knows about Android
 		info.setMemoryManagerFactory(new IMemoryManagerFactory() {
@@ -2089,4 +2093,15 @@ public class SetupApplication implements ITaintWrapperDataFlowAnalysis {
 				appClass.addTag(FlowDroidUserClass.v());
 		}
 	}
+
+	/**
+	 * Registers an analysis watcher with the data flow engine
+	 * 
+	 * @param watcher       The watcher to register
+	 * @param analysisPhase The analysis phase for which the watcher is applicable
+	 */
+	public void addSolverWatcher(AbstractSolverWatcher watcher, AnalysisPhase analysisPhase) {
+		this.customWatchers.put(analysisPhase, watcher);
+	}
+
 }

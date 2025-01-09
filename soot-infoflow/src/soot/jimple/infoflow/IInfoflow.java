@@ -23,6 +23,7 @@ import soot.jimple.infoflow.handlers.PreAnalysisHandler;
 import soot.jimple.infoflow.handlers.ResultsAvailableHandler;
 import soot.jimple.infoflow.handlers.TaintPropagationHandler;
 import soot.jimple.infoflow.ipc.IIPCManager;
+import soot.jimple.infoflow.memory.AbstractSolverWatcher;
 import soot.jimple.infoflow.nativeCallHandler.INativeCallHandler;
 import soot.jimple.infoflow.problems.rules.IPropagationRuleManagerFactory;
 import soot.jimple.infoflow.results.InfoflowResults;
@@ -31,6 +32,7 @@ import soot.jimple.infoflow.solver.memory.IMemoryManagerFactory;
 import soot.jimple.infoflow.sourcesSinks.manager.ISourceSinkManager;
 import soot.jimple.infoflow.taintWrappers.ITaintWrapperDataFlowAnalysis;
 import soot.jimple.infoflow.threading.IExecutorFactory;
+import soot.util.MultiMap;
 
 /**
  * interface for the main infoflow class
@@ -61,16 +63,16 @@ public interface IInfoflow extends ITaintWrapperDataFlowAnalysis {
 	public void setNativeCallHandler(INativeCallHandler handler);
 
 	/**
-	 * Add a preprocessor that need to be executed in order before the
-	 * information flow.
+	 * Add a preprocessor that need to be executed in order before the information
+	 * flow.
 	 * 
 	 * @param preprocessor the pre-processor
 	 */
 	public void addPreprocessor(PreAnalysisHandler preprocessor);
 
 	/**
-	 * Adds a post-processor that shall be executed after the data flow
-	 * analysis has finished
+	 * Adds a post-processor that shall be executed after the data flow analysis has
+	 * finished
 	 * 
 	 * @param postprocessor The post-processor to execute on the results
 	 */
@@ -274,4 +276,24 @@ public interface IInfoflow extends ITaintWrapperDataFlowAnalysis {
 	 * @param usageContextProvider The usage context provider object
 	 */
 	void setUsageContextProvider(IUsageContextProvider usageContextProvider);
+
+	/**
+	 * Registers an analysis watcher with the data flow engine
+	 * 
+	 * @param watcher       The watcher to register
+	 * @param analysisPhase The analysis phase for which the watcher is applicable
+	 */
+	public void addSolverWatcher(AbstractSolverWatcher watcher, AnalysisPhase analysisPhase);
+
+	/**
+	 * Registers the given set of watchers with the data flow engine
+	 * 
+	 * @param watchers The watchers to register
+	 */
+	default public void addSolverWatchers(MultiMap<AnalysisPhase, AbstractSolverWatcher> watchers) {
+		for (AnalysisPhase phase : watchers.keySet()) {
+			watchers.get(phase).stream().forEach(w -> addSolverWatcher(w, phase));
+		}
+	}
+
 }
