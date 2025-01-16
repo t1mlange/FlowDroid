@@ -320,7 +320,24 @@ public abstract class BaseSourceSinkManager
 					return def;
 			}
 		} else if (sCallSite instanceof ReturnStmt) {
-			return sinkReturnMethods.get(manager.getICFG().getMethodOf(sCallSite));
+			SootMethod sm = manager.getICFG().getMethodOf(sCallSite);
+			// Do we have a direct hit?
+			{
+				Collection<ISourceSinkDefinition> def = this.sinkReturnMethods.get(sm);
+				if (!def.isEmpty())
+					return def;
+			}
+
+			final String subSig = sm.getSubSignature();
+
+			// Check whether we have any of the interfaces on the list
+			for (SootClass i : parentClassesAndInterfaces.getUnchecked(sm.getDeclaringClass())) {
+				if (i.declaresMethod(subSig)) {
+					Collection<ISourceSinkDefinition> def = this.sinkReturnMethods.get(i.getMethod(subSig));
+					if (!def.isEmpty())
+						return def;
+				}
+			}
 		}
 
 		// nothing found

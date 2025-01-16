@@ -123,12 +123,18 @@ public class XMLSourceSinkParser extends AbstractXMLSourceSinkParser implements 
 			if (sourceDef != null && !sourceDef.isEmpty()) {
 				if (sourceDef instanceof MethodSourceSinkDefinition) {
 					MethodSourceSinkDefinition methodSrc = (MethodSourceSinkDefinition) sourceDef;
-					if (methodSrc.getMethod() instanceof AndroidMethod) {
+					if (methodSrc.getCallType() == CallType.Return) {
+						String mname = methodSrc.getMethod().getMethodName();
+						logger.error(String.format("Error while building sources for %s: CallType Return is not " +
+								"supported for Source Definitions. The invalid definition is ignored.", mname));
+						sourceDef = null;
+					} else if (methodSrc.getMethod() instanceof AndroidMethod) {
 						AndroidMethod am = (AndroidMethod) methodSrc.getMethod();
 						am.setSourceSinkType(am.getSourceSinkType().addType(SourceSinkType.Source));
 					}
 				}
-				sources.add(sourceDef);
+				if (sourceDef != null)
+					sources.add(sourceDef);
 			}
 
 			ISourceSinkDefinition sinkDef = def.getSinkOnlyDefinition();
