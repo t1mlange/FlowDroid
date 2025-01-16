@@ -223,6 +223,8 @@ public abstract class AbstractXMLSourceSinkParser {
 						callType = CallType.MethodCall;
 					else if (strCallType.equalsIgnoreCase("Callback"))
 						callType = CallType.Callback;
+					else if (strCallType.equalsIgnoreCase("Return"))
+						callType = CallType.Return;
 				}
 			}
 		}

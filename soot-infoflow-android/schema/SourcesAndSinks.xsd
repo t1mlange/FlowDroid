@@ -50,6 +50,7 @@
 	<xs:restriction base="xs:string">
 		<xs:enumeration value="methodCall" />
 		<xs:enumeration value="callback" />
+		<xs:enumeration value="return" />
 	</xs:restriction>
 </xs:simpleType>
 

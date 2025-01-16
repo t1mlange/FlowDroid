@@ -282,4 +282,31 @@ public class XmlParserTest extends BaseJUnitTests {
 		}
 		Assert.assertTrue(foundStrSig && foundStrOffsetSig && foundIntSig && foundByteSig);
 	}
+
+	@Test
+	public void returnCallTypeTest() throws IOException {
+		File xmlFile = new File(getInfoflowAndroidRoot(), "testXmlParser/returnCallType.xml");
+		XMLSourceSinkParser parser = XMLSourceSinkParser.fromFile(xmlFile);
+		Set<ISourceSinkDefinition> sinkSet = parser.getSinks();
+
+		final String expectedSig = "<android.content.ContentProvider: android.database.Cursor query(android.net.Uri,java.lang.String[],java.lang.String,java.lang.String[],java.lang.String)>";
+
+		Assert.assertEquals(0, parser.getSources().size());
+		Assert.assertEquals(1, sinkSet.size());
+		ISourceSinkDefinition sink = sinkSet.iterator().next();
+		Assert.assertTrue(sink instanceof MethodSourceSinkDefinition);
+		MethodSourceSinkDefinition methodSink = (MethodSourceSinkDefinition) sink;
+		String methodSig = methodSink.getMethod().getSignature();
+		Assert.assertEquals(expectedSig, methodSig);
+		Assert.assertEquals(methodSink.getCallType(), MethodSourceSinkDefinition.CallType.Return);
+		Assert.assertEquals(1, methodSink.getReturnValues().size());
+	}
+
+	@Test
+	public void invalidReturnCallTypeTest() throws IOException {
+		File xmlFile = new File(getInfoflowAndroidRoot(), "testXmlParser/invalidReturnCallType.xml");
+		XMLSourceSinkParser parser = XMLSourceSinkParser.fromFile(xmlFile);
+		Assert.assertEquals(0, parser.getSinks().size());
+		Assert.assertEquals(0, parser.getSources().size());
+	}
 }
