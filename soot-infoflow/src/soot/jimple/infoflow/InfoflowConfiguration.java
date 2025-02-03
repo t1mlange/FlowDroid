@@ -1394,6 +1394,7 @@ public class InfoflowConfiguration {
 	private boolean excludeSootLibraryClasses = false;
 	private int maxThreadNum = -1;
 	private boolean writeOutputFiles = false;
+	private boolean dumpDummyMain = false;
 	private boolean logSourcesAndSinks = false;
 	private boolean enableReflection = false;
 	private boolean enableLineNumbers = false;
@@ -1955,6 +1956,14 @@ public class InfoflowConfiguration {
 	 */
 	public void setWriteOutputFiles(boolean writeOutputFiles) {
 		this.writeOutputFiles = writeOutputFiles;
+	}
+
+	public boolean getDumpDummyMain() {
+		return this.dumpDummyMain;
+	}
+
+	public void setDumpDummyMain(boolean dumpDummyMain) {
+		this.dumpDummyMain = dumpDummyMain;
 	}
 
 	/**

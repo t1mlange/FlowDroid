@@ -10,8 +10,8 @@
  ******************************************************************************/
 package soot.jimple.infoflow.android;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -30,14 +30,8 @@ import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
 import heros.solver.Pair;
-import soot.G;
-import soot.Main;
-import soot.PackManager;
-import soot.Scene;
-import soot.SootClass;
-import soot.SootField;
-import soot.SootMethod;
-import soot.Unit;
+import soot.*;
+import soot.baf.BafASMBackend;
 import soot.jimple.Stmt;
 import soot.jimple.infoflow.AbstractInfoflow;
 import soot.jimple.infoflow.AnalysisPhase;
@@ -1589,6 +1583,33 @@ public class SetupApplication implements ITaintWrapperDataFlowAnalysis {
 
 		// Write the results to disk if requested
 		serializeResults(resultAggregator.getAggregatedResults(), resultAggregator.getLastICFG());
+
+		if (config.getDumpDummyMain()) {
+			String category = config.getAnalysisFileConfig().getTargetAPKFile().getParentFile().getName();
+			String apkName = config.getAnalysisFileConfig().getTargetAPKFile().getName();
+			Path.of(".", "sootOutput", category, apkName).toFile().mkdirs();
+			List<SootClass> classes = new ArrayList<>();
+			SootClass dummy = Scene.v().getSootClassUnsafe("dummyMainClass");
+			classes.add(dummy);
+			for (SootClass appClass : Scene.v().getApplicationClasses()) {
+				if (appClass.getName().startsWith(dummy.getName()))
+					classes.add(appClass);
+			}
+
+			for (SootClass sc : classes) {
+				try {
+					String fileName = SourceLocator.v().getFileNameFor(sc, Options.output_format_c).replace("sootOutput/", "");
+					BafASMBackend backend = new BafASMBackend(sc, Options.java_version_1_8);
+					ByteArrayOutputStream buf = new ByteArrayOutputStream();
+					backend.generateClassFile(buf);
+					FileOutputStream fos = new FileOutputStream(Path.of(".", "sootOutput", category, apkName, fileName).toString());
+					fos.write(buf.toByteArray());
+					fos.close();
+				} catch (Exception e) {
+					System.err.println(e.getMessage());
+				}
+			}
+		}
 
 		// We return the aggregated results
 		this.infoflow = null;

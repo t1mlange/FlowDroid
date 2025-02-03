@@ -73,6 +73,7 @@ public abstract class JUnitTests extends BaseJUnitTests {
 
 			@Override
 			public void configureAnalyzer(InfoflowAndroidConfiguration config) {
+				config.setDumpDummyMain(true);
 				config.setImplicitFlowMode(
 						enableImplicitFlows ? ImplicitFlowMode.AllImplicitFlows : ImplicitFlowMode.NoImplicitFlows);
 			}
