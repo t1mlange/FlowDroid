@@ -190,6 +190,10 @@ public abstract class AbstractComponentEntryPointCreator extends AbstractAndroid
 			thisLocal = generateClassConstructor(component);
 			if (thisLocal != null) {
 				localVarsForClasses.put(component, thisLocal);
+				// Introduce a `local = null;` statement at the beginning, so the local is defined
+				// even through the path beforeComponentStmt -> endClassStmt
+				body.getUnits().insertAfter(Jimple.v().newAssignStmt(thisLocal, NullConstant.v()),
+						beforeComponentStmt);
 
 				// Store the intent
 				body.getUnits().add(Jimple.v()

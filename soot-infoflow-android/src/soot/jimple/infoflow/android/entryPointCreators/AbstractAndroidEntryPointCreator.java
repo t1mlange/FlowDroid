@@ -9,6 +9,7 @@ import soot.SootClass;
 import soot.SootMethod;
 import soot.jimple.Jimple;
 import soot.jimple.NopStmt;
+import soot.jimple.NullConstant;
 import soot.jimple.Stmt;
 import soot.jimple.infoflow.android.manifest.IManifestHandler;
 import soot.jimple.infoflow.cfg.FlowDroidEssentialMethodTag;
@@ -90,11 +91,14 @@ public abstract class AbstractAndroidEntryPointCreator extends BaseEntryPointCre
 	 */
 	protected void createClassInstances(Collection<SootClass> classes) {
 		for (SootClass callbackClass : classes) {
+			NopStmt beforeStmt = Jimple.v().newNopStmt();
+			body.getUnits().add(beforeStmt);
 			NopStmt thenStmt = Jimple.v().newNopStmt();
 			createIfStmt(thenStmt);
 			Local l = localVarsForClasses.get(callbackClass);
 			if (l == null) {
 				l = generateClassConstructor(callbackClass);
+				body.getUnits().insertAfter(Jimple.v().newAssignStmt(l, NullConstant.v()), beforeStmt);
 				if (l != null)
 					localVarsForClasses.put(callbackClass, l);
 			}

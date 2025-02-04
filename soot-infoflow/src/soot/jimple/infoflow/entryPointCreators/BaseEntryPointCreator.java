@@ -154,8 +154,15 @@ public abstract class BaseEntryPointCreator implements IEntryPointCreator {
 
 		// Make sure that we have an opaque predicate
 		conditionCounter = 0;
+		final RefType randomType = Scene.v().getRefType("java.util.Random");
+		final Local random = generator.generateLocal(randomType);
+		body.getUnits().add(Jimple.v().newAssignStmt(random, Jimple.v().newNewExpr(randomType)));
+		final SootMethod constr = Scene.v().grabMethod("<java.util.Random: void <init>()>");
+		body.getUnits().add(Jimple.v().newInvokeStmt(Jimple.v().newSpecialInvokeExpr(random, constr.makeRef())));
+		final InvokeExpr ie = Jimple.v().newVirtualInvokeExpr(random, Scene.v().grabMethod("<java.util.Random: int nextInt()>").makeRef());
+
 		intCounter = generator.generateLocal(IntType.v());
-		body.getUnits().add(Jimple.v().newAssignStmt(intCounter, IntConstant.v(conditionCounter)));
+		body.getUnits().add(Jimple.v().newAssignStmt(intCounter, ie));
 
 		SootMethod m = createDummyMainInternal();
 		m.addTag(SimulatedCodeElementTag.TAG);
